@@ -22,7 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BepInEx">
-      <HintPath>..\BepisPlugins\lib\BepInEx.dll</HintPath>
+      <HintPath>..\lib\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
@@ -35,7 +35,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\BepisPlugins\lib\UnityEngine.dll</HintPath>
+      <HintPath>..\lib\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
