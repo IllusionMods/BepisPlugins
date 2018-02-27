@@ -42,6 +42,8 @@ namespace ScriptEngine
 
             scriptManager = new GameObject();
 
+            DontDestroyOnLoad(scriptManager);
+
             foreach (string path in Directory.GetFiles(ScriptDirectory, "*.dll"))
             {
                 LoadDLL(path, scriptManager);
