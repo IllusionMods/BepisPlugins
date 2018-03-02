@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using IllusionInjector;
 using IllusionPlugin;
 using UnityEngine;
 
@@ -25,6 +24,18 @@ namespace IPALoader
         internal static IPlugin pluginToLoad;
 
         public string IPAPluginDir => Path.Combine(Utility.PluginsDirectory, "IPA");
+
+        public IPALoader()
+        {
+            //only required for ILMerge
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+            {
+                if (args.Name == "IllusionPlugin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
+                    return Assembly.GetExecutingAssembly();
+                else
+                    return null;
+            };
+        }
 
         void Start()
         {
@@ -72,7 +83,8 @@ namespace IPALoader
                 }
                 catch (Exception ex)
                 {
-                    BepInLogger.Log($"Error loading IPA plugin {Path.GetFileName(path)} : {ex.ToString()}");
+                    BepInLogger.Log($"Error loading IPA plugin {Path.GetFileName(path)}");
+                    BepInLogger.Log(ex.ToString());
                 }
             }
 

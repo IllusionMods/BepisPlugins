@@ -1,0 +1,8 @@
+﻿{
+  "General": {
+    "OutputFile": "$(TargetDir)$(TargetFileName)"
+  },
+  "Advanced": {
+    "DebugInfo": false
+  }
+}
