@@ -13,7 +13,7 @@ namespace ResourceRedirector
     {
         public static bool HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
-            if (assetName.StartsWith("bgm"))
+            if (assetName.StartsWith("bgm") && assetName.Length > 4)
             {
                 string path;
 
