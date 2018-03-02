@@ -39,8 +39,12 @@ namespace ResourceRedirector
         {
             foreach (var handler in AssetResolvers)
             {
-                if (handler.Invoke(assetBundleName, assetName, type, manifestAssetBundleName, out AssetBundleLoadAssetOperation result))
-                    return result;
+                try
+                {
+                    if (handler.Invoke(assetBundleName, assetName, type, manifestAssetBundleName, out AssetBundleLoadAssetOperation result))
+                        return result;
+                }
+                catch { }
             }
 
             //emulate asset load
