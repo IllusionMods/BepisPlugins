@@ -25,12 +25,12 @@ namespace Screencap
             Texture2D image = new Texture2D(ResolutionX * DownscalingRate, ResolutionY * DownscalingRate);
             image.ReadPixels(new Rect(0, 0, ResolutionX * DownscalingRate, ResolutionY * DownscalingRate), 0, 0);
 
-            TextureScale.Bilinear(image, ResolutionX, ResolutionY);
+            image.Downsample(ResolutionX, ResolutionY, DownscalingRate);
 
             image.Apply();
             RenderTexture.active = currentRT;
             GameObject.Destroy(renderCam.targetTexture);
-            GameObject.Destroy(renderCam);
+            GameObject.Destroy(renderCam.gameObject);
 
             byte[] result = image.EncodeToPNG();
 
@@ -38,7 +38,5 @@ namespace Screencap
 
             return result;
         }
-
-        
     }
 }

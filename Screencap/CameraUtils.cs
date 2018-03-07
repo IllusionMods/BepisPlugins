@@ -8,6 +8,14 @@ namespace Screencap
 {
     internal static class CameraUtils
     {
+        public static void Downsample(this Texture2D texture, int width, int height, int rate)
+        {
+            if (rate < 2)
+                return;
+
+            TextureScale.Bilinear(texture, width, height);
+        }
+
         public static Camera CopyCamera(Camera source)
         {
             var go = new GameObject();

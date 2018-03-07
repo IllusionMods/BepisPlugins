@@ -105,7 +105,7 @@ namespace Screencap
                     File.WriteAllBytes(filename, LegacyRenderer.RenderCamera(ResolutionX, ResolutionY, DownscalingRate, AntiAliasing));
                     break;
                 case 1: //alphashot
-                    File.WriteAllBytes(filename, AlphaShot2.Capture());
+                    File.WriteAllBytes(filename, AlphaShot2.Capture(ResolutionX, ResolutionY, DownscalingRate, AntiAliasing));
                     break;
             }
 

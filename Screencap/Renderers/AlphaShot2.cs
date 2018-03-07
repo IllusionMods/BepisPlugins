@@ -15,10 +15,10 @@ namespace alphaShot
     
     public static class AlphaShot2
     {
-        public static byte[] Capture()
+        public static byte[] Capture(int width, int height, int downsampling, int antialiasing)
         {
-            var texture2D = PerformCapture(true);
-            var texture2D2 = PerformCapture(false);
+            var texture2D = PerformCapture(true, width * downsampling, height * downsampling, antialiasing);
+            var texture2D2 = PerformCapture(false, width * downsampling, height * downsampling, antialiasing);
 
             //Save(texture2D.EncodeToPNG());
             //Save(texture2D2.EncodeToPNG());
@@ -34,6 +34,10 @@ namespace alphaShot
             }
             texture2D3.SetPixels(pixels2);
             texture2D3.Apply();
+
+            texture2D3.Downsample(width, height, downsampling);
+            texture2D3.Apply();
+
             
             byte[] result = texture2D3.EncodeToPNG();
 
@@ -71,17 +75,17 @@ namespace alphaShot
                     Shader.PropertyToID("_overcolor3"),  //eye
                 };
 
-        public static Texture2D PerformCapture(bool captureAlphaOnly)
+        public static Texture2D PerformCapture(bool captureAlphaOnly, int renderWidth, int renderHeight, int antiAliasing)
         {
             var renderCam = CameraUtils.CopyCamera(Camera.main);
             var targetTexture = renderCam.targetTexture;
             var rect = renderCam.rect;
             var backgroundColor = renderCam.backgroundColor;
             var clearFlags = renderCam.clearFlags;
-            var rw = (int)(renderCam.pixelWidth);
-            var rh = (int)(renderCam.pixelHeight);
-            var t2d = new Texture2D(rw, rh, TextureFormat.RGB24, false);
-            var rt_temp = RenderTexture.GetTemporary(rw, rh, 24, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 8);
+            var t2d = new Texture2D(renderWidth, renderHeight, TextureFormat.RGB24, false);
+            var rt_temp = RenderTexture.GetTemporary(renderWidth, renderHeight, 24, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 8);
+
+            rt_temp.antiAliasing = antiAliasing;
 
             var list = new List<MaterialInfo>();
             var lc = Shader.GetGlobalColor(ChaShader._LineColorG);
@@ -141,7 +145,7 @@ namespace alphaShot
             renderCam.rect = rect;
 
             RenderTexture.active = rt_temp;
-            t2d.ReadPixels(new Rect(0f, 0f, rw, rh), 0, 0);
+            t2d.ReadPixels(new Rect(0f, 0f, renderWidth, renderHeight), 0, 0);
             t2d.Apply();
             RenderTexture.active = null;
             renderCam.backgroundColor = backgroundColor;
