@@ -41,8 +41,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlphaShot.cs" />
-    <Compile Include="LegacyRenderer.cs" />
+    <Compile Include="Renderers\AlphaShot2.cs" />
+    <Compile Include="CameraUtils.cs" />
+    <Compile Include="Renderers\LegacyRenderer.cs" />
     <Compile Include="ScreenshotManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
