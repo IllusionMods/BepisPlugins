@@ -96,7 +96,7 @@ namespace Screencap
 
         void TakeCharScreenshot(string filename)
         {
-            Camera.main.backgroundColor = Color.clear;
+            GC.Collect();
 
             switch (RenderMethod)
             {
@@ -111,6 +111,8 @@ namespace Screencap
 
             Illusion.Game.Utils.Sound.Play(SystemSE.photo);
             BepInLogger.Log($"Character screenshot saved to {filename}", true);
+
+            GC.Collect();
         }
 
 
