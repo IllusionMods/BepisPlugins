@@ -51,7 +51,7 @@ namespace Screencap
 
         private int RenderMethod
         {
-            get => int.Parse(this.GetEntry("rendermethod", "1"));
+            get => int.Parse(this.GetEntry("rendermethod", "0"));
             set => this.SetEntry("rendermethod", value.ToString());
         }
 
@@ -206,7 +206,7 @@ namespace Screencap
                 }
             });
 
-            int renderMethod = GUI.SelectionGrid(new Rect(10, 190, 140, 50), RenderMethod, new[] { "Legacy", "AlphaShot" }, 1);
+            int renderMethod = GUI.SelectionGrid(new Rect(10, 190, 140, 50), RenderMethod, new[] { "Legacy", "AlphaShot2" }, 1);
 
 
 
