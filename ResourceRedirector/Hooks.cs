@@ -56,10 +56,10 @@ namespace ResourceRedirector
 
         public static void LoadListInfoAllPostHook(ChaListControl __instance)
         {
-            string listPath = Path.Combine(ResourceRedirector.EmulatedDir, "emulated-list");
+            string listPath = Path.Combine(ResourceRedirector.EmulatedDir, @"list\characustom");
 
             if (Directory.Exists(listPath))
-                foreach (string csvPath in Directory.GetFiles(listPath, "*.csv"))
+                foreach (string csvPath in Directory.GetFiles(listPath, "*.csv", SearchOption.AllDirectories))
                 {
                     ChaListData chaListData = new ChaListData();
 
