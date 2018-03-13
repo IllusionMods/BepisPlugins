@@ -43,6 +43,19 @@ namespace ResourceRedirector
             postfix = new HarmonyMethod(typeof(Hooks).GetMethod("LoadAllAssetPostHook"));
 
             harmony.Patch(original, null, postfix);
+
+
+
+            original = AccessTools.Method(typeof(ChaListControl), "LoadListInfoAll");
+
+            postfix = new HarmonyMethod(typeof(Hooks).GetMethod("LoadListInfoAllPostHook"));
+
+            harmony.Patch(original, null, postfix);
+        }
+
+        public static void LoadListInfoAllPostHook(ChaListControl __instance)
+        {
+            ListLoader.LoadAllLists(__instance);
         }
 
         public static void LoadAssetPostHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName, string assetName, Type type, string manifestAssetBundleName)
