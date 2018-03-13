@@ -13,21 +13,18 @@ namespace ColorCorrector
         public override Version Version => new Version("1.2");
 
         #region Config properties
-        private bool SaturationEnabled
-        {
-            get => bool.Parse(this.GetEntry("saturation-enabled", "True"));
-            set => this.SetEntry("saturation-enabled", value.ToString());
-        }
-
-        private bool BloomEnabled
-        {
-            get => bool.Parse(this.GetEntry("bloom-enabled", "True"));
-            set => this.SetEntry("bloom-enabled", value.ToString());
-        }
+        private ConfigWrapper<bool> SaturationEnabled { get; set; }
+        private ConfigWrapper<float> BloomStrength { get; set; }
         #endregion
 
         AmplifyColorEffect amplifyComponent;
         BloomAndFlares bloomComponent;
+
+        public ColorCorrector()
+        {
+            SaturationEnabled = new ConfigWrapper<bool>("SaturationEnabled", this, true);
+            BloomStrength = new ConfigWrapper<float>("BloomStrength", this, 1);
+        }
 
         protected void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
@@ -36,17 +33,17 @@ namespace ColorCorrector
                 amplifyComponent = Camera.main.gameObject.GetComponent<AmplifyColorEffect>();
                 bloomComponent = Camera.main.gameObject.GetComponent<BloomAndFlares>();
 
-                SetEffects(SaturationEnabled, BloomEnabled);
+                SetEffects(SaturationEnabled.Value, BloomStrength.Value);
             }
         }
 
-        void SetEffects(bool satEnabled, bool bloomEnabled)
+        void SetEffects(bool satEnabled, float bloomPower)
         {
             if (amplifyComponent != null)
                 amplifyComponent.enabled = satEnabled;
 
             if (bloomComponent != null)
-                bloomComponent.enabled = bloomEnabled;
+                bloomComponent.bloomIntensity = bloomPower;
         }
 
         #region MonoBehaviour
@@ -81,15 +78,18 @@ namespace ColorCorrector
 
         void WindowFunction(int windowID)
         {
-            bool satEnabled = GUI.Toggle(new Rect(10, 20, 180, 20), SaturationEnabled, " Saturation filter enabled");
-            bool bloomEnabled = GUI.Toggle(new Rect(10, 40, 180, 20), BloomEnabled, " Bloom filter enabled");
+            bool satEnabled = GUI.Toggle(new Rect(10, 20, 180, 20), SaturationEnabled.Value, " Saturation filter enabled");
+
+            GUI.Label(new Rect(10, 40, 180, 20), "Bloom filter strength");
+
+            float bloomPower = GUI.HorizontalSlider(new Rect(10, 60, 180, 20), BloomStrength.Value, 0, 1);
 
             if (GUI.changed)
             {
-                SaturationEnabled = satEnabled;
-                BloomEnabled = bloomEnabled;
+                SaturationEnabled.Value = satEnabled;
+                BloomStrength.Value = bloomPower;
 
-                SetEffects(satEnabled, bloomEnabled);
+                SetEffects(satEnabled, bloomPower);
             }
 
             GUI.DragWindow();
