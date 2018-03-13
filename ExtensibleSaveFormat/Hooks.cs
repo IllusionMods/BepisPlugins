@@ -11,6 +11,9 @@ namespace ExtensibleSaveFormat
 {
     public static class Hooks
     {
+        public static string Marker = "KKEx";
+        public static int Version = 2;
+
         public static void InstallHooks()
         {
             var harmony = HarmonyInstance.Create("com.bepis.bepinex.extensiblesaveformat");
@@ -42,6 +45,8 @@ namespace ExtensibleSaveFormat
 
             byte[] bytes = MessagePackSerializer.Serialize(extendedData);
 
+            bw.Write(Marker);
+            bw.Write(Version);
             bw.Write((int)bytes.Length);
             bw.Write(bytes);
         }
@@ -53,15 +58,21 @@ namespace ExtensibleSaveFormat
 
             try
             {
-                int length = br.ReadInt32();
+                string marker = br.ReadString();
+                int version = br.ReadInt32();
 
-                if (length > 0)
+                if (marker == Marker && version == Version)
                 {
-                    byte[] bytes = br.ReadBytes(length);
+                    int length = br.ReadInt32();
 
-                    ExtensibleSaveFormat.internalDictionary[__instance] = MessagePackSerializer.Deserialize<Dictionary<string, object>>(bytes);
+                    if (length > 0)
+                    {
+                        byte[] bytes = br.ReadBytes(length);
 
-                    return;
+                        ExtensibleSaveFormat.internalDictionary[__instance] = MessagePackSerializer.Deserialize<Dictionary<string, object>>(bytes);
+
+                        return;
+                    }
                 }
             }
             catch (EndOfStreamException) { }
