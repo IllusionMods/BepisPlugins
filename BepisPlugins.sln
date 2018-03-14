@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScriptEngine", "ScriptEngin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IPALoader", "IPALoader\IPALoader.csproj", "{4523DAA4-1B2D-4E14-82B9-61D8FCDF0C24}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sideloader", "Sideloader\Sideloader.csproj", "{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		DevelopmentCore|Any CPU = DevelopmentCore|Any CPU
@@ -98,6 +100,13 @@ Global
 		{4523DAA4-1B2D-4E14-82B9-61D8FCDF0C24}.DevelopmentStock|Any CPU.Build.0 = Mono|Any CPU
 		{4523DAA4-1B2D-4E14-82B9-61D8FCDF0C24}.Release|Any CPU.ActiveCfg = Mono|Any CPU
 		{4523DAA4-1B2D-4E14-82B9-61D8FCDF0C24}.Release|Any CPU.Build.0 = Mono|Any CPU
+		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.DevelopmentCore|Any CPU.ActiveCfg = Mono|Any CPU
+		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.DevelopmentFull|Any CPU.ActiveCfg = Mono|Any CPU
+		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.DevelopmentFull|Any CPU.Build.0 = Mono|Any CPU
+		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.DevelopmentStock|Any CPU.ActiveCfg = Mono|Any CPU
+		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.DevelopmentStock|Any CPU.Build.0 = Mono|Any CPU
+		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.Release|Any CPU.ActiveCfg = Mono|Any CPU
+		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.Release|Any CPU.Build.0 = Mono|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

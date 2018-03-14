@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -67,5 +68,35 @@ namespace ResourceRedirector
 			    }
 		    }
         }
+
+        #region Helpers
+        public static void LoadCSV(Stream stream)
+        {
+            ChaListData chaListData = new ChaListData();
+
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+            {
+                chaListData.categoryNo = int.Parse(reader.ReadLine().Trim());
+                chaListData.distributionNo = int.Parse(reader.ReadLine().Trim());
+                chaListData.filePath = reader.ReadLine().Trim();
+
+                chaListData.lstKey = reader.ReadLine().Trim().Split(',').ToList();
+
+                int i = 0;
+
+                while (!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine().Trim();
+
+                    if (!line.Contains(','))
+                        break;
+
+                    chaListData.dictList.Add(i++, line.Split(',').ToList());
+                }
+            }
+
+            ListLoader.ExternalDataList.Add(chaListData);
+        }
+        #endregion
     }
 }

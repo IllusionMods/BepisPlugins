@@ -61,30 +61,7 @@ namespace ResourceRedirector
             if (Directory.Exists(listPath))
                 foreach (string csvPath in Directory.GetFiles(listPath, "*.csv", SearchOption.AllDirectories))
                 {
-                    ChaListData chaListData = new ChaListData();
-
-                    using (StreamReader reader = new StreamReader(csvPath, System.Text.Encoding.UTF8))
-                    {
-                        chaListData.categoryNo = int.Parse(reader.ReadLine().Trim());
-                        chaListData.distributionNo = int.Parse(reader.ReadLine().Trim());
-                        chaListData.filePath = reader.ReadLine().Trim();
-
-                        chaListData.lstKey = reader.ReadLine().Trim().Split(',').ToList();
-
-                        int i = 0;
-
-                        while (!reader.EndOfStream)
-                        {
-                            string line = reader.ReadLine().Trim();
-
-                            if (!line.Contains(','))
-                                break;
-
-                            chaListData.dictList.Add(i++, line.Split(',').ToList());
-                        }
-                    }
-
-                    ListLoader.ExternalDataList.Add(chaListData);
+                    ListLoader.LoadCSV(File.OpenRead(csvPath));
                 }
 
             ListLoader.LoadAllLists(__instance);
