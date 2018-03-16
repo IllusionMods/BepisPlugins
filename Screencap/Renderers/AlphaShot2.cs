@@ -73,6 +73,7 @@ namespace alphaShot
                     Shader.PropertyToID("_overcolor1"),  //eye
                     Shader.PropertyToID("_overcolor2"),  //eye
                     Shader.PropertyToID("_overcolor3"),  //eye
+                    Shader.PropertyToID("_SpecularColor"),  //skin shine
                 };
 
         public static Texture2D PerformCapture(bool captureAlphaOnly, int renderWidth, int renderHeight, int antiAliasing)
