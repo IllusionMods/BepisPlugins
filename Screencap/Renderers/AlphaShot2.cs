@@ -65,6 +65,8 @@ namespace alphaShot
 
                     Shader.PropertyToID("_SpecularPower"),  //skin shine
                     Shader.PropertyToID("_SpecularPowerNail"),  //skin shine
+
+                    Shader.PropertyToID("_liquidmask"),  //liquid
                 };
 
         static int[] potentials3 = new[] {
