@@ -51,7 +51,9 @@
   <ItemGroup>
     <Compile Include="ExtensibleSaveFormat.cs" />
     <Compile Include="Hooks.cs" />
+    <Compile Include="PluginData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

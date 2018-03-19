@@ -40,19 +40,27 @@ namespace ExtensibleSaveFormat
 
             ExtensibleSaveFormat.writeEvent(__instance);
 
-            if (!ExtensibleSaveFormat.TryGetExtendedFormat(__instance, out Dictionary<string, object> extendedData))
+            Dictionary<string, PluginData> extendedData = ExtensibleSaveFormat.GetAllExtendedData(__instance);
+            if (extendedData == null )
                 return;
 
             byte[] bytes = MessagePackSerializer.Serialize(extendedData);
 
             bw.Write(Marker);
             bw.Write(Version);
+            foreach (KeyValuePair<string, PluginData> kv in extendedData)
+            {
+                PluginData dict = kv.Value as PluginData;
+            }
+
             bw.Write((int)bytes.Length);
             bw.Write(bytes);
         }
 
         public static void LoadFileHook(ChaFile __instance, bool __result, BinaryReader br, bool noLoadPNG, bool noLoadStatus)
         {
+            Dictionary<string, PluginData> dictionary = null;
+
             if (!__result)
                 return;
 
@@ -68,18 +76,20 @@ namespace ExtensibleSaveFormat
                     if (length > 0)
                     {
                         byte[] bytes = br.ReadBytes(length);
-
-                        ExtensibleSaveFormat.internalDictionary[__instance] = MessagePackSerializer.Deserialize<Dictionary<string, object>>(bytes);
-
-                        return;
+                        dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
                     }
                 }
             }
             catch (EndOfStreamException) { }
+            catch (System.InvalidOperationException) { /* Invalid/unexpected deserialized data */ }
 
-            //initialize a new dictionary since it doesn't exist
-            ExtensibleSaveFormat.internalDictionary[__instance] = new Dictionary<string, object>();
+            if (dictionary == null)
+            {
+                //initialize a new dictionary since it doesn't exist
+                dictionary = new Dictionary<string, PluginData>();
+            }
 
+            ExtensibleSaveFormat.internalDictionary.Set(__instance, dictionary);
             ExtensibleSaveFormat.readEvent(__instance);
         }
     }
