@@ -15,14 +15,16 @@ namespace DynamicTranslationLoader
     {
         public override string ID => "com.bepis.bepinex.dynamictranslator";
         public override string Name => "Dynamic Translator";
-        public override Version Version => new Version("1.2");
+        public override Version Version => new Version("2.0");
 
         private static Dictionary<string, string> translations = new Dictionary<string, string>();
         private static List<string> untranslated = new List<string>();
 
         void Awake()
         {
-            string[] translation = File.ReadAllLines(Utility.CombinePaths(Utility.PluginsDirectory, "translation", "translation.txt"));
+            string[] translation = Directory.GetFiles(Path.Combine(Utility.PluginsDirectory, "translation"), "*.txt", SearchOption.AllDirectories)
+                .SelectMany(file => File.ReadAllLines(file))
+                .ToArray();
 
             for (int i = 0; i < translation.Length; i++)
             {
