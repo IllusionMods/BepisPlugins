@@ -56,6 +56,13 @@ namespace SliderUnlocker
             postfix = new HarmonyMethod(typeof(Hooks).GetMethod("GetInfoPostHook"));
 
             harmony.Patch(original, prefix, postfix);
+
+
+            original = AccessTools.Method(typeof(ChaFileControl), "CheckDataRange");
+
+            prefix = new HarmonyMethod(typeof(Hooks).GetMethod(nameof(CheckDataRangePreHook)));
+
+            harmony.Patch(original, prefix, null);
         }
 
         private static FieldInfo akf_dictInfo = (typeof(AnimationKeyInfo).GetField("dictInfo", BindingFlags.NonPublic | BindingFlags.Instance));
@@ -173,6 +180,12 @@ namespace SliderUnlocker
                     value[2] = SliderMath.CalculateScale(list, rate);
                 }
             }
+        }
+
+        public static bool CheckDataRangePreHook(bool __result)
+        {
+            __result = true;
+            return false;
         }
     }
 }
