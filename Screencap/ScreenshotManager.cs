@@ -13,7 +13,7 @@ namespace Screencap
     {
         public override string ID => "com.bepis.bepinex.screenshotmanager";
         public override string Name => "Screenshot Manager";
-        public override Version Version => new Version("2.0");
+        public override Version Version => new Version("2.1");
 
         Event ScreenKeyEvent = Event.KeyboardEvent("f9");
         Event CharacterKeyEvent = Event.KeyboardEvent("f11");
@@ -62,6 +62,8 @@ namespace Screencap
         {
             if (!Directory.Exists(screenshotDir))
                 Directory.CreateDirectory(screenshotDir);
+
+            Hooks.InstallHooks();
         }
 
         void Update()
