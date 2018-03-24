@@ -32,14 +32,18 @@ namespace DynamicTranslationLoader
             harmony.Patch(original, prefix, null);
         }
 
-        public static void TextPropertyHook(ref string value)
+        public static bool TranslationHooksEnabled { get; set; } = true;
+
+        public static void TextPropertyHook(ref string value, object __instance)
         {
-            value = DynamicTranslator.Translate(value);
+            if (TranslationHooksEnabled)
+                value = DynamicTranslator.Translate(value, __instance);
         }
 
-        public static void SetTextHook(ref string text)
+        public static void SetTextHook(ref string text, object __instance)
         {
-            text = DynamicTranslator.Translate(text);
+            if (TranslationHooksEnabled)
+                text = DynamicTranslator.Translate(text, __instance);
         }
     }
 }
