@@ -21,6 +21,8 @@ namespace DynamicTranslationLoader
 
         private static Dictionary<WeakReference, string> originalTranslations = new Dictionary<WeakReference, string>();
 
+        private static List<string> untranslated = new List<string>();
+
         
         Event ReloadTranslationsKeyEvent = Event.KeyboardEvent("f10");
         Event DumpUntranslatedTextKeyEvent = Event.KeyboardEvent("#f10");
@@ -71,6 +73,9 @@ namespace DynamicTranslationLoader
 
             if (translations.ContainsKey(input))
                 return translations[input];
+            
+            if (!untranslated.Contains(input) && !translations.ContainsValue(input))
+                untranslated.Add(input);
 
             return input;
         }
@@ -147,12 +152,13 @@ namespace DynamicTranslationLoader
         {
             string output = "";
 
-            var untranslated = originalTranslations
+            var fullUntranslated = originalTranslations
                 .Where(x => !translations.ContainsKey(x.Value))
                 .Select(x => x.Value)
-                .Distinct();
+                .Distinct()
+                .Union(untranslated);
 
-            foreach (var text in untranslated)
+            foreach (var text in fullUntranslated)
                 if (!Regex.Replace(text, @"[\d-]", string.Empty).IsNullOrWhiteSpace()
                         && !text.Contains("Reset"))
                     output += $"{text.Trim()}=\r\n";
