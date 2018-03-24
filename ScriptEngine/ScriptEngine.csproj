@@ -43,7 +43,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BaseScript.cs" />
     <Compile Include="ScriptEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

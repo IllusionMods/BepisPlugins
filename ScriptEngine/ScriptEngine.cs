@@ -17,7 +17,7 @@ namespace ScriptEngine
 
         public override string Name => "Script Engine";
 
-        public override Version Version => new Version("1.0");
+        public override Version Version => new Version("2.0");
 
         public string ScriptDirectory => Path.Combine(Utility.PluginsDirectory, "scripts");
 
@@ -70,7 +70,7 @@ namespace ScriptEngine
 
                 foreach (Type t in assembly.GetTypes())
                 {
-                    if (t.BaseType == typeof(BaseScript))
+                    if (typeof(BaseUnityPlugin).IsAssignableFrom(t))
                     {
                         obj.AddComponent(t);
                     }
