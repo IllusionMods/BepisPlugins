@@ -22,6 +22,9 @@ namespace Sideloader
 
         protected List<ChaListData> lists = new List<ChaListData>();
 
+        protected Dictionary<string, AssetBundle> bundles = new Dictionary<string, AssetBundle>();
+
+
         public Sideloader()
         {
             //only required for ILMerge
@@ -64,6 +67,13 @@ namespace Sideloader
                     var stream = arc.GetInputStream(entry);
 
                     ListLoader.LoadCSV(stream);
+
+                    //int length = (int)entry.Size;
+                    //byte[] buffer = new byte[length];
+
+                    //stream.Read(buffer, 0, length);
+
+                    //string text = Encoding.UTF8.GetString(buffer);
                 }
             }
         }
@@ -90,6 +100,38 @@ namespace Sideloader
                     }
                 }
             }
+
+            if (!bundles.ContainsKey(assetBundleName))
+            {
+                foreach (var archive in archives)
+                {
+                    var entry = archive.GetEntry(assetBundleName);
+
+                    if (entry != null)
+                    {
+                        var stream = archive.GetInputStream(entry);
+
+                        byte[] buffer = new byte[entry.Size];
+
+                        stream.Read(buffer, 0, (int)entry.Size);
+
+                        bundles[assetBundleName] = AssetBundle.LoadFromMemory(buffer);
+                        
+                        //result = new AssetBundleLoadAssetOperationSimulation(ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size));
+                    }
+                }
+            }
+
+            if (bundles.TryGetValue(assetBundleName, out AssetBundle bundle))
+            {
+                if (bundle.Contains(assetName))
+                {
+                    result = new AssetBundleLoadAssetOperationSimulation(bundle.LoadAsset(assetName, type));
+                    return true;
+                }
+            }
+            
+
 
             result = null;
             return false;
