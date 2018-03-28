@@ -24,6 +24,7 @@ namespace Sideloader
 
         protected Dictionary<string, AssetBundle> bundles = new Dictionary<string, AssetBundle>();
 
+        public static List<ChaListData> LoadedData = new List<ChaListData>();
 
         public Sideloader()
         {
@@ -56,6 +57,7 @@ namespace Sideloader
 
             //add hook
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
+            AutoResolver.Hooks.InstallHooks();
         }
 
         protected void LoadAllLists(ZipFile arc)
@@ -66,7 +68,9 @@ namespace Sideloader
                 {
                     var stream = arc.GetInputStream(entry);
 
-                    ListLoader.LoadCSV(stream);
+                    var chaListData = ListLoader.LoadCSV(stream);
+                    ListLoader.ExternalDataList.Add(chaListData);
+                    LoadedData.Add(chaListData);
 
                     //int length = (int)entry.Size;
                     //byte[] buffer = new byte[length];

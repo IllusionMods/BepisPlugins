@@ -49,7 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExtensibleSaveFormat.cs" />
+    <Compile Include="ExtendedSave.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="PluginData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

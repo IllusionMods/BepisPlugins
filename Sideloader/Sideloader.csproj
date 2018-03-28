@@ -24,8 +24,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=1.0.9.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\lib\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\lib\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
@@ -53,6 +62,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoResolver\Hooks.cs" />
+    <Compile Include="AutoResolver\ResolveInfo.cs" />
+    <Compile Include="AutoResolver\StructReference.cs" />
+    <Compile Include="AutoResolver\UniversalAutoResolver.cs" />
     <Compile Include="Sideloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -64,9 +77,15 @@
     <Content Include="ILMergeOrder.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ExtensibleSaveFormat\ExtensibleSaveFormat.csproj">
+      <Project>{8ebe81b9-9ed9-466d-864a-4c644bfd8827}</Project>
+      <Name>ExtensibleSaveFormat</Name>
+      <Private>False</Private>
+    </ProjectReference>
     <ProjectReference Include="..\ResourceRedirector\ResourceRedirector.csproj">
       <Project>{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}</Project>
       <Name>ResourceRedirector</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -38,9 +38,9 @@ namespace ExtensibleSaveFormat
             if (!__result)
                 return;
 
-            ExtensibleSaveFormat.writeEvent(__instance);
+            ExtendedSave.writeEvent(__instance);
 
-            Dictionary<string, PluginData> extendedData = ExtensibleSaveFormat.GetAllExtendedData(__instance);
+            Dictionary<string, PluginData> extendedData = ExtendedSave.GetAllExtendedData(__instance);
             if (extendedData == null )
                 return;
 
@@ -89,8 +89,8 @@ namespace ExtensibleSaveFormat
                 dictionary = new Dictionary<string, PluginData>();
             }
 
-            ExtensibleSaveFormat.internalDictionary.Set(__instance, dictionary);
-            ExtensibleSaveFormat.readEvent(__instance);
+            ExtendedSave.internalDictionary.Set(__instance, dictionary);
+            ExtendedSave.readEvent(__instance);
         }
     }
 }

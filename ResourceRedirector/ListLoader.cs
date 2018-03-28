@@ -70,7 +70,7 @@ namespace ResourceRedirector
         }
 
         #region Helpers
-        public static void LoadCSV(Stream stream)
+        public static ChaListData LoadCSV(Stream stream)
         {
             ChaListData chaListData = new ChaListData();
 
@@ -95,7 +95,7 @@ namespace ResourceRedirector
                 }
             }
 
-            ListLoader.ExternalDataList.Add(chaListData);
+            return chaListData;
         }
         #endregion
     }

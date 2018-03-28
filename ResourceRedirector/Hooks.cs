@@ -61,7 +61,8 @@ namespace ResourceRedirector
             if (Directory.Exists(listPath))
                 foreach (string csvPath in Directory.GetFiles(listPath, "*.csv", SearchOption.AllDirectories))
                 {
-                    ListLoader.LoadCSV(File.OpenRead(csvPath));
+                    var chaListData = ListLoader.LoadCSV(File.OpenRead(csvPath));
+                    ListLoader.ExternalDataList.Add(chaListData);
                 }
 
             ListLoader.LoadAllLists(__instance);
