@@ -7,14 +7,9 @@ using System.Text;
 
 namespace ExtensibleSaveFormat
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.extendedsave", Name: "Extended Save", Version: "1.2")]
     public class ExtendedSave : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.extendedsave";
-
-        public override string Name => "Extended Save";
-
-        public override Version Version => new Version("1.1");
-
         void Awake()
         {
             Hooks.InstallHooks();

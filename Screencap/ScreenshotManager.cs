@@ -9,17 +9,13 @@ using UnityEngine;
 
 namespace Screencap
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.screenshotmanager", Name: "Screenshot Manager", Version: "2.1")]
     public class ScreenshotManager : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.screenshotmanager";
-        public override string Name => "Screenshot Manager";
-        public override Version Version => new Version("2.1");
-
         Event ScreenKeyEvent = Event.KeyboardEvent("f9");
         Event CharacterKeyEvent = Event.KeyboardEvent("f11");
         Event CharacterSettingsKeyEvent = Event.KeyboardEvent("#f11");
-
-
+        
 
         private string screenshotDir = Utility.CombinePaths(Utility.ExecutingDirectory, "UserData", "cap");
 
@@ -125,7 +121,7 @@ namespace Screencap
         void OnGUI()
         {
             if (showingUI)
-                UI = GUI.Window(Name.GetHashCode() + 0, UI, WindowFunction, "Rendering settings");
+                UI = GUI.Window("com.bepis.bepinex.screenshotmanager".GetHashCode() + 0, UI, WindowFunction, "Rendering settings");
         }
 
         void WindowFunction(int windowID)

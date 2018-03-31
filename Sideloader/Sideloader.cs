@@ -12,12 +12,9 @@ using UnityEngine;
 
 namespace Sideloader
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.0")]
     public class Sideloader : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.sideloader";
-        public override string Name => "Mod Sideloader";
-        public override Version Version => new Version("1.0");
-
         protected List<ZipFile> archives = new List<ZipFile>();
 
         protected List<ChaListData> lists = new List<ChaListData>();

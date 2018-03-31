@@ -6,12 +6,9 @@ using UnityStandardAssets.ImageEffects;
 
 namespace ColorCorrector
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.colorcorrector", Name: "Color Filter Remover", Version: "1.2")]
     public class ColorCorrector : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.colorcorrector";
-        public override string Name => "Color Filter Remover";
-        public override Version Version => new Version("1.2");
-
         #region Config properties
         private ConfigWrapper<bool> SaturationEnabled { get; set; }
         private ConfigWrapper<float> BloomStrength { get; set; }

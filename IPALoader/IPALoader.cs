@@ -11,14 +11,9 @@ using UnityEngine;
 
 namespace IPALoader
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.resourceredirector", Name: "IPA Plugin Loader", Version: "1.0")]
     public class IPALoader : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.resourceredirector";
-
-        public override string Name => "IPA Plugin Loader";
-
-        public override Version Version => new Version("1.0");
-
         public static GameObject IPAManagerObject { get; private set; }
 
         internal static IPlugin pluginToLoad;
