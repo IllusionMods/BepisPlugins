@@ -41,7 +41,7 @@
     <ILMergeCopyAttributes></ILMergeCopyAttributes>
     
     <!-- Creates a .pdb file for the output assembly and merges into it any .pdb files found for input assemblies, default=true -->
-    <ILMergeDebugInfo>false</ILMergeDebugInfo>
+    <ILMergeDebugInfo></ILMergeDebugInfo>
 
     <!-- Target assembly will be delay signed -->
     <ILMergeDelaySign></ILMergeDelaySign>
