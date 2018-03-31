@@ -64,24 +64,27 @@ namespace ExtensibleSaveFormat
             if (!__result)
                 return;
 
-            try
+            if (br.BaseStream.Position != br.BaseStream.Length)
             {
-                string marker = br.ReadString();
-                int version = br.ReadInt32();
-
-                if (marker == Marker && version == Version)
+                try
                 {
-                    int length = br.ReadInt32();
+                    string marker = br.ReadString();
+                    int version = br.ReadInt32();
 
-                    if (length > 0)
+                    if (marker == Marker && version == Version)
                     {
-                        byte[] bytes = br.ReadBytes(length);
-                        dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                        int length = br.ReadInt32();
+
+                        if (length > 0)
+                        {
+                            byte[] bytes = br.ReadBytes(length);
+                            dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                        }
                     }
                 }
+                catch (EndOfStreamException) { }
+                catch (InvalidOperationException) { /* Invalid/unexpected deserialized data */ }
             }
-            catch (EndOfStreamException) { }
-            catch (System.InvalidOperationException) { /* Invalid/unexpected deserialized data */ }
 
             if (dictionary == null)
             {
