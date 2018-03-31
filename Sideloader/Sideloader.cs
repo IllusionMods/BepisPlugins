@@ -12,6 +12,8 @@ using UnityEngine;
 
 namespace Sideloader
 {
+    [BepInDependency("com.bepis.bepinex.resourceredirector")]
+    [BepInDependency("com.bepis.bepinex.extendedsave")]
     [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.0")]
     public class Sideloader : BaseUnityPlugin
     {
