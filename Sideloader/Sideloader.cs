@@ -72,7 +72,7 @@ namespace Sideloader
         {
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.StartsWith("list/characustom") && entry.Name.EndsWith(".csv"))
+                if (entry.Name.StartsWith("abdata/list/characustom") && entry.Name.EndsWith(".csv"))
                 {
                     var stream = arc.GetInputStream(entry);
 
@@ -100,7 +100,7 @@ namespace Sideloader
 
         protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
-            string zipPath = $"{assetBundleName.Replace(".unity3d", "")}/{assetName}";
+            string zipPath = $"{manifestAssetBundleName}/{assetBundleName.Replace(".unity3d", "")}/{assetName}";
 
 
             if (type == typeof(Texture2D))
