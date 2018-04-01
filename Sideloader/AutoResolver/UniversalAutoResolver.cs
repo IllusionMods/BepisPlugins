@@ -114,45 +114,46 @@ namespace Sideloader.AutoResolver
         {
             LoadedResolutionInfo.Clear();
 
-            foreach (ChaListData data in Sideloader.LoadedData)
+            foreach (var manifestData in Sideloader.LoadedData)
             {
-
-
-                foreach (var kv in data.dictList)
+                foreach (var data in manifestData.Value)
                 {
-                    if (!StructReference.ChaFileFaceCategories.ContainsKey((ChaListDefine.CategoryNo)data.categoryNo))
+                    foreach (var kv in data.dictList)
                     {
-                        if ((ChaListDefine.CategoryNo)data.categoryNo == ChaListDefine.CategoryNo.mt_eye)
+                        if (!StructReference.ChaFileFaceCategories.ContainsKey((ChaListDefine.CategoryNo)data.categoryNo))
                         {
-                            var pupilInfo = new ResolveInfo
+                            if ((ChaListDefine.CategoryNo)data.categoryNo == ChaListDefine.CategoryNo.mt_eye)
                             {
-                                ModID = "test",
-                                Slot = int.Parse(kv.Value[0]),
-                                Property = "Pupil1"
-                            };
+                                var pupilInfo = new ResolveInfo
+                                {
+                                    ModID = manifestData.Key.GUID,
+                                    Slot = int.Parse(kv.Value[0]),
+                                    Property = "Pupil1"
+                                };
 
-                            LoadedResolutionInfo.Add(pupilInfo);
+                                LoadedResolutionInfo.Add(pupilInfo);
 
-                            pupilInfo = new ResolveInfo
-                            {
-                                ModID = "test",
-                                Slot = int.Parse(kv.Value[0]),
-                                Property = "Pupil2"
-                            };
-                            LoadedResolutionInfo.Add(pupilInfo);
+                                pupilInfo = new ResolveInfo
+                                {
+                                    ModID = manifestData.Key.GUID,
+                                    Slot = int.Parse(kv.Value[0]),
+                                    Property = "Pupil2"
+                                };
+                                LoadedResolutionInfo.Add(pupilInfo);
+                            }
+
+                            continue;
                         }
 
-                        continue;
+                        var info = new ResolveInfo
+                        {
+                            ModID = manifestData.Key.GUID,
+                            Slot = int.Parse(kv.Value[0]),
+                            Property = StructReference.ChaFileFaceCategories[(ChaListDefine.CategoryNo)data.categoryNo]
+                        };
+
+                        LoadedResolutionInfo.Add(info);
                     }
-
-                    var info = new ResolveInfo
-                    {
-                        ModID = "test",
-                        Slot = int.Parse(kv.Value[0]),
-                        Property = StructReference.ChaFileFaceCategories[(ChaListDefine.CategoryNo)data.categoryNo]
-                    };
-
-                    LoadedResolutionInfo.Add(info);
                 }
             }
         }

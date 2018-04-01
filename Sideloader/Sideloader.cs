@@ -23,7 +23,7 @@ namespace Sideloader
 
         protected Dictionary<string, AssetBundle> bundles = new Dictionary<string, AssetBundle>();
 
-        public static List<ChaListData> LoadedData = new List<ChaListData>();
+        public static Dictionary<Manifest, List<ChaListData>> LoadedData = new Dictionary<Manifest, List<ChaListData>>();
 
         public Sideloader()
         {
@@ -48,10 +48,19 @@ namespace Sideloader
             foreach (string archivePath in Directory.GetFiles(modDirectory, "*.zip"))
             {
                 var archive = new ZipFile(archivePath);
+
+                if (!Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                {
+                    BepInLogger.Log($"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
+                    continue;
+                }
                 
+                string name = manifest.Name ?? Path.GetFileName(archivePath);
+                BepInLogger.Log($"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
+
                 archives.Add(archive);
 
-                LoadAllLists(archive);
+                LoadAllLists(archive, manifest);
             }
 
             //add hook
@@ -59,7 +68,7 @@ namespace Sideloader
             AutoResolver.Hooks.InstallHooks();
         }
 
-        protected void LoadAllLists(ZipFile arc)
+        protected void LoadAllLists(ZipFile arc, Manifest manifest)
         {
             foreach (ZipEntry entry in arc)
             {
@@ -69,7 +78,15 @@ namespace Sideloader
 
                     var chaListData = ListLoader.LoadCSV(stream);
                     ListLoader.ExternalDataList.Add(chaListData);
-                    LoadedData.Add(chaListData);
+
+                    if (!LoadedData.ContainsKey(manifest))
+                    {
+                        LoadedData[manifest] = new List<ChaListData> { chaListData };
+                    }
+                    else
+                    {
+                        LoadedData[manifest].Add(chaListData);
+                    }
 
                     //int length = (int)entry.Size;
                     //byte[] buffer = new byte[length];

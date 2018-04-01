@@ -76,6 +76,7 @@
     <Compile Include="AutoResolver\ResolveInfo.cs" />
     <Compile Include="AutoResolver\StructReference.cs" />
     <Compile Include="AutoResolver\UniversalAutoResolver.cs" />
+    <Compile Include="Manifest.cs" />
     <Compile Include="Sideloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
