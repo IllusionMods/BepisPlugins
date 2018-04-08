@@ -64,13 +64,13 @@ namespace ColorCorrector
         #endregion
 
         #region UI 
-        private Rect UI = new Rect(20, 20, 200, 100);
+        private Rect UI = new Rect(20, 20, 300, 100);
         private bool showingUI = false;
 
         void OnGUI()
         {
             if (showingUI)
-                UI = GUI.Window(Name.GetHashCode() + 0, UI, WindowFunction, "Filter settings");
+                UI = GUI.Window("com.bepis.bepinex.colorcorrector".GetHashCode() + 0, UI, WindowFunction, "Post processing settings");
         }
 
         void WindowFunction(int windowID)
