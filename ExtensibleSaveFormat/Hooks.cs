@@ -3,97 +3,89 @@ using MessagePack;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace ExtensibleSaveFormat
 {
-    public static class Hooks
-    {
-        public static string Marker = "KKEx";
-        public static int Version = 2;
+	public static class Hooks
+	{
+		public static string Marker = "KKEx";
+		public static int Version = 2;
 
-        public static void InstallHooks()
-        {
-            var harmony = HarmonyInstance.Create("com.bepis.bepinex.extensiblesaveformat");
+		public static void InstallHooks()
+		{
+			var harmony = HarmonyInstance.Create("com.bepis.bepinex.extensiblesaveformat");
+			harmony.PatchAll(typeof(Hooks));
+		}
 
+		[HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", new[] { typeof(BinaryWriter), typeof(bool) })]
+		public static void SaveFileHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng)
+		{
+			if (!__result)
+				return;
 
-            MethodInfo original = AccessTools.Method(typeof(ChaFile), "SaveFile", new[] { typeof(BinaryWriter), typeof(bool) });
+			ExtendedSave.writeEvent(__instance);
 
-            HarmonyMethod postfix = new HarmonyMethod(typeof(Hooks).GetMethod("SaveFileHook"));
+			Dictionary<string, PluginData> extendedData = ExtendedSave.GetAllExtendedData(__instance);
+			if (extendedData == null)
+				return;
 
-            harmony.Patch(original, null, postfix);
+			byte[] bytes = MessagePackSerializer.Serialize(extendedData);
 
+			bw.Write(Marker);
+			bw.Write(Version);
+			foreach (KeyValuePair<string, PluginData> kv in extendedData)
+			{
+				PluginData dict = kv.Value as PluginData;
+			}
 
-            original = AccessTools.Method(typeof(ChaFile), "LoadFile", new[] { typeof(BinaryReader), typeof(bool), typeof(bool) });
+			bw.Write((int) bytes.Length);
+			bw.Write(bytes);
+		}
 
-            postfix = new HarmonyMethod(typeof(Hooks).GetMethod("LoadFileHook"));
+		[HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "LoadFile", new[] {typeof(BinaryReader), typeof(bool), typeof(bool)})]
+		public static void LoadFileHook(ChaFile __instance, bool __result, BinaryReader br, bool noLoadPNG, bool noLoadStatus)
+		{
+			Dictionary<string, PluginData> dictionary = null;
 
-            harmony.Patch(original, null, postfix);
-        }
+			if (!__result)
+				return;
 
-        public static void SaveFileHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng)
-        {
-            if (!__result)
-                return;
+			if (br.BaseStream.Position != br.BaseStream.Length)
+			{
+				try
+				{
+					string marker = br.ReadString();
+					int version = br.ReadInt32();
 
-            ExtendedSave.writeEvent(__instance);
+					if (marker == Marker && version == Version)
+					{
+						int length = br.ReadInt32();
 
-            Dictionary<string, PluginData> extendedData = ExtendedSave.GetAllExtendedData(__instance);
-            if (extendedData == null )
-                return;
+						if (length > 0)
+						{
+							byte[] bytes = br.ReadBytes(length);
+							dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+						}
+					}
+				}
+				catch (EndOfStreamException)
+				{
+					/* Incomplete/non-existant data */
+				}
+				catch (InvalidOperationException)
+				{
+					/* Invalid/unexpected deserialized data */
+				}
+			}
 
-            byte[] bytes = MessagePackSerializer.Serialize(extendedData);
+			if (dictionary == null)
+			{
+				//initialize a new dictionary since it doesn't exist
+				dictionary = new Dictionary<string, PluginData>();
+			}
 
-            bw.Write(Marker);
-            bw.Write(Version);
-            foreach (KeyValuePair<string, PluginData> kv in extendedData)
-            {
-                PluginData dict = kv.Value as PluginData;
-            }
-
-            bw.Write((int)bytes.Length);
-            bw.Write(bytes);
-        }
-
-        public static void LoadFileHook(ChaFile __instance, bool __result, BinaryReader br, bool noLoadPNG, bool noLoadStatus)
-        {
-            Dictionary<string, PluginData> dictionary = null;
-
-            if (!__result)
-                return;
-
-            if (br.BaseStream.Position != br.BaseStream.Length)
-            {
-                try
-                {
-                    string marker = br.ReadString();
-                    int version = br.ReadInt32();
-
-                    if (marker == Marker && version == Version)
-                    {
-                        int length = br.ReadInt32();
-
-                        if (length > 0)
-                        {
-                            byte[] bytes = br.ReadBytes(length);
-                            dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
-                        }
-                    }
-                }
-                catch (EndOfStreamException) { }
-                catch (InvalidOperationException) { /* Invalid/unexpected deserialized data */ }
-            }
-
-            if (dictionary == null)
-            {
-                //initialize a new dictionary since it doesn't exist
-                dictionary = new Dictionary<string, PluginData>();
-            }
-
-            ExtendedSave.internalDictionary.Set(__instance, dictionary);
-            ExtendedSave.readEvent(__instance);
-        }
-    }
+			ExtendedSave.internalDictionary.Set(__instance, dictionary);
+			ExtendedSave.readEvent(__instance);
+		}
+	}
 }
