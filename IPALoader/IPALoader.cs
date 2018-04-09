@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace IPALoader
 {
-	[BepInPlugin(GUID: "com.bepis.bepinex.ipapluginloader", Name: "IPA Plugin Loader", Version: "1.0.1")]
+	[BepInPlugin(GUID: "com.bepis.bepinex.ipapluginloader", Name: "IPA Plugin Loader", Version: "1.1")]
 	public class IPALoader : BaseUnityPlugin
 	{
 		public static GameObject IPAManagerObject { get; private set; }
@@ -23,7 +23,7 @@ namespace IPALoader
 			AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
 			{
 				if (args.Name == "IllusionPlugin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
-					return Assembly.Load(Properties.Resources.IllusionPlugin);
+					return Assembly.GetExecutingAssembly();
 				
 				return null;
 			};
