@@ -79,15 +79,19 @@ IF EXIST "$(TargetPath).mdb" ren "$(TargetPath).mdb" "$(TargetName).mdb"</PostBu
   </Target>
   <!-- ILRepack -->
   <Target Name="AfterBuild">
+    <Move SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFiles="$(OutputPath)\$(AssemblyName)1.dll" />
 	
     <ItemGroup>
+      <InputAssemblies Include="$(OutputPath)\$(AssemblyName)1.dll" />
       <InputAssemblies Include="$(OutputPath)\IllusionPlugin.dll" />
     </ItemGroup>
+    
 
     <ILRepack 
       Parallel="true"
       Internalize="true"
       DebugInfo="true"
+      PrimaryAssemblyFile="$(OutputPath)\$(AssemblyName)1.dll"
       InputAssemblies="@(InputAssemblies)"
       TargetKind="Dll"
       TargetPlatformVersion="v2"
