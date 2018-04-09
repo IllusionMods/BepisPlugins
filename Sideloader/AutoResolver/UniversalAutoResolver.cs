@@ -17,33 +17,33 @@ namespace Sideloader.AutoResolver
             if (LoadedResolutionInfo.Count == 0)
                 GenerateResolutionInfo();
 
-            BepInLogger.Log($"Tried to resolve structure: {structure.GetType().Name}");
+            //BepInLogger.Log($"Tried to resolve structure: {structure.GetType().Name}");
 
             var extData = ExtendedSave.GetExtendedDataById(save, UARExtID);
 
             if (extData == null || !extData.data.ContainsKey("info"))
             {
-                BepInLogger.Log($"No info to load!");
+                //BepInLogger.Log($"No info to load!");
                 return;
             }
 
             var obj = extData.data["info"];
 
 
-            BepInLogger.Log(obj.GetType().ToString());
+            //BepInLogger.Log(obj.GetType().ToString());
 
 
 
             var tmpExtInfo = (object[])extData.data["info"];
             var extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x));
 
-            BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
-            foreach (ResolveInfo info in LoadedResolutionInfo)
-                BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
+            //BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
+            //foreach (ResolveInfo info in LoadedResolutionInfo)
+            //    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
             
-            BepInLogger.Log($"External info count: {extInfo.Count()}");
-            foreach (ResolveInfo info in extInfo)
-                BepInLogger.Log($"External info: {info.ModID} : {info.Property} : {info.Slot}");
+            //BepInLogger.Log($"External info count: {extInfo.Count()}");
+            //foreach (ResolveInfo info in extInfo)
+            //    BepInLogger.Log($"External info: {info.ModID} : {info.Property} : {info.Slot}");
 
 
             foreach (var kv in propertyDict)
