@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using UnityEngine;
 
 namespace Sideloader
@@ -11,20 +12,33 @@ namespace Sideloader
     {
         public static Dictionary<string, Lazy<AssetBundle>> Bundles = new Dictionary<string, Lazy<AssetBundle>>();
 
-        private static System.Random random = new System.Random();
 
         public static string DummyPath => "list/characustom/00.unity3d";
+        
+        private static long CABCounter = 0;
 
         public static string GenerateCAB()
         {
-            const string validCharacters = "0123456789abcdef";
-
             StringBuilder sb = new StringBuilder("CAB-", 36);
 
-            for (int i = 0; i < 32; i++)
-                sb.Append(validCharacters[random.Next(0, 15)]);
+            sb.Append(Interlocked.Increment(ref CABCounter).ToString("x32"));
 
             return sb.ToString();
+        }
+
+        public static void RandomizeCAB(byte[] assetBundleData)
+        {
+            string ascii = Encoding.ASCII.GetString(assetBundleData, 0, 256);
+
+            int cabIndex = ascii.IndexOf("CAB-");
+
+            if (cabIndex < 0)
+                return;
+
+            string CAB = GenerateCAB();
+            byte[] cabBytes = Encoding.ASCII.GetBytes(CAB);
+
+            Buffer.BlockCopy(cabBytes, 0, assetBundleData, cabIndex, 36);
         }
 
         public static void AddBundleLoader(Func<AssetBundle> func, string path)

@@ -135,6 +135,8 @@ namespace Sideloader
 
                         stream.Read(buffer, 0, (int)entry.Size);
 
+                        BundleManager.RandomizeCAB(buffer);
+
                         return AssetBundle.LoadFromMemory(buffer);
                     };
 
