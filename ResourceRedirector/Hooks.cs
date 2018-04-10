@@ -36,12 +36,15 @@ namespace ResourceRedirector
 			ListLoader.LoadAllLists(__instance);
 		}
 
-		[HarmonyPostfix, HarmonyPatch(typeof(AssetBundleManager), "LoadAsset", new[] {typeof(string), typeof(string), typeof(Type), typeof(string)})]
-		public static void LoadAssetPostHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName, string assetName, Type type, string manifestAssetBundleName)
+		[HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAsset), new[] {typeof(string), typeof(string), typeof(Type), typeof(string)})]
+		public static bool LoadAssetPostHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName, string assetName, Type type, string manifestAssetBundleName)
 		{
-			//BepInLogger.Log($"{assetBundleName} : {assetName} : {type.FullName} : {manifestAssetBundleName ?? ""}");
+		    __result = ResourceRedirector.HandleAsset(assetBundleName, assetName, type, manifestAssetBundleName, ref __result);
 
-			__result = ResourceRedirector.HandleAsset(assetBundleName, assetName, type, manifestAssetBundleName, ref __result);
+            if (__result != null)
+		        return false;
+
+		    return true;
 		}
 
 		[HarmonyPostfix, HarmonyPatch(typeof(AssetBundleManager), "LoadAssetBundle", new[] {typeof(string), typeof(bool), typeof(string)})]

@@ -9,9 +9,7 @@ namespace Sideloader
 {
     public static class BundleManager
     {
-        private static Dictionary<string, Lazy<AssetBundle>> bundles = new Dictionary<string, Lazy<AssetBundle>>();
-
-        private static Dictionary<string, string> bundleIDs = new Dictionary<string, string>();
+        public static Dictionary<string, Lazy<AssetBundle>> Bundles = new Dictionary<string, Lazy<AssetBundle>>();
 
         private static System.Random random = new System.Random();
 
@@ -29,38 +27,31 @@ namespace Sideloader
             return sb.ToString();
         }
 
-        public static string CreateUniquePath(string uid, string filename)
+        public static void AddBundleLoader(Func<AssetBundle> func, string path)
         {
-            return $"{uid}-{filename}";
+            Bundles.Add(path, Lazy<AssetBundle>.Create(func));
         }
 
-        public static string CreateAndAddUID(Func<AssetBundle> func, string id = null)
+        public static bool TryGetObjectFromName<T>(string name, string assetBundle, out T obj) where T : UnityEngine.Object
         {
-            if (id == null)
-                id = GenerateCAB().Substring(4);
+            bool result =  TryGetObjectFromName(name, assetBundle, typeof(T), out UnityEngine.Object tObj);
 
-            bundles.Add(id, Lazy<AssetBundle>.Create(func));
+            obj = (T)tObj;
 
-            return id;
+            return result;
         }
 
-        public static bool TryGetObjectFromName(string name, out UnityEngine.Object obj)
+        public static bool TryGetObjectFromName(string name, string assetBundle, Type type, out UnityEngine.Object obj)
         {
             obj = null;
 
-            if (name.Count(x => x == '-') < 1)
-                return false;
-
-            string bundleID = name.Remove(name.IndexOf('-'));
-            string itemName = name.Remove(0, name.IndexOf('-') + 1);
-
-            if (bundles.TryGetValue(bundleID, out Lazy<AssetBundle> lazyBundle))
+            if (Bundles.TryGetValue(assetBundle, out Lazy<AssetBundle> lazyBundle))
             {
                 AssetBundle bundle = (AssetBundle)lazyBundle;
 
-                if (bundle.Contains(itemName))
+                if (bundle.Contains(name))
                 {
-                    obj = bundle.LoadAsset(itemName);
+                    obj = bundle.LoadAsset(name, type);
                     return true;
                 }
             }

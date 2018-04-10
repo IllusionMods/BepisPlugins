@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Shared;
 using UnityEngine;
 
 namespace Sideloader
@@ -17,7 +18,7 @@ namespace Sideloader
     [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.0")]
     public class Sideloader : BaseUnityPlugin
     {
-        protected List<ZipFile> archives = new List<ZipFile>();
+        protected List<ZipFile> Archives = new List<ZipFile>();
 
         protected List<ChaListData> lists = new List<ChaListData>();
 
@@ -27,15 +28,10 @@ namespace Sideloader
 
         public Sideloader()
         {
-            //only required for ILMerge
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-            {
-                if (args.Name == "I18N, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" ||
-                    args.Name == "I18N.West, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
-                    return Assembly.GetExecutingAssembly();
-                else
-                    return null;
-            };
+            //install hooks
+            Hooks.InstallHooks();
+            AutoResolver.Hooks.InstallHooks();
+            ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
 
             //check mods directory
             string modDirectory = Path.Combine(Utility.ExecutingDirectory, "mods");
@@ -58,14 +54,12 @@ namespace Sideloader
                 string name = manifest.Name ?? Path.GetFileName(archivePath);
                 BepInLogger.Log($"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
 
-                archives.Add(archive);
+                Archives.Add(archive);
+
+                LoadAllUnityArchives(archive);
 
                 LoadAllLists(archive, manifest);
             }
-
-            //add hook
-            ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
-            AutoResolver.Hooks.InstallHooks();
         }
 
         private void modifyList(ChaListData data, ZipFile arc, ZipEntry entry)
@@ -78,18 +72,18 @@ namespace Sideloader
 
                     if (item.EndsWith(".unity3d"))
                     {
-                        string uid = BundleManager.CreateAndAddUID(() => 
-                        {
-                            var stream = arc.GetInputStream(entry);
+                        //string uid = BundleManager.CreateAndAddUID(() => 
+                        //{
+                        //    var stream = arc.GetInputStream(entry);
 
-                            byte[] buffer = new byte[entry.Size];
+                        //    byte[] buffer = new byte[entry.Size];
 
-                            stream.Read(buffer, 0, (int)entry.Size);
+                        //    stream.Read(buffer, 0, (int)entry.Size);
 
-                            return AssetBundle.LoadFromMemory(buffer);
-                        });
+                        //    return AssetBundle.LoadFromMemory(buffer);
+                        //});
 
-                        kv.Value[i] = BundleManager.DummyPath;
+                        //kv.Value[i] = BundleManager.DummyPath;
 
                         //i++;
 
@@ -105,8 +99,6 @@ namespace Sideloader
             {
                 if (entry.Name.StartsWith("abdata/list/characustom") && entry.Name.EndsWith(".csv"))
                 {
-                    //BepInLogger.Log(entry.Name);
-
                     var stream = arc.GetInputStream(entry);
                     
                     var chaListData = ListLoader.LoadCSV(stream);
@@ -120,38 +112,51 @@ namespace Sideloader
                     {
                         LoadedData[manifest].Add(chaListData);
                     }
+                }
+            }
+        }
 
-                    //int length = (int)entry.Size;
-                    //byte[] buffer = new byte[length];
+        protected void LoadAllUnityArchives(ZipFile arc)
+        {
+            foreach (ZipEntry entry in arc)
+            {
+                if (entry.Name.EndsWith(".unity3d"))
+                {
+                    string assetBundlePath = entry.Name;
 
-                    //stream.Read(buffer, 0, length);
+                    if (assetBundlePath.Contains('/'))
+                        assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
 
-                    //string text = Encoding.UTF8.GetString(buffer);
+                    Func<AssetBundle> getBundleFunc = () =>
+                    {
+                        var stream = arc.GetInputStream(entry);
+
+                        byte[] buffer = new byte[entry.Size];
+
+                        stream.Read(buffer, 0, (int)entry.Size);
+
+                        return AssetBundle.LoadFromMemory(buffer);
+                    };
+
+                    BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath);
                 }
             }
         }
 
         protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
-            string zipPath = $"{manifestAssetBundleName}/{assetBundleName.Replace(".unity3d", "")}/{assetName}";
-
-            //if (zipPath.Contains("cw_t_hitomi_hi_u_9999"))
-            
+            string zipPath = $"{manifestAssetBundleName ?? "abdata"}/{assetBundleName.Replace(".unity3d", "")}/{assetName}";
 
             if (type == typeof(Texture2D))
             {
                 zipPath = $"{zipPath}.png";
 
-                //if (zipPath.Contains("cw_t_hitomi_hi_u_9999"))
-                //  BepInLogger.Log(zipPath);
-
-                foreach (var archive in archives)
+                foreach (var archive in Archives)
                 {
                     var entry = archive.GetEntry(zipPath);
 
                     if (entry != null)
                     {
-                        //BepInLogger.Log(entry.Name);
                         var stream = archive.GetInputStream(entry);
 
                         result = new AssetBundleLoadAssetOperationSimulation(ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size));
@@ -159,30 +164,8 @@ namespace Sideloader
                     }
                 }
             }
-            
-            //if (!bundles.ContainsKey(assetBundleName))
-            //{
-            //    foreach (var archive in archives)
-            //    {
-            //        var entry = archive.GetEntry(assetBundleName);
 
-            //        if (entry != null)
-            //        {
-            //            BepInLogger.Log("Found in " + archive.Name);
-            //            var stream = archive.GetInputStream(entry);
-
-            //            byte[] buffer = new byte[entry.Size];
-
-            //            stream.Read(buffer, 0, (int)entry.Size);
-
-            //            bundles[assetBundleName] = AssetBundle.LoadFromMemory(buffer);
-                        
-            //            //result = new AssetBundleLoadAssetOperationSimulation(ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size));
-            //        }
-            //    }
-            //}
-
-            if (BundleManager.TryGetObjectFromName(assetName, out UnityEngine.Object obj))
+            if (BundleManager.TryGetObjectFromName(assetName, assetBundleName, type, out UnityEngine.Object obj))
             {
                 result = new AssetBundleLoadAssetOperationSimulation(obj);
                     return true;

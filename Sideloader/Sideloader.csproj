@@ -76,6 +76,7 @@
     <Compile Include="AutoResolver\StructReference.cs" />
     <Compile Include="AutoResolver\UniversalAutoResolver.cs" />
     <Compile Include="BundleManager.cs" />
+    <Compile Include="Hooks.cs" />
     <Compile Include="Manifest.cs" />
     <Compile Include="Sideloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -114,25 +115,13 @@ IF EXIST "$(TargetPath).mdb" ren "$(TargetPath).mdb" "$(TargetName).mdb"</PostBu
   <!-- ILRepack -->
   <Target Name="AfterBuild">
     <Move SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFiles="$(OutputPath)\$(AssemblyName)1.dll" />
-
     <ItemGroup>
       <InputAssemblies Include="$(OutputPath)\$(AssemblyName)1.dll" />
       <InputAssemblies Include="$(OutputPath)\I18N.dll" />
       <InputAssemblies Include="$(OutputPath)\I18N.West.dll" />
       <InputAssemblies Include="$(OutputPath)\ICSharpCode.SharpZipLib.dll" />
     </ItemGroup>
-
-    <ILRepack 
-      Parallel="true" 
-      Internalize="true" 
-      DebugInfo="true" 
-      LibraryPath="..\lib"
-      PrimaryAssemblyFile="$(OutputPath)\$(AssemblyName)1.dll" 
-      InputAssemblies="@(InputAssemblies)" 
-      TargetKind="Dll" 
-      TargetPlatformVersion="v2" 
-      OutputFile="$(OutputPath)\$(AssemblyName).dll" />
-
+    <ILRepack Parallel="true" Internalize="true" DebugInfo="true" LibraryPath="..\lib" PrimaryAssemblyFile="$(OutputPath)\$(AssemblyName)1.dll" InputAssemblies="@(InputAssemblies)" TargetKind="Dll" TargetPlatformVersion="v2" OutputFile="$(OutputPath)\$(AssemblyName).dll" />
     <Delete Files="@(InputAssemblies)" />
   </Target>
   <!-- /ILRepack -->

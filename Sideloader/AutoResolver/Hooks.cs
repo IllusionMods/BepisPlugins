@@ -15,7 +15,7 @@ namespace Sideloader.AutoResolver
 			ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
 			ExtendedSave.CardBeingSaved += ExtendedCardSave;
 
-			var harmony = HarmonyInstance.Create(UniversalAutoResolver.UARExtID);
+			var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
 			harmony.PatchAll(typeof(Hooks));
 		}
 
@@ -58,29 +58,5 @@ namespace Sideloader.AutoResolver
 		{
 			lastLoadedInstance = __instance;
 		}
-
-		//[HarmonyPrefix, HarmonyPatch(typeof(UnityEngine.AssetBundle), "LoadFromFile", new[] { typeof(string) })]
-		//public static void TestHook(string path)
-		//{
-		//	BepInEx.BepInLogger.Log(path, true);
-
-		//	Console.WriteLine(Environment.StackTrace);
-		//}
-
-		[HarmonyPrefix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
-		public static void TestHook(string assetBundleName)
-		{
-			BepInEx.BepInLogger.Log(assetBundleName, true);
-
-			//Console.WriteLine(Environment.StackTrace);
-		}
-
-		//[HarmonyPrefix, HarmonyPatch(typeof(ChaControl), "ChangeClothesTopAsync")]
-		//public static void TestHook(int id)
-		//{
-		//	BepInEx.BepInLogger.Log(id.ToString(), true);
-
-		//	Console.WriteLine(Environment.StackTrace);
-		//}
 	}
 }
