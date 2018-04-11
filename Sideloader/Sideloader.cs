@@ -62,6 +62,22 @@ namespace Sideloader
             }
         }
 
+        protected void SetPossessNew(ChaListData data)
+        {
+            for (int i = 0; i < data.lstKey.Count; i++)
+            {
+                if (data.lstKey[i] == "Possess")
+                {
+                    foreach (var kv in data.dictList)
+                    {
+                        kv.Value[i] = "1";
+                    }
+                    break;
+                }
+            }
+            
+        }
+
         private void modifyList(ChaListData data, ZipFile arc, ZipEntry entry)
         {
             foreach (var kv in data.dictList)
@@ -102,6 +118,9 @@ namespace Sideloader
                     var stream = arc.GetInputStream(entry);
                     
                     var chaListData = ListLoader.LoadCSV(stream);
+
+                    SetPossessNew(chaListData);
+
                     ListLoader.ExternalDataList.Add(chaListData);
 
                     if (!LoadedData.ContainsKey(manifest))

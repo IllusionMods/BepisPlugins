@@ -15,6 +15,41 @@ namespace ResourceRedirector
 			harmony.PatchAll(typeof(Hooks));
 		}
 
+	    #region List Loading
+	    [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.CheckItemID), new [] { typeof(int), typeof(int) })]
+	    public static bool CheckItemIDHook(int category, int id, ref byte __result, ChaListControl __instance)
+	    {
+	        int pid = ListLoader.CalculateGlobalID(category, id);
+
+            byte result = __instance.CheckItemID(pid);
+
+	        if (result > 0)
+	        {
+	            //BepInLogger.Log($"CHECK {category} : {id} : {result}");
+	            __result = result;
+	            return false;
+	        }
+
+	        return true;
+	    }
+
+	    [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.AddItemID), new [] { typeof(int), typeof(int), typeof(byte) })]
+	    public static bool AddItemIDHook(int category, int id, byte flags, ChaListControl __instance)
+	    {
+	        int pid = ListLoader.CalculateGlobalID(category, id);
+
+	        byte result = __instance.CheckItemID(pid);
+
+	        if (result > 0)
+	        {
+                //BepInLogger.Log($"ADD {category} : {id} : {result}");
+	            __instance.AddItemID(pid, flags);
+	            return false;
+	        }
+
+	        return true;
+	    }
+
 		[HarmonyPostfix, HarmonyPatch(typeof(ChaListControl), "LoadListInfoAll")]
 		public static void LoadListInfoAllPostHook(ChaListControl __instance)
 		{
@@ -35,7 +70,9 @@ namespace ResourceRedirector
 
 			ListLoader.LoadAllLists(__instance);
 		}
+	    #endregion
 
+        #region Asset Loading
 		[HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAsset), new[] {typeof(string), typeof(string), typeof(Type), typeof(string)})]
 		public static bool LoadAssetPostHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName, string assetName, Type type, string manifestAssetBundleName)
 		{
@@ -88,5 +125,6 @@ namespace ResourceRedirector
 				__result = new AssetBundleLoadAssetOperationSimulation(loadedClips.ToArray());
 			}
 		}
+        #endregion
 	}
 }
