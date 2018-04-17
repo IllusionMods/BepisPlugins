@@ -74,6 +74,7 @@
     <Compile Include="AutoResolver\Hooks.cs" />
     <Compile Include="AutoResolver\ResolveInfo.cs" />
     <Compile Include="AutoResolver\StructReference.cs" />
+    <Compile Include="AutoResolver\StructValue.cs" />
     <Compile Include="AutoResolver\UniversalAutoResolver.cs" />
     <Compile Include="BundleManager.cs" />
     <Compile Include="Hooks.cs" />
