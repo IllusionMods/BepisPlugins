@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Shared;
+using Sideloader.AutoResolver;
 using UnityEngine;
 
 namespace Sideloader
@@ -22,9 +23,9 @@ namespace Sideloader
 
         protected List<ChaListData> lists = new List<ChaListData>();
 
-        
+        public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
 
-        public static Dictionary<Manifest, List<ChaListData>> LoadedData = new Dictionary<Manifest, List<ChaListData>>();
+
 
         public Sideloader()
         {
@@ -78,34 +79,15 @@ namespace Sideloader
             
         }
 
-        private void modifyList(ChaListData data, ZipFile arc, ZipEntry entry)
+        protected void IndexList(Manifest manifest, ChaListData data)
         {
-            foreach (var kv in data.dictList)
+            if (LoadedData.TryGetValue(manifest, out lists))
             {
-                for (int i = 0; i < kv.Value.Count; i++)
-                {
-                    string item = kv.Value[i];
-
-                    if (item.EndsWith(".unity3d"))
-                    {
-                        //string uid = BundleManager.CreateAndAddUID(() => 
-                        //{
-                        //    var stream = arc.GetInputStream(entry);
-
-                        //    byte[] buffer = new byte[entry.Size];
-
-                        //    stream.Read(buffer, 0, (int)entry.Size);
-
-                        //    return AssetBundle.LoadFromMemory(buffer);
-                        //});
-
-                        //kv.Value[i] = BundleManager.DummyPath;
-
-                        //i++;
-
-                        //kv.Value[i] = BundleManager.CreateUniquePath(uid)
-                    }
-                }
+                lists.Add(data);
+            }
+            else
+            {
+                LoadedData.Add(manifest, new List<ChaListData>(new [] { data } ));
             }
         }
 
@@ -120,16 +102,17 @@ namespace Sideloader
                     var chaListData = ListLoader.LoadCSV(stream);
 
                     SetPossessNew(chaListData);
+                    IndexList(manifest, chaListData);
 
                     ListLoader.ExternalDataList.Add(chaListData);
 
-                    if (!LoadedData.ContainsKey(manifest))
+                    if (LoadedData.TryGetValue(manifest, out lists))
                     {
-                        LoadedData[manifest] = new List<ChaListData> { chaListData };
+                        lists.Add(chaListData);
                     }
                     else
                     {
-                        LoadedData[manifest].Add(chaListData);
+                        LoadedData[manifest] = new List<ChaListData> { chaListData };
                     }
                 }
             }

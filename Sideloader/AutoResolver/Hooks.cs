@@ -30,19 +30,13 @@ namespace Sideloader.AutoResolver
 
 			foreach (var kv in StructReference.ChaFileFaceProperties)
 			{
-				var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key &&
-				                                                                          x.Slot == (int) kv.Value.GetValue(
-					                                                                          file.custom.face, null));
+			    int slot = kv.Value.GetMethod(file.custom.face);
+
+				var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
+				                                                                          x.Slot == slot);
+
+			    resolutionInfo.Add(info);
 			}
-
-			resolutionInfo.Add(UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Pupil1" &&
-			                                                                                  x.Slot == file.custom.face.pupil[0]
-				                                                                                  .id));
-			resolutionInfo.Add(UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Pupil2" &&
-			                                                                                  x.Slot == file.custom.face.pupil[1]
-				                                                                                  .id));
-
-
 
 			ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
 			{
