@@ -44,8 +44,10 @@ namespace ExtensibleSaveFormat
 
         public static PluginData GetExtendedDataById(ChaFile file, string id)
         {
-            PluginData extendedSection = null;
-            if (internalDictionary.Get(file).TryGetValue(id, out extendedSection))
+            if (file == null || id == null)
+                return null;
+
+            if (internalDictionary.Get(file).TryGetValue(id, out var extendedSection))
                 return extendedSection;
             return null;
         }

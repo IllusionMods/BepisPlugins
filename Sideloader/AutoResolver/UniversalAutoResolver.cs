@@ -3,6 +3,7 @@ using ExtensibleSaveFormat;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace Sideloader.AutoResolver
 {
@@ -14,9 +15,6 @@ namespace Sideloader.AutoResolver
 
         public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ChaFile save)
         {
-            if (LoadedResolutionInfo.Count == 0)
-                GenerateResolutionInfo();
-
             //BepInLogger.Log($"Tried to resolve structure: {structure.GetType().Name}");
 
             var extData = ExtendedSave.GetExtendedDataById(save, UARExtID);
@@ -27,20 +25,13 @@ namespace Sideloader.AutoResolver
                 return;
             }
 
-            var obj = extData.data["info"];
-
-
-            //BepInLogger.Log(obj.GetType().ToString());
-
-
-
             var tmpExtInfo = (object[])extData.data["info"];
             var extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x));
 
             //BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
             //foreach (ResolveInfo info in LoadedResolutionInfo)
             //    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
-            
+
             //BepInLogger.Log($"External info count: {extInfo.Count()}");
             //foreach (ResolveInfo info in extInfo)
             //    BepInLogger.Log($"External info: {info.ModID} : {info.Property} : {info.Slot}");
@@ -56,37 +47,48 @@ namespace Sideloader.AutoResolver
 
                     if (intResolve != null)
                     {
-                        BepInLogger.Log($"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.Slot}");
+                        BepInLogger.Log($"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
 
-                        kv.Value.SetMethod(structure, intResolve.Slot);
+                        kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
                 }
             }
         }
+        
+        private static int CurrentSlotID = 10000;
 
-        public static void GenerateResolutionInfo()
+        public static void GenerateResolutionInfo(Manifest manifest, ChaListData data)
         {
-            LoadedResolutionInfo.Clear();
+            var category = (ChaListDefine.CategoryNo)data.categoryNo;
 
-            foreach (var manifestData in Sideloader.LoadedData)
+            var properties = StructReference.CollatedStructValues.Where(x => x.Key.Category == category);
+
+            //BepInEx.BepInLogger.Log(category.ToString());
+            //BepInEx.BepInLogger.Log(StructReference.CollatedStructValues.Count.ToString());
+
+
+            foreach (var kv in data.dictList)
             {
-                foreach (var data in manifestData.Value)
-                {
-                    var category = (ChaListDefine.CategoryNo)data.categoryNo;
+                int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                    foreach (var property in StructReference.CollatedStructValues.Where(x => x.Key.Category == category))
+                // BepInEx.BepInLogger.Log(kv.Value[0] + " | " + newSlot);
+
+                foreach (var property in properties)
+                {
+                    // BepInEx.BepInLogger.Log(property.Key.ToString());
+
+                    LoadedResolutionInfo.Add(new ResolveInfo
                     {
-                        foreach (var kv in data.dictList)
-                        {
-                            LoadedResolutionInfo.Add(new ResolveInfo
-                            {
-                                ModID = manifestData.Key.GUID,
-                                Slot = int.Parse(kv.Value[0]),
-                                Property = property.Key.ToString()
-                            });
-                        }
-                    }
+                        ModID = manifest.GUID,
+                        Slot = int.Parse(kv.Value[0]),
+                        LocalSlot = newSlot,
+                        Property = property.Key.ToString()
+                    });
+                    
+                    // BepInEx.BepInLogger.Log($"LOADED COUNT {LoadedResolutionInfo.Count}");
                 }
+
+                kv.Value[0] = newSlot.ToString();
             }
         }
     }

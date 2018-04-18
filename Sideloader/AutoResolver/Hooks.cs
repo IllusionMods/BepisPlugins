@@ -21,28 +21,48 @@ namespace Sideloader.AutoResolver
 
 		private static void ExtendedCardLoad(ChaFile file)
 		{
-			UniversalAutoResolver.ResolveStructure(StructReference.ChaFileFaceProperties, lastLoadedInstance.face, file);
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileFaceProperties, lastLoadedInstance.face, file);
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileBodyProperties, lastLoadedInstance.body, file);
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileHairProperties, lastLoadedInstance.hair, file);
 		}
 
 		private static void ExtendedCardSave(ChaFile file)
 		{
 			List<ResolveInfo> resolutionInfo = new List<ResolveInfo>();
 
-			foreach (var kv in StructReference.ChaFileFaceProperties)
-			{
-			    int slot = kv.Value.GetMethod(file.custom.face);
+		    void IterateStruct(object obj, Dictionary<CategoryProperty, StructValue<int>> dict)
+		    {
+		        foreach (var kv in dict)
+		        {
+		            int slot = kv.Value.GetMethod(obj);
 
-				var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
-				                                                                          x.Slot == slot);
+		            var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
+		                                                                                      x.LocalSlot == slot);
 
-			    resolutionInfo.Add(info);
-			}
+		            if (info != null)
+		            {
+		                kv.Value.SetMethod(obj, info.Slot);
+
+		                resolutionInfo.Add(info);
+		            }
+		        }
+		    }
+            
+		    IterateStruct(file.custom.face, StructReference.ChaFileFaceProperties);
+		    IterateStruct(file.custom.body, StructReference.ChaFileBodyProperties);
+		    IterateStruct(file.custom.hair, StructReference.ChaFileHairProperties);
+
+		    //foreach (var coordinate in file.coordinate)
+		    //{
+		    //    IterateStruct(file.coordinate., StructReference.ChaFileFaceProperties);
+		    //    IterateStruct(file.custom.face, StructReference.ChaFileFaceProperties);
+		    //}
 
 			ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
 			{
 				data = new Dictionary<string, object>
 				{
-					{"info", resolutionInfo.Where(x => x != null).Select(x => x.Serialize()).ToList()}
+					{"info", resolutionInfo.Select(x => x.Serialize()).ToList()}
 				}
 			});
 		}

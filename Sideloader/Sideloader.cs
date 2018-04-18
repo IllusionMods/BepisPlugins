@@ -76,7 +76,6 @@ namespace Sideloader
                     break;
                 }
             }
-            
         }
 
         protected void IndexList(Manifest manifest, ChaListData data)
@@ -102,6 +101,7 @@ namespace Sideloader
                     var chaListData = ListLoader.LoadCSV(stream);
 
                     SetPossessNew(chaListData);
+                    UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData);
                     IndexList(manifest, chaListData);
 
                     ListLoader.ExternalDataList.Add(chaListData);
