@@ -1,23 +1,22 @@
 ﻿using alphaShot;
 using BepInEx;
-using BepInEx.Common;
 using Illusion.Game;
 using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Screencap
 {
     [BepInPlugin(GUID: "com.bepis.bepinex.screenshotmanager", Name: "Screenshot Manager", Version: "2.1")]
     public class ScreenshotManager : BaseUnityPlugin
     {
-        Event ScreenKeyEvent = Event.KeyboardEvent("f9");
-        Event CharacterKeyEvent = Event.KeyboardEvent("f11");
-        Event CharacterSettingsKeyEvent = Event.KeyboardEvent("#f11");
-        
+        private string screenshotDir = Path.Combine(Application.dataPath, "..\\UserData\\cap\\");
+        private AlphaShot2 as2 = null;
 
-        private string screenshotDir = Utility.CombinePaths(Utility.ExecutingDirectory, "UserData", "cap");
+        private KeyCode CK_Capture = KeyCode.F9;
+        private KeyCode CK_CaptureAlpha = KeyCode.F11;
 
         #region Config properties
 
@@ -32,12 +31,6 @@ namespace Screencap
             get => int.Parse(this.GetEntry("resolution-y", "1024"));
             set => this.SetEntry("resolution-y", value.ToString());
         }
-        
-        private int AntiAliasing
-        {
-            get => int.Parse(this.GetEntry("antialiasing", "4"));
-            set => this.SetEntry("antialiasing", value.ToString());
-        }
 
         private int DownscalingRate
         {
@@ -45,46 +38,41 @@ namespace Screencap
             set => this.SetEntry("downscalerate", value.ToString());
         }
 
-        private int RenderMethod
-        {
-            get => int.Parse(this.GetEntry("rendermethod", "0"));
-            set => this.SetEntry("rendermethod", value.ToString());
-        }
-
         #endregion
 
+        private string filename => Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}.png");
 
         void Awake()
         {
+            SceneManager.sceneLoaded += (s, a) => Install();
+            Install();
+
             if (!Directory.Exists(screenshotDir))
                 Directory.CreateDirectory(screenshotDir);
 
             Hooks.InstallHooks();
         }
 
-        void Update()
+        private void Install()
         {
-            if (UnityEngine.Event.current.Equals(CharacterSettingsKeyEvent))
-            {
-                showingUI = !showingUI;
-            }
-            else if (UnityEngine.Event.current.Equals(ScreenKeyEvent))
-            {
-                string filename = Path.Combine(screenshotDir, $"Koikatsu -{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}.png");
-                StartCoroutine(TakeScreenshot(filename));
-            }
-            else if (UnityEngine.Event.current.Equals(CharacterKeyEvent))
-            {
-                string filename = Path.Combine(screenshotDir, $"Koikatsu Char-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}.png");
-                TakeCharScreenshot(filename);
-            }
+            if (!Camera.main || !Camera.main.gameObject) return;
+            as2 = Camera.main.gameObject.AddComponent<AlphaShot2>();
         }
 
+        void Update()
+        {
+            if(Input.GetKeyDown(CK_CaptureAlpha))
+            {
+                if (Input.GetKey(KeyCode.LeftShift)) showingUI = !showingUI;
+                else TakeCharScreenshot();
+            }
+            if (Input.GetKeyDown(CK_Capture)) StartCoroutine(TakeScreenshot());
+        }
 
-        IEnumerator TakeScreenshot(string filename)
+        IEnumerator TakeScreenshot()
         {
             Application.CaptureScreenshot(filename);
-            Illusion.Game.Utils.Sound.Play(SystemSE.photo);
+            Utils.Sound.Play(SystemSE.photo);
 
             while (!File.Exists(filename))
                 yield return new WaitForSeconds(0.01f);
@@ -92,22 +80,11 @@ namespace Screencap
             BepInLogger.Log($"Screenshot saved to {filename}", true);
         }
 
-        void TakeCharScreenshot(string filename)
+        void TakeCharScreenshot()
         {
-            GC.Collect();
+            File.WriteAllBytes(filename, as2.Capture(ResolutionX, ResolutionY, DownscalingRate));
 
-            switch (RenderMethod)
-            {
-                case 0: //legacy
-                default:
-                    File.WriteAllBytes(filename, LegacyRenderer.RenderCamera(ResolutionX, ResolutionY, DownscalingRate, AntiAliasing));
-                    break;
-                case 1: //alphashot
-                    File.WriteAllBytes(filename, AlphaShot2.Capture(ResolutionX, ResolutionY, DownscalingRate, AntiAliasing));
-                    break;
-            }
-
-            Illusion.Game.Utils.Sound.Play(SystemSE.photo);
+            Utils.Sound.Play(SystemSE.photo);
             BepInLogger.Log($"Character screenshot saved to {filename}", true);
 
             GC.Collect();
@@ -115,7 +92,7 @@ namespace Screencap
 
 
         #region UI
-        private Rect UI = new Rect(20, 20, 160, 250);
+        private Rect UI = new Rect(20, 20, 160, 140);
         private bool showingUI = false;
 
         void OnGUI()
@@ -173,41 +150,6 @@ namespace Screencap
             });
 
 
-            GUI.Label(new Rect(0, 130, 160, 20), "Antialiasing", new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white
-                }
-            });
-
-
-            int antia = (int)Math.Round(GUI.HorizontalSlider(new Rect(10, 153, 120, 20), AntiAliasing, 1, 16));
-
-            GUI.Label(new Rect(0, 150, 154, 20), $"{antia}x", new GUIStyle
-            {
-                alignment = TextAnchor.UpperRight,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white
-                }
-            });
-
-
-            GUI.Label(new Rect(0, 170, 160, 20), "Render method", new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white
-                }
-            });
-
-            int renderMethod = GUI.SelectionGrid(new Rect(10, 190, 140, 50), RenderMethod, new[] { "Legacy", "AlphaShot2" }, 1);
-
-
-
             if (GUI.changed)
             {
                 BepInEx.Config.SaveOnConfigSet = false;
@@ -225,8 +167,6 @@ namespace Screencap
                 }
 
                 DownscalingRate = downscale;
-                AntiAliasing = antia;
-                RenderMethod = renderMethod;
 
                 BepInEx.Config.SaveOnConfigSet = true;
                 BepInEx.Config.SaveConfig();

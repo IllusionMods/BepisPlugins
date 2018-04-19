@@ -39,6 +39,10 @@
       <HintPath>..\lib\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\lib\BepInEx.dll</HintPath>
       <Private>False</Private>
@@ -57,8 +61,10 @@
   <ItemGroup>
     <Compile Include="Hooks.cs" />
     <Compile Include="Renderers\AlphaShot2.cs" />
-    <Compile Include="CameraUtils.cs" />
-    <Compile Include="Renderers\LegacyRenderer.cs" />
+    <Compile Include="Scaling\Lanczos.cs" />
+    <Compile Include="Scaling\ScaleImage.cs" />
+    <Compile Include="Scaling\ScaleUnityTexture.cs" />
+    <Compile Include="Scaling\SColor.cs" />
     <Compile Include="ScreenshotManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
