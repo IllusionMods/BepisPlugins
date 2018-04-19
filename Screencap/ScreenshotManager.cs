@@ -20,22 +20,28 @@ namespace Screencap
 
         #region Config properties
 
-        private int ResolutionX
+        public int ResolutionX
         {
             get => int.Parse(this.GetEntry("resolution-x", "1024"));
             set => this.SetEntry("resolution-x", value.ToString());
         }
 
-        private int ResolutionY
+        public int ResolutionY
         {
             get => int.Parse(this.GetEntry("resolution-y", "1024"));
             set => this.SetEntry("resolution-y", value.ToString());
         }
 
-        private int DownscalingRate
+        public int DownscalingRate
         {
             get => int.Parse(this.GetEntry("downscalerate", "1"));
             set => this.SetEntry("downscalerate", value.ToString());
+        }
+
+        public int CardDownscalingRate
+        {
+            get => int.Parse(this.GetEntry("carddownscalerate", "1"));
+            set => this.SetEntry("carddownscalerate", value.ToString());
         }
 
         #endregion
@@ -92,7 +98,7 @@ namespace Screencap
 
 
         #region UI
-        private Rect UI = new Rect(20, 20, 160, 140);
+        private Rect UI = new Rect(20, 20, 160, 200);
         private bool showingUI = false;
 
         void OnGUI()
@@ -150,6 +156,28 @@ namespace Screencap
             });
 
 
+            GUI.Label(new Rect(0, 130, 160, 20), "Card downscaling rate", new GUIStyle
+            {
+                alignment = TextAnchor.MiddleCenter,
+                normal = new GUIStyleState
+                {
+                    textColor = Color.white
+                }
+            });
+
+
+            int carddownscale = (int)Math.Round(GUI.HorizontalSlider(new Rect(10, 153, 120, 20), CardDownscalingRate, 1, 4));
+
+            GUI.Label(new Rect(0, 150, 150, 20), $"{carddownscale}x", new GUIStyle
+            {
+                alignment = TextAnchor.UpperRight,
+                normal = new GUIStyleState
+                {
+                    textColor = Color.white
+                }
+            });
+
+
             if (GUI.changed)
             {
                 BepInEx.Config.SaveOnConfigSet = false;
@@ -167,6 +195,8 @@ namespace Screencap
                 }
 
                 DownscalingRate = downscale;
+
+                CardDownscalingRate = carddownscale;
 
                 BepInEx.Config.SaveOnConfigSet = true;
                 BepInEx.Config.SaveConfig();
