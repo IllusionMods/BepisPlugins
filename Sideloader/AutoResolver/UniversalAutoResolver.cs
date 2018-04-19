@@ -55,7 +55,7 @@ namespace Sideloader.AutoResolver
             }
         }
         
-        private static int CurrentSlotID = 10000;
+        private static int CurrentSlotID = 100000000;
 
         public static void GenerateResolutionInfo(Manifest manifest, ChaListData data)
         {
