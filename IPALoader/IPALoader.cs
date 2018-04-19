@@ -1,94 +1,86 @@
 ﻿using BepInEx;
 using BepInEx.Common;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using IllusionPlugin;
 using UnityEngine;
 
 namespace IPALoader
 {
-    public class IPALoader : BaseUnityPlugin
-    {
-        public override string ID => "com.bepis.bepinex.resourceredirector";
+	[BepInPlugin(GUID: "com.bepis.bepinex.ipapluginloader", Name: "IPA Plugin Loader", Version: "1.1")]
+	public class IPALoader : BaseUnityPlugin
+	{
+		public static GameObject IPAManagerObject { get; private set; }
 
-        public override string Name => "IPA Plugin Loader";
+		internal static IPlugin pluginToLoad;
 
-        public override Version Version => new Version("1.0");
+		public string IPAPluginDir => Path.Combine(Utility.PluginsDirectory, "IPA");
 
-        public static GameObject IPAManagerObject { get; private set; }
+		public IPALoader()
+		{
+			//only required for ILMerge
+			AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+			{
+				if (args.Name == "IllusionPlugin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
+					return Assembly.GetExecutingAssembly();
+				
+				return null;
+			};
+		}
 
-        internal static IPlugin pluginToLoad;
+		void Start()
+		{
+			if (!Directory.Exists(IPAPluginDir))
+			{
+				BepInLogger.Log("No IPA plugin directory, skipping load");
+				return;
+			}
 
-        public string IPAPluginDir => Path.Combine(Utility.PluginsDirectory, "IPA");
+			if (IPAManagerObject != null)
+				Destroy(IPAManagerObject);
 
-        public IPALoader()
-        {
-            //only required for ILMerge
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-            {
-                if (args.Name == "IllusionPlugin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
-                    return Assembly.GetExecutingAssembly();
-                else
-                    return null;
-            };
-        }
+			IPAManagerObject = new GameObject("IPA_Manager");
 
-        void Start()
-        {
-            if (!Directory.Exists(IPAPluginDir))
-            {
-                BepInLogger.Log("No IPA plugin directory, skipping load");
-                return;
-            }
+			DontDestroyOnLoad(IPAManagerObject);
+			IPAManagerObject.SetActive(false);
 
-            if (IPAManagerObject != null)
-                Destroy(IPAManagerObject);
+			BepInLogger.Log("Loading IPA plugins");
 
-            IPAManagerObject = new GameObject("IPA_Manager");
+			foreach (string path in Directory.GetFiles(IPAPluginDir, "*.dll"))
+			{
+				try
+				{
+					var assembly = Assembly.LoadFile(path);
 
-            DontDestroyOnLoad(IPAManagerObject);
-            IPAManagerObject.SetActive(false);
+					foreach (Type t in assembly.GetTypes())
+					{
+						if (t.IsAbstract || t.IsInterface)
+							continue;
 
-            BepInLogger.Log("Loading IPA plugins");
+						if (t.Name == "CompositePlugin")
+							continue;
 
-            foreach (string path in Directory.GetFiles(IPAPluginDir, "*.dll"))
-            {
-                try
-                {
-                    var assembly = Assembly.LoadFile(path);
+						if (typeof(IPlugin).IsAssignableFrom(t))
+						{
+							pluginToLoad = (IPlugin) Activator.CreateInstance(t);
 
-                    foreach (Type t in assembly.GetTypes())
-                    {
-                        if (t.IsAbstract || t.IsInterface)
-                            continue;
+							Component c = Chainloader.ManagerObject.AddComponent<IPAPlugin>();
 
-                        if (t.Name == "CompositePlugin")
-                            continue;
+							BepInLogger.Log($"Loaded IPA plugin [{pluginToLoad.Name}]");
 
-                        if (typeof(IPlugin).IsAssignableFrom(t))
-                        {
-                            pluginToLoad = (IPlugin)Activator.CreateInstance(t);
+							pluginToLoad = null;
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					BepInLogger.Log($"Error loading IPA plugin {Path.GetFileName(path)}");
+					BepInLogger.Log(ex.ToString());
+				}
+			}
 
-                            Component c = Chainloader.ManagerObject.AddComponent<IPAPlugin>();
-
-                            BepInLogger.Log($"Loaded IPA plugin [{pluginToLoad.Name}]");
-
-                            pluginToLoad = null;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    BepInLogger.Log($"Error loading IPA plugin {Path.GetFileName(path)}");
-                    BepInLogger.Log(ex.ToString());
-                }
-            }
-
-            IPAManagerObject.SetActive(true);
-        }
-    }
+			IPAManagerObject.SetActive(true);
+		}
+	}
 }

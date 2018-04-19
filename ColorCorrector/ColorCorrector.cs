@@ -6,12 +6,9 @@ using UnityStandardAssets.ImageEffects;
 
 namespace ColorCorrector
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.colorcorrector", Name: "Color Filter Remover", Version: "1.2")]
     public class ColorCorrector : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.colorcorrector";
-        public override string Name => "Color Filter Remover";
-        public override Version Version => new Version("1.2");
-
         #region Config properties
         private ConfigWrapper<bool> SaturationEnabled { get; set; }
         private ConfigWrapper<float> BloomStrength { get; set; }
@@ -67,13 +64,13 @@ namespace ColorCorrector
         #endregion
 
         #region UI 
-        private Rect UI = new Rect(20, 20, 200, 100);
+        private Rect UI = new Rect(20, 20, 300, 100);
         private bool showingUI = false;
 
         void OnGUI()
         {
             if (showingUI)
-                UI = GUI.Window(Name.GetHashCode() + 0, UI, WindowFunction, "Filter settings");
+                UI = GUI.Window("com.bepis.bepinex.colorcorrector".GetHashCode() + 0, UI, WindowFunction, "Post processing settings");
         }
 
         void WindowFunction(int windowID)

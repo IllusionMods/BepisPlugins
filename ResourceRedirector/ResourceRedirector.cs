@@ -7,12 +7,9 @@ using UnityEngine;
 
 namespace ResourceRedirector
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.resourceredirector", Name: "Asset Emulator", Version: "1.3")]
     public class ResourceRedirector : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.resourceredirector";
-        public override string Name => "Asset Emulator";
-        public override Version Version => new Version("1.3");
-
         public static string EmulatedDir => Path.Combine(Utility.ExecutingDirectory, "abdata-emulated");
 
         public static bool EmulationEnabled;

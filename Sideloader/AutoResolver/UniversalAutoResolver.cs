@@ -3,6 +3,7 @@ using ExtensibleSaveFormat;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace Sideloader.AutoResolver
 {
@@ -12,43 +13,33 @@ namespace Sideloader.AutoResolver
 
         public static List<ResolveInfo> LoadedResolutionInfo = new List<ResolveInfo>();
 
-        public static void ResolveStructure(Dictionary<string, PropertyInfo> propertyDict, object structure, ChaFile save)
+        public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ChaFile save)
         {
-            if (LoadedResolutionInfo.Count == 0)
-                GenerateResolutionInfo();
-
-            BepInLogger.Log($"Tried to resolve structure: {structure.GetType().Name}");
+            //BepInLogger.Log($"Tried to resolve structure: {structure.GetType().Name}");
 
             var extData = ExtendedSave.GetExtendedDataById(save, UARExtID);
 
             if (extData == null || !extData.data.ContainsKey("info"))
             {
-                BepInLogger.Log($"No info to load!");
+                //BepInLogger.Log($"No info to load!");
                 return;
             }
-
-            var obj = extData.data["info"];
-
-
-            BepInLogger.Log(obj.GetType().ToString());
-
-
 
             var tmpExtInfo = (object[])extData.data["info"];
             var extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x));
 
-            BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
-            foreach (ResolveInfo info in LoadedResolutionInfo)
-                BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
-            
-            BepInLogger.Log($"External info count: {extInfo.Count()}");
-            foreach (ResolveInfo info in extInfo)
-                BepInLogger.Log($"External info: {info.ModID} : {info.Property} : {info.Slot}");
+            //BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
+            //foreach (ResolveInfo info in LoadedResolutionInfo)
+            //    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
+
+            //BepInLogger.Log($"External info count: {extInfo.Count()}");
+            //foreach (ResolveInfo info in extInfo)
+            //    BepInLogger.Log($"External info: {info.ModID} : {info.Property} : {info.Slot}");
 
 
             foreach (var kv in propertyDict)
             {
-                var extResolve = extInfo.FirstOrDefault(x => x.Property == kv.Key);
+                var extResolve = extInfo.FirstOrDefault(x => x.Property == kv.Key.ToString());
 
                 if (extResolve != null)
                 {
@@ -56,104 +47,48 @@ namespace Sideloader.AutoResolver
 
                     if (intResolve != null)
                     {
-                        BepInLogger.Log($"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.Slot}");
+                        BepInLogger.Log($"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
 
-                        kv.Value.SetValue(structure, intResolve.Slot, null);
+                        kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
                 }
             }
-
-            specialCasingResolve(structure, extInfo);
         }
+        
+        private static int CurrentSlotID = 100000000;
 
-        private static bool specialCasingResolve(object structure, IEnumerable<ResolveInfo> extInfo)
+        public static void GenerateResolutionInfo(Manifest manifest, ChaListData data)
         {
-            if (structure is ChaFileFace)
+            var category = (ChaListDefine.CategoryNo)data.categoryNo;
+
+            var properties = StructReference.CollatedStructValues.Where(x => x.Key.Category == category);
+
+            //BepInEx.BepInLogger.Log(category.ToString());
+            //BepInEx.BepInLogger.Log(StructReference.CollatedStructValues.Count.ToString());
+
+
+            foreach (var kv in data.dictList)
             {
-                ChaFileFace face = (ChaFileFace)structure;
+                int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                ResolveInfo extResolve;
-                ResolveInfo intResolve;
+                // BepInEx.BepInLogger.Log(kv.Value[0] + " | " + newSlot);
 
-                extResolve = extInfo.FirstOrDefault(x => x.Property == "Pupil1");
-                if (extResolve != null)
+                foreach (var property in properties)
                 {
-                    intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.CanResolve(extResolve));
+                    // BepInEx.BepInLogger.Log(property.Key.ToString());
 
-                    if (intResolve != null)
+                    LoadedResolutionInfo.Add(new ResolveInfo
                     {
-                        BepInLogger.Log($"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.Slot}");
-
-                        face.pupil[0].id = intResolve.Slot;
-                    }
-                }
-                extResolve = null;
-                
-                
-                extResolve = extInfo.FirstOrDefault(x => x.Property == "Pupil2");
-                if (extResolve != null)
-                {
-                    intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.CanResolve(extResolve));
-
-                    if (intResolve != null)
-                    {
-                        BepInLogger.Log($"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.Slot}");
-
-                        face.pupil[1].id = intResolve.Slot;
-                    }
-                }
-                extResolve = null;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public static void GenerateResolutionInfo()
-        {
-            LoadedResolutionInfo.Clear();
-
-            foreach (ChaListData data in Sideloader.LoadedData)
-            {
-
-
-                foreach (var kv in data.dictList)
-                {
-                    if (!StructReference.ChaFileFaceCategories.ContainsKey((ChaListDefine.CategoryNo)data.categoryNo))
-                    {
-                        if ((ChaListDefine.CategoryNo)data.categoryNo == ChaListDefine.CategoryNo.mt_eye)
-                        {
-                            var pupilInfo = new ResolveInfo
-                            {
-                                ModID = "test",
-                                Slot = int.Parse(kv.Value[0]),
-                                Property = "Pupil1"
-                            };
-
-                            LoadedResolutionInfo.Add(pupilInfo);
-
-                            pupilInfo = new ResolveInfo
-                            {
-                                ModID = "test",
-                                Slot = int.Parse(kv.Value[0]),
-                                Property = "Pupil2"
-                            };
-                            LoadedResolutionInfo.Add(pupilInfo);
-                        }
-
-                        continue;
-                    }
-
-                    var info = new ResolveInfo
-                    {
-                        ModID = "test",
+                        ModID = manifest.GUID,
                         Slot = int.Parse(kv.Value[0]),
-                        Property = StructReference.ChaFileFaceCategories[(ChaListDefine.CategoryNo)data.categoryNo]
-                    };
-
-                    LoadedResolutionInfo.Add(info);
+                        LocalSlot = newSlot,
+                        Property = property.Key.ToString()
+                    });
+                    
+                    // BepInEx.BepInLogger.Log($"LOADED COUNT {LoadedResolutionInfo.Count}");
                 }
+
+                kv.Value[0] = newSlot.ToString();
             }
         }
     }

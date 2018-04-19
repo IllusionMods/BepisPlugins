@@ -8,35 +8,41 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Shared;
+using Sideloader.AutoResolver;
 using UnityEngine;
 
 namespace Sideloader
 {
+    [BepInDependency("com.bepis.bepinex.resourceredirector")]
+    [BepInDependency("com.bepis.bepinex.extendedsave")]
+    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.0")]
     public class Sideloader : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.sideloader";
-        public override string Name => "Mod Sideloader";
-        public override Version Version => new Version("1.0");
-
-        protected List<ZipFile> archives = new List<ZipFile>();
+        protected List<ZipFile> Archives = new List<ZipFile>();
 
         protected List<ChaListData> lists = new List<ChaListData>();
 
-        protected Dictionary<string, AssetBundle> bundles = new Dictionary<string, AssetBundle>();
+        public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
 
-        public static List<ChaListData> LoadedData = new List<ChaListData>();
+
 
         public Sideloader()
         {
-            //only required for ILMerge
+            //ilmerge
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {
-                if (args.Name == "I18N, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" ||
-                    args.Name == "I18N.West, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
+                if (args.Name == "I18N, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756"
+                 || args.Name == "I18N.West, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
                     return Assembly.GetExecutingAssembly();
-                else
-                    return null;
+
+                return null;
             };
+
+            //install hooks
+            Hooks.InstallHooks();
+            AutoResolver.Hooks.InstallHooks();
+            ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
 
             //check mods directory
             string modDirectory = Path.Combine(Utility.ExecutingDirectory, "mods");
@@ -49,49 +55,117 @@ namespace Sideloader
             foreach (string archivePath in Directory.GetFiles(modDirectory, "*.zip"))
             {
                 var archive = new ZipFile(archivePath);
+
+                if (!Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                {
+                    BepInLogger.Log($"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
+                    continue;
+                }
                 
-                archives.Add(archive);
+                string name = manifest.Name ?? Path.GetFileName(archivePath);
+                BepInLogger.Log($"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
 
-                LoadAllLists(archive);
+                Archives.Add(archive);
+
+                LoadAllUnityArchives(archive);
+
+                LoadAllLists(archive, manifest);
             }
-
-            //add hook
-            ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
-            AutoResolver.Hooks.InstallHooks();
         }
 
-        protected void LoadAllLists(ZipFile arc)
+        protected void SetPossessNew(ChaListData data)
+        {
+            for (int i = 0; i < data.lstKey.Count; i++)
+            {
+                if (data.lstKey[i] == "Possess")
+                {
+                    foreach (var kv in data.dictList)
+                    {
+                        kv.Value[i] = "1";
+                    }
+                    break;
+                }
+            }
+        }
+
+        protected void IndexList(Manifest manifest, ChaListData data)
+        {
+            if (LoadedData.TryGetValue(manifest, out lists))
+            {
+                lists.Add(data);
+            }
+            else
+            {
+                LoadedData.Add(manifest, new List<ChaListData>(new [] { data } ));
+            }
+        }
+
+        protected void LoadAllLists(ZipFile arc, Manifest manifest)
         {
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.StartsWith("list/characustom") && entry.Name.EndsWith(".csv"))
+                if (entry.Name.StartsWith("abdata/list/characustom") && entry.Name.EndsWith(".csv"))
                 {
                     var stream = arc.GetInputStream(entry);
-
+                    
                     var chaListData = ListLoader.LoadCSV(stream);
+
+                    SetPossessNew(chaListData);
+                    UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData);
+                    IndexList(manifest, chaListData);
+
                     ListLoader.ExternalDataList.Add(chaListData);
-                    LoadedData.Add(chaListData);
 
-                    //int length = (int)entry.Size;
-                    //byte[] buffer = new byte[length];
+                    if (LoadedData.TryGetValue(manifest, out lists))
+                    {
+                        lists.Add(chaListData);
+                    }
+                    else
+                    {
+                        LoadedData[manifest] = new List<ChaListData> { chaListData };
+                    }
+                }
+            }
+        }
 
-                    //stream.Read(buffer, 0, length);
+        protected void LoadAllUnityArchives(ZipFile arc)
+        {
+            foreach (ZipEntry entry in arc)
+            {
+                if (entry.Name.EndsWith(".unity3d"))
+                {
+                    string assetBundlePath = entry.Name;
 
-                    //string text = Encoding.UTF8.GetString(buffer);
+                    if (assetBundlePath.Contains('/'))
+                        assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
+
+                    Func<AssetBundle> getBundleFunc = () =>
+                    {
+                        var stream = arc.GetInputStream(entry);
+
+                        byte[] buffer = new byte[entry.Size];
+
+                        stream.Read(buffer, 0, (int)entry.Size);
+
+                        BundleManager.RandomizeCAB(buffer);
+
+                        return AssetBundle.LoadFromMemory(buffer);
+                    };
+
+                    BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath);
                 }
             }
         }
 
         protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
-            string zipPath = $"{assetBundleName.Replace(".unity3d", "")}/{assetName}";
-
+            string zipPath = $"{manifestAssetBundleName ?? "abdata"}/{assetBundleName.Replace(".unity3d", "")}/{assetName}";
 
             if (type == typeof(Texture2D))
             {
                 zipPath = $"{zipPath}.png";
 
-                foreach (var archive in archives)
+                foreach (var archive in Archives)
                 {
                     var entry = archive.GetEntry(zipPath);
 
@@ -105,37 +179,11 @@ namespace Sideloader
                 }
             }
 
-            if (!bundles.ContainsKey(assetBundleName))
+            if (BundleManager.TryGetObjectFromName(assetName, assetBundleName, type, out UnityEngine.Object obj))
             {
-                foreach (var archive in archives)
-                {
-                    var entry = archive.GetEntry(assetBundleName);
-
-                    if (entry != null)
-                    {
-                        var stream = archive.GetInputStream(entry);
-
-                        byte[] buffer = new byte[entry.Size];
-
-                        stream.Read(buffer, 0, (int)entry.Size);
-
-                        bundles[assetBundleName] = AssetBundle.LoadFromMemory(buffer);
-                        
-                        //result = new AssetBundleLoadAssetOperationSimulation(ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size));
-                    }
-                }
-            }
-
-            if (bundles.TryGetValue(assetBundleName, out AssetBundle bundle))
-            {
-                if (bundle.Contains(assetName))
-                {
-                    result = new AssetBundleLoadAssetOperationSimulation(bundle.LoadAsset(assetName, type));
+                result = new AssetBundleLoadAssetOperationSimulation(obj);
                     return true;
-                }
             }
-            
-
 
             result = null;
             return false;

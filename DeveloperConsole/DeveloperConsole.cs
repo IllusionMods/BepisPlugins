@@ -4,12 +4,9 @@ using UnityEngine;
 
 namespace DeveloperConsole
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.developerconsole", Name: "Developer Console", Version: "1.0.1")]
     public class DeveloperConsole : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.developerconsole";
-        public override string Name => "Developer Console";
-        public override Version Version => new Version("1.0.1");
-
         private Rect UI = new Rect(20, 20, 400, 200);
         bool showingUI = false;
         string TotalLog = "";
@@ -54,7 +51,7 @@ namespace DeveloperConsole
             ShowLog();
 
             if (showingUI)
-                UI = GUI.Window(Name.GetHashCode() + 0, UI, WindowFunction, "Developer Console");
+                UI = GUI.Window("com.bepis.bepinex.developerconsole".GetHashCode() + 0, UI, WindowFunction, "Developer Console");
         }
 
         

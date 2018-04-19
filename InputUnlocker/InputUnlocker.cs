@@ -6,12 +6,9 @@ using UnityEngine.SceneManagement;
 
 namespace InputUnlocker
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.inputunlocker", Name: "Input Length Unlocker", Version: "1.0.1")]
     class InputUnlocker : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.inputunlocker";
-        public override string Name => "Input Length Unlocker";
-        public override Version Version => new Version("1.0");
-
         void Awake()
         {
             foreach (InputField gameObject in GameObject.FindObjectsOfType<InputField>())

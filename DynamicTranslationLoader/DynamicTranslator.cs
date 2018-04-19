@@ -11,12 +11,9 @@ using UnityEngine.SceneManagement;
 
 namespace DynamicTranslationLoader
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.dynamictranslator", Name: "Dynamic Translator", Version: "2.1")]
     public class DynamicTranslator : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.dynamictranslator";
-        public override string Name => "Dynamic Translator";
-        public override Version Version => new Version("2.1");
-
         private static Dictionary<string, string> translations = new Dictionary<string, string>();
 
         private static Dictionary<WeakReference, string> originalTranslations = new Dictionary<WeakReference, string>();

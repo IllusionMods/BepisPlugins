@@ -7,6 +7,7 @@ namespace Sideloader.AutoResolver
     {
         public string ModID { get; set; }
         public int Slot { get; set; }
+        public int LocalSlot { get; set; }
         public string Property { get; set; }
 
         public bool CanResolve(ResolveInfo other)

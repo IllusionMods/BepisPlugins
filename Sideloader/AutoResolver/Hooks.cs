@@ -1,68 +1,76 @@
-﻿using ExtensibleSaveFormat;
+﻿using System;
+using ExtensibleSaveFormat;
 using Harmony;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace Sideloader.AutoResolver
 {
-    public static class Hooks
-    {
-        private static ChaFileCustom lastLoadedInstance = null;
+	public static class Hooks
+	{
+		private static ChaFileCustom lastLoadedInstance = null;
 
-        public static void InstallHooks()
-        {
-            ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
-            ExtendedSave.CardBeingSaved += ExtendedCardSave;
+		public static void InstallHooks()
+		{
+			ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
+			ExtendedSave.CardBeingSaved += ExtendedCardSave;
 
-            var harmony = HarmonyInstance.Create(UniversalAutoResolver.UARExtID);
+			var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
+			harmony.PatchAll(typeof(Hooks));
+		}
 
+		private static void ExtendedCardLoad(ChaFile file)
+		{
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileFaceProperties, lastLoadedInstance.face, file);
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileBodyProperties, lastLoadedInstance.body, file);
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileHairProperties, lastLoadedInstance.hair, file);
+		}
 
-            MethodInfo original = AccessTools.Method(typeof(ChaFileCustom), "LoadBytes");
+		private static void ExtendedCardSave(ChaFile file)
+		{
+			List<ResolveInfo> resolutionInfo = new List<ResolveInfo>();
 
-            HarmonyMethod postfix = new HarmonyMethod(typeof(Hooks).GetMethod("LoadBytesPostHook"));
+		    void IterateStruct(object obj, Dictionary<CategoryProperty, StructValue<int>> dict)
+		    {
+		        foreach (var kv in dict)
+		        {
+		            int slot = kv.Value.GetMethod(obj);
 
-            harmony.Patch(original, null, postfix);
+		            var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
+		                                                                                      x.LocalSlot == slot);
 
-            BepInEx.BepInLogger.Log("Installed hooks");
-        }
+		            if (info != null)
+		            {
+		                kv.Value.SetMethod(obj, info.Slot);
 
-        private static void ExtendedCardLoad(ChaFile file)
-        {
-            UniversalAutoResolver.ResolveStructure(StructReference.ChaFileFaceProperties, lastLoadedInstance.face, file);
-        }
-
-        private static void ExtendedCardSave(ChaFile file)
-        {
-            List<ResolveInfo> resolutionInfo = new List<ResolveInfo>();
-
-            foreach (var kv in StructReference.ChaFileFaceProperties)
-            {
-                var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key &&
-                                                                                     x.Slot == (int)kv.Value.GetValue(file.custom.face, null));
-            }
-
-            resolutionInfo.Add(UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Pupil1" &&
-                                                                                         x.Slot == file.custom.face.pupil[0].id));
-            resolutionInfo.Add(UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Pupil2" &&
-                                                                                         x.Slot == file.custom.face.pupil[1].id));
+		                resolutionInfo.Add(info);
+		            }
+		        }
+		    }
             
-            
+		    IterateStruct(file.custom.face, StructReference.ChaFileFaceProperties);
+		    IterateStruct(file.custom.body, StructReference.ChaFileBodyProperties);
+		    IterateStruct(file.custom.hair, StructReference.ChaFileHairProperties);
 
-            ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
-            {
-                data = new Dictionary<string, object> 
-                {
-                    { "info",  resolutionInfo.Where(x => x != null).Select(x => x.Serialize()).ToList() } 
-                }
-            });
-        }
+		    //foreach (var coordinate in file.coordinate)
+		    //{
+		    //    IterateStruct(file.coordinate., StructReference.ChaFileFaceProperties);
+		    //    IterateStruct(file.custom.face, StructReference.ChaFileFaceProperties);
+		    //}
 
-        public static void LoadBytesPostHook(ChaFileCustom __instance)
-        {
-            lastLoadedInstance = __instance;
-        }
-    }
+			ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
+			{
+				data = new Dictionary<string, object>
+				{
+					{"info", resolutionInfo.Select(x => x.Serialize()).ToList()}
+				}
+			});
+		}
+
+		[HarmonyPostfix, HarmonyPatch(typeof(ChaFileCustom), "LoadBytes")]
+		public static void LoadBytesPostHook(ChaFileCustom __instance)
+		{
+			lastLoadedInstance = __instance;
+		}
+	}
 }

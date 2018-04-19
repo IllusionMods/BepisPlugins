@@ -11,14 +11,9 @@ using UnityEngine;
 
 namespace ScriptEngine
 {
+    [BepInPlugin(GUID: "com.bepis.bepinex.scriptengine", Name: "Script Engine", Version: "2.0")]
     public class ScriptEngine : BaseUnityPlugin
     {
-        public override string ID => "com.bepis.bepinex.scriptengine";
-
-        public override string Name => "Script Engine";
-
-        public override Version Version => new Version("2.0");
-
         public string ScriptDirectory => Path.Combine(Utility.PluginsDirectory, "scripts");
 
         private GameObject scriptManager = new GameObject();
