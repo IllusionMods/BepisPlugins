@@ -29,6 +29,16 @@ namespace Sideloader
 
         public Sideloader()
         {
+            //ilmerge
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+            {
+                if (args.Name == "I18N, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756"
+                 || args.Name == "I18N.West, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
+                    return Assembly.GetExecutingAssembly();
+
+                return null;
+            };
+
             //install hooks
             Hooks.InstallHooks();
             AutoResolver.Hooks.InstallHooks();
