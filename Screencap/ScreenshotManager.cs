@@ -69,7 +69,7 @@ namespace Screencap
         {
             if(Input.GetKeyDown(CK_CaptureAlpha))
             {
-                if (Input.GetKey(KeyCode.LeftShift)) showingUI = !showingUI;
+                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) showingUI = !showingUI;
                 else TakeCharScreenshot();
             }
             if (Input.GetKeyDown(CK_Capture)) StartCoroutine(TakeScreenshot());
