@@ -52,6 +52,8 @@ namespace ExtensibleSaveFormat
 
 			if (br.BaseStream.Position != br.BaseStream.Length)
 			{
+			    long originalPosition = br.BaseStream.Position;
+
 				try
 				{
 					string marker = br.ReadString();
@@ -66,6 +68,10 @@ namespace ExtensibleSaveFormat
 							byte[] bytes = br.ReadBytes(length);
 							dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
 						}
+					}
+					else
+					{
+					    br.BaseStream.Position = originalPosition;
 					}
 				}
 				catch (EndOfStreamException)
