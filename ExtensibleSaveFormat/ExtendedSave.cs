@@ -54,7 +54,15 @@ namespace ExtensibleSaveFormat
 
         public static void SetExtendedDataById(ChaFile file, string id, PluginData extendedFormatData)
         {
-            internalDictionary.Get(file)[id] = extendedFormatData;
+            Dictionary<string, PluginData> chaDictionary = internalDictionary.Get(file);
+
+            if (chaDictionary == null)
+            {
+                chaDictionary = new Dictionary<string, PluginData>();
+                internalDictionary.Set(file, chaDictionary);
+            }
+
+            chaDictionary[id] = extendedFormatData;
         }
     }
 }
