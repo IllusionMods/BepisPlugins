@@ -63,12 +63,12 @@ namespace DynamicTranslationLoader
 
         void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
-            TranslateScene(scene);
+            //TranslateScene(scene);
         }
 
         public static string Translate(string input, object obj)
         {
-            if(string.IsNullOrEmpty(input) || !ContainsJapaneseSymbols(input)) return input;
+            if(string.IsNullOrEmpty(input)) return input;
 
             // Consider changing this! You have a dictionary, but you iterate instead of making a lookup. Why do you not use the WeakKeyDictionary, you have instead? 
             if (!originalTranslations.Any(x => x.Key.Target == obj)) //check if we don't have the object in the dictionary
@@ -98,19 +98,6 @@ namespace DynamicTranslationLoader
                 untranslated.Add(input);
 
             return input;
-        }
-
-        public static bool ContainsJapaneseSymbols( string text )
-        {
-           // Japenese regex: [\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]
-           foreach( var c in text )
-           {
-              if( ( c >= '\u3040' && c <= '\u30ff' ) || ( c >= '\uff00' && c <= '\uff9f' ) || ( c >= '\u4e00' && c <= '\u9faf' ) || ( c >= '\u3400' && c <= '\u4dbf' ) )
-              {
-                 return true;
-              }
-           }
-           return false;
         }
 
         void TranslateAll()
@@ -172,13 +159,13 @@ namespace DynamicTranslationLoader
 
         void TranslateScene(Scene scene)
         {
-            foreach (GameObject obj in scene.GetRootGameObjects())
-                foreach (TextMeshProUGUI gameObject in obj.GetComponentsInChildren<TextMeshProUGUI>(true))
-                {
-                    //gameObject.text = "Harsh is shit";
+            //foreach (GameObject obj in scene.GetRootGameObjects())
+            //    foreach (TextMeshProUGUI gameObject in obj.GetComponentsInChildren<TextMeshProUGUI>(true))
+            //    {
+            //        //gameObject.text = "Harsh is shit";
 
-                    gameObject.text = Translate(gameObject.text, gameObject);
-                }
+            //        gameObject.text = Translate(gameObject.text, gameObject);
+            //    }
         }
 
         void Dump()
@@ -215,15 +202,15 @@ namespace DynamicTranslationLoader
 
 
         #region MonoBehaviour
-        void OnEnable()
-        {
-            SceneManager.sceneLoaded += LevelFinishedLoading;
-        }
+        //void OnEnable()
+        //{
+        //    SceneManager.sceneLoaded += LevelFinishedLoading;
+        //}
 
-        void OnDisable()
-        {
-            SceneManager.sceneLoaded -= LevelFinishedLoading;
-        }
+        //void OnDisable()
+        //{
+        //    SceneManager.sceneLoaded -= LevelFinishedLoading;
+        //}
         #endregion
     }
 }
