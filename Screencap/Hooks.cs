@@ -22,6 +22,13 @@ namespace Screencap
             return false;
         }
 
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.GameScreenShot), "Capture")]
+        public static bool StudioCapturePreHook()
+        {
+            //cancel the vanilla screenshot
+            return false;
+        }
+
         [HarmonyPrefix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
         public static bool pre_CreatePng(ref int createW, ref int createH)
         {
