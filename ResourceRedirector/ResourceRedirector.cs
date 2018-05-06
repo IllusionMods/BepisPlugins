@@ -58,7 +58,15 @@ namespace ResourceRedirector
 
                     BepInLogger.Log($"Loading emulated asset {path}");
 
-                    return new AssetBundleLoadAssetOperationSimulation(AssetLoader.LoadTexture(path));
+                    var tex = AssetLoader.LoadTexture(path);
+
+                    if (path.Contains("clamp"))
+                        tex.wrapMode = TextureWrapMode.Clamp;
+                    else if (path.Contains("repeat"))
+                        tex.wrapMode = TextureWrapMode.Repeat;
+
+
+                    return new AssetBundleLoadAssetOperationSimulation(tex);
                 }
                 else if (type == typeof(AudioClip))
                 {
