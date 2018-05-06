@@ -12,8 +12,9 @@ namespace Sideloader.AutoResolver
 
         public bool CanResolve(ResolveInfo other)
         {
-            return ModID == other.ModID &&
-                    Property == other.Property;
+            return ModID == other.ModID
+                    && Property == other.Property
+                    && Slot == other.Slot;
         }
 
         public static ResolveInfo Unserialize(byte[] data)
