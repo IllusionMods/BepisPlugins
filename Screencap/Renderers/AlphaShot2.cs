@@ -18,10 +18,10 @@ namespace alphaShot
             public Dictionary<int, Color> col_props = new Dictionary<int, Color>();
         }
 
-        public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate)
+        public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate, bool CaptureAlpha)
         {
             var currentScene = SceneManager.GetActiveScene().name;
-            if (currentScene == "CustomScene" || currentScene == "Studio") return CaptureAlpha(ResolutionX, ResolutionY, DownscalingRate);
+            if (CaptureAlpha && (currentScene == "CustomScene" || currentScene == "Studio")) return this.CaptureAlpha(ResolutionX, ResolutionY, DownscalingRate);
             else return CaptureOpaque(ResolutionX, ResolutionY, DownscalingRate);
         }
 
