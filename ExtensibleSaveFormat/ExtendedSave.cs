@@ -47,8 +47,11 @@ namespace ExtensibleSaveFormat
             if (file == null || id == null)
                 return null;
 
-            if (internalDictionary.Get(file).TryGetValue(id, out var extendedSection))
+            var dict = internalDictionary.Get(file);
+
+            if (dict != null && dict.TryGetValue(id, out var extendedSection))
                 return extendedSection;
+
             return null;
         }
 
