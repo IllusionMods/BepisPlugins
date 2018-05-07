@@ -51,6 +51,12 @@ namespace Sideloader.AutoResolver
 
                         kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
+                    else
+                    {
+                        BepInLogger.Log($"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]", true);
+
+                        kv.Value.SetMethod(structure, 999999); //set to an invalid ID
+                    }
                 }
             }
         }
