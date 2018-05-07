@@ -43,20 +43,39 @@ namespace Sideloader.AutoResolver
 
                 if (extResolve != null)
                 {
+                    //the property has external slot information 
                     var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.CanResolve(extResolve));
 
                     if (intResolve != null)
                     {
+                        //found a match to a corrosponding internal mod
                         BepInLogger.Log($"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
 
                         kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
                     else
                     {
+                        //did not find a match, we don't have the mod
                         BepInLogger.Log($"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]", true);
 
                         kv.Value.SetMethod(structure, 999999); //set to an invalid ID
                     }
+                }
+                else
+                {
+                    //the property does not have external slot information
+                    //check if we have a corrosponding item for backwards compatbility
+                    var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
+                                                                              && x.Slot == kv.Value.GetMethod(structure));
+
+                    if (intResolve != null)
+                    {
+                        //found a match
+                        BepInLogger.Log($"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+
+                        kv.Value.SetMethod(structure, intResolve.LocalSlot);
+                    }
+                    //otherwise ignore if not found
                 }
             }
         }
