@@ -20,6 +20,8 @@ namespace ResourceRedirector
 
         public static List<AssetHandler> AssetResolvers = new List<AssetHandler>();
 
+        public static Dictionary<string, AssetBundle> EmulatedAssetBundles = new Dictionary<string, AssetBundle>();
+
 
 
         public ResourceRedirector()
@@ -79,6 +81,20 @@ namespace ResourceRedirector
 
                     return new AssetBundleLoadAssetOperationSimulation(AssetLoader.LoadAudioClip(path, AudioType.WAV));
                 }
+            }
+
+            string emulatedPath = Path.Combine(EmulatedDir, assetBundleName.Replace('/', '\\'));
+
+            if (File.Exists(emulatedPath))
+            {
+                if (!EmulatedAssetBundles.TryGetValue(emulatedPath, out AssetBundle bundle))
+                {
+                    bundle = AssetBundle.LoadFromFile(emulatedPath);
+
+                    EmulatedAssetBundles[emulatedPath] = bundle;
+                }
+
+                return new AssetBundleLoadAssetOperationSimulation(bundle.LoadAsset(assetName));
             }
 
             //otherwise return normal asset
