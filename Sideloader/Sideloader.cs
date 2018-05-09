@@ -23,6 +23,8 @@ namespace Sideloader
 
         protected List<ChaListData> lists = new List<ChaListData>();
 
+        protected List<Manifest> LoadedManifests = new List<Manifest>();
+
         public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
 
 
@@ -62,6 +64,12 @@ namespace Sideloader
                     continue;
                 }
 
+                if (LoadedManifests.Any(x => x.GUID == manifest.GUID))
+                {
+                    BepInLogger.Log($"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".");
+                    continue;
+                }
+
                 string name = !string.IsNullOrEmpty(manifest.Name.Trim())
                     ? manifest.Name
                     : Path.GetFileName(archivePath);
@@ -69,6 +77,7 @@ namespace Sideloader
                 BepInLogger.Log($"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
 
                 Archives.Add(archive);
+                LoadedManifests.Add(manifest);
 
                 LoadAllUnityArchives(archive);
 
