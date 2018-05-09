@@ -61,8 +61,11 @@ namespace Sideloader
                     BepInLogger.Log($"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
                     continue;
                 }
-                
-                string name = manifest.Name ?? Path.GetFileName(archivePath);
+
+                string name = !string.IsNullOrEmpty(manifest.Name.Trim())
+                    ? manifest.Name
+                    : Path.GetFileName(archivePath);
+
                 BepInLogger.Log($"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
 
                 Archives.Add(archive);
