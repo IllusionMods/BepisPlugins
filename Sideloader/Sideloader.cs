@@ -155,7 +155,10 @@ namespace Sideloader
                         return AssetBundle.LoadFromMemory(buffer);
                     };
 
-                    BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath);
+                    BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
+
+                    if (!string.IsNullOrEmpty(warning))
+                        BepInLogger.Log($"[SIDELOADER] WARNING! {warning}");
                 }
             }
         }

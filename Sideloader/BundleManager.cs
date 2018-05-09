@@ -10,7 +10,7 @@ namespace Sideloader
 {
     public static class BundleManager
     {
-        public static Dictionary<string, Lazy<AssetBundle>> Bundles = new Dictionary<string, Lazy<AssetBundle>>();
+        public static Dictionary<string, List<Lazy<AssetBundle>>> Bundles = new Dictionary<string, List<Lazy<AssetBundle>>>();
 
 
         public static string DummyPath => "list/characustom/00.unity3d";
@@ -41,9 +41,20 @@ namespace Sideloader
             Buffer.BlockCopy(cabBytes, 0, assetBundleData, cabIndex, 36);
         }
 
-        public static void AddBundleLoader(Func<AssetBundle> func, string path)
+        public static void AddBundleLoader(Func<AssetBundle> func, string path, out string warning)
         {
-            Bundles.Add(path, Lazy<AssetBundle>.Create(func));
+            warning = "";
+
+            if (Bundles.TryGetValue(path, out var lazyList))
+            {
+                warning = $"Duplicate asset bundle detected! {path}";
+                lazyList.Add(Lazy<AssetBundle>.Create(func));
+            }
+            else
+                Bundles.Add(path, new List<Lazy<AssetBundle>>
+                {
+                    Lazy<AssetBundle>.Create(func)
+                });
         }
 
         public static bool TryGetObjectFromName<T>(string name, string assetBundle, out T obj) where T : UnityEngine.Object
@@ -59,14 +70,15 @@ namespace Sideloader
         {
             obj = null;
 
-            if (Bundles.TryGetValue(assetBundle, out Lazy<AssetBundle> lazyBundle))
+            if (Bundles.TryGetValue(assetBundle, out List<Lazy<AssetBundle>> lazyBundleList))
             {
-                AssetBundle bundle = (AssetBundle)lazyBundle;
-
-                if (bundle.Contains(name))
+                foreach (AssetBundle bundle in lazyBundleList)
                 {
-                    obj = bundle.LoadAsset(name, type);
-                    return true;
+                    if (bundle.Contains(name))
+                    {
+                        obj = bundle.LoadAsset(name, type);
+                        return true;
+                    }
                 }
             }
 
