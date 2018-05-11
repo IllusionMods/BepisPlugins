@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using ExtensibleSaveFormat;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,7 +59,7 @@ namespace Sideloader.AutoResolver
                     else
                     {
                         //did not find a match, we don't have the mod
-                        BepInLogger.Log($"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]", true);
+                        BepInLogger.Log($"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]", true, ConsoleColor.Yellow);
 
                         kv.Value.SetMethod(structure, 999999); //set to an invalid ID
                     }

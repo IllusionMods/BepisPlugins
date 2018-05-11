@@ -59,13 +59,13 @@ namespace Sideloader
 
                 if (!Manifest.TryLoadFromZip(archive, out Manifest manifest))
                 {
-                    BepInLogger.Log($"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
+                    BepInLogger.Log($"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.", false, ConsoleColor.Yellow);
                     continue;
                 }
 
                 if (LoadedManifests.Any(x => x.GUID == manifest.GUID))
                 {
-                    BepInLogger.Log($"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".");
+                    BepInLogger.Log($"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".", false, ConsoleColor.Yellow);
                     continue;
                 }
 
@@ -166,7 +166,7 @@ namespace Sideloader
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
                     if (!string.IsNullOrEmpty(warning))
-                        BepInLogger.Log($"[SIDELOADER] WARNING! {warning}");
+                        BepInLogger.Log($"[SIDELOADER] WARNING! {warning}", false, ConsoleColor.DarkYellow);
                 }
             }
         }
