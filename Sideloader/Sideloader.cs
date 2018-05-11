@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Shared;
 using Sideloader.AutoResolver;
 using UnityEngine;
@@ -116,7 +115,7 @@ namespace Sideloader
         {
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.StartsWith("abdata/list/characustom") && entry.Name.EndsWith(".csv"))
+                if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     var stream = arc.GetInputStream(entry);
                     
@@ -144,7 +143,7 @@ namespace Sideloader
         {
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.EndsWith(".unity3d"))
+                if (entry.Name.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase))
                 {
                     string assetBundlePath = entry.Name;
 
@@ -174,7 +173,7 @@ namespace Sideloader
 
         protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
-            string zipPath = $"{manifestAssetBundleName ?? "abdata"}/{assetBundleName.Replace(".unity3d", "")}/{assetName}";
+            string zipPath = $"{manifestAssetBundleName ?? "abdata"}/{assetBundleName.Replace(".unity3d", "", StringComparison.OrdinalIgnoreCase)}/{assetName}";
 
             if (type == typeof(Texture2D))
             {
