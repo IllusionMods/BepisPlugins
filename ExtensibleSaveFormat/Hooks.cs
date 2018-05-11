@@ -25,10 +25,14 @@ namespace ExtensibleSaveFormat
         #region Saving
         private static byte[] currentlySavingData = null;
 
+	    [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", new[] { typeof(BinaryWriter), typeof(bool) })]
+	    public static void SaveFilePreHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng)
+	    {
+	        ExtendedSave.writeEvent(__instance);
+	    }
+
 	    public static void SaveFileHook(ChaFile file, BlockHeader header, ref long[] array3)
 	    {
-            ExtendedSave.writeEvent(file);
-
             Dictionary<string, PluginData> extendedData = ExtendedSave.GetAllExtendedData(file);
 	        if (extendedData == null)
 	        {
