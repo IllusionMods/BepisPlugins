@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace IPALoader
 {
-	[BepInPlugin(GUID: "com.bepis.bepinex.ipapluginloader", Name: "IPA Plugin Loader", Version: "1.1")]
+	[BepInPlugin(GUID: "com.bepis.bepinex.ipapluginloader", Name: "IPA Plugin Loader", Version: "1.2")]
 	public class IPALoader : BaseUnityPlugin
 	{
 		public static GameObject IPAManagerObject { get; private set; }
@@ -31,6 +31,13 @@ namespace IPALoader
 
 		void Start()
 		{
+		    string managedDir = Path.Combine(Utility.ExecutingDirectory,
+		        $@"{System.Diagnostics.Process.GetCurrentProcess().ProcessName}_Data\Managed");
+
+		    if (File.Exists(Path.Combine(managedDir, "IllusionPlugin.dll")))
+		        BepInLogger.Log("WARNING: IPA has been detected to be installed! IPALoader may not function correctly!", true, ConsoleColor.Red);
+
+
 			if (!Directory.Exists(IPAPluginDir))
 			{
 				BepInLogger.Log("No IPA plugin directory, skipping load");
