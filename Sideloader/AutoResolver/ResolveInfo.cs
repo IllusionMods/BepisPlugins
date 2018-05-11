@@ -1,7 +1,10 @@
-﻿using MessagePack;
+﻿using System;
+using Illusion.Extensions;
+using MessagePack;
 
 namespace Sideloader.AutoResolver
 {
+    [Serializable]
     [MessagePackObject(true)]
     public class ResolveInfo
     {
@@ -25,6 +28,15 @@ namespace Sideloader.AutoResolver
         public byte[] Serialize()
         {
             return MessagePackSerializer.Serialize(this);
+        }
+
+        public ResolveInfo AppendPropertyPrefix(string prefix)
+        {
+            var newResolveInfo = this.DeepCopy();
+
+            newResolveInfo.Property = $"{prefix}{newResolveInfo.Property}";
+
+            return newResolveInfo;
         }
     }
 }

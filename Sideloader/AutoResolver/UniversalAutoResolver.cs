@@ -13,7 +13,7 @@ namespace Sideloader.AutoResolver
 
         public static List<ResolveInfo> LoadedResolutionInfo = new List<ResolveInfo>();
 
-        public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ChaFile save)
+        public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ChaFile save, string propertyPrefix = "")
         {
             //BepInLogger.Log($"Tried to resolve structure: {structure.GetType().Name}");
 
@@ -32,19 +32,21 @@ namespace Sideloader.AutoResolver
             //foreach (ResolveInfo info in LoadedResolutionInfo)
             //    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
 
-            //BepInLogger.Log($"External info count: {extInfo.Count()}");
-            //foreach (ResolveInfo info in extInfo)
-            //    BepInLogger.Log($"External info: {info.ModID} : {info.Property} : {info.Slot}");
-
+            //if (extInfo.Any())
+            //{
+            //    BepInLogger.Log($"External info count: {extInfo.Count()}");
+            //    foreach (ResolveInfo info in extInfo)
+            //        BepInLogger.Log($"External info: {info.ModID} : {info.Property} : {info.Slot}");
+            //}
 
             foreach (var kv in propertyDict)
             {
-                var extResolve = extInfo.FirstOrDefault(x => x.Property == kv.Key.ToString());
+                var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
 
                 if (extResolve != null)
                 {
                     //the property has external slot information 
-                    var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.CanResolve(extResolve));
+                    var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve));
 
                     if (intResolve != null)
                     {
@@ -88,19 +90,19 @@ namespace Sideloader.AutoResolver
 
             var properties = StructReference.CollatedStructValues.Where(x => x.Key.Category == category);
 
-            //BepInEx.BepInLogger.Log(category.ToString());
-            //BepInEx.BepInLogger.Log(StructReference.CollatedStructValues.Count.ToString());
+            //BepInLogger.Log(category.ToString());
+            //BepInLogger.Log(StructReference.CollatedStructValues.Count.ToString());
 
 
             foreach (var kv in data.dictList)
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                // BepInEx.BepInLogger.Log(kv.Value[0] + " | " + newSlot);
+                //BepInLogger.Log(kv.Value[0] + " | " + newSlot);
 
                 foreach (var property in properties)
                 {
-                    // BepInEx.BepInLogger.Log(property.Key.ToString());
+                    //BepInLogger.Log(property.Key.ToString());
 
                     LoadedResolutionInfo.Add(new ResolveInfo
                     {
@@ -110,7 +112,7 @@ namespace Sideloader.AutoResolver
                         Property = property.Key.ToString()
                     });
                     
-                    // BepInEx.BepInLogger.Log($"LOADED COUNT {LoadedResolutionInfo.Count}");
+                    //BepInLogger.Log($"LOADED COUNT {LoadedResolutionInfo.Count}");
                 }
 
                 kv.Value[0] = newSlot.ToString();

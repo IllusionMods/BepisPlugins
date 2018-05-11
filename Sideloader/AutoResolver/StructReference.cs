@@ -205,13 +205,13 @@ namespace Sideloader.AutoResolver
             
 
             generatedProperties.Add(
-                new CategoryProperty(CategoryNo.mt_body_paint, "PaintID1", prefix),
+                new CategoryProperty(CategoryNo.mt_face_paint, "PaintID1", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileMakeup)obj).paintId[0] = value; },
                     (obj) =>          ((ChaFileMakeup)obj).paintId[0]));
 
             generatedProperties.Add(
-                new CategoryProperty(CategoryNo.mt_body_paint, "PaintID2", prefix),
+                new CategoryProperty(CategoryNo.mt_face_paint, "PaintID2", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileMakeup)obj).paintId[1] = value; },
                     (obj) =>          ((ChaFileMakeup)obj).paintId[1]));
@@ -348,6 +348,9 @@ namespace Sideloader.AutoResolver
             ChaFileFaceProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
             ChaFileBodyProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
             ChaFileHairProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
+            
+            ChaFileClothesProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
+            ChaFileMakeupProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
 
             return collated;
         }

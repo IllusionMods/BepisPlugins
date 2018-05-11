@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ExtensibleSaveFormat
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.extendedsave", Name: "Extended Save", Version: "1.2")]
+    [BepInPlugin(GUID: "com.bepis.bepinex.extendedsave", Name: "Extended Save", Version: "1.3")]
     public class ExtendedSave : BaseUnityPlugin
     {
         void Awake()

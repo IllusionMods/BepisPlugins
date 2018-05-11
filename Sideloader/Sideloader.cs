@@ -15,7 +15,7 @@ namespace Sideloader
 {
     [BepInDependency("com.bepis.bepinex.resourceredirector")]
     [BepInDependency("com.bepis.bepinex.extendedsave")]
-    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.0")]
+    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.1")]
     public class Sideloader : BaseUnityPlugin
     {
         protected List<ZipFile> Archives = new List<ZipFile>();
