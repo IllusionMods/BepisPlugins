@@ -30,6 +30,13 @@ namespace Sideloader.AutoResolver
                 
 		        UniversalAutoResolver.ResolveStructure(StructReference.ChaFileClothesProperties, coordinate.clothes, file, prefix);
 		        UniversalAutoResolver.ResolveStructure(StructReference.ChaFileMakeupProperties, coordinate.makeup, file, prefix);
+
+		        for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
+		        {
+		            string accPrefix = $"{prefix}accessory{acc}.";
+
+		            UniversalAutoResolver.ResolveStructure(StructReference.ChaFileAccessoryPartsInfoProperties, coordinate.accessory.parts[acc], file, accPrefix);
+		        }
 		    }
         }
 
@@ -69,6 +76,13 @@ namespace Sideloader.AutoResolver
 
                 IterateStruct(coordinate.clothes, StructReference.ChaFileClothesProperties, prefix);
                 IterateStruct(coordinate.makeup, StructReference.ChaFileMakeupProperties, prefix);
+
+		        for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
+		        {
+		            string accPrefix = $"{prefix}accessory{acc}.";
+                    
+		            IterateStruct(coordinate.accessory.parts[acc], StructReference.ChaFileAccessoryPartsInfoProperties, accPrefix);
+		        }
             }
 
             ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData

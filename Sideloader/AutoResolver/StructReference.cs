@@ -340,6 +340,39 @@ namespace Sideloader.AutoResolver
         public static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesProperties => _chaFileClothesPropertiesLazy;
         #endregion
 
+        #region ChaFileAccessory.PartsInfo
+        private static int AccessoryLimit = 200;
+
+        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileAccessoryPartsInfoGenerator()
+        {
+            string prefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";
+
+            var baseProperties = new List<CategoryProperty>
+            {
+                new CategoryProperty(CategoryNo.ao_none , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_hair , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_head , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_face , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_neck , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_body , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_waist , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_leg , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_arm , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_hand , "id", prefix),
+                new CategoryProperty(CategoryNo.ao_kokan , "id", prefix)
+            };
+
+            var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileAccessory.PartsInfo), baseProperties, prefix);
+
+            return generatedProperties;
+        }
+
+        private static readonly Lazy<Dictionary<CategoryProperty, StructValue<int>>> _chaFileAccessoryPartsInfoPropertiesLazy =
+            Lazy<Dictionary<CategoryProperty, StructValue<int>>>.Create(_chaFileAccessoryPartsInfoGenerator);
+
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoProperties => _chaFileAccessoryPartsInfoPropertiesLazy;
+        #endregion
+
         #region Collated
         private static Dictionary<CategoryProperty, StructValue<int>> _collatedGenerator()
         {
@@ -351,6 +384,7 @@ namespace Sideloader.AutoResolver
             
             ChaFileClothesProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
             ChaFileMakeupProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
+            ChaFileAccessoryPartsInfoProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
 
             return collated;
         }
