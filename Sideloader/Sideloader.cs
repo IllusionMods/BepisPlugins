@@ -187,7 +187,14 @@ namespace Sideloader
                     {
                         var stream = archive.GetInputStream(entry);
 
-                        result = new AssetBundleLoadAssetOperationSimulation(ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size));
+                        var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int) entry.Size);
+                        
+                        if (zipPath.Contains("clamp"))
+                            tex.wrapMode = TextureWrapMode.Clamp;
+                        else if (zipPath.Contains("repeat"))
+                            tex.wrapMode = TextureWrapMode.Repeat;
+
+                        result = new AssetBundleLoadAssetOperationSimulation(tex);
                         return true;
                     }
                 }
