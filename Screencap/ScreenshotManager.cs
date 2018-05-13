@@ -46,7 +46,7 @@ namespace Screencap
 
         public bool CaptureAlpha
         {
-            get => bool.Parse(this.GetEntry("capturealpha", "false"));
+            get => bool.Parse(this.GetEntry("capturealpha", "true"));
             set => this.SetEntry("capturealpha", value.ToString());
         }
 
