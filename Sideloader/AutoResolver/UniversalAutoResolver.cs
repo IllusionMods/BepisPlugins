@@ -25,7 +25,7 @@ namespace Sideloader.AutoResolver
             if (extData == null || !extData.data.ContainsKey("info"))
             {
                 extInfo = null;
-                BepInLogger.Log("Nothing to load!");
+                //BepInLogger.Log("Nothing to load!");
             }
             else
             {
