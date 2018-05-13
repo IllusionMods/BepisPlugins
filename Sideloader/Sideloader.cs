@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Shared;
 using Sideloader.AutoResolver;
 using UnityEngine;
@@ -16,12 +15,14 @@ namespace Sideloader
 {
     [BepInDependency("com.bepis.bepinex.resourceredirector")]
     [BepInDependency("com.bepis.bepinex.extendedsave")]
-    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.0")]
+    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.1")]
     public class Sideloader : BaseUnityPlugin
     {
         protected List<ZipFile> Archives = new List<ZipFile>();
 
         protected List<ChaListData> lists = new List<ChaListData>();
+
+        protected List<Manifest> LoadedManifests = new List<Manifest>();
 
         public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
 
@@ -58,14 +59,24 @@ namespace Sideloader
 
                 if (!Manifest.TryLoadFromZip(archive, out Manifest manifest))
                 {
-                    BepInLogger.Log($"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
+                    BepInLogger.Log($"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.", false, ConsoleColor.Yellow);
                     continue;
                 }
-                
-                string name = manifest.Name ?? Path.GetFileName(archivePath);
+
+                if (LoadedManifests.Any(x => x.GUID == manifest.GUID))
+                {
+                    BepInLogger.Log($"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".", false, ConsoleColor.Yellow);
+                    continue;
+                }
+
+                string name = !string.IsNullOrEmpty(manifest.Name.Trim())
+                    ? manifest.Name
+                    : Path.GetFileName(archivePath);
+
                 BepInLogger.Log($"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
 
                 Archives.Add(archive);
+                LoadedManifests.Add(manifest);
 
                 LoadAllUnityArchives(archive);
 
@@ -104,7 +115,7 @@ namespace Sideloader
         {
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.StartsWith("abdata/list/characustom") && entry.Name.EndsWith(".csv"))
+                if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     var stream = arc.GetInputStream(entry);
                     
@@ -132,7 +143,7 @@ namespace Sideloader
         {
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.EndsWith(".unity3d"))
+                if (entry.Name.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase))
                 {
                     string assetBundlePath = entry.Name;
 
@@ -152,14 +163,17 @@ namespace Sideloader
                         return AssetBundle.LoadFromMemory(buffer);
                     };
 
-                    BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath);
+                    BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
+
+                    if (!string.IsNullOrEmpty(warning))
+                        BepInLogger.Log($"[SIDELOADER] WARNING! {warning}", false, ConsoleColor.DarkYellow);
                 }
             }
         }
 
         protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
-            string zipPath = $"{manifestAssetBundleName ?? "abdata"}/{assetBundleName.Replace(".unity3d", "")}/{assetName}";
+            string zipPath = $"{manifestAssetBundleName ?? "abdata"}/{assetBundleName.Replace(".unity3d", "", StringComparison.OrdinalIgnoreCase)}/{assetName}";
 
             if (type == typeof(Texture2D))
             {
@@ -173,7 +187,14 @@ namespace Sideloader
                     {
                         var stream = archive.GetInputStream(entry);
 
-                        result = new AssetBundleLoadAssetOperationSimulation(ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size));
+                        var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int) entry.Size);
+                        
+                        if (zipPath.Contains("clamp"))
+                            tex.wrapMode = TextureWrapMode.Clamp;
+                        else if (zipPath.Contains("repeat"))
+                            tex.wrapMode = TextureWrapMode.Repeat;
+
+                        result = new AssetBundleLoadAssetOperationSimulation(tex);
                         return true;
                     }
                 }

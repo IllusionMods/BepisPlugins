@@ -44,6 +44,12 @@ namespace Screencap
             set => this.SetEntry("carddownscalerate", value.ToString());
         }
 
+        public bool CaptureAlpha
+        {
+            get => bool.Parse(this.GetEntry("capturealpha", "false"));
+            set => this.SetEntry("capturealpha", value.ToString());
+        }
+
         #endregion
 
         private string filename => Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}.png");
@@ -67,7 +73,7 @@ namespace Screencap
 
         void Update()
         {
-            if(Input.GetKeyDown(CK_CaptureAlpha))
+            if (Input.GetKeyDown(CK_CaptureAlpha))
             {
                 if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) showingUI = !showingUI;
                 else TakeCharScreenshot();
@@ -80,15 +86,14 @@ namespace Screencap
             Application.CaptureScreenshot(filename);
             Utils.Sound.Play(SystemSE.photo);
 
-            while (!File.Exists(filename))
-                yield return new WaitForSeconds(0.01f);
+            yield return new WaitUntil(() => File.Exists(filename));
 
             BepInLogger.Log($"Screenshot saved to {filename}", true);
         }
 
         void TakeCharScreenshot()
         {
-            File.WriteAllBytes(filename, as2.Capture(ResolutionX, ResolutionY, DownscalingRate));
+            File.WriteAllBytes(filename, as2.Capture(ResolutionX, ResolutionY, DownscalingRate, CaptureAlpha));
 
             Utils.Sound.Play(SystemSE.photo);
             BepInLogger.Log($"Character screenshot saved to {filename}", true);
@@ -177,6 +182,8 @@ namespace Screencap
                 }
             });
 
+            bool capturealpha = GUI.Toggle(new Rect(10, 173, 120, 20), CaptureAlpha, "Capture alpha");
+
 
             if (GUI.changed)
             {
@@ -197,6 +204,8 @@ namespace Screencap
                 DownscalingRate = downscale;
 
                 CardDownscalingRate = carddownscale;
+
+                CaptureAlpha = capturealpha;
 
                 BepInEx.Config.SaveOnConfigSet = true;
                 BepInEx.Config.SaveConfig();

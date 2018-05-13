@@ -13,8 +13,8 @@ namespace SliderUnlocker
     [BepInPlugin(GUID: "com.bepis.bepinex.sliderunlocker", Name: "Slider Unlocker", Version: "1.5")]
     public class SliderUnlocker : BaseUnityPlugin
     {
-        public static float Minimum = -1.0f;
-        public static float Maximum = 2.0f;
+        public float Minimum => int.Parse(this.GetEntry("wideslider-minimum", "-100")) / (float)100;
+        public float Maximum => int.Parse(this.GetEntry("wideslider-maximum", "200")) / (float)100;
 
         void Awake()
         {

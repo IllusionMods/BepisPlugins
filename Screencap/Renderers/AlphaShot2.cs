@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
 
 //code by essu
@@ -17,13 +18,47 @@ namespace alphaShot
             public Dictionary<int, Color> col_props = new Dictionary<int, Color>();
         }
 
-        public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate)
+        public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate, bool CaptureAlpha)
+        {
+            var currentScene = SceneManager.GetActiveScene().name;
+            if (CaptureAlpha && (currentScene == "CustomScene" || currentScene == "Studio")) return this.CaptureAlpha(ResolutionX, ResolutionY, DownscalingRate);
+            else return CaptureOpaque(ResolutionX, ResolutionY, DownscalingRate);
+        }
+
+        private byte[] CaptureOpaque(int ResolutionX, int ResolutionY, int DownscalingRate)
+        {
+            var main = Camera.main;
+            var tt = main.targetTexture;
+            ResolutionX *= DownscalingRate;
+            ResolutionY *= DownscalingRate;
+            var rta = RenderTexture.active;
+            var rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 24);
+            main.targetTexture = rt;
+            var ss = new Texture2D(ResolutionX, ResolutionY, TextureFormat.RGB24, false);
+            main.Render();
+            RenderTexture.active = rt;
+            ss.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0);
+            main.targetTexture = tt;
+            RenderTexture.active = rta;
+            RenderTexture.ReleaseTemporary(rt);
+
+            byte[] ret = ss.EncodeToPNG();
+
+            return ret;
+        }
+
+
+        private byte[] CaptureAlpha(int ResolutionX, int ResolutionY, int DownscalingRate)
         {
             var main = Camera.main;
 
             var baf = main.GetComponent<BloomAndFlares>();
-            var baf_e = baf.enabled;
-            baf.enabled = false;
+            var baf_e = baf?.enabled;
+            if (baf) baf.enabled = false;
+
+            var vig = main.GetComponent<VignetteAndChromaticAberration>();
+            var vig_e = vig?.enabled;
+            if (vig) vig.enabled = false;
 
             var texture2D = PerformCapture(ResolutionX, ResolutionY, DownscalingRate, true);
             var texture2D2 = PerformCapture(ResolutionX, ResolutionY, DownscalingRate, false);
@@ -40,28 +75,14 @@ namespace alphaShot
             texture2D3.SetPixels(pixels2);
             texture2D3.Apply();
 
-            byte[] ret;
-
-            //Downsample texture
-            if (DownscalingRate > 1)
-            {
-                var pixelsResized = ScaleUnityTexture.ScaleLanczos(texture2D3.GetPixels32(), texture2D3.width, ResolutionX, ResolutionY);
-                GameObject.Destroy(texture2D3);
-                //Load pixel data into a new texture, encode to PNG and overwrite original result.
-                var np = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
-                np.SetPixels32(pixelsResized);
-                ret = np.EncodeToPNG();
-
-                GameObject.Destroy(np);
-            }
-            else ret = texture2D3.EncodeToPNG();
+            byte[] ret = texture2D3.EncodeToPNG();
 
             GameObject.Destroy(texture2D);
             GameObject.Destroy(texture2D2);
             GameObject.Destroy(texture2D3);
 
-            baf.enabled = baf_e;
-
+            if (baf) baf.enabled = baf_e.Value;
+            if (vig) vig.enabled = vig_e.Value;
 
             StartCoroutine(RestoreSkinTexture());
 
@@ -71,19 +92,26 @@ namespace alphaShot
         IEnumerator RestoreSkinTexture()
         {
             yield return new WaitForEndOfFrame();
-            var cc = Singleton<ChaControl>.Instance;
-            cc.SetBodyBaseMaterial();
+            foreach (var cc in GameObject.FindObjectsOfType<ChaControl>())
+            {
+                cc.SetBodyBaseMaterial();
+                cc.SetFaceBaseMaterial();
+            }
         }
 
         //TODO: Switch depending on shader type, clean this brute force shit up
         KeyValuePair<int, float>[] potentials = new[] {
                     new KeyValuePair<int, float>(Shader.PropertyToID("_MainTex"), 0f), //regular tex
                     new KeyValuePair<int, float>(Shader.PropertyToID("_NormalMap"), 0f), //Pantyhose
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_NormalMapDetail"), 0f),
                     new KeyValuePair<int, float>(Shader.PropertyToID("_HairGloss"), 0f), //Shader Forge/main_hair
                     new KeyValuePair<int, float>(Shader.PropertyToID("_overtex1"), 0f), //eye
                     new KeyValuePair<int, float>(Shader.PropertyToID("_overtex2"), 0f), //eye
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_overtex3"), 0f), //liquid
                     new KeyValuePair<int, float>(Shader.PropertyToID("_DetailMask"), 0f), //hair
                     new KeyValuePair<int, float>(Shader.PropertyToID("_GlassRamp"), 0f), //items/glasses
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_Texture2"), 0f), //liquid
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_Texture3"), 0f), //liquid
                     new KeyValuePair<int, float>(Shader.PropertyToID("_ColorMask"), 1f), //items/glasses
                 };
 
@@ -114,6 +142,7 @@ namespace alphaShot
         {
             var renderCam = Camera.main;
             var targetTexture = renderCam.targetTexture;
+            var rta = RenderTexture.active;
             var rect = renderCam.rect;
             var backgroundColor = renderCam.backgroundColor;
             var clearFlags = renderCam.clearFlags;
@@ -181,7 +210,7 @@ namespace alphaShot
             RenderTexture.active = rt_temp;
             t2d.ReadPixels(new Rect(0f, 0f, rw, rh), 0, 0);
             t2d.Apply();
-            RenderTexture.active = null;
+            RenderTexture.active = rta;
             renderCam.backgroundColor = backgroundColor;
             renderCam.clearFlags = clearFlags;
             RenderTexture.ReleaseTemporary(rt_temp);

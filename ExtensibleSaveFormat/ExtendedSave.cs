@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ExtensibleSaveFormat
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.extendedsave", Name: "Extended Save", Version: "1.2")]
+    [BepInPlugin(GUID: "com.bepis.bepinex.extendedsave", Name: "Extended Save", Version: "1.3")]
     public class ExtendedSave : BaseUnityPlugin
     {
         void Awake()
@@ -47,14 +47,25 @@ namespace ExtensibleSaveFormat
             if (file == null || id == null)
                 return null;
 
-            if (internalDictionary.Get(file).TryGetValue(id, out var extendedSection))
+            var dict = internalDictionary.Get(file);
+
+            if (dict != null && dict.TryGetValue(id, out var extendedSection))
                 return extendedSection;
+
             return null;
         }
 
         public static void SetExtendedDataById(ChaFile file, string id, PluginData extendedFormatData)
         {
-            internalDictionary.Get(file)[id] = extendedFormatData;
+            Dictionary<string, PluginData> chaDictionary = internalDictionary.Get(file);
+
+            if (chaDictionary == null)
+            {
+                chaDictionary = new Dictionary<string, PluginData>();
+                internalDictionary.Set(file, chaDictionary);
+            }
+
+            chaDictionary[id] = extendedFormatData;
         }
     }
 }

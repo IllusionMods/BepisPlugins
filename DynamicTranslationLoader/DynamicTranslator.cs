@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace DynamicTranslationLoader
 {
@@ -18,9 +19,14 @@ namespace DynamicTranslationLoader
 
         private static Dictionary<WeakReference, string> originalTranslations = new Dictionary<WeakReference, string>();
 
-        private static List<string> untranslated = new List<string>();
+        private static HashSet<string> untranslated = new HashSet<string>();
 
-        
+        public static event Func<object, string, string> OnUnableToTranslateUGUI;
+
+        public static event Func<object, string, string> OnUnableToTranslateTextMeshPro;
+
+
+
         Event ReloadTranslationsKeyEvent = Event.KeyboardEvent("f10");
         Event DumpUntranslatedTextKeyEvent = Event.KeyboardEvent("#f10");
 
@@ -57,20 +63,37 @@ namespace DynamicTranslationLoader
 
         void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
-            TranslateScene(scene);
+            //TranslateScene(scene);
         }
 
         public static string Translate(string input, object obj)
         {
+            if(string.IsNullOrEmpty(input)) return input;
+
+            // Consider changing this! You have a dictionary, but you iterate instead of making a lookup. Why do you not use the WeakKeyDictionary, you have instead? 
             if (!originalTranslations.Any(x => x.Key.Target == obj)) //check if we don't have the object in the dictionary
             {
                 //add to untranslated list
                 originalTranslations.Add(new WeakReference(obj), input);
             }
 
-            if (translations.ContainsKey(input))
-                return translations[input];
+            string translation;
+            if (translations.TryGetValue(input, out translation))
+            { 
+                return translation;
+            }
+            else if(obj is Text)
+            {
+                var immediatelyTranslated = OnUnableToTranslateUGUI?.Invoke( obj, input );
+                if( immediatelyTranslated != null ) return immediatelyTranslated;
+            }
+            else if(obj is TMP_Text)
+            {
+                var immediatelyTranslated = OnUnableToTranslateTextMeshPro?.Invoke( obj, input );
+                if( immediatelyTranslated != null ) return immediatelyTranslated;
+            }
             
+            // Consider changing this! You make a value lookup in a dictionary, which scales really poorly
             if (!untranslated.Contains(input) && !translations.ContainsValue(input))
                 untranslated.Add(input);
 
@@ -136,13 +159,13 @@ namespace DynamicTranslationLoader
 
         void TranslateScene(Scene scene)
         {
-            foreach (GameObject obj in scene.GetRootGameObjects())
-                foreach (TextMeshProUGUI gameObject in obj.GetComponentsInChildren<TextMeshProUGUI>(true))
-                {
-                    //gameObject.text = "Harsh is shit";
+            //foreach (GameObject obj in scene.GetRootGameObjects())
+            //    foreach (TextMeshProUGUI gameObject in obj.GetComponentsInChildren<TextMeshProUGUI>(true))
+            //    {
+            //        //gameObject.text = "Harsh is shit";
 
-                    gameObject.text = Translate(gameObject.text, gameObject);
-                }
+            //        gameObject.text = Translate(gameObject.text, gameObject);
+            //    }
         }
 
         void Dump()
@@ -180,15 +203,15 @@ namespace DynamicTranslationLoader
 
 
         #region MonoBehaviour
-        void OnEnable()
-        {
-            SceneManager.sceneLoaded += LevelFinishedLoading;
-        }
+        //void OnEnable()
+        //{
+        //    SceneManager.sceneLoaded += LevelFinishedLoading;
+        //}
 
-        void OnDisable()
-        {
-            SceneManager.sceneLoaded -= LevelFinishedLoading;
-        }
+        //void OnDisable()
+        //{
+        //    SceneManager.sceneLoaded -= LevelFinishedLoading;
+        //}
         #endregion
     }
 }

@@ -9,9 +9,11 @@ namespace ResourceRedirector
 {
     public static class ListLoader
     {
-        internal const int CategoryMultiplier = 1000000; //was originally 1000 but that means the limit is 999 for each item
+        internal static int CategoryMultiplier = 1000000; //was originally 1000 but that means the limit is 999 for each item
 
         private static FieldInfo r_dictListInfo = typeof(ChaListControl).GetField("dictListInfo", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        public static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
 
         public static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
 
@@ -22,6 +24,8 @@ namespace ResourceRedirector
 
         internal static void LoadAllLists(ChaListControl instance)
         {
+            InternalDataList = r_dictListInfo.GetValue<Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>>(instance);
+            
             foreach (ChaListData data in ExternalDataList)
                 LoadList(instance, data);
 

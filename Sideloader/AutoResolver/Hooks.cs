@@ -1,15 +1,13 @@
-﻿using System;
-using ExtensibleSaveFormat;
+﻿using ExtensibleSaveFormat;
 using Harmony;
 using System.Collections.Generic;
 using System.Linq;
+using Illusion.Extensions;
 
 namespace Sideloader.AutoResolver
 {
 	public static class Hooks
 	{
-		private static ChaFileCustom lastLoadedInstance = null;
-
 		public static void InstallHooks()
 		{
 			ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
@@ -21,16 +19,32 @@ namespace Sideloader.AutoResolver
 
 		private static void ExtendedCardLoad(ChaFile file)
 		{
-		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileFaceProperties, lastLoadedInstance.face, file);
-		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileBodyProperties, lastLoadedInstance.body, file);
-		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileHairProperties, lastLoadedInstance.hair, file);
-		}
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileFaceProperties, file.custom.face, file);
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileBodyProperties, file.custom.body, file);
+		    UniversalAutoResolver.ResolveStructure(StructReference.ChaFileHairProperties, file.custom.hair, file);
+
+		    for (int i = 0; i < file.coordinate.Length; i++)
+		    {
+		        var coordinate = file.coordinate[i];
+		        string prefix = $"outfit{i}.";
+                
+		        UniversalAutoResolver.ResolveStructure(StructReference.ChaFileClothesProperties, coordinate.clothes, file, prefix);
+		        UniversalAutoResolver.ResolveStructure(StructReference.ChaFileMakeupProperties, coordinate.makeup, file, prefix);
+
+		        for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
+		        {
+		            string accPrefix = $"{prefix}accessory{acc}.";
+
+		            UniversalAutoResolver.ResolveStructure(StructReference.ChaFileAccessoryPartsInfoProperties, coordinate.accessory.parts[acc], file, accPrefix);
+		        }
+		    }
+        }
 
 		private static void ExtendedCardSave(ChaFile file)
 		{
 			List<ResolveInfo> resolutionInfo = new List<ResolveInfo>();
 
-		    void IterateStruct(object obj, Dictionary<CategoryProperty, StructValue<int>> dict)
+		    void IterateStruct(object obj, Dictionary<CategoryProperty, StructValue<int>> dict, string propertyPrefix = "")
 		    {
 		        foreach (var kv in dict)
 		        {
@@ -41,9 +55,12 @@ namespace Sideloader.AutoResolver
 
 		            if (info != null)
 		            {
-		                kv.Value.SetMethod(obj, info.Slot);
+		                var newInfo = info.DeepCopy();
+		                newInfo.Property = $"{propertyPrefix}{newInfo.Property}";
 
-		                resolutionInfo.Add(info);
+		                kv.Value.SetMethod(obj, newInfo.Slot);
+
+		                resolutionInfo.Add(newInfo);
 		            }
 		        }
 		    }
@@ -52,25 +69,29 @@ namespace Sideloader.AutoResolver
 		    IterateStruct(file.custom.body, StructReference.ChaFileBodyProperties);
 		    IterateStruct(file.custom.hair, StructReference.ChaFileHairProperties);
 
-		    //foreach (var coordinate in file.coordinate)
-		    //{
-		    //    IterateStruct(file.coordinate., StructReference.ChaFileFaceProperties);
-		    //    IterateStruct(file.custom.face, StructReference.ChaFileFaceProperties);
-		    //}
+            for (int i = 0; i < file.coordinate.Length; i++)
+		    {
+		        var coordinate = file.coordinate[i];
+		        string prefix = $"outfit{i}.";
 
-			ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
+                IterateStruct(coordinate.clothes, StructReference.ChaFileClothesProperties, prefix);
+                IterateStruct(coordinate.makeup, StructReference.ChaFileMakeupProperties, prefix);
+
+		        for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
+		        {
+		            string accPrefix = $"{prefix}accessory{acc}.";
+                    
+		            IterateStruct(coordinate.accessory.parts[acc], StructReference.ChaFileAccessoryPartsInfoProperties, accPrefix);
+		        }
+            }
+
+            ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
 			{
 				data = new Dictionary<string, object>
 				{
 					{"info", resolutionInfo.Select(x => x.Serialize()).ToList()}
 				}
 			});
-		}
-
-		[HarmonyPostfix, HarmonyPatch(typeof(ChaFileCustom), "LoadBytes")]
-		public static void LoadBytesPostHook(ChaFileCustom __instance)
-		{
-			lastLoadedInstance = __instance;
 		}
 	}
 }
