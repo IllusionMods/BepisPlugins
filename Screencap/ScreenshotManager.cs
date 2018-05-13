@@ -52,7 +52,7 @@ namespace Screencap
 
         #endregion
 
-        private string filename => Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}.png");
+        private string filename => Path.GetFullPath(Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png"));
 
         void Awake()
         {
