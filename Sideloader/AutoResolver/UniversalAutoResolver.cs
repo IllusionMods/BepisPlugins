@@ -20,14 +20,18 @@ namespace Sideloader.AutoResolver
 
             var extData = ExtendedSave.GetExtendedDataById(save, UARExtID);
 
+            IEnumerable<ResolveInfo> extInfo;
+
             if (extData == null || !extData.data.ContainsKey("info"))
             {
-                //BepInLogger.Log($"No info to load!");
-                return;
+                extInfo = null;
+                BepInLogger.Log("Nothing to load!");
             }
-
-            var tmpExtInfo = (object[])extData.data["info"];
-            var extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x));
+            else
+            {
+                var tmpExtInfo = (object[])extData.data["info"];
+                extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x));
+            }
 
             //BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
             //foreach (ResolveInfo info in LoadedResolutionInfo)
@@ -42,43 +46,60 @@ namespace Sideloader.AutoResolver
 
             foreach (var kv in propertyDict)
             {
-                var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
-
-                if (extResolve != null)
+                if (extInfo != null)
                 {
-                    //the property has external slot information 
-                    var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve));
+                    var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
 
-                    if (intResolve != null)
+                    if (extResolve != null)
                     {
-                        //found a match to a corrosponding internal mod
-                        BepInLogger.Log($"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
+                        //the property has external slot information 
+                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x =>
+                            x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve));
 
-                        kv.Value.SetMethod(structure, intResolve.LocalSlot);
-                    }
-                    else
-                    {
-                        //did not find a match, we don't have the mod
-                        BepInLogger.Log($"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]", true, ConsoleColor.Yellow);
+                        if (intResolve != null)
+                        {
+                            //found a match to a corrosponding internal mod
+                            BepInLogger.Log(
+                                $"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
 
-                        kv.Value.SetMethod(structure, 999999); //set to an invalid ID
+                            kv.Value.SetMethod(structure, intResolve.LocalSlot);
+                        }
+                        else
+                        {
+                            //did not find a match, we don't have the mod
+                            BepInLogger.Log($"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]", true,
+                                ConsoleColor.Yellow);
+
+                            kv.Value.SetMethod(structure, 999999); //set to an invalid ID
+                        }
                     }
                 }
                 else
                 {
-                    //the property does not have external slot information
-                    //check if we have a corrosponding item for backwards compatbility
-                    var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
-                                                                              && x.Slot == kv.Value.GetMethod(structure));
-
-                    if (intResolve != null)
+                    //check if it's a vanilla item
+                    if (!ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category]
+                        .ContainsKey(kv.Value.GetMethod(structure)))
                     {
-                        //found a match
-                        BepInLogger.Log($"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+                        //the property does not have external slot information
+                        //check if we have a corrosponding item for backwards compatbility
+                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
+                                                                                  && x.Slot == kv.Value.GetMethod(structure));
 
-                        kv.Value.SetMethod(structure, intResolve.LocalSlot);
+                        if (intResolve != null)
+                        {
+                            //found a match
+                            BepInLogger.Log($"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+
+                            kv.Value.SetMethod(structure, intResolve.LocalSlot);
+                        }
+                        //otherwise ignore if not found
                     }
-                    //otherwise ignore if not found
+                    else
+                    {
+                        //not resolving since we prioritize vanilla items over modded items
+                        //BepInLogger.Log($"[UAR] Not resolving item due to vanilla ID range");
+                        //log commented out because it causes too much spam
+                    }
                 }
             }
         }

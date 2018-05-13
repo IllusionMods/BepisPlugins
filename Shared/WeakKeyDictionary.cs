@@ -33,15 +33,12 @@ namespace BepisPlugins
 
         public TValue Get(TKey key)
         {
-            TValue value;
-            if (!Items.TryGetValue(new HashedWeakReference(key), out value))
-            {
-                return null;
-            }
-            else
+            if (Items.TryGetValue(new HashedWeakReference(key), out TValue value))
             {
                 return value;
             }
+
+            return null;
         }
     }
 }
