@@ -100,20 +100,19 @@ namespace alphaShot
         }
 
         //TODO: Switch depending on shader type, clean this brute force shit up
-        int[] potentials = new[] {
-                    Shader.PropertyToID("_MainTex"), //regular tex
-                    Shader.PropertyToID("_NormalMap"), //Pantyhose
-                    Shader.PropertyToID("_NormalMapDetail"),
-                    Shader.PropertyToID("_HairGloss"),  //Shader Forge/main_hair
-                    Shader.PropertyToID("_overtex1"),  //eye
-                    Shader.PropertyToID("_overtex2"),  //eye
-                    Shader.PropertyToID("_overtex3"),  //liquid
-                    
-                    Shader.PropertyToID("_DetailMask"),  //hair
-                    Shader.PropertyToID("_GlassRamp"),  //items/glasses
-                    Shader.PropertyToID("_Texture2"),  //liquid
-                    Shader.PropertyToID("_Texture3"),  //liquid
-
+        KeyValuePair<int, float>[] potentials = new[] {
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_MainTex"), 0f), //regular tex
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_NormalMap"), 0f), //Pantyhose
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_NormalMapDetail"), 0f),
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_HairGloss"), 0f), //Shader Forge/main_hair
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_overtex1"), 0f), //eye
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_overtex2"), 0f), //eye
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_overtex3"), 0f), //liquid
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_DetailMask"), 0f), //hair
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_GlassRamp"), 0f), //items/glasses
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_Texture2"), 0f), //liquid
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_Texture3"), 0f), //liquid
+                    new KeyValuePair<int, float>(Shader.PropertyToID("_ColorMask"), 1f), //items/glasses
                 };
 
         int[] potentials2 = new[] {
@@ -168,11 +167,11 @@ namespace alphaShot
                     {
                         var p = new Dictionary<int, Texture>();
                         foreach (var potential in potentials)
-                            if (m.HasProperty(potential))
+                            if (m.HasProperty(potential.Key))
                             {
-                                var gt = m.GetTexture(potential);
-                                p[potential] = gt;
-                                m.SetTexture(potential, Blackout(gt));
+                                var gt = m.GetTexture(potential.Key);
+                                p[potential.Key] = gt;
+                                m.SetTexture(potential.Key, Blackout(gt, potential.Value));
                             }
 
                         var p2 = new Dictionary<int, float>();
@@ -234,7 +233,7 @@ namespace alphaShot
             return t2d;
         }
 
-        Texture2D Blackout(Texture source)
+        Texture2D Blackout(Texture source, float bw = 0f)
         {
             if (source == null) return null;
             var dup = duplicateTexture(source);
@@ -242,9 +241,9 @@ namespace alphaShot
             var pixels = dup.GetPixels();
             for (int i = 0; i < pixels.Length; i++)
             {
-                pixels[i].r = 0;
-                pixels[i].g = 0;
-                pixels[i].b = 0;
+                pixels[i].r = bw;
+                pixels[i].g = bw;
+                pixels[i].b = bw;
             }
             dup.SetPixels(pixels);
             dup.Apply();

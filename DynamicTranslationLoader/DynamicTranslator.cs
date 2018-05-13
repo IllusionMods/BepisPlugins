@@ -188,6 +188,7 @@ namespace DynamicTranslationLoader
 
         void Update()
         {
+            if (Event.current == null) return;
             if (UnityEngine.Event.current.Equals(ReloadTranslationsKeyEvent))
             {
                 Retranslate();
