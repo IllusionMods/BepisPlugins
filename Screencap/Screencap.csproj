@@ -83,6 +83,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\blackout.unity3d" />
+    <None Include="shader_source\alphaMask.shader" />
+    <None Include="shader_source\blackout.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
