@@ -10,6 +10,19 @@ namespace alphaShot
 {
     public class AlphaShot2 : MonoBehaviour
     {
+        private Material matBlackout = null;
+        private Material matMask = null;
+        private int col = Shader.PropertyToID("_TargetColour");
+
+        void Awake()
+        {
+            var abd = Screencap.Properties.Resources.blackout;
+            var ab = AssetBundle.LoadFromMemory(abd);
+            matBlackout = new Material(ab.LoadAsset<Shader>("assets/blackout.shader"));
+            matMask = new Material(ab.LoadAsset<Shader>("assets/alphamask.shader"));
+            ab.Unload(false);
+        }
+
         private class MaterialInfo   //pls no bully
         {
             public Material m = null;
@@ -42,11 +55,15 @@ namespace alphaShot
             RenderTexture.active = rta;
             RenderTexture.ReleaseTemporary(rt);
 
-            byte[] ret = ss.EncodeToPNG();
+            var texture2D4 = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
+            var pixels = ScaleUnityTexture.ScaleLanczos(ss.GetPixels32(), ss.width, ResolutionX, ResolutionY);
+            texture2D4.SetPixels32(pixels);
+            GameObject.Destroy(ss);
+            byte[] ret = texture2D4.EncodeToPNG();
+            GameObject.Destroy(texture2D4);
 
             return ret;
         }
-
 
         private byte[] CaptureAlpha(int ResolutionX, int ResolutionY, int DownscalingRate)
         {
@@ -63,23 +80,25 @@ namespace alphaShot
             var texture2D = PerformCapture(ResolutionX, ResolutionY, DownscalingRate, true);
             var texture2D2 = PerformCapture(ResolutionX, ResolutionY, DownscalingRate, false);
 
-            var texture2D3 = new Texture2D(texture2D.width, texture2D.height, TextureFormat.ARGB32, false);
-
-            var pixels = texture2D.GetPixels();
-            var pixels2 = texture2D2.GetPixels();
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                var a = 1 - pixels[i].r;
-                pixels2[i].a = a;
-            }
-            texture2D3.SetPixels(pixels2);
-            texture2D3.Apply();
-
-            byte[] ret = texture2D3.EncodeToPNG();
-
+            var rt = RenderTexture.GetTemporary(texture2D.width, texture2D.height, 0, RenderTextureFormat.ARGB32);
+            matMask.SetTexture("_Mask", texture2D);
+            Graphics.Blit(texture2D2, rt, matMask);
             GameObject.Destroy(texture2D);
             GameObject.Destroy(texture2D2);
+            var texture2D3 = new Texture2D(rt.width, rt.height, TextureFormat.ARGB32, false);
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            texture2D3.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0, false);
+            RenderTexture.active = prev;
+            RenderTexture.ReleaseTemporary(rt);
+
+            var texture2D4 = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
+            var pixels = ScaleUnityTexture.ScaleLanczos(texture2D3.GetPixels32(), texture2D3.width, ResolutionX, ResolutionY);
+            texture2D4.SetPixels32(pixels);
             GameObject.Destroy(texture2D3);
+            byte[] ret = texture2D4.EncodeToPNG();
+
+            GameObject.Destroy(texture2D4);
 
             if (baf) baf.enabled = baf_e.Value;
             if (vig) vig.enabled = vig_e.Value;
@@ -233,41 +252,13 @@ namespace alphaShot
             return t2d;
         }
 
-        Texture2D Blackout(Texture source, float bw = 0f)
+        Texture Blackout(Texture source, float bw = 0f)
         {
             if (source == null) return null;
-            var dup = duplicateTexture(source);
-
-            var pixels = dup.GetPixels();
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                pixels[i].r = bw;
-                pixels[i].g = bw;
-                pixels[i].b = bw;
-            }
-            dup.SetPixels(pixels);
-            dup.Apply();
-            return dup;
-        }
-
-        Texture2D duplicateTexture(Texture source)
-        {
-            RenderTexture renderTex = RenderTexture.GetTemporary(
-                        source.width,
-                        source.height,
-                        0,
-                        RenderTextureFormat.Default,
-                        RenderTextureReadWrite.Linear);
-
-            Graphics.Blit(source, renderTex);
-            RenderTexture previous = RenderTexture.active;
-            RenderTexture.active = renderTex;
-            Texture2D readableText = new Texture2D(source.width, source.height);
-            readableText.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
-            readableText.Apply();
-            RenderTexture.active = previous;
-            RenderTexture.ReleaseTemporary(renderTex);
-            return readableText;
+            matBlackout.SetColor(col, new Color(bw, bw, bw));
+            var rt = RenderTexture.GetTemporary(source.width, source.height);
+            Graphics.Blit(source, rt, matBlackout);
+            return rt;
         }
     }
 }
