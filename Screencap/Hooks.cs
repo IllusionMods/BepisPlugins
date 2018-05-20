@@ -39,11 +39,27 @@ namespace Screencap
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
-        public static void post_CreatePng(ref byte[] pngData)
+        public static void post_CreatePng(ref byte[] pngData) => DownscaleEncoded(ref pngData);
+
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.GameScreenShot), "CreatePngScreen")]
+        public static bool pre_CreatePngScreen(ref int _width, ref int _height)
         {
+            //Multiply up render resolution.
+            _width *= RenderRate;
+            _height *= RenderRate;
+            return true;
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Studio.GameScreenShot), "CreatePngScreen")]
+        public static void post_CreatePngScreen(ref byte[] __result) => DownscaleEncoded(ref __result);
+
+        private static void DownscaleEncoded(ref byte[] encoded)
+        {
+            if (RenderRate <= 1) return;
+
             //Texture buffer for fullres.
             var t2d = new Texture2D(2, 2);
-            t2d.LoadImage(pngData);
+            t2d.LoadImage(encoded);
 
             //New width/height after downsampling.
             var nw = t2d.width / RenderRate;
@@ -56,7 +72,7 @@ namespace Screencap
             //Load pixel data into a new texture, encode to PNG and overwrite original result.
             var np = new Texture2D(nw, nh);
             np.SetPixels32(pixels);
-            pngData = np.EncodeToPNG();
+            encoded = np.EncodeToPNG();
             GameObject.Destroy(np);
         }
     }
