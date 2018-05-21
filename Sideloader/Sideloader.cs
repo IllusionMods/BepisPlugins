@@ -69,7 +69,7 @@ namespace Sideloader
                     continue;
                 }
 
-                string name = !string.IsNullOrEmpty(manifest.Name.Trim())
+                string name = !string.IsNullOrEmpty(manifest.Name?.Trim())
                     ? manifest.Name
                     : Path.GetFileName(archivePath);
 
