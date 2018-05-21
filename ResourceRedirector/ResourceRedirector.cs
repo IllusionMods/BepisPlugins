@@ -43,7 +43,10 @@ namespace ResourceRedirector
                     if (handler.Invoke(assetBundleName, assetName, type, manifestAssetBundleName, out AssetBundleLoadAssetOperation result))
                         return result;
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    BepInLogger.Log(ex.ToString());
+                }
             }
 
             //emulate asset load
