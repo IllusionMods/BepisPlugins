@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
+using ADV;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -12,7 +15,8 @@ using UnityEngine.UI;
 
 namespace DynamicTranslationLoader
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.dynamictranslator", Name: "Dynamic Translator", Version: "2.1")]
+    [BepInDependency("com.bepis.bepinex.resourceredirector")]
+    [BepInPlugin(GUID: "com.bepis.bepinex.dynamictranslator", Name: "Dynamic Translator", Version: "3.0")]
     public class DynamicTranslator : BaseUnityPlugin
     {
         private static Dictionary<string, string> translations = new Dictionary<string, string>();
@@ -36,6 +40,8 @@ namespace DynamicTranslationLoader
             LoadTranslations();
 
             Hooks.InstallHooks();
+
+            ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
 
             TranslateAll();
         }
@@ -213,5 +219,126 @@ namespace DynamicTranslationLoader
         //    SceneManager.sceneLoaded -= LevelFinishedLoading;
         //}
         #endregion
+
+        
+
+        private static FieldInfo f_commandPacks =
+            typeof(TextScenario).GetField("commandPacks", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        private static readonly string scenarioDir = Path.Combine(Utility.PluginsDirectory, "translation\\scenario");
+
+
+        public static T ManualLoadAsset<T>(string bundle, string asset, string manifest) where T : UnityEngine.Object
+        {
+            string path = $@"{Application.dataPath}\..\{(string.IsNullOrEmpty(manifest) ? "abdata" : manifest)}\{bundle}";
+
+            var assetBundle = AssetBundle.LoadFromFile(path);
+
+            T output = assetBundle.LoadAsset<T>(asset);
+            assetBundle.Unload(false);
+
+            return output;
+        }
+
+        protected IEnumerable<IEnumerable<string>> SplitAndEscape(string source)
+        {
+            StringBuilder bodyBuilder = new StringBuilder();
+
+            // here we build rows, one by one
+            int i = 0;
+            var row = new List<string>();
+            var limit = source.Length;
+            bool inQuote = false;
+
+            while (i < limit)
+            {
+                if (source[i] == '\r')
+                {
+                    //( ͠° ͜ʖ °)
+                }
+                else if (source[i] == ',' && !inQuote)
+                {
+                    row.Add(bodyBuilder.ToString());
+                    bodyBuilder.Length = 0; //.NET 2.0 ghetto clear
+                }
+                else if (source[i] == '\n' && !inQuote)
+                {
+                    if (bodyBuilder.Length != 0 || row.Count != 0)
+                    {
+                        row.Add(bodyBuilder.ToString());
+                        bodyBuilder.Length = 0; //.NET 2.0 ghetto clear
+                    }
+
+                    yield return row;
+                    row.Clear();
+                }
+                else if (source[i] == '"')
+                {
+                    if (!inQuote)
+                        inQuote = true;
+                    else
+                    {
+                        if (i + 1 < limit
+                            && source[i + 1] == '"')
+                        {
+                            bodyBuilder.Append('"');
+                            i++;
+                        }
+                        else
+                            inQuote = false;
+                    }
+                }
+                else
+                {
+                    bodyBuilder.Append(source[i]);
+                }
+
+                i++;
+            }
+
+            if (bodyBuilder.Length > 0)
+                row.Add(bodyBuilder.ToString());
+
+            if (row.Count > 0)
+                yield return row;
+        }
+
+
+        protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
+        {
+            if (type == typeof(ScenarioData))
+            {
+                string scenarioPath = Path.Combine(scenarioDir, Path.Combine(assetBundleName, $"{assetName}.csv")).Replace('/', '\\').Replace(".unity3d", "").Replace(@"adv\scenario\", "");
+                
+                if (File.Exists(scenarioPath))
+                {
+                    var rawData = ManualLoadAsset<ScenarioData>(assetBundleName, assetName, manifestAssetBundleName);
+
+                    rawData.list.Clear();
+
+                    foreach (IEnumerable<string> line in SplitAndEscape(File.ReadAllText(scenarioPath, Encoding.UTF8)))
+                    {
+                        string[] data = line.ToArray();
+                        BepInLogger.Log(string.Join(",", data));
+
+                        string[] args = new string[data.Length - 4];
+
+                        Array.Copy(data, 4, args, 0, args.Length);
+
+                        ScenarioData.Param param = new ScenarioData.Param(bool.Parse(data[3]), (Command)int.Parse(data[2]), args);
+
+                        param.SetHash(int.Parse(data[0]));
+
+                        rawData.list.Add(param);
+                    }
+
+                    result = new AssetBundleLoadAssetOperationSimulation(rawData);
+                    return true;
+                }
+            }
+
+            result = null;
+            return false;
+        }
     }
 }
