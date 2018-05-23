@@ -2,55 +2,55 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Reflection;
 
 namespace ConfigurationManager
 {
     [BepInPlugin(GUID: "com.bepis.bepinex.configurationmanager", Name: "Configuration Manager", Version: "1.0")]
-    public partial class ConfigurationManager : BaseUnityPlugin
+    public class ConfigurationManager : BaseUnityPlugin
     {
-        void Start()
-        {
+        private readonly Type baseSettingType = typeof(ConfigWrapper<>);
 
+        private List<SettingEntry> BuildSettingList()
+        {
+            var list = new List<SettingEntry>();
+
+            foreach (var plugin in FindPlugins())
+            {
+                var type = plugin.GetType();
+
+                var pluginInfo = type.GetCustomAttributes(typeof(BepInPlugin), false).Cast<BepInPlugin>().FirstOrDefault();
+                if (pluginInfo == null)
+                {
+                    BepInLogger.Log($"Error: Plugin {type.FullName} is missing the BepInPlugin attribute!");
+                    continue;
+                }
+
+                var settingProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
+                list.AddRange(settingProps.Select((x) => SettingEntry.FromConfigWrapper(plugin, x, pluginInfo)).Where(x => x.Browsable));
+
+                var settingPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
+                list.AddRange(settingPropsStatic.Select((x) => SettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x.Browsable));
+
+                //TODO scan normal properties too
+            }
+
+            return list;
         }
 
-        void Update()
-        {
-
-        }
-
-        BaseUnityPlugin[] FindPlugins()
+        private BaseUnityPlugin[] FindPlugins()
         {
             return FindObjectsOfType<BaseUnityPlugin>();
         }
 
-        void BuildSettingList()
+        private void Start()
         {
-            var settingType = typeof(ConfigWrapper<>);
-            foreach (var plugin in FindPlugins())
-            {
-                var type = plugin.GetType();
-                var settingProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Where(x => IsSubclassOfRawGeneric(settingType, x.PropertyType));
-
-                var settingEntries = settingProps.Select((x) => SettingEntry.FromConfigWrapper(plugin, x)).Where(x => x.Browsable).ToList();
-                
-            }
         }
 
-        static bool IsSubclassOfRawGeneric(Type generic, Type toCheck)
+        private void Update()
         {
-            while (toCheck != null && toCheck != typeof(object))
-            {
-                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
-                if (generic == cur)
-                {
-                    return true;
-                }
-                toCheck = toCheck.BaseType;
-            }
-            return false;
         }
     }
 }
