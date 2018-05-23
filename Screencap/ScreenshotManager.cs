@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 
 namespace Screencap
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.screenshotmanager", Name: "Screenshot Manager", Version: "2.1")]
+    [BepInPlugin(GUID: "com.bepis.bepinex.screenshotmanager", Name: "Screenshot Manager", Version: "2.2")]
     public class ScreenshotManager : BaseUnityPlugin
     {
         private string screenshotDir = Path.Combine(Application.dataPath, "..\\UserData\\cap\\");
