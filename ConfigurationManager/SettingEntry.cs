@@ -86,7 +86,11 @@ namespace ConfigurationManager
                 entry.dispName = wrapper.GetType().GetProperty("Key", BindingFlags.Instance | BindingFlags.Public).GetValue(wrapper, null) as string;
 
             if (string.IsNullOrEmpty(entry.category))
-                entry.category = wrapper.GetType().GetProperty("Section", BindingFlags.Instance | BindingFlags.Public).GetValue(wrapper, null) as string;
+            {
+                var section = wrapper.GetType().GetProperty("Section", BindingFlags.Instance | BindingFlags.Public).GetValue(wrapper, null) as string;
+                if (section != pluginInfo.GUID)
+                    entry.category = section;
+            }
 
             var valueProp = wrapper.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
 

@@ -17,5 +17,18 @@ namespace ConfigurationManager
             }
             return false;
         }
+
+        public static void SetGameCanvasInputsEnabled(bool mouseInputEnabled)
+        {
+            foreach (var c in UnityEngine.Object.FindObjectsOfType<UnityEngine.UI.GraphicRaycaster>())
+            {
+                c.enabled = mouseInputEnabled;
+            }
+        }
+
+        public static BepInEx.BaseUnityPlugin[] FindPlugins()
+        {
+            return UnityEngine.Object.FindObjectsOfType<BepInEx.BaseUnityPlugin>();
+        }
     }
 }
