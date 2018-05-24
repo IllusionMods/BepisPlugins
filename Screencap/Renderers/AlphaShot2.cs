@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
 
@@ -21,35 +20,47 @@ namespace alphaShot
             ab.Unload(false);
         }
 
-        private class MaterialInfo   //pls no bully
+        public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
         {
-            public Material m = null;
-            public Dictionary<int, Texture> tex_props = new Dictionary<int, Texture>();
-            public Dictionary<int, float> float_props = new Dictionary<int, float>();
-            public Dictionary<int, Color> col_props = new Dictionary<int, Color>();
-        }
+            Texture2D fullSizeCapture = null;
+            int newWidth = ResolutionX * DownscalingRate;
+            int newHeight = ResolutionY * DownscalingRate;
 
-        public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate, bool CaptureAlpha)
-        {
             var currentScene = SceneManager.GetActiveScene().name;
-            if (CaptureAlpha && (currentScene == "CustomScene" || currentScene == "Studio")) return this.CaptureAlpha(ResolutionX, ResolutionY, DownscalingRate);
-            else return CaptureOpaque(ResolutionX, ResolutionY, DownscalingRate);
+            if (Transparent && (currentScene == "CustomScene" || currentScene == "Studio"))
+                fullSizeCapture = CaptureAlpha(newWidth, newHeight);
+            else
+                fullSizeCapture = CaptureOpaque(newWidth, newHeight);
+
+            byte[] ret = null;
+            if (DownscalingRate > 1)
+            {
+                var pixels = ScaleUnityTexture.ScaleLanczos(fullSizeCapture.GetPixels32(), fullSizeCapture.width, ResolutionX, ResolutionY);
+                GameObject.Destroy(fullSizeCapture);
+                var texture2D4 = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
+                texture2D4.SetPixels32(pixels);
+                ret = texture2D4.EncodeToPNG();
+                GameObject.Destroy(texture2D4);
+            }
+            else
+            {
+                ret = fullSizeCapture.EncodeToPNG();
+                GameObject.Destroy(fullSizeCapture);
+            }
+            return ret;
         }
 
-        private byte[] CaptureOpaque(int ResolutionX, int ResolutionY, int DownscalingRate)
+        private Texture2D CaptureOpaque(int ResolutionX, int ResolutionY)
         {
             var renderCam = Camera.main;
             var tt = renderCam.targetTexture;
-            if (DownscalingRate > 1)
-            {
-                ResolutionX *= DownscalingRate;
-                ResolutionY *= DownscalingRate;
-            }
             var rta = RenderTexture.active;
+
             var rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 1);
-            renderCam.targetTexture = rt;
             var ss = new Texture2D(ResolutionX, ResolutionY, TextureFormat.RGB24, false);
             var rect = renderCam.rect;
+
+            renderCam.targetTexture = rt;
             renderCam.rect = new Rect(0, 0, 1, 1);
             renderCam.Render();
             renderCam.rect = rect;
@@ -59,35 +70,12 @@ namespace alphaShot
             RenderTexture.active = rta;
             RenderTexture.ReleaseTemporary(rt);
 
-            byte[] ret = null;
-            if (DownscalingRate > 1)
-            {
-                var texture2D4 = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
-                var pixels = ScaleUnityTexture.ScaleLanczos(ss.GetPixels32(), ss.width, ResolutionX, ResolutionY);
-                texture2D4.SetPixels32(pixels);
-                GameObject.Destroy(ss);
-                ret = texture2D4.EncodeToPNG();
-                GameObject.Destroy(texture2D4);
-            }
-            else
-            {
-                ret = ss.EncodeToPNG();
-                GameObject.Destroy(ss);
-            }
-            
-
-            return ret;
+            return ss;
         }
 
-        private byte[] CaptureAlpha(int ResolutionX, int ResolutionY, int DownscalingRate)
+        private Texture2D CaptureAlpha(int ResolutionX, int ResolutionY)
         {
             var main = Camera.main;
-
-            if (DownscalingRate > 1)
-            {
-                ResolutionX *= DownscalingRate;
-                ResolutionY *= DownscalingRate;
-            }
 
             var baf = main.GetComponent<BloomAndFlares>();
             var baf_e = baf?.enabled;
@@ -97,44 +85,30 @@ namespace alphaShot
             var vig_e = vig?.enabled;
             if (vig) vig.enabled = false;
 
-            var texture2D = PerformCapture(ResolutionX, ResolutionY, DownscalingRate, true);
-            var texture2D2 = PerformCapture(ResolutionX, ResolutionY, DownscalingRate, false);
+            var texture2D = PerformCapture(ResolutionX, ResolutionY, true);
+            var texture2D2 = PerformCapture(ResolutionX, ResolutionY, false);
 
-            var rt = RenderTexture.GetTemporary(texture2D.width, texture2D.height, 0, RenderTextureFormat.ARGB32);
+            var rt = RenderTexture.GetTemporary(texture2D.width, texture2D.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            GL.Clear(false, true, new Color(0, 0, 0, 0));
             matMask.SetTexture("_Mask", texture2D);
             Graphics.Blit(texture2D2, rt, matMask);
             GameObject.Destroy(texture2D);
             GameObject.Destroy(texture2D2);
             var texture2D3 = new Texture2D(rt.width, rt.height, TextureFormat.ARGB32, false);
-            var prev = RenderTexture.active;
-            RenderTexture.active = rt;
             texture2D3.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0, false);
             RenderTexture.active = prev;
             RenderTexture.ReleaseTemporary(rt);
 
-            byte[] ret = null;
-            if (DownscalingRate > 1)
-            {
-                var pixels = ScaleUnityTexture.ScaleLanczos(texture2D3.GetPixels32(), texture2D3.width, ResolutionX, ResolutionY);
-                GameObject.Destroy(texture2D3);
-                var texture2D4 = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
-                texture2D4.SetPixels32(pixels);
-                ret = texture2D4.EncodeToPNG();
-                GameObject.Destroy(texture2D4);
-            }
-            else
-            {
-                ret = texture2D3.EncodeToPNG();
-                GameObject.Destroy(texture2D3);
-            }
-
             if (baf) baf.enabled = baf_e.Value;
             if (vig) vig.enabled = vig_e.Value;
 
-            return ret;
+            return texture2D3;
         }
 
-        public Texture2D PerformCapture(int ResolutionX, int ResolutionY, int DownscalingRate, bool captureAlphaOnly)
+        public Texture2D PerformCapture(int ResolutionX, int ResolutionY, bool CaptureMask)
         {
             var renderCam = Camera.main;
             var targetTexture = renderCam.targetTexture;
@@ -151,8 +125,9 @@ namespace alphaShot
 
             var lc = Shader.GetGlobalColor(ChaShader._LineColorG);
             Shader.SetGlobalColor(ChaShader._LineColorG, new Color(.5f, .5f, .5f, 0f));
-            if (captureAlphaOnly)
+            if (CaptureMask)
             {
+                GL.Clear(true, true, Color.white);
                 renderCam.backgroundColor = Color.white;
                 renderCam.renderingPath = RenderingPath.VertexLit;
                 matBlackout.SetColor(col, Color.black);
