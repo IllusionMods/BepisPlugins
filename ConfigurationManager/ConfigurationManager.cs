@@ -52,9 +52,9 @@ namespace ConfigurationManager
             }
         }
 
-        private static void DrawCenteredLabel(string text)
+        private static void DrawCenteredLabel(string text, params GUILayoutOption[] options)
         {
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(options);
             GUILayout.FlexibleSpace();
             GUILayout.Label(text);
             GUILayout.FlexibleSpace();
@@ -100,7 +100,7 @@ namespace ConfigurationManager
             var size = new Vector2(Mathf.Min(Screen.width - 100, 600), Screen.height - 100);
             var offset = new Vector2((Screen.width - size.x) / 2, (Screen.height - size.y) / 2);
             settingWindowRect = new Rect(offset, size);
-            
+
             var buttonOffsetH = Screen.width * 0.12f;
             var buttonWidth = 215f;
             buttonRect = new Rect(Screen.width - buttonOffsetH - buttonWidth, Screen.height * 0.033f, buttonWidth, Screen.height * 0.04f);
@@ -147,12 +147,7 @@ namespace ConfigurationManager
 
                             foreach (var setting in category.OrderBy(x => x.DispName))
                             {
-                                GUILayout.BeginHorizontal();
-                                {
-                                    GUILayout.Label(setting.DispName);
-                                    GUILayout.TextArea(setting.Get()?.ToString() ?? "NULL");
-                                }
-                                GUILayout.EndHorizontal();
+                                DrawSingleSetting(setting);
                             }
 
                             if (!string.IsNullOrEmpty(category.Key))
@@ -164,6 +159,59 @@ namespace ConfigurationManager
             }
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
+        }
+
+        private void DrawSingleSetting(SettingEntry setting)
+        {
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label(setting.DispName, GUILayout.Width(settingWindowRect.width / 2.5f));
+
+                var value = setting.Get();
+
+                if (setting.SettingType == typeof(bool))
+                {
+                    var boolVal = (bool)value;
+                    var result = GUILayout.Toggle(boolVal, boolVal ? "Enabled" : "Disabled", GUILayout.ExpandWidth(true));
+                    if (result != boolVal)
+                        setting.Set(result);
+                }
+                else if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
+                {
+                    var converted = (float)Convert.ToDouble(value);
+                    var leftValue = (float)Convert.ToDouble(range.MinValue);
+                    var rightValue = (float)Convert.ToDouble(range.MaxValue);
+
+                    var result = GUILayout.HorizontalSlider(converted, leftValue, rightValue, GUILayout.ExpandWidth(true));
+                    if (Math.Abs(result - converted) > Mathf.Abs(rightValue - leftValue) / 1000)
+                    {
+                        var newValue = Convert.ChangeType(result, value.GetType());
+                        setting.Set(newValue);
+                    }
+                    // todo handle decimals and integers
+                    DrawCenteredLabel(Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%", GUILayout.Width(50));
+                }
+                else if (setting.AcceptableValues is AcceptableValueRangeAttribute list)
+                {
+                    //TODO implement
+                }
+                /*else if ()
+                {
+                    //TODO if type can be converted to and from string, show it in a textfield
+                }*/
+                else
+                {
+                    // Unknown type, read only
+                    GUILayout.TextArea(setting.Get()?.ToString() ?? "NULL");
+                }
+
+                if (setting.DefaultValue != null)
+                {
+                    if (GUILayout.Button("Default", GUILayout.ExpandWidth(false)))
+                        setting.Set(setting.DefaultValue);
+                }
+            }
+            GUILayout.EndHorizontal();
         }
 
         private void Start()

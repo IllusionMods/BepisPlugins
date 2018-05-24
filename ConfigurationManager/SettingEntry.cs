@@ -34,6 +34,8 @@ namespace ConfigurationManager
             this.defaultValue = defaultValue;
             this.readOnly = readOnly;
             this.browsable = browsable;
+
+            SettingType = settingProp.PropertyType;
         }
 
         public object Get()
@@ -50,6 +52,8 @@ namespace ConfigurationManager
 
         private Func<object> customGet;
         private Action<object> customSet;
+
+        public Type SettingType { get; private set; }
 
         /// <summary>
         /// Name of the setting
@@ -96,6 +100,8 @@ namespace ConfigurationManager
 
             entry.customGet = () => valueProp.GetValue(wrapper, null);
             entry.customSet = (val) => valueProp.SetValue(wrapper, val, null);
+
+            entry.SettingType = entry.Get().GetType();
 
             return entry;
         }
