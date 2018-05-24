@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using System;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
@@ -10,7 +11,13 @@ namespace ColorCorrector
     public class ColorCorrector : BaseUnityPlugin
     {
         #region Config properties
+        [DisplayName("Enable saturation filter")]
+        [DefaultValue(true)]
         private ConfigWrapper<bool> SaturationEnabled { get; set; }
+
+        [DisplayName("Strength of the bloom filter")]
+        [DefaultValue(1f)]
+        [AcceptableValueRange(0f, 1f)]
         private ConfigWrapper<float> BloomStrength { get; set; }
         #endregion
 
