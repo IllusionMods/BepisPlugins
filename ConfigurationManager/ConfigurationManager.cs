@@ -16,8 +16,9 @@ namespace ConfigurationManager
 
         private List<SettingEntry> settings;
 
-        private Rect settingWindowRect, buttonRect, screenRect;
+        private SettingFieldDrawer fieldDrawer = new SettingFieldDrawer();
 
+        private Rect settingWindowRect, buttonRect, screenRect;
         private Vector2 settingWindowScrollPos;
 
         public bool DisplayingButton
@@ -50,15 +51,6 @@ namespace ConfigurationManager
 
                 Utilities.SetGameCanvasInputsEnabled(!displayingWindow);
             }
-        }
-
-        private static void DrawCenteredLabel(string text, params GUILayoutOption[] options)
-        {
-            GUILayout.BeginHorizontal(options);
-            GUILayout.FlexibleSpace();
-            GUILayout.Label(text);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
         }
 
         private static bool IsConfigOpened()
@@ -128,21 +120,21 @@ namespace ConfigurationManager
 
         private void SettingsWindow(int id)
         {
-            settingWindowScrollPos = GUILayout.BeginScrollView(settingWindowScrollPos, GUI.skin.box);
+            settingWindowScrollPos = GUILayout.BeginScrollView(settingWindowScrollPos);
             GUILayout.BeginVertical();
             {
                 foreach (var plugin in settings.GroupBy(x => x.PluginInfo).OrderBy(x => x.Key))
                 {
                     GUILayout.BeginVertical(GUI.skin.box);
                     {
-                        DrawCenteredLabel($"{plugin.Key.Name} {plugin.Key.Version.ToString()}");
+                        fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name} {plugin.Key.Version.ToString()}");
 
                         foreach (var category in plugin.GroupBy(x => x.Category).OrderBy(x => x.Key))
                         {
                             if (!string.IsNullOrEmpty(category.Key))
                             {
                                 GUILayout.BeginVertical(GUI.skin.box);
-                                DrawCenteredLabel(category.Key);
+                                fieldDrawer.DrawCenteredLabel(category.Key);
                             }
 
                             foreach (var setting in category.OrderBy(x => x.DispName))
@@ -166,34 +158,22 @@ namespace ConfigurationManager
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label(setting.DispName, GUILayout.Width(settingWindowRect.width / 2.5f));
-
-                var value = setting.Get();
-
-                if (setting.SettingType == typeof(bool))
+                
+                if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
                 {
-                    var boolVal = (bool)value;
-                    var result = GUILayout.Toggle(boolVal, boolVal ? "Enabled" : "Disabled", GUILayout.ExpandWidth(true));
-                    if (result != boolVal)
-                        setting.Set(result);
+                    fieldDrawer.DrawRangeField(setting, range);
                 }
-                else if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
+                else if (setting.AcceptableValues is AcceptableValueListAttribute list)
                 {
-                    var converted = (float)Convert.ToDouble(value);
-                    var leftValue = (float)Convert.ToDouble(range.MinValue);
-                    var rightValue = (float)Convert.ToDouble(range.MaxValue);
-
-                    var result = GUILayout.HorizontalSlider(converted, leftValue, rightValue, GUILayout.ExpandWidth(true));
-                    if (Math.Abs(result - converted) > Mathf.Abs(rightValue - leftValue) / 1000)
-                    {
-                        var newValue = Convert.ChangeType(result, value.GetType());
-                        setting.Set(newValue);
-                    }
-                    // todo handle decimals and integers
-                    DrawCenteredLabel(Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%", GUILayout.Width(50));
+                    fieldDrawer.DrawComboboxField(setting, list.AcceptableValues);
                 }
-                else if (setting.AcceptableValues is AcceptableValueRangeAttribute list)
+                else if (setting.SettingType.IsEnum)
                 {
-                    //TODO implement
+                    fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType));
+                }
+                else if (setting.SettingType == typeof(bool))
+                {
+                    fieldDrawer.DrawBoolField(setting);
                 }
                 /*else if ()
                 {
@@ -201,8 +181,7 @@ namespace ConfigurationManager
                 }*/
                 else
                 {
-                    // Unknown type, read only
-                    GUILayout.TextArea(setting.Get()?.ToString() ?? "NULL");
+                    fieldDrawer.DrawUnknownField(setting);
                 }
 
                 if (setting.DefaultValue != null)
@@ -221,9 +200,6 @@ namespace ConfigurationManager
         private void Update()
         {
             DisplayingButton = IsConfigOpened();
-
-            if (DisplayingButton && DisplayingWindow && Input.GetKey(KeyCode.Escape))
-                DisplayingWindow = false;
         }
     }
 }
