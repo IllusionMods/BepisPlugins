@@ -41,9 +41,15 @@ namespace ConfigurationManager
             var wrapper = settingProp.GetValue(instance, null);
 
             var innerProp = wrapper.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
+            
+            PropSettingEntry entry = new PropSettingEntry();
+            entry.SetFromAttributes(innerProp, pluginInfo);
 
-            var entry = FromNormalProperty(wrapper, innerProp, pluginInfo);
+            entry.Browsable = innerProp.CanRead && innerProp.CanWrite && entry.Browsable != false;
 
+            entry.Property = innerProp;
+            entry.Instance = wrapper;
+            
             if (entry.DispName == "Value")
                 entry.DispName = wrapper.GetType().GetProperty("Key", BindingFlags.Instance | BindingFlags.Public).GetValue(wrapper, null) as string;
 
@@ -62,7 +68,7 @@ namespace ConfigurationManager
             PropSettingEntry entry = new PropSettingEntry();
             entry.SetFromAttributes(settingProp, pluginInfo);
 
-            entry.Browsable = settingProp.CanRead && entry.Browsable != false;
+            entry.Browsable = settingProp.CanRead && settingProp.CanWrite && entry.Browsable != false;
 
             entry.Property = settingProp;
             entry.Instance = instance;

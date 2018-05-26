@@ -34,6 +34,9 @@ namespace ConfigurationManager
                     CalculateWindowRect();
 
                     settings = BuildSettingList();
+
+                    if (displayingWindow)
+                        Utilities.SetGameCanvasInputsEnabled(false);
                 }
                 else
                 {
@@ -72,7 +75,7 @@ namespace ConfigurationManager
                     BepInLogger.Log($"Error: Plugin {type.FullName} is missing the BepInPlugin attribute!");
                     continue;
                 }
-                
+
                 // Config wrappers ------
 
                 var settingProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -83,30 +86,36 @@ namespace ConfigurationManager
                 var settingPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                     .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x.Browsable != false));
+                list.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)));
 
                 // Normal properties ------
 
-                var normalProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                var normalProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
                     .FilterBrowsable(true, true)
+                    .Concat(type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                            .FilterBrowsable(true, false))
+                    .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingProps.Select((x) => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
 
-                var normalPropsPrivate = type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic)
-                    .FilterBrowsable(true, false)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingProps.Select((x) => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
+                list.AddRange(normalProps.Select((x) => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
 
-                var normalPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public)
+                var normalPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
                     .FilterBrowsable(true, true)
+                    .Concat(type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
+                            .FilterBrowsable(true, false))
+                    .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)).Where(x => x.Browsable != false));
 
-                var normalPropsStaticPrivate = type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic)
-                    .FilterBrowsable(true, false)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)).Where(x => x.Browsable != false));
+                // Enable/disable mod ------
+                // todo make setting entry impl that saves this to config, then at game start load it up
+                var enabledSetting = PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
+                enabledSetting.DispName = "Enable plugin (temporary)";
+                list.Add(enabledSetting);
+
+                list.AddRange(normalPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
             }
+
+            list.RemoveAll(x => x.Browsable == false);
 
             return list;
         }
@@ -147,7 +156,7 @@ namespace ConfigurationManager
             settingWindowScrollPos = GUILayout.BeginScrollView(settingWindowScrollPos);
             GUILayout.BeginVertical();
             {
-                foreach (var plugin in settings.GroupBy(x => x.PluginInfo).OrderBy(x => x.Key))
+                foreach (var plugin in settings.GroupBy(x => x.PluginInfo).OrderBy(x => x.Key.Name))
                 {
                     GUILayout.BeginVertical(GUI.skin.box);
                     {
