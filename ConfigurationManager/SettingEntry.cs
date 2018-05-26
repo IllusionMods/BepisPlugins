@@ -43,7 +43,7 @@ namespace ConfigurationManager
             var innerProp = wrapper.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
             
             PropSettingEntry entry = new PropSettingEntry();
-            entry.SetFromAttributes(innerProp, pluginInfo);
+            entry.SetFromAttributes(settingProp, pluginInfo);
 
             entry.Browsable = innerProp.CanRead && innerProp.CanWrite && entry.Browsable != false;
 

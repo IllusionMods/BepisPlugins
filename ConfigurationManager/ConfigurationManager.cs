@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -8,6 +9,7 @@ using UnityEngine;
 namespace ConfigurationManager
 {
     [BepInPlugin(GUID: "com.bepis.bepinex.configurationmanager", Name: "Configuration Manager", Version: "1.0")]
+    [Browsable(false)]
     public class ConfigurationManager : BaseUnityPlugin
     {
         private readonly Type baseSettingType = typeof(ConfigWrapper<>);
@@ -15,11 +17,20 @@ namespace ConfigurationManager
         private bool displayingButton, displayingWindow;
 
         private List<PropSettingEntry> settings;
+        private string modsWithoutSettings;
 
         private SettingFieldDrawer fieldDrawer = new SettingFieldDrawer();
 
         private Rect settingWindowRect, buttonRect, screenRect;
         private Vector2 settingWindowScrollPos;
+        private Vector2 mousePosition;
+
+        private static readonly ICollection<string> updateMethodNames = new[] {
+            "Update",
+            "FixedUpdate",
+            "LateUpdate",
+            "OnGUI"
+        };
 
         public bool DisplayingButton
         {
@@ -33,7 +44,7 @@ namespace ConfigurationManager
                 {
                     CalculateWindowRect();
 
-                    settings = BuildSettingList();
+                    BuildSettingList();
 
                     if (displayingWindow)
                         Utilities.SetGameCanvasInputsEnabled(false);
@@ -61,9 +72,10 @@ namespace ConfigurationManager
             return Manager.Scene.Instance.AddSceneName == "Config";
         }
 
-        private List<PropSettingEntry> BuildSettingList()
+        private void BuildSettingList()
         {
             var list = new List<PropSettingEntry>();
+            var skippedList = new List<string>();
 
             foreach (var plugin in Utilities.FindPlugins())
             {
@@ -73,6 +85,13 @@ namespace ConfigurationManager
                 if (pluginInfo == null)
                 {
                     BepInLogger.Log($"Error: Plugin {type.FullName} is missing the BepInPlugin attribute!");
+                    continue;
+                }
+
+                if (type.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().Any(x => !x.Browsable) ||
+                    type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).All(x => !updateMethodNames.Contains(x.Name)))
+                {
+                    skippedList.Add(pluginInfo.Name);
                     continue;
                 }
 
@@ -107,9 +126,9 @@ namespace ConfigurationManager
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
 
                 // Enable/disable mod ------
-                // todo make setting entry impl that saves this to config, then at game start load it up
                 var enabledSetting = PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
-                enabledSetting.DispName = "Enable plugin (temporary)";
+                enabledSetting.DispName = "!Allow plugin to run on every frame";
+                enabledSetting.Description = "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
                 list.Add(enabledSetting);
 
                 list.AddRange(normalPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
@@ -117,7 +136,9 @@ namespace ConfigurationManager
 
             list.RemoveAll(x => x.Browsable == false);
 
-            return list;
+            settings = list;
+
+            modsWithoutSettings = string.Join(", ", skippedList.Select(x => x.TrimStart('!')).OrderBy(x => x).ToArray());
         }
 
         private void CalculateWindowRect()
@@ -137,7 +158,7 @@ namespace ConfigurationManager
         {
             if (!DisplayingButton) return;
 
-            if (GUI.Button(buttonRect, "Plugin / mod settings"))
+            if (GUI.Button(buttonRect, new GUIContent("Plugin / mod settings", "Change settings of the installed \nBepInEx plugins, if they have any.")))
             {
                 DisplayingWindow = !DisplayingWindow;
             }
@@ -148,6 +169,18 @@ namespace ConfigurationManager
                     DisplayingWindow = false;
 
                 GUILayout.Window(-68, settingWindowRect, SettingsWindow, "Plugin / mod settings");
+            }
+            else
+                DrawTooltip();
+        }
+
+        private static void DrawTooltip()
+        {
+            if (!string.IsNullOrEmpty(GUI.tooltip))
+            {
+                Event currentEvent = Event.current;
+                
+                GUI.Label(new Rect(currentEvent.mousePosition.x, currentEvent.mousePosition.y + 25, 400, 500), GUI.tooltip);
             }
         }
 
@@ -160,7 +193,7 @@ namespace ConfigurationManager
                 {
                     GUILayout.BeginVertical(GUI.skin.box);
                     {
-                        fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name} {plugin.Key.Version.ToString()}");
+                        fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version.ToString()}");
 
                         foreach (var category in plugin.GroupBy(x => x.Category).OrderBy(x => x.Key))
                         {
@@ -181,16 +214,21 @@ namespace ConfigurationManager
                     }
                     GUILayout.EndVertical();
                 }
+
+                GUILayout.Space(10);
+                GUILayout.Label("Plugins with no options available: " + modsWithoutSettings);
             }
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
+
+            DrawTooltip();
         }
 
         private void DrawSingleSetting(PropSettingEntry setting)
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label(setting.DispName, GUILayout.Width(settingWindowRect.width / 2.5f));
+                GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description), GUILayout.Width(settingWindowRect.width / 2.5f));
 
                 if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
                 {
