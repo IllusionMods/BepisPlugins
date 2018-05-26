@@ -1,9 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
 
 namespace ConfigurationManager
 {
     static class Utilities
     {
+        /// <summary>
+        /// Return items with browsable attribute same as expectedBrowsable, and optionally items with no browsable attribute
+        /// </summary>
+        public static IEnumerable<T> FilterBrowsable<T>(this T[] props, bool expectedBrowsable, bool includeNotSet = false) where T : MemberInfo
+        {
+            if (includeNotSet)
+                return props.Where(p => p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().All(x => x.Browsable == expectedBrowsable));
+            else
+                return props.Where(p => p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().Any(x => x.Browsable != expectedBrowsable));
+        }
+
         public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)
         {
             while (toCheck != null && toCheck != typeof(object))

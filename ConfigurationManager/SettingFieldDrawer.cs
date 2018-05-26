@@ -8,14 +8,14 @@ namespace ConfigurationManager
 {
     internal class SettingFieldDrawer
     {
-        private Dictionary<SettingEntry, ComboBox> _comboBoxCache = new Dictionary<SettingEntry, ComboBox>();
+        private Dictionary<PropSettingEntry, ComboBox> _comboBoxCache = new Dictionary<PropSettingEntry, ComboBox>();
 
         public void ClearCache()
         {
             _comboBoxCache.Clear();
         }
 
-        public void DrawBoolField(SettingEntry setting)
+        public void DrawBoolField(PropSettingEntry setting)
         {
             var boolVal = (bool)setting.Get();
             var result = GUILayout.Toggle(boolVal, boolVal ? "Enabled" : "Disabled", GUILayout.ExpandWidth(true));
@@ -32,7 +32,7 @@ namespace ConfigurationManager
             GUILayout.EndHorizontal();
         }
 
-        public void DrawComboboxField(SettingEntry setting, System.Collections.IList list)
+        public void DrawComboboxField(PropSettingEntry setting, System.Collections.IList list)
         {
             var buttonText = new GUIContent(setting.Get().ToString());
             var dispRect = GUILayoutUtility.GetRect(buttonText, GUI.skin.button, GUILayout.ExpandWidth(true));
@@ -54,7 +54,7 @@ namespace ConfigurationManager
             }
         }
 
-        public void DrawRangeField(SettingEntry setting, AcceptableValueRangeAttribute range)
+        public void DrawRangeField(PropSettingEntry setting, AcceptableValueRangeAttribute range)
         {
             object value = setting.Get();
             var converted = (float)Convert.ToDouble(value);
@@ -74,7 +74,7 @@ namespace ConfigurationManager
         /// <summary>
         /// Unknown type, read only
         /// </summary>
-        public void DrawUnknownField(SettingEntry setting)
+        public void DrawUnknownField(PropSettingEntry setting)
         {
             GUILayout.TextArea(setting.Get()?.ToString() ?? "NULL");
         }

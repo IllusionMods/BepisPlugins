@@ -14,7 +14,7 @@ namespace ConfigurationManager
 
         private bool displayingButton, displayingWindow;
 
-        private List<SettingEntry> settings;
+        private List<PropSettingEntry> settings;
 
         private SettingFieldDrawer fieldDrawer = new SettingFieldDrawer();
 
@@ -58,9 +58,9 @@ namespace ConfigurationManager
             return Manager.Scene.Instance.AddSceneName == "Config";
         }
 
-        private List<SettingEntry> BuildSettingList()
+        private List<PropSettingEntry> BuildSettingList()
         {
-            var list = new List<SettingEntry>();
+            var list = new List<PropSettingEntry>();
 
             foreach (var plugin in Utilities.FindPlugins())
             {
@@ -72,16 +72,40 @@ namespace ConfigurationManager
                     BepInLogger.Log($"Error: Plugin {type.FullName} is missing the BepInPlugin attribute!");
                     continue;
                 }
+                
+                // Config wrappers ------
 
                 var settingProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingProps.Select((x) => SettingEntry.FromConfigWrapper(plugin, x, pluginInfo)).Where(x => x.Browsable));
+                list.AddRange(settingProps.Select((x) => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)));
 
                 var settingPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                    .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingPropsStatic.Select((x) => SettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x.Browsable));
+                list.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x.Browsable != false));
 
-                //TODO scan normal properties too
+                // Normal properties ------
+
+                var normalProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .FilterBrowsable(true, true)
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
+                list.AddRange(settingProps.Select((x) => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
+
+                var normalPropsPrivate = type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic)
+                    .FilterBrowsable(true, false)
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
+                list.AddRange(settingProps.Select((x) => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
+
+                var normalPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public)
+                    .FilterBrowsable(true, true)
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
+                list.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)).Where(x => x.Browsable != false));
+
+                var normalPropsStaticPrivate = type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic)
+                    .FilterBrowsable(true, false)
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
+                list.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)).Where(x => x.Browsable != false));
             }
 
             return list;
@@ -153,12 +177,12 @@ namespace ConfigurationManager
             GUILayout.EndScrollView();
         }
 
-        private void DrawSingleSetting(SettingEntry setting)
+        private void DrawSingleSetting(PropSettingEntry setting)
         {
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label(setting.DispName, GUILayout.Width(settingWindowRect.width / 2.5f));
-                
+
                 if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
                 {
                     fieldDrawer.DrawRangeField(setting, range);
