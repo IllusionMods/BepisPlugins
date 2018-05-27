@@ -85,7 +85,15 @@ namespace alphaShot
             var vig_e = vig?.enabled;
             if (vig) vig.enabled = false;
 
+            var ace = main.GetComponent<AmplifyColorEffect>();
+            var ace_e = ace?.enabled;
+            if (ace) ace.enabled = false;
+
             var texture2D = PerformCapture(ResolutionX, ResolutionY, true);
+            if (baf) baf.enabled = baf_e.Value;
+            if (vig) vig.enabled = vig_e.Value;
+            if (ace) ace.enabled = ace_e.Value;
+
             var texture2D2 = PerformCapture(ResolutionX, ResolutionY, false);
 
             var rt = RenderTexture.GetTemporary(texture2D.width, texture2D.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
@@ -102,8 +110,6 @@ namespace alphaShot
             RenderTexture.active = prev;
             RenderTexture.ReleaseTemporary(rt);
 
-            if (baf) baf.enabled = baf_e.Value;
-            if (vig) vig.enabled = vig_e.Value;
 
             return texture2D3;
         }
