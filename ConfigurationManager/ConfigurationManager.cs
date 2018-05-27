@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace ConfigurationManager
 {
+
     [BepInPlugin(GUID: "com.bepis.bepinex.configurationmanager", Name: "Configuration Manager", Version: "1.0")]
     [Browsable(false)]
     public class ConfigurationManager : BaseUnityPlugin
@@ -179,7 +180,7 @@ namespace ConfigurationManager
             if (!string.IsNullOrEmpty(GUI.tooltip))
             {
                 Event currentEvent = Event.current;
-                
+
                 GUI.Label(new Rect(currentEvent.mousePosition.x, currentEvent.mousePosition.y + 25, 400, 500), GUI.tooltip);
             }
         }
@@ -242,17 +243,9 @@ namespace ConfigurationManager
                 {
                     fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType));
                 }
-                else if (setting.SettingType == typeof(bool))
-                {
-                    fieldDrawer.DrawBoolField(setting);
-                }
-                /*else if ()
-                {
-                    //TODO if type can be converted to and from string, show it in a textfield
-                }*/
                 else
                 {
-                    fieldDrawer.DrawUnknownField(setting);
+                    fieldDrawer.DrawFieldBasedOnValueType(setting);
                 }
 
                 if (setting.DefaultValue != null)

@@ -59,7 +59,9 @@
     <Compile Include="AcceptableValueRangeAttribute.cs" />
     <Compile Include="ComboBox.cs" />
     <Compile Include="ConfigurationManager.cs" />
+    <Compile Include="KeyboardShortcut.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SavedKeyboardShortcut.cs" />
     <Compile Include="SettingEntry.cs" />
     <Compile Include="SettingEntryBase.cs" />
     <Compile Include="SettingFieldDrawer.cs" />
