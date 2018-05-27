@@ -93,7 +93,7 @@ namespace ConfigurationManager
             {
                 if (CurrentKeyboardShortcutToSet == setting)
                 {
-                    GUILayout.TextArea("Press the new key", GUILayout.ExpandWidth(true));
+                    GUILayout.TextArea("Press any key", GUILayout.ExpandWidth(true));
 
                     foreach (var key in KeysToCheck)
                     {

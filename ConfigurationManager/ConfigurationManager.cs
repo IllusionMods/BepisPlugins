@@ -252,22 +252,26 @@ namespace ConfigurationManager
             {
                 fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version.ToString()}");
 
-                foreach (var category in plugin.Select(x => new { plugin = x, category = (x.SettingType == typeof(KeyboardShortcut) ? "Keyboard shortcut" : x.Category) })
+                foreach (var category in plugin.Select(x => new { plugin = x, category = (x.SettingType == typeof(KeyboardShortcut) ? "Keyboard shortcuts" : x.Category) })
                 .GroupBy(a => a.category).OrderBy(x => x.Key))
                 {
                     if (!string.IsNullOrEmpty(category.Key))
                     {
-                        GUILayout.BeginVertical(GUI.skin.box);
+                        //GUILayout.BeginVertical(GUI.skin.box);
                         fieldDrawer.DrawCenteredLabel(category.Key);
                     }
 
                     foreach (var setting in category.OrderBy(x => x.plugin.DispName))
                     {
                         DrawSingleSetting(setting.plugin);
+                        GUILayout.Space(2);
                     }
 
-                    if (!string.IsNullOrEmpty(category.Key))
-                        GUILayout.EndVertical();
+                    /*if (!string.IsNullOrEmpty(category.Key))
+                    {
+                        //GUILayout.EndVertical();
+                        GUILayout.Space(2);
+                    }*/
                 }
             }
             GUILayout.EndVertical();
