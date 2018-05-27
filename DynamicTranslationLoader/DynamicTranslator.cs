@@ -72,7 +72,7 @@ namespace DynamicTranslationLoader
 
                 string[] split = line.Split('=');
 
-                translations[split[0]] = split[1];
+                translations[split[0].Trim()] = split[1];
             }
 
             //ITL
@@ -129,7 +129,7 @@ namespace DynamicTranslationLoader
             }
 
             string translation;
-            if (translations.TryGetValue(input, out translation))
+            if (translations.TryGetValue(input.Trim(), out translation))
             { 
                 return translation;
             }
