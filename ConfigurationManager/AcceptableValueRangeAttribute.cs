@@ -6,7 +6,10 @@ namespace BepInEx
     /// </summary>
     public sealed class AcceptableValueRangeAttribute : AcceptableValueBaseAttribute
     {
-        public AcceptableValueRangeAttribute(object minValue, object maxValue)
+        /// <param name="minValue">Lowest acceptable value</param>
+        /// <param name="maxValue">Highest acceptable value</param>
+        /// <param name="showAsPercentage">Show the current value as % between min and max values if possible. Otherwise show the value itself.</param>
+        public AcceptableValueRangeAttribute(object minValue, object maxValue, bool showAsPercentage = true)
         {
             if (maxValue == null)
                 throw new ArgumentNullException(nameof(maxValue));
@@ -20,9 +23,11 @@ namespace BepInEx
 
             MinValue = minValue;
             MaxValue = maxValue;
+            ShowAsPercentage = showAsPercentage;
         }
 
         public object MinValue { get; }
         public object MaxValue { get; }
+        public bool ShowAsPercentage { get; }
     }
 }

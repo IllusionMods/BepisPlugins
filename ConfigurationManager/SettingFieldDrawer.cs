@@ -10,12 +10,15 @@ namespace ConfigurationManager
     {
         private Dictionary<PropSettingEntry, ComboBox> _comboBoxCache = new Dictionary<PropSettingEntry, ComboBox>();
 
+        private PropSettingEntry CurrentKeyboardShortcutToSet;
+        private static KeyCode[] KeysToCheck = (KeyCode[])Enum.GetValues(typeof(KeyCode));
+
         public void ClearCache()
         {
             _comboBoxCache.Clear();
         }
 
-        private static void DrawBoolField(PropSettingEntry setting)
+        public void DrawBoolField(PropSettingEntry setting)
         {
             var boolVal = (bool)setting.Get();
             var result = GUILayout.Toggle(boolVal, boolVal ? "Enabled" : "Disabled", GUILayout.ExpandWidth(true));
@@ -67,37 +70,22 @@ namespace ConfigurationManager
                 var newValue = Convert.ChangeType(result, value.GetType());
                 setting.Set(newValue);
             }
-            // todo handle decimals and integers
-            DrawCenteredLabel(Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%", GUILayout.Width(50));
+
+            if (range.ShowAsPercentage)
+                DrawCenteredLabel(Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%", GUILayout.Width(50));
+            else
+                DrawCenteredLabel(value.ToString(), GUILayout.Width(50));
         }
 
         /// <summary>
         /// Unknown type, read only
         /// </summary>
-        private static void DrawUnknownField(PropSettingEntry setting)
+        public void DrawUnknownField(PropSettingEntry setting)
         {
             GUILayout.TextArea(setting.Get()?.ToString() ?? "NULL");
         }
 
-        public void DrawFieldBasedOnValueType(PropSettingEntry setting)
-        {
-            if (_settingDrawHandlers.TryGetValue(setting.SettingType, out var drawMethod))
-            {
-                drawMethod(setting);
-            }
-            else
-            {
-                DrawUnknownField(setting);
-            }
-        }
-
-        private Dictionary<Type, Action<PropSettingEntry>> _settingDrawHandlers = new Dictionary<Type, Action<PropSettingEntry>>
-        {
-            {typeof(bool), DrawBoolField },
-            {typeof(KeyboardShortcut), DrawKeyboardShortcut }
-        };
-
-        private static void DrawKeyboardShortcut(PropSettingEntry setting)
+        public void DrawKeyboardShortcut(PropSettingEntry setting)
         {
             var shortcut = setting.Get() as KeyboardShortcut;
 
@@ -139,8 +127,5 @@ namespace ConfigurationManager
             }
             GUILayout.EndHorizontal();
         }
-
-        private static PropSettingEntry CurrentKeyboardShortcutToSet;
-        private static KeyCode[] KeysToCheck = (KeyCode[])Enum.GetValues(typeof(KeyCode));
     }
 }

@@ -46,6 +46,8 @@ namespace ConfigurationManager
 
         public object Wrapper { get; internal set; }
 
+        public bool? IsAdvanced { get; internal set; }
+
         /// <summary>
         /// todo from property that checks canread canwrite
         /// from method that shows a button?

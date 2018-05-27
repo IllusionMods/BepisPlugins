@@ -21,10 +21,14 @@ namespace ConfigurationManager
         private string modsWithoutSettings;
 
         private SettingFieldDrawer fieldDrawer = new SettingFieldDrawer();
+        private Dictionary<Type, Action<PropSettingEntry>> _settingDrawHandlers;
 
         private Rect settingWindowRect, buttonRect, screenRect;
         private Vector2 settingWindowScrollPos;
-        private Vector2 mousePosition;
+
+        private ConfigWrapper<bool> showKeybinds = new ConfigWrapper<bool>("showKeybinds", true);
+        private ConfigWrapper<bool> showSettings = new ConfigWrapper<bool>("showSettings", true);
+        private ConfigWrapper<bool> showAdvanced = new ConfigWrapper<bool>("showAdvanced", false);
 
         private static readonly ICollection<string> updateMethodNames = new[] {
             "Update",
@@ -130,12 +134,20 @@ namespace ConfigurationManager
                 var enabledSetting = PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
                 enabledSetting.DispName = "!Allow plugin to run on every frame";
                 enabledSetting.Description = "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
+                enabledSetting.IsAdvanced = true;
                 list.Add(enabledSetting);
 
                 list.AddRange(normalPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
             }
 
             list.RemoveAll(x => x.Browsable == false);
+
+            if (!showAdvanced.Value)
+                list.RemoveAll(x => x.IsAdvanced == true);
+            if (!showKeybinds.Value)
+                list.RemoveAll(x => x.SettingType == typeof(KeyboardShortcut));
+            if (!showSettings.Value)
+                list.RemoveAll(x => x.IsAdvanced != true && x.SettingType != typeof(KeyboardShortcut));
 
             settings = list;
 
@@ -190,30 +202,11 @@ namespace ConfigurationManager
             settingWindowScrollPos = GUILayout.BeginScrollView(settingWindowScrollPos);
             GUILayout.BeginVertical();
             {
+                DrawWindowHeader();
+
                 foreach (var plugin in settings.GroupBy(x => x.PluginInfo).OrderBy(x => x.Key.Name))
                 {
-                    GUILayout.BeginVertical(GUI.skin.box);
-                    {
-                        fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version.ToString()}");
-
-                        foreach (var category in plugin.GroupBy(x => x.Category).OrderBy(x => x.Key))
-                        {
-                            if (!string.IsNullOrEmpty(category.Key))
-                            {
-                                GUILayout.BeginVertical(GUI.skin.box);
-                                fieldDrawer.DrawCenteredLabel(category.Key);
-                            }
-
-                            foreach (var setting in category.OrderBy(x => x.DispName))
-                            {
-                                DrawSingleSetting(setting);
-                            }
-
-                            if (!string.IsNullOrEmpty(category.Key))
-                                GUILayout.EndVertical();
-                        }
-                    }
-                    GUILayout.EndVertical();
+                    DrawSinglePlugin(plugin);
                 }
 
                 GUILayout.Space(10);
@@ -223,6 +216,61 @@ namespace ConfigurationManager
             GUILayout.EndScrollView();
 
             DrawTooltip();
+        }
+
+        private void DrawWindowHeader()
+        {
+            GUILayout.BeginHorizontal(GUI.skin.box);
+            {
+                var newVal = GUILayout.Toggle(showSettings.Value, "Show settings");
+                if (showSettings.Value != newVal)
+                {
+                    showSettings.Value = newVal;
+                    BuildSettingList();
+                }
+
+                newVal = GUILayout.Toggle(showKeybinds.Value, "Show keyboard shortcuts");
+                if (showKeybinds.Value != newVal)
+                {
+                    showKeybinds.Value = newVal;
+                    BuildSettingList();
+                }
+
+                newVal = GUILayout.Toggle(showAdvanced.Value, "Show advanced settings");
+                if (showAdvanced.Value != newVal)
+                {
+                    showAdvanced.Value = newVal;
+                    BuildSettingList();
+                }
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawSinglePlugin(IGrouping<BepInPlugin, PropSettingEntry> plugin)
+        {
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version.ToString()}");
+
+                foreach (var category in plugin.Select(x => new { plugin = x, category = (x.SettingType == typeof(KeyboardShortcut) ? "Keyboard shortcut" : x.Category) })
+                .GroupBy(a => a.category).OrderBy(x => x.Key))
+                {
+                    if (!string.IsNullOrEmpty(category.Key))
+                    {
+                        GUILayout.BeginVertical(GUI.skin.box);
+                        fieldDrawer.DrawCenteredLabel(category.Key);
+                    }
+
+                    foreach (var setting in category.OrderBy(x => x.plugin.DispName))
+                    {
+                        DrawSingleSetting(setting.plugin);
+                    }
+
+                    if (!string.IsNullOrEmpty(category.Key))
+                        GUILayout.EndVertical();
+                }
+            }
+            GUILayout.EndVertical();
         }
 
         private void DrawSingleSetting(PropSettingEntry setting)
@@ -245,18 +293,18 @@ namespace ConfigurationManager
                 }
                 else
                 {
-                    fieldDrawer.DrawFieldBasedOnValueType(setting);
+                    DrawFieldBasedOnValueType(setting);
                 }
 
                 if (setting.DefaultValue != null)
                 {
-                    if (GUILayout.Button("Default", GUILayout.ExpandWidth(false)))
+                    if (DrawDefaultButton())
                         setting.Set(setting.DefaultValue);
                 }
                 else if (setting.Wrapper != null)
                 {
                     var method = setting.Wrapper.GetType().GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
-                    if (method != null && GUILayout.Button("Default", GUILayout.ExpandWidth(false)))
+                    if (method != null && DrawDefaultButton())
                     {
                         method.Invoke(setting.Wrapper, null);
                     }
@@ -265,8 +313,31 @@ namespace ConfigurationManager
             GUILayout.EndHorizontal();
         }
 
+        private void DrawFieldBasedOnValueType(PropSettingEntry setting)
+        {
+            if (_settingDrawHandlers.TryGetValue(setting.SettingType, out var drawMethod))
+            {
+                drawMethod(setting);
+            }
+            else
+            {
+                fieldDrawer.DrawUnknownField(setting);
+            }
+        }
+
+        private static bool DrawDefaultButton()
+        {
+            GUILayout.Space(5);
+            return GUILayout.Button("Default", GUILayout.ExpandWidth(false));
+        }
+
         private void Start()
         {
+            _settingDrawHandlers = new Dictionary<Type, Action<PropSettingEntry>>
+            {
+                {typeof(bool), fieldDrawer.DrawBoolField },
+                {typeof(KeyboardShortcut),fieldDrawer.DrawKeyboardShortcut }
+            };
         }
 
         private void Update()
