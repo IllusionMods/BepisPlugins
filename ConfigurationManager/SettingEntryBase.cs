@@ -44,6 +44,8 @@ namespace ConfigurationManager
         public abstract object Get();
         public abstract void Set(object newVal);
 
+        public object Wrapper { get; internal set; }
+
         /// <summary>
         /// todo from property that checks canread canwrite
         /// from method that shows a button?

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 
@@ -7,11 +8,19 @@ namespace BepInEx
     /// <summary>
     /// A keyboard shortcut that can be used in Update method to check if user presses a key combo.
     /// Use SavedKeyboardShortcut to allow user to change this shortcut and have the changes saved.
-    /// 
-    /// How to use: Run IsPressed in Update to check if user presses the button combo.
+    ///
+    /// How to use: Use IsDown instead of the Imput.GetKeyDown in the Update loop.
     /// </summary>
-    public class KeyboardShortcut
+    public class KeyboardShortcut : INotifyPropertyChanged
     {
+        private bool alt;
+
+        private bool control;
+
+        private KeyCode key;
+
+        private bool shift;
+
         /// <summary>
         /// Create a new keyboard shortcut.
         /// </summary>
@@ -29,17 +38,64 @@ namespace BepInEx
 
         public KeyboardShortcut()
         {
-
         }
 
-        public KeyCode Key { get; set; }
-        public bool Control { get; set; }
-        public bool Alt { get; set; }
-        public bool Shift { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        public string Serialize()
+        public bool Alt
         {
-            return $"{(int)Key} {(Control ? 1 : 0)} {(Alt ? 1 : 0)} {(Shift ? 1 : 0)}";
+            get
+            {
+                return alt;
+            }
+
+            set
+            {
+                alt = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Alt)));
+            }
+        }
+
+        public bool Control
+        {
+            get
+            {
+                return control;
+            }
+
+            set
+            {
+                control = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Control)));
+            }
+        }
+
+        public KeyCode Key
+        {
+            get
+            {
+                return key;
+            }
+
+            set
+            {
+                key = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Key)));
+            }
+        }
+
+        public bool Shift
+        {
+            get
+            {
+                return shift;
+            }
+
+            set
+            {
+                shift = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Shift)));
+            }
         }
 
         public static KeyboardShortcut Deserialize(string str)
@@ -56,12 +112,38 @@ namespace BepInEx
             }
         }
 
+        public string Serialize()
+        {
+            return $"{(int)Key} {(Control ? 1 : 0)} {(Alt ? 1 : 0)} {(Shift ? 1 : 0)}";
+        }
+
         /// <summary>
-        /// Run in Update to check if user presses the button combo instead of manually using Input.GetKey.
+        /// Check if the main key was just pressed (Input.GetKeyDown), and specified modifier keys are all pressed
+        /// </summary>
+        public bool IsDown()
+        {
+            return Input.GetKeyDown(Key) && ModifierKeyTest();
+        }
+
+        /// <summary>
+        /// Check if the main key is currently held down (Input.GetKeyDown), and specified modifier keys are all pressed
         /// </summary>
         public bool IsPressed()
         {
-            if (!Input.GetKey(Key))
+            return Input.GetKeyDown(Key) && ModifierKeyTest();
+        }
+
+        /// <summary>
+        /// Check if the main key was just lifted (Input.GetKeyUp), and specified modifier keys are all pressed.
+        /// </summary>
+        public bool IsUp()
+        {
+            return Input.GetKeyUp(Key) && ModifierKeyTest();
+        }
+
+        private bool ModifierKeyTest()
+        {
+            if (Key == KeyCode.None)
                 return false;
 
             if (Control && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
@@ -71,9 +153,6 @@ namespace BepInEx
                 return false;
 
             if (Shift && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
-                return false;
-
-            if (Key == KeyCode.None && !Control && !Alt && !Shift)
                 return false;
 
             return true;

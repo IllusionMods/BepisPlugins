@@ -103,35 +103,38 @@ namespace ConfigurationManager
 
             GUILayout.BeginHorizontal();
             {
-                if(CurrentKeyboardShortcutToSet == setting)
+                if (CurrentKeyboardShortcutToSet == setting)
                 {
                     GUILayout.TextArea("Press the new key", GUILayout.ExpandWidth(true));
 
-                    foreach(var key in KeysToCheck)
+                    foreach (var key in KeysToCheck)
                     {
-                        if(Input.GetKey(key))
+                        if (Input.GetKey(key))
                         {
-                            if (KeyBlacklist.Contains(key))
-                                shortcut.Key = KeyCode.None;
-                            else
-                                shortcut.Key = key;
+                            shortcut.Key = key;
 
                             CurrentKeyboardShortcutToSet = null;
                             break;
                         }
                     }
 
-                    if(GUILayout.Button("Cancel"))
+                    if (GUILayout.Button("Clear"))
+                    {
+                        shortcut.Key = KeyCode.None;
+                        CurrentKeyboardShortcutToSet = null;
+                    }
+
+                    if (GUILayout.Button("Cancel"))
                         CurrentKeyboardShortcutToSet = null;
                 }
                 else
                 {
-                    if (GUILayout.Button(shortcut.Key.ToString()))
+                    if (GUILayout.Button(shortcut.Key.ToString(), GUILayout.ExpandWidth(true)))
                         CurrentKeyboardShortcutToSet = setting;
 
-                    shortcut.Control = GUILayout.Toggle(shortcut.Control, "Control");
-                    shortcut.Alt = GUILayout.Toggle(shortcut.Alt, "Alt");
-                    shortcut.Shift = GUILayout.Toggle(shortcut.Shift, "Shift");
+                    shortcut.Control = GUILayout.Toggle(shortcut.Control, "Control", GUILayout.ExpandWidth(false));
+                    shortcut.Alt = GUILayout.Toggle(shortcut.Alt, "Alt", GUILayout.ExpandWidth(false));
+                    shortcut.Shift = GUILayout.Toggle(shortcut.Shift, "Shift", GUILayout.ExpandWidth(false));
                 }
             }
             GUILayout.EndHorizontal();
@@ -139,7 +142,5 @@ namespace ConfigurationManager
 
         private static PropSettingEntry CurrentKeyboardShortcutToSet;
         private static KeyCode[] KeysToCheck = (KeyCode[])Enum.GetValues(typeof(KeyCode));
-        private static KeyCode[] KeyBlacklist = { KeyCode.LeftControl, KeyCode.RightControl, KeyCode.LeftAlt, KeyCode.RightAlt, KeyCode.LeftShift, KeyCode.RightShift, KeyCode.Escape };
-
     }
 }

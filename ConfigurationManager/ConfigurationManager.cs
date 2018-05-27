@@ -253,6 +253,14 @@ namespace ConfigurationManager
                     if (GUILayout.Button("Default", GUILayout.ExpandWidth(false)))
                         setting.Set(setting.DefaultValue);
                 }
+                else if (setting.Wrapper != null)
+                {
+                    var method = setting.Wrapper.GetType().GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
+                    if (method != null && GUILayout.Button("Default", GUILayout.ExpandWidth(false)))
+                    {
+                        method.Invoke(setting.Wrapper, null);
+                    }
+                }
             }
             GUILayout.EndHorizontal();
         }

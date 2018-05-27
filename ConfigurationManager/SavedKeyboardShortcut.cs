@@ -9,12 +9,58 @@
         public SavedKeyboardShortcut(string name, string section, KeyboardShortcut defaultShortcut)
             : base(name, section, KeyboardShortcut.Deserialize, k => k.Serialize(), defaultShortcut)
         {
-
         }
 
+        private KeyboardShortcut _last;
+
+        private void SetNewLast(KeyboardShortcut value)
+        {
+            if (_last != null)
+                _last.PropertyChanged -= ShortcutChanged;
+
+            _last = value;
+            _last.PropertyChanged += ShortcutChanged;
+        }
+
+        protected override void SetValue(KeyboardShortcut value)
+        {
+            SetNewLast(value);
+            base.SetValue(value);
+        }
+        
+        protected override KeyboardShortcut GetValue()
+        {
+            SetNewLast(base.GetValue());
+            return _last;
+        }
+
+        private void ShortcutChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            base.SetValue((KeyboardShortcut)sender);
+        }
+
+        /// <summary>
+        /// Check if the main key is currently held down (Input.GetKeyDown), and specified modifier keys are all pressed
+        /// </summary>
         public bool IsPressed()
         {
             return Value.IsPressed();
+        }
+
+        /// <summary>
+        /// Check if the main key was just pressed (Input.GetKeyDown), and specified modifier keys are all pressed
+        /// </summary>
+        public bool IsDown()
+        {
+            return Value.IsDown();
+        }
+
+        /// <summary>
+        /// Check if the main key was just lifted (Input.GetKeyUp), and specified modifier keys are all pressed.
+        /// </summary>
+        public bool IsUp()
+        {
+            return Value.IsUp();
         }
     }
 }

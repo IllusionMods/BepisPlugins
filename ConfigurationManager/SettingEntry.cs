@@ -49,6 +49,8 @@ namespace ConfigurationManager
 
             entry.Property = innerProp;
             entry.Instance = wrapper;
+
+            entry.Wrapper = wrapper;
             
             if (entry.DispName == "Value")
                 entry.DispName = wrapper.GetType().GetProperty("Key", BindingFlags.Instance | BindingFlags.Public).GetValue(wrapper, null) as string;
