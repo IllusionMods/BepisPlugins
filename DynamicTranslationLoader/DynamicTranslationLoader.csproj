@@ -67,8 +67,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicTranslator.cs" />
+    <Compile Include="GameObjectUtils.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextureMetadata.cs" />
+    <Compile Include="TextureUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="translation\translation.txt">
