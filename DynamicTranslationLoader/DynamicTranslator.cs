@@ -119,6 +119,8 @@ namespace DynamicTranslationLoader
 
         public static string Translate(string input, object obj)
         {
+            GUIUtility.systemCopyBuffer = input;
+
             if(string.IsNullOrEmpty(input)) return input;
 
             // Consider changing this! You have a dictionary, but you iterate instead of making a lookup. Why do you not use the WeakKeyDictionary, you have instead? 
