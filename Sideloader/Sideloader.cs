@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using BepInEx.Logging;
 using Shared;
 using Sideloader.AutoResolver;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace Sideloader
 {
@@ -59,13 +61,13 @@ namespace Sideloader
 
                 if (!Manifest.TryLoadFromZip(archive, out Manifest manifest))
                 {
-                    BepInLogger.Log($"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.", false, ConsoleColor.Yellow);
+                    Logger.Log(LogLevel.Warning, $"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
                     continue;
                 }
 
                 if (LoadedManifests.Any(x => x.GUID == manifest.GUID))
                 {
-                    BepInLogger.Log($"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".", false, ConsoleColor.Yellow);
+                    Logger.Log(LogLevel.Warning, $"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".");
                     continue;
                 }
 
@@ -73,7 +75,7 @@ namespace Sideloader
                     ? manifest.Name
                     : Path.GetFileName(archivePath);
 
-                BepInLogger.Log($"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
+                Logger.Log(LogLevel.Info, $"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
 
                 Archives.Add(archive);
                 LoadedManifests.Add(manifest);
@@ -166,7 +168,7 @@ namespace Sideloader
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
                     if (!string.IsNullOrEmpty(warning))
-                        BepInLogger.Log($"[SIDELOADER] WARNING! {warning}", false, ConsoleColor.DarkYellow);
+                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] WARNING! {warning}");
                 }
             }
         }

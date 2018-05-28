@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using BepInEx.Logging;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Logger = BepInEx.Logger;
 
 namespace DynamicTranslationLoader
 {
@@ -196,7 +198,7 @@ namespace DynamicTranslationLoader
                 }
             }
 
-            BepInLogger.Log($"{i} translations reloaded.");
+            Logger.Log(LogLevel.Message, $"{i} translations reloaded.");
 
             Hooks.TranslationHooksEnabled = true;
         }
@@ -245,12 +247,12 @@ namespace DynamicTranslationLoader
             if (UnityEngine.Event.current.Equals(ReloadTranslationsKeyEvent))
             {
                 Retranslate();
-                BepInLogger.Log($"Translation reloaded.", true);
+                Logger.Log(LogLevel.Message, $"Translation reloaded.");
             }
             if (UnityEngine.Event.current.Equals(DumpUntranslatedTextKeyEvent))
             {
                 Dump();
-                BepInLogger.Log($"Text dumped to \"{Path.GetFullPath("dumped-tl.txt")}\"", true);
+                Logger.Log(LogLevel.Message, $"Text dumped to \"{Path.GetFullPath("dumped-tl.txt")}\"");
             }
         }
 
