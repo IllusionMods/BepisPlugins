@@ -3,6 +3,7 @@
 // Popup list created by Eric Haines
 // ComboBox Extended by Hyungseok Seo.(Jerry) sdragoon@nate.com
 // this oop version of ComboBox is refactored by zhujiangbo jumbozhu@gmail.com
+// Modified by MarC0 / ManlyMarco
 // 
 // -----------------------------------------------
 // This code working like ComboBox Control.

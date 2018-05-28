@@ -1,4 +1,7 @@
-﻿namespace BepInEx
+﻿// Made by MarC0 / ManlyMarco
+// Copyright 2018 GNU General Public License v3.0
+
+namespace BepInEx
 {
     /// <summary>
     /// A keyboard shortcut that is saved in the config file and can be changed by the user if ConfigurationManager plugin is present.
