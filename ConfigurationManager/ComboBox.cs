@@ -130,8 +130,9 @@ public class ComboBox
         {
             Rect listRect = new Rect(rect.x, rect.y + listStyle.CalcHeight(listContent[0], 1.0f),
                       rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
-
+            
             GUI.Box(listRect, "", boxStyle);
+
             int newSelectedItemIndex = GUI.SelectionGrid(listRect, selectedItemIndex, listContent, 1, listStyle);
             if (newSelectedItemIndex != selectedItemIndex)
                 selectedItemIndex = newSelectedItemIndex;

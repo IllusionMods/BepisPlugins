@@ -35,8 +35,9 @@
         
         protected override KeyboardShortcut GetValue()
         {
-            SetNewLast(base.GetValue());
-            return _last;
+            var value = base.GetValue();
+            SetNewLast(value);
+            return value;
         }
 
         private void ShortcutChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -45,7 +46,7 @@
         }
 
         /// <summary>
-        /// Check if the main key is currently held down (Input.GetKeyDown), and specified modifier keys are all pressed
+        /// Check if the main key is currently held down (Input.GetKey), and specified modifier keys are all pressed
         /// </summary>
         public bool IsPressed()
         {

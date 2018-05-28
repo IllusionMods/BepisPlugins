@@ -51,6 +51,8 @@ namespace BepInEx
 
             set
             {
+                if (alt == value) return;
+
                 alt = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Alt)));
             }
@@ -65,6 +67,8 @@ namespace BepInEx
 
             set
             {
+                if (control == value) return;
+
                 control = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Control)));
             }
@@ -79,6 +83,8 @@ namespace BepInEx
 
             set
             {
+                if (key == value) return;
+
                 key = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Key)));
             }
@@ -93,6 +99,8 @@ namespace BepInEx
 
             set
             {
+                if (shift == value) return;
+
                 shift = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Shift)));
             }
@@ -126,11 +134,11 @@ namespace BepInEx
         }
 
         /// <summary>
-        /// Check if the main key is currently held down (Input.GetKeyDown), and specified modifier keys are all pressed
+        /// Check if the main key is currently held down (Input.GetKey), and specified modifier keys are all pressed
         /// </summary>
         public bool IsPressed()
         {
-            return Input.GetKeyDown(Key) && ModifierKeyTest();
+            return Input.GetKey(Key) && ModifierKeyTest();
         }
 
         /// <summary>

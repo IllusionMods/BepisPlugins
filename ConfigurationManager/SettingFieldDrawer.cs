@@ -43,6 +43,7 @@ namespace ConfigurationManager
             if (!_comboBoxCache.TryGetValue(setting, out ComboBox box))
             {
                 box = new ComboBox(dispRect, buttonText, list.Cast<object>().Select(x => new GUIContent(x.ToString())).ToArray(), GUI.skin.button);
+                _comboBoxCache[setting] = box;
             }
             else
             {
@@ -87,7 +88,7 @@ namespace ConfigurationManager
 
         public void DrawKeyboardShortcut(PropSettingEntry setting)
         {
-            var shortcut = setting.Get() as KeyboardShortcut;
+            var shortcut = (KeyboardShortcut)setting.Get();
 
             GUILayout.BeginHorizontal();
             {
