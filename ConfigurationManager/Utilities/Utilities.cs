@@ -7,9 +7,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
-namespace ConfigurationManager
+namespace ConfigurationManager.Utilities
 {
-    static class Utilities
+    public static class Utils
     {
         /// <summary>
         /// Return items with browsable attribute same as expectedBrowsable, and optionally items with no browsable attribute

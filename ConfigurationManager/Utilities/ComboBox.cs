@@ -53,110 +53,113 @@ public class ComboBoxTest : MonoBehaviour
 
 using UnityEngine;
 
-public class ComboBox
+namespace ConfigurationManager.Utilities
 {
-    private static bool forceToUnShow = false;
-    private static int useControlID = -1;
-    private bool isClickedComboButton = false;
-    private int selectedItemIndex = 0;
-
-    private Rect rect;
-    private GUIContent buttonContent;
-    private GUIContent[] listContent;
-    private string buttonStyle;
-    private string boxStyle;
-    private GUIStyle listStyle;
-
-    public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle)
+    public class ComboBox
     {
-        this.rect = rect;
-        this.buttonContent = buttonContent;
-        this.listContent = listContent;
-        this.buttonStyle = "button";
-        this.boxStyle = "box";
-        this.listStyle = listStyle;
-    }
+        private static bool forceToUnShow = false;
+        private static int useControlID = -1;
+        private bool isClickedComboButton = false;
+        private int selectedItemIndex = 0;
 
-    public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, string buttonStyle, string boxStyle, GUIStyle listStyle)
-    {
-        this.rect = rect;
-        this.buttonContent = buttonContent;
-        this.listContent = listContent;
-        this.buttonStyle = buttonStyle;
-        this.boxStyle = boxStyle;
-        this.listStyle = listStyle;
-    }
+        private Rect rect;
+        private GUIContent buttonContent;
+        private GUIContent[] listContent;
+        private string buttonStyle;
+        private string boxStyle;
+        private GUIStyle listStyle;
 
-    public int Show()
-    {
-        if (forceToUnShow)
+        public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle)
         {
-            forceToUnShow = false;
-            isClickedComboButton = false;
+            this.rect = rect;
+            this.buttonContent = buttonContent;
+            this.listContent = listContent;
+            this.buttonStyle = "button";
+            this.boxStyle = "box";
+            this.listStyle = listStyle;
         }
 
-        bool done = false;
-        int controlID = GUIUtility.GetControlID(FocusType.Passive);
-
-        switch (Event.current.GetTypeForControl(controlID))
+        public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, string buttonStyle, string boxStyle, GUIStyle listStyle)
         {
-            case EventType.mouseUp:
-                {
-                    if (isClickedComboButton)
-                    {
-                        done = true;
-                    }
-                }
-                break;
+            this.rect = rect;
+            this.buttonContent = buttonContent;
+            this.listContent = listContent;
+            this.buttonStyle = buttonStyle;
+            this.boxStyle = boxStyle;
+            this.listStyle = listStyle;
         }
 
-        if (GUI.Button(rect, buttonContent, buttonStyle))
+        public int Show()
         {
-            if (useControlID == -1)
+            if (forceToUnShow)
             {
-                useControlID = controlID;
+                forceToUnShow = false;
                 isClickedComboButton = false;
             }
 
-            if (useControlID != controlID)
+            bool done = false;
+            int controlID = GUIUtility.GetControlID(FocusType.Passive);
+
+            switch (Event.current.GetTypeForControl(controlID))
             {
-                forceToUnShow = true;
-                useControlID = controlID;
+                case EventType.mouseUp:
+                    {
+                        if (isClickedComboButton)
+                        {
+                            done = true;
+                        }
+                    }
+                    break;
             }
-            isClickedComboButton = true;
-        }
 
-        selectedItemIndex = -1;
-        if (isClickedComboButton)
-        {
-            Rect listRect = new Rect(rect.x, rect.y + listStyle.CalcHeight(listContent[0], 1.0f),
-                      rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
-            
-            GUI.Box(listRect, "", boxStyle);
+            if (GUI.Button(rect, buttonContent, buttonStyle))
+            {
+                if (useControlID == -1)
+                {
+                    useControlID = controlID;
+                    isClickedComboButton = false;
+                }
 
-            int newSelectedItemIndex = GUI.SelectionGrid(listRect, selectedItemIndex, listContent, 1, listStyle);
-            if (newSelectedItemIndex != selectedItemIndex)
-                selectedItemIndex = newSelectedItemIndex;
-        }
+                if (useControlID != controlID)
+                {
+                    forceToUnShow = true;
+                    useControlID = controlID;
+                }
+                isClickedComboButton = true;
+            }
 
-        if (done)
-            isClickedComboButton = false;
+            selectedItemIndex = -1;
+            if (isClickedComboButton)
+            {
+                Rect listRect = new Rect(rect.x, rect.y + listStyle.CalcHeight(listContent[0], 1.0f),
+                          rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
 
-        return selectedItemIndex;
-    }
+                GUI.Box(listRect, "", boxStyle);
 
-    public int SelectedItemIndex
-    {
-        get
-        {
+                int newSelectedItemIndex = GUI.SelectionGrid(listRect, selectedItemIndex, listContent, 1, listStyle);
+                if (newSelectedItemIndex != selectedItemIndex)
+                    selectedItemIndex = newSelectedItemIndex;
+            }
+
+            if (done)
+                isClickedComboButton = false;
+
             return selectedItemIndex;
         }
-        set
-        {
-            selectedItemIndex = value;
-        }
-    }
 
-    public Rect Rect { get => rect; set => rect = value; }
-    public GUIContent ButtonContent { get => buttonContent; set => buttonContent = value; }
+        public int SelectedItemIndex
+        {
+            get
+            {
+                return selectedItemIndex;
+            }
+            set
+            {
+                selectedItemIndex = value;
+            }
+        }
+
+        public Rect Rect { get => rect; set => rect = value; }
+        public GUIContent ButtonContent { get => buttonContent; set => buttonContent = value; }
+    }
 }

@@ -2,6 +2,7 @@
 // Copyright 2018 GNU General Public License v3.0
 
 using BepInEx;
+using ConfigurationManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +12,6 @@ using UnityEngine;
 
 namespace ConfigurationManager
 {
-
     [BepInPlugin(GUID: "com.bepis.bepinex.configurationmanager", Name: "Configuration Manager", Version: "1.0")]
     [Browsable(false)]
     public class ConfigurationManager : BaseUnityPlugin
@@ -55,11 +55,11 @@ namespace ConfigurationManager
                     BuildSettingList();
 
                     if (displayingWindow)
-                        Utilities.SetGameCanvasInputsEnabled(false);
+                        Utils.SetGameCanvasInputsEnabled(false);
                 }
                 else
                 {
-                    Utilities.SetGameCanvasInputsEnabled(true);
+                    Utils.SetGameCanvasInputsEnabled(true);
                 }
             }
         }
@@ -71,7 +71,7 @@ namespace ConfigurationManager
                 if (displayingWindow == value) return;
                 displayingWindow = value;
 
-                Utilities.SetGameCanvasInputsEnabled(!displayingWindow);
+                Utils.SetGameCanvasInputsEnabled(!displayingWindow);
             }
         }
 
@@ -85,7 +85,7 @@ namespace ConfigurationManager
             var list = new List<PropSettingEntry>();
             var skippedList = new List<string>();
 
-            foreach (var plugin in Utilities.FindPlugins())
+            foreach (var plugin in Utils.FindPlugins())
             {
                 var type = plugin.GetType();
 

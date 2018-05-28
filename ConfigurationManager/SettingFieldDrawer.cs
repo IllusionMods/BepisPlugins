@@ -2,6 +2,7 @@
 // Copyright 2018 GNU General Public License v3.0
 
 using BepInEx;
+using ConfigurationManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
