@@ -2,6 +2,7 @@
 // Copyright 2018 GNU General Public License v3.0
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
@@ -16,96 +17,69 @@ namespace BepInEx
     /// </summary>
     public class KeyboardShortcut : INotifyPropertyChanged
     {
-        private bool alt;
+        public static readonly KeyboardShortcut Empty = new KeyboardShortcut(KeyCode.None);
 
-        private bool control;
+        public static readonly IEnumerable<KeyCode> AllKeys = (KeyCode[])Enum.GetValues(typeof(KeyCode));
 
-        private KeyCode key;
-
-        private bool shift;
+        private KeyCode[] allKeys;
 
         /// <summary>
         /// Create a new keyboard shortcut.
         /// </summary>
-        /// <param name="key">Main key to press</param>
-        /// <param name="control">Should Control be held down?</param>
-        /// <param name="alt">Should Alt be held down?</param>
-        /// <param name="shift">Should Shift be held down?</param>
-        public KeyboardShortcut(KeyCode key, bool control = false, bool alt = false, bool shift = false)
+        /// <param name="mainKey">Main key to press</param>
+        /// <param name="modifiers">Keys that should be held down before main key is registered</param>
+        public KeyboardShortcut(KeyCode mainKey, params KeyCode[] modifiers)
         {
-            Key = key;
-            Control = control;
-            Alt = alt;
-            Shift = shift;
+            allKeys = new[] { mainKey }.Concat(modifiers).ToArray();
+        }
+
+        private KeyboardShortcut(params KeyCode[] keys)
+        {
+            allKeys = keys;
         }
 
         public KeyboardShortcut()
         {
+            allKeys = new KeyCode[] { };
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public bool Alt
+        public KeyCode MainKey
         {
             get
             {
-                return alt;
+                return allKeys.Length > 0 ? allKeys[0] : KeyCode.None;
             }
 
             set
             {
-                if (alt == value) return;
+                if (MainKey == value) return;
 
-                alt = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Alt)));
+                if (allKeys.Length > 0)
+                    allKeys[0] = value;
+                else
+                    allKeys = new[] { value };
+
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainKey)));
             }
         }
 
-        public bool Control
+        public IEnumerable<KeyCode> Modifiers
         {
             get
             {
-                return control;
+                return allKeys.Skip(1);
             }
 
             set
             {
-                if (control == value) return;
+                if (allKeys.Length > 0)
+                    allKeys = new[] { allKeys[0] }.Concat(value).ToArray();
+                else
+                    allKeys = value.ToArray();
 
-                control = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Control)));
-            }
-        }
-
-        public KeyCode Key
-        {
-            get
-            {
-                return key;
-            }
-
-            set
-            {
-                if (key == value) return;
-
-                key = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Key)));
-            }
-        }
-
-        public bool Shift
-        {
-            get
-            {
-                return shift;
-            }
-
-            set
-            {
-                if (shift == value) return;
-
-                shift = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Shift)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Modifiers)));
             }
         }
 
@@ -113,8 +87,8 @@ namespace BepInEx
         {
             try
             {
-                var parts = str.Split(' ').Select(x => int.Parse(x)).ToArray();
-                return new KeyboardShortcut((KeyCode)parts[0], parts[1] == 1, parts[2] == 1, parts[3] == 1);
+                var parts = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(x => (KeyCode)Enum.Parse(typeof(KeyCode), x)).ToArray();
+                return new KeyboardShortcut(parts);
             }
             catch (SystemException ex)
             {
@@ -125,7 +99,7 @@ namespace BepInEx
 
         public string Serialize()
         {
-            return $"{(int)Key} {(Control ? 1 : 0)} {(Alt ? 1 : 0)} {(Shift ? 1 : 0)}";
+            return string.Join(" ", allKeys.Select(x => x.ToString()).ToArray());
         }
 
         /// <summary>
@@ -133,7 +107,9 @@ namespace BepInEx
         /// </summary>
         public bool IsDown()
         {
-            return Input.GetKeyDown(Key) && ModifierKeyTest();
+            if (MainKey == KeyCode.None) return false;
+
+            return Input.GetKeyDown(MainKey) && ModifierKeyTest();
         }
 
         /// <summary>
@@ -141,7 +117,9 @@ namespace BepInEx
         /// </summary>
         public bool IsPressed()
         {
-            return Input.GetKey(Key) && ModifierKeyTest();
+            if (MainKey == KeyCode.None) return false;
+
+            return Input.GetKey(MainKey) && ModifierKeyTest();
         }
 
         /// <summary>
@@ -149,24 +127,33 @@ namespace BepInEx
         /// </summary>
         public bool IsUp()
         {
-            return Input.GetKeyUp(Key) && ModifierKeyTest();
+            if (MainKey == KeyCode.None) return false;
+
+            return Input.GetKeyUp(MainKey) && ModifierKeyTest();
         }
 
         private bool ModifierKeyTest()
         {
-            if (Key == KeyCode.None)
-                return false;
+            return AllKeys.All(c =>
+            {
+                if (allKeys.Contains(c))
+                {
+                    if (allKeys[0] == c)
+                        return true;
+                    return Input.GetKey(c);
+                }
+                else
+                {
+                    return !Input.GetKey(c);
+                }
+            });
+        }
 
-            if (Control && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
-                return false;
+        public override string ToString()
+        {
+            if (MainKey == KeyCode.None) return "Not set";
 
-            if (Alt && !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.RightAlt))
-                return false;
-
-            if (Shift && !Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.RightShift))
-                return false;
-
-            return true;
+            return string.Join(" + ", allKeys.Select(c => c.ToString()).ToArray());
         }
     }
 }

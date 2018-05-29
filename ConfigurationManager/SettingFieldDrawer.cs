@@ -15,7 +15,7 @@ namespace ConfigurationManager
         private Dictionary<PropSettingEntry, ComboBox> _comboBoxCache = new Dictionary<PropSettingEntry, ComboBox>();
 
         private PropSettingEntry CurrentKeyboardShortcutToSet;
-        private static KeyCode[] KeysToCheck = (KeyCode[])Enum.GetValues(typeof(KeyCode));
+        private static readonly IEnumerable<KeyCode> KeysToCheck = KeyboardShortcut.AllKeys.Except(new[] { KeyCode.Mouse0 }).ToArray();
 
         public void ClearCache()
         {
@@ -98,36 +98,33 @@ namespace ConfigurationManager
             {
                 if (CurrentKeyboardShortcutToSet == setting)
                 {
-                    GUILayout.TextArea("Press any key", GUILayout.ExpandWidth(true));
+                    GUILayout.TextArea("Press any key combination", GUILayout.ExpandWidth(true));
 
                     foreach (var key in KeysToCheck)
                     {
-                        if (Input.GetKey(key))
+                        if (Input.GetKeyUp(key))
                         {
-                            shortcut.Key = key;
+                            shortcut.MainKey = key;
+                            shortcut.Modifiers = KeysToCheck.Where(Input.GetKey).OrderBy(x => x.ToString()).ToArray();
 
                             CurrentKeyboardShortcutToSet = null;
                             break;
                         }
                     }
 
-                    if (GUILayout.Button("Clear"))
-                    {
-                        shortcut.Key = KeyCode.None;
-                        CurrentKeyboardShortcutToSet = null;
-                    }
-
-                    if (GUILayout.Button("Cancel"))
+                    if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
                         CurrentKeyboardShortcutToSet = null;
                 }
                 else
                 {
-                    if (GUILayout.Button(shortcut.Key.ToString(), GUILayout.ExpandWidth(true)))
+                    if (GUILayout.Button(shortcut.ToString(), GUILayout.ExpandWidth(true)))
                         CurrentKeyboardShortcutToSet = setting;
 
-                    shortcut.Control = GUILayout.Toggle(shortcut.Control, "Control", GUILayout.ExpandWidth(false));
-                    shortcut.Alt = GUILayout.Toggle(shortcut.Alt, "Alt", GUILayout.ExpandWidth(false));
-                    shortcut.Shift = GUILayout.Toggle(shortcut.Shift, "Shift", GUILayout.ExpandWidth(false));
+                    if (GUILayout.Button("Clear", GUILayout.ExpandWidth(false)))
+                    {
+                        setting.Set(KeyboardShortcut.Empty);
+                        CurrentKeyboardShortcutToSet = null;
+                    }
                 }
             }
             GUILayout.EndHorizontal();
