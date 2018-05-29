@@ -11,7 +11,7 @@ Additionally, normal public properties will also be displayed, as long as they h
 It's recommended that you put all of your settings into BepInEx.ConfigWrapper, because they will be automatically saved and loaded on game restart.
 
 ### Example code
-Example code used in the Screenshot Manager (visible in the screen above). [View full source](../master/Screencap/ScreenshotManager.cs).
+Example code used in the Screenshot Manager (visible in the screen above). [View full source](../Screencap/ScreenshotManager.cs).
 ```c#
 // Override display name and set a category
 [Category("Output resolution")]
