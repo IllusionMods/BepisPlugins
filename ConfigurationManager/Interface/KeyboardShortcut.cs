@@ -19,9 +19,19 @@ namespace BepInEx
     {
         public static readonly KeyboardShortcut Empty = new KeyboardShortcut(KeyCode.None);
 
-        public static readonly IEnumerable<KeyCode> AllKeys = (KeyCode[])Enum.GetValues(typeof(KeyCode));
+        public static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[])Enum.GetValues(typeof(KeyCode));
 
         private KeyCode[] allKeys;
+        private HashSet<KeyCode> allKeysLookup;
+
+        public KeyCode[] AllKeys
+        {
+            get => allKeys; set
+            {
+                allKeys = value;
+                allKeysLookup = new HashSet<KeyCode>(value);
+            }
+        }
 
         /// <summary>
         /// Create a new keyboard shortcut.
@@ -30,17 +40,17 @@ namespace BepInEx
         /// <param name="modifiers">Keys that should be held down before main key is registered</param>
         public KeyboardShortcut(KeyCode mainKey, params KeyCode[] modifiers)
         {
-            allKeys = new[] { mainKey }.Concat(modifiers).ToArray();
+            AllKeys = new[] { mainKey }.Concat(modifiers).ToArray();
         }
 
         private KeyboardShortcut(params KeyCode[] keys)
         {
-            allKeys = keys;
+            AllKeys = keys;
         }
 
         public KeyboardShortcut()
         {
-            allKeys = new KeyCode[] { };
+            AllKeys = new KeyCode[] { };
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -49,17 +59,17 @@ namespace BepInEx
         {
             get
             {
-                return allKeys.Length > 0 ? allKeys[0] : KeyCode.None;
+                return AllKeys.Length > 0 ? AllKeys[0] : KeyCode.None;
             }
 
             set
             {
                 if (MainKey == value) return;
 
-                if (allKeys.Length > 0)
-                    allKeys[0] = value;
+                if (AllKeys.Length > 0)
+                    AllKeys[0] = value;
                 else
-                    allKeys = new[] { value };
+                    AllKeys = new[] { value };
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainKey)));
             }
@@ -69,15 +79,15 @@ namespace BepInEx
         {
             get
             {
-                return allKeys.Skip(1);
+                return AllKeys.Skip(1);
             }
 
             set
             {
-                if (allKeys.Length > 0)
-                    allKeys = new[] { allKeys[0] }.Concat(value).ToArray();
+                if (AllKeys.Length > 0)
+                    AllKeys = new[] { AllKeys[0] }.Concat(value).ToArray();
                 else
-                    allKeys = value.ToArray();
+                    AllKeys = value.ToArray();
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Modifiers)));
             }
@@ -99,7 +109,7 @@ namespace BepInEx
 
         public string Serialize()
         {
-            return string.Join(" ", allKeys.Select(x => x.ToString()).ToArray());
+            return string.Join(" ", AllKeys.Select(x => x.ToString()).ToArray());
         }
 
         /// <summary>
@@ -134,11 +144,11 @@ namespace BepInEx
 
         private bool ModifierKeyTest()
         {
-            return AllKeys.All(c =>
+            return AllKeyCodes.All(c =>
             {
-                if (allKeys.Contains(c))
+                if (allKeysLookup.Contains(c))
                 {
-                    if (allKeys[0] == c)
+                    if (AllKeys[0] == c)
                         return true;
                     return Input.GetKey(c);
                 }
@@ -153,7 +163,7 @@ namespace BepInEx
         {
             if (MainKey == KeyCode.None) return "Not set";
 
-            return string.Join(" + ", allKeys.Select(c => c.ToString()).ToArray());
+            return string.Join(" + ", AllKeys.Select(c => c.ToString()).ToArray());
         }
     }
 }

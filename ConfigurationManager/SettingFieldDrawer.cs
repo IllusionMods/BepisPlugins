@@ -15,7 +15,7 @@ namespace ConfigurationManager
         private Dictionary<PropSettingEntry, ComboBox> _comboBoxCache = new Dictionary<PropSettingEntry, ComboBox>();
 
         private PropSettingEntry CurrentKeyboardShortcutToSet;
-        private static readonly IEnumerable<KeyCode> KeysToCheck = KeyboardShortcut.AllKeys.Except(new[] { KeyCode.Mouse0 }).ToArray();
+        private static readonly IEnumerable<KeyCode> KeysToCheck = KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
 
         public void ClearCache()
         {
