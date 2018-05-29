@@ -77,6 +77,8 @@ public ConfigWrapper<int> ResolutionX { get; }
 2. Add property with SavedKeyboardShortcut to your main class.
 3. Use this property to check for inputs (recommend using IsDown) inside of your Update method.
 
+The KeyboardShortcut class supports modifier keys - Shift, Control and Alt. They are properly handled, preventing common problems like K+Shift+Control triggering K+Shift when it shouldn't have.
+
 Warning: This class already uses a ConfigWrapper internally, so don't wrap it in a ConfigWrapper! (it won't work)
 
 ```c#
