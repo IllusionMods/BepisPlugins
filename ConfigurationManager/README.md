@@ -1,8 +1,6 @@
 ## Plugin / mod configuration manager for Koikatu
 An easy way to let user configure how a plugin behaves without the need to make your own GUI. The user can change any of the settings you expose, even keyboard shortcuts. The configuration manager can be accessed from in-game settings screen.
 
-![Configuration manager](Screenshot.PNG)
-
 ## How to make my mod compatible?
 ConfigurationManager will automatically display all of your properties with BepInEx.ConfigWrappers. Properties can be either public or private. They have to be in the main plugin class to be seen.
 
@@ -11,7 +9,7 @@ Additionally, normal public properties will also be displayed, as long as they h
 It's recommended that you put all of your settings into BepInEx.ConfigWrapper, because they will be automatically saved and loaded on game restart.
 
 ### Example code
-Example code used in the Screenshot Manager (visible in the screen above). [View full source](../Screencap/ScreenshotManager.cs).
+Example code used in the Screenshot Manager (visible in the screenshot below). [View full source](../Screencap/ScreenshotManager.cs).
 ```c#
 // Override display name and set a category
 [Category("Output resolution")]
@@ -39,6 +37,8 @@ public ScreenshotManager()
     CK_Capture = new SavedKeyboardShortcut("Take screenshot", this, new KeyboardShortcut(KeyCode.F9));
 }
 ```
+
+![Configuration manager](Screenshot.PNG)
 
 ## How to change how my settings are displayed in the configuration manager window?
 You can add attributes to your properties to change how the settings are shown. Most of the attributes are from the System.ComponentModel namespace.
