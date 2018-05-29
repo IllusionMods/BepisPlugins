@@ -39,6 +39,15 @@ namespace ConfigurationManager
             GUILayout.EndHorizontal();
         }
 
+        internal void DrawCenteredLabel(GUIContent content, params GUILayoutOption[] options)
+        {
+            GUILayout.BeginHorizontal(options);
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(content);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+        }
+
         public void DrawComboboxField(PropSettingEntry setting, System.Collections.IList list)
         {
             var buttonText = new GUIContent(setting.Get().ToString());

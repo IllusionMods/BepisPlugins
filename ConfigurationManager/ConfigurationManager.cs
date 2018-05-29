@@ -16,6 +16,8 @@ namespace ConfigurationManager
     [Browsable(false)]
     public class ConfigurationManager : BaseUnityPlugin
     {
+        private static readonly GUIContent KeyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
+            "The first key is the main key, while the rest are modifiers.\nThe shortcut will only fire when you press \nthe main key while all modifiers are already pressed.");
         private readonly Type baseSettingType = typeof(ConfigWrapper<>);
 
         private bool displayingButton, displayingWindow;
@@ -156,7 +158,7 @@ namespace ConfigurationManager
                     skippedList.Add(pluginInfo.Name);
                 }
             }
-            
+
             if (!showAdvanced.Value)
                 results = results.Where(x => x.IsAdvanced != true);
             if (!showKeybinds.Value)
@@ -267,13 +269,13 @@ namespace ConfigurationManager
             {
                 fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version.ToString()}");
 
-                foreach (var category in plugin.Select(x => new { plugin = x, category = (x.SettingType == typeof(KeyboardShortcut) ? "Keyboard shortcuts" : x.Category) })
-                .GroupBy(a => a.category).OrderBy(x => x.Key))
+                foreach (var category in plugin.Select(x => new { plugin = x, category = (x.SettingType == typeof(KeyboardShortcut) ? KeyboardShortcutsCategoryName : new GUIContent(x.Category)) })
+                .GroupBy(a => a.category.text).OrderBy(x => x.Key))
                 {
                     if (!string.IsNullOrEmpty(category.Key))
                     {
                         //GUILayout.BeginVertical(GUI.skin.box);
-                        fieldDrawer.DrawCenteredLabel(category.Key);
+                        fieldDrawer.DrawCenteredLabel(category.First().category);
                     }
 
                     foreach (var setting in category.OrderBy(x => x.plugin.DispName))
