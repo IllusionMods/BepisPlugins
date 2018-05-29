@@ -22,7 +22,7 @@ namespace Screencap
         {
             CK_Capture = new SavedKeyboardShortcut("Take screenshot", this, new KeyboardShortcut(KeyCode.F9));
             CK_CaptureAlpha = new SavedKeyboardShortcut("Take character screenshot", this, new KeyboardShortcut(KeyCode.F11));
-            CK_Gui = new SavedKeyboardShortcut("Open settings window", this, new KeyboardShortcut(KeyCode.F11, false, false, true));
+            CK_Gui = new SavedKeyboardShortcut("Open settings window", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift));
 
             ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
             ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
@@ -137,9 +137,9 @@ namespace Screencap
                 }
             });
 
-            string resX = GUI.TextField(new Rect(10, 40, 60, 20), ResolutionX.ToString());
+            string resX = GUI.TextField(new Rect(10, 40, 60, 20), ResolutionX.Value.ToString());
 
-            string resY = GUI.TextField(new Rect(90, 40, 60, 20), ResolutionY.ToString());
+            string resY = GUI.TextField(new Rect(90, 40, 60, 20), ResolutionY.Value.ToString());
 
             bool screenSize = GUI.Button(new Rect(10, 65, 140, 20), "Set to screen size");
 
