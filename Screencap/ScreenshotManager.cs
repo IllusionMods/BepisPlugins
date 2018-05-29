@@ -20,7 +20,7 @@ namespace Screencap
 
         public ScreenshotManager()
         {
-            CK_Capture = new SavedKeyboardShortcut("Take screenshot", this, new KeyboardShortcut(KeyCode.F9)); ;
+            CK_Capture = new SavedKeyboardShortcut("Take screenshot", this, new KeyboardShortcut(KeyCode.F9));
             CK_CaptureAlpha = new SavedKeyboardShortcut("Take character screenshot", this, new KeyboardShortcut(KeyCode.F11));
             CK_Gui = new SavedKeyboardShortcut("Open settings window", this, new KeyboardShortcut(KeyCode.F11, false, false, true));
 

@@ -11,12 +11,12 @@ namespace ColorCorrector
     public class ColorCorrector : BaseUnityPlugin
     {
         #region Config properties
-        [DisplayName("Enable saturation filter")]
-        [DefaultValue(true)]
+        [DisplayName("!Enable saturation filter")]
+        [Category("Post processing settings")]
         private ConfigWrapper<bool> SaturationEnabled { get; set; }
 
         [DisplayName("Strength of the bloom filter")]
-        [DefaultValue(1f)]
+        [Category("Post processing settings")]
         [AcceptableValueRange(0f, 1f)]
         private ConfigWrapper<float> BloomStrength { get; set; }
         #endregion
@@ -50,7 +50,7 @@ namespace ColorCorrector
                 bloomComponent.bloomIntensity = bloomPower;
         }
 
-        #region MonoBehaviour
+        //#region MonoBehaviour
         void OnEnable()
         {
             SceneManager.sceneLoaded += LevelFinishedLoading;
@@ -60,7 +60,7 @@ namespace ColorCorrector
         {
             SceneManager.sceneLoaded -= LevelFinishedLoading;
         }
-
+        /*
         void Update()
         {
             if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F6))
@@ -82,9 +82,9 @@ namespace ColorCorrector
 
         void WindowFunction(int windowID)
         {
-            bool satEnabled = GUI.Toggle(new Rect(10, 20, 180, 20), SaturationEnabled.Value, " Saturation filter enabled");
+            bool satEnabled = GUI.Toggle(new Rect(10, 20, 180, 20), SaturationEnabled.Value, " Enable saturation filter");
 
-            GUI.Label(new Rect(10, 40, 180, 20), "Bloom filter strength");
+            GUI.Label(new Rect(10, 40, 180, 20), "Strength of the bloom filter");
 
             float bloomPower = GUI.HorizontalSlider(new Rect(10, 60, 180, 20), BloomStrength.Value, 0, 1);
 
@@ -99,5 +99,6 @@ namespace ColorCorrector
             GUI.DragWindow();
         }
         #endregion
+        */
     }
 }

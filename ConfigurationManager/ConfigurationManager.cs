@@ -82,7 +82,7 @@ namespace ConfigurationManager
 
         private void BuildSettingList()
         {
-            var list = new List<PropSettingEntry>();
+            var results = Enumerable.Empty<PropSettingEntry>();
             var skippedList = new List<string>();
 
             foreach (var plugin in Utils.FindPlugins())
@@ -93,27 +93,29 @@ namespace ConfigurationManager
                 if (pluginInfo == null)
                 {
                     BepInLogger.Log($"Error: Plugin {type.FullName} is missing the BepInPlugin attribute!");
+                    skippedList.Add(pluginInfo.Name);
                     continue;
                 }
 
-                if (type.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().Any(x => !x.Browsable) ||
-                    type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).All(x => !updateMethodNames.Contains(x.Name)))
+                if (type.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().Any(x => !x.Browsable))
                 {
                     skippedList.Add(pluginInfo.Name);
                     continue;
                 }
+
+                var detected = new List<PropSettingEntry>();
 
                 // Config wrappers ------
 
                 var settingProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingProps.Select((x) => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)));
+                detected.AddRange(settingProps.Select((x) => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)));
 
                 var settingPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                     .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                list.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)));
+                detected.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)));
 
                 // Normal properties ------
 
@@ -123,8 +125,7 @@ namespace ConfigurationManager
                             .FilterBrowsable(true, false))
                     .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-
-                list.AddRange(normalProps.Select((x) => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
+                detected.AddRange(normalProps.Select((x) => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
 
                 var normalPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
                     .FilterBrowsable(true, true)
@@ -132,27 +133,38 @@ namespace ConfigurationManager
                             .FilterBrowsable(true, false))
                     .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
+                detected.AddRange(normalPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
 
-                // Enable/disable mod ------
-                var enabledSetting = PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
-                enabledSetting.DispName = "!Allow plugin to run on every frame";
-                enabledSetting.Description = "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
-                enabledSetting.IsAdvanced = true;
-                list.Add(enabledSetting);
+                // Allow to enable/disable plugin if it uses any update methods ------
+                if (!type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).All(x => !updateMethodNames.Contains(x.Name)))
+                {
+                    var enabledSetting = PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
+                    enabledSetting.DispName = "!Allow plugin to run on every frame";
+                    enabledSetting.Description = "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
+                    enabledSetting.IsAdvanced = true;
+                    detected.Add(enabledSetting);
+                }
 
-                list.AddRange(normalPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
+                detected.RemoveAll(x => x.Browsable == false);
+
+                if (detected.Any())
+                {
+                    results = results.Concat(detected);
+                }
+                else
+                {
+                    skippedList.Add(pluginInfo.Name);
+                }
             }
-
-            list.RemoveAll(x => x.Browsable == false);
-
+            
             if (!showAdvanced.Value)
-                list.RemoveAll(x => x.IsAdvanced == true);
+                results = results.Where(x => x.IsAdvanced != true);
             if (!showKeybinds.Value)
-                list.RemoveAll(x => x.SettingType == typeof(KeyboardShortcut));
+                results = results.Where(x => x.SettingType != typeof(KeyboardShortcut));
             if (!showSettings.Value)
-                list.RemoveAll(x => x.IsAdvanced != true && x.SettingType != typeof(KeyboardShortcut));
+                results = results.Where(x => x.IsAdvanced == true || x.SettingType == typeof(KeyboardShortcut));
 
-            settings = list;
+            settings = results.ToList();
 
             modsWithoutSettings = string.Join(", ", skippedList.Select(x => x.TrimStart('!')).OrderBy(x => x).ToArray());
         }
