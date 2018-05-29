@@ -3,6 +3,7 @@ using BepInEx.Common;
 using System;
 using System.IO;
 using System.Reflection;
+using BepInEx.Bootstrap;
 using IllusionPlugin;
 using UnityEngine;
 
