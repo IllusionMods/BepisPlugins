@@ -130,14 +130,15 @@ namespace alphaShot
             renderCam.rect = new Rect(0, 0, 1, 1);
 
             var lc = Shader.GetGlobalColor(ChaShader._LineColorG);
-            Shader.SetGlobalColor(ChaShader._LineColorG, new Color(.5f, .5f, .5f, 0f));
             if (CaptureMask)
             {
+                Shader.SetGlobalColor(ChaShader._LineColorG, new Color(.5f, .5f, .5f, 0f));
                 GL.Clear(true, true, Color.white);
                 renderCam.backgroundColor = Color.white;
                 renderCam.renderingPath = RenderingPath.VertexLit;
                 matBlackout.SetColor(col, Color.black);
                 renderCam.RenderWithShader(matBlackout.shader, null);
+                Shader.SetGlobalColor(ChaShader._LineColorG, lc);
             }
             else
             {
@@ -145,7 +146,6 @@ namespace alphaShot
                 renderCam.renderingPath = RenderingPath.Forward;
                 renderCam.Render();
             }
-            Shader.SetGlobalColor(ChaShader._LineColorG, lc);
             renderCam.targetTexture = targetTexture;
             renderCam.rect = rect;
 
