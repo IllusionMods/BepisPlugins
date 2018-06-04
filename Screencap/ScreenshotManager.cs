@@ -1,5 +1,6 @@
 ﻿using alphaShot;
 using BepInEx;
+using BepInEx.Logging;
 using Illusion.Game;
 using System;
 using System.Collections;
@@ -9,9 +10,12 @@ using UnityEngine.SceneManagement;
 
 namespace Screencap
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.screenshotmanager", Name: "Screenshot Manager", Version: "2.2")]
+    [BepInPlugin(GUID: GUID, Name: "Screenshot Manager", Version: "2.2")]
     public class ScreenshotManager : BaseUnityPlugin
     {
+        internal const string GUID = "com.bepis.bepinex.screenshotmanager";
+        private int WindowHash = GUID.GetHashCode();
+
         private string screenshotDir = Path.Combine(Application.dataPath, "..\\UserData\\cap\\");
         private AlphaShot2 as2 = null;
 
@@ -68,7 +72,7 @@ namespace Screencap
         private void Install()
         {
             if (!Camera.main || !Camera.main.gameObject) return;
-            as2 = Camera.main.gameObject.AddComponent<AlphaShot2>();
+            as2 = Camera.main.gameObject.GetOrAddComponent<AlphaShot2>();
         }
 
         void Update()
@@ -88,7 +92,7 @@ namespace Screencap
 
             yield return new WaitUntil(() => File.Exists(filename));
 
-            BepInLogger.Log($"Screenshot saved to {filename}", true);
+            BepInEx.Logger.Log(LogLevel.Message, $"Screenshot saved to {filename}");
         }
 
         void TakeCharScreenshot()
@@ -96,9 +100,9 @@ namespace Screencap
             File.WriteAllBytes(filename, as2.Capture(ResolutionX, ResolutionY, DownscalingRate, CaptureAlpha));
 
             Utils.Sound.Play(SystemSE.photo);
-            BepInLogger.Log($"Character screenshot saved to {filename}", true);
+            BepInEx.Logger.Log(LogLevel.Message, $"Character screenshot saved to {filename}");
 
-            GC.Collect();
+            //GC.Collect();
         }
 
 
@@ -109,7 +113,7 @@ namespace Screencap
         void OnGUI()
         {
             if (showingUI)
-                UI = GUI.Window("com.bepis.bepinex.screenshotmanager".GetHashCode() + 0, UI, WindowFunction, "Rendering settings");
+                UI = GUI.Window(WindowHash, UI, WindowFunction, "Rendering settings");
         }
 
         void WindowFunction(int windowID)

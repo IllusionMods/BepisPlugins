@@ -7,11 +7,11 @@ namespace Screencap
     public static class Hooks
     {
         //Chara card Render/Downsample rate.
-        private static int RenderRate => int.Parse(BepInEx.Config.GetEntry("carddownscalerate", "1", "com.bepis.bepinex.screenshotmanager"));
+        private static int RenderRate => int.Parse(BepInEx.Config.GetEntry("carddownscalerate", "1", ScreenshotManager.GUID));
 
         public static void InstallHooks()
         {
-            var harmony = HarmonyInstance.Create("com.bepis.bepinex.screenshotmanager");
+            var harmony = HarmonyInstance.Create(ScreenshotManager.GUID);
             harmony.PatchAll(typeof(Hooks));
         }
 
