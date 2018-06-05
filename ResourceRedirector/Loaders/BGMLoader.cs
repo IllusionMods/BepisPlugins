@@ -31,7 +31,7 @@ namespace ResourceRedirector
                 if (File.Exists(path))
                 {
 
-                    BepInLogger.Log($"Loading {path}");
+                    BepInEx.Logger.Log(BepInEx.Logging.LogLevel.Info, $"Loading {path}");
 
                     result = new AssetBundleLoadAssetOperationSimulation(AssetLoader.LoadAudioClip(path, AudioType.WAV));
 
