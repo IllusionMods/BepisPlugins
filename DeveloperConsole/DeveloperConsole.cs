@@ -35,7 +35,7 @@ namespace DeveloperConsole
 
                 scrollPosition = new Vector2(0, float.MaxValue);
 
-                if (level.GetHighestLevel() == LogLevel.Message)
+                if (level.GetHighestLevel() <= LogLevel.Message)
                 {
                     if (showCounter == 0)
                         TotalShowingLog = "";
