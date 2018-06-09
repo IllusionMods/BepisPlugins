@@ -55,7 +55,7 @@ namespace Sideloader
 
             
             //load zips
-            foreach (string archivePath in Directory.GetFiles(modDirectory, "*.zip"))
+            foreach (string archivePath in Directory.GetFiles(modDirectory, "*.zip", SearchOption.AllDirectories))
             {
                 var archive = new ZipFile(archivePath);
 
