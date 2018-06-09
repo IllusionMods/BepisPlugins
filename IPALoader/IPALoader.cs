@@ -10,6 +10,7 @@ using UnityEngine;
 namespace IPALoader
 {
 	[BepInPlugin(GUID: "com.bepis.bepinex.ipapluginloader", Name: "IPA Plugin Loader", Version: "1.2")]
+    [System.ComponentModel.Browsable(false)]
 	public class IPALoader : BaseUnityPlugin
 	{
 		public static GameObject IPAManagerObject { get; private set; }
