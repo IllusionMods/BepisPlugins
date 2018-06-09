@@ -1,54 +1,64 @@
 ﻿using alphaShot;
 using BepInEx;
+using BepInEx.Logging;
 using Illusion.Game;
 using System;
 using System.Collections;
+using System.ComponentModel;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Screencap
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.screenshotmanager", Name: "Screenshot Manager", Version: "2.1")]
+    [BepInPlugin(GUID: GUID, Name: "Screenshot Manager", Version: "2.2")]
     public class ScreenshotManager : BaseUnityPlugin
     {
+        internal const string GUID = "com.bepis.bepinex.screenshotmanager";
+        private int WindowHash = GUID.GetHashCode();
+
         private string screenshotDir = Path.Combine(Application.dataPath, "..\\UserData\\cap\\");
         private AlphaShot2 as2 = null;
 
-        private KeyCode CK_Capture = KeyCode.F9;
-        private KeyCode CK_CaptureAlpha = KeyCode.F11;
-
         #region Config properties
 
-        public int ResolutionX
+        public ScreenshotManager()
         {
-            get => int.Parse(this.GetEntry("resolution-x", "1024"));
-            set => this.SetEntry("resolution-x", value.ToString());
+            CK_Capture = new SavedKeyboardShortcut("Take screenshot", this, new KeyboardShortcut(KeyCode.F9));
+            CK_CaptureAlpha = new SavedKeyboardShortcut("Take character screenshot", this, new KeyboardShortcut(KeyCode.F11));
+            CK_Gui = new SavedKeyboardShortcut("Open settings window", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift));
+
+            ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
+            ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
+            DownscalingRate = new ConfigWrapper<int>("downscalerate", this, 1);
+            CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 1);
+            CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
         }
 
-        public int ResolutionY
-        {
-            get => int.Parse(this.GetEntry("resolution-y", "1024"));
-            set => this.SetEntry("resolution-y", value.ToString());
-        }
+        public SavedKeyboardShortcut CK_Capture { get; }
+        public SavedKeyboardShortcut CK_CaptureAlpha { get; }
+        public SavedKeyboardShortcut CK_Gui { get; }
 
-        public int DownscalingRate
-        {
-            get => int.Parse(this.GetEntry("downscalerate", "1"));
-            set => this.SetEntry("downscalerate", value.ToString());
-        }
+        [Category("Output resolution")]
+        [DisplayName("Horizontal (Width in px)")]
+        [AcceptableValueRange(2, 4096, false)]
+        public ConfigWrapper<int> ResolutionX { get; }
 
-        public int CardDownscalingRate
-        {
-            get => int.Parse(this.GetEntry("carddownscalerate", "1"));
-            set => this.SetEntry("carddownscalerate", value.ToString());
-        }
+        [Category("Output resolution")]
+        [DisplayName("Vertical (Height in px)")]
+        [AcceptableValueRange(2, 4096, false)]
+        public ConfigWrapper<int> ResolutionY { get; }
 
-        public bool CaptureAlpha
-        {
-            get => bool.Parse(this.GetEntry("capturealpha", "true"));
-            set => this.SetEntry("capturealpha", value.ToString());
-        }
+        [DisplayName("!Downscaling rate (x times)")]
+        [AcceptableValueRange(1, 4, false)]
+        public ConfigWrapper<int> DownscalingRate { get; }
+
+        [DisplayName("Card downscaling rate (x times)")]
+        [AcceptableValueRange(1, 4, false)]
+        public ConfigWrapper<int> CardDownscalingRate { get; }
+
+        [DisplayName("!Capture alpha")]
+        public ConfigWrapper<bool> CaptureAlpha { get; }
 
         #endregion
 
@@ -68,17 +78,14 @@ namespace Screencap
         private void Install()
         {
             if (!Camera.main || !Camera.main.gameObject) return;
-            as2 = Camera.main.gameObject.AddComponent<AlphaShot2>();
+            as2 = Camera.main.gameObject.GetOrAddComponent<AlphaShot2>();
         }
 
         void Update()
         {
-            if (Input.GetKeyDown(CK_CaptureAlpha))
-            {
-                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) showingUI = !showingUI;
-                else TakeCharScreenshot();
-            }
-            if (Input.GetKeyDown(CK_Capture)) StartCoroutine(TakeScreenshot());
+            if (CK_Gui.IsDown()) showingUI = !showingUI;
+            else if (CK_CaptureAlpha.IsDown()) TakeCharScreenshot();
+            else if (CK_Capture.IsDown()) StartCoroutine(TakeScreenshot());
         }
 
         IEnumerator TakeScreenshot()
@@ -88,17 +95,19 @@ namespace Screencap
 
             yield return new WaitUntil(() => File.Exists(filename));
 
-            BepInLogger.Log($"Screenshot saved to {filename}", true);
+            BepInEx.Logger.Log(LogLevel.Message, $"Screenshot saved to {filename}");
         }
 
         void TakeCharScreenshot()
         {
-            File.WriteAllBytes(filename, as2.Capture(ResolutionX, ResolutionY, DownscalingRate, CaptureAlpha));
+            if (as2 == null) return;
 
+            File.WriteAllBytes(filename, as2.Capture(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value));
+            
             Utils.Sound.Play(SystemSE.photo);
-            BepInLogger.Log($"Character screenshot saved to {filename}", true);
+            BepInEx.Logger.Log(LogLevel.Message, $"Character screenshot saved to {filename}");
 
-            GC.Collect();
+            //GC.Collect();
         }
 
 
@@ -109,7 +118,7 @@ namespace Screencap
         void OnGUI()
         {
             if (showingUI)
-                UI = GUI.Window("com.bepis.bepinex.screenshotmanager".GetHashCode() + 0, UI, WindowFunction, "Rendering settings");
+                UI = GUI.Window(WindowHash, UI, WindowFunction, "Rendering settings");
         }
 
         void WindowFunction(int windowID)
@@ -132,9 +141,9 @@ namespace Screencap
                 }
             });
 
-            string resX = GUI.TextField(new Rect(10, 40, 60, 20), ResolutionX.ToString());
+            string resX = GUI.TextField(new Rect(10, 40, 60, 20), ResolutionX.Value.ToString());
 
-            string resY = GUI.TextField(new Rect(90, 40, 60, 20), ResolutionY.ToString());
+            string resY = GUI.TextField(new Rect(90, 40, 60, 20), ResolutionY.Value.ToString());
 
             bool screenSize = GUI.Button(new Rect(10, 65, 140, 20), "Set to screen size");
 
@@ -149,7 +158,7 @@ namespace Screencap
             });
 
 
-            int downscale = (int)Math.Round(GUI.HorizontalSlider(new Rect(10, 113, 120, 20), DownscalingRate, 1, 4));
+            int downscale = (int)Math.Round(GUI.HorizontalSlider(new Rect(10, 113, 120, 20), DownscalingRate.Value, 1, 4));
 
             GUI.Label(new Rect(0, 110, 150, 20), $"{downscale}x", new GUIStyle
             {
@@ -171,7 +180,7 @@ namespace Screencap
             });
 
 
-            int carddownscale = (int)Math.Round(GUI.HorizontalSlider(new Rect(10, 153, 120, 20), CardDownscalingRate, 1, 4));
+            int carddownscale = (int)Math.Round(GUI.HorizontalSlider(new Rect(10, 153, 120, 20), CardDownscalingRate.Value, 1, 4));
 
             GUI.Label(new Rect(0, 150, 150, 20), $"{carddownscale}x", new GUIStyle
             {
@@ -182,7 +191,7 @@ namespace Screencap
                 }
             });
 
-            bool capturealpha = GUI.Toggle(new Rect(10, 173, 120, 20), CaptureAlpha, "Capture alpha");
+            bool capturealpha = GUI.Toggle(new Rect(10, 173, 120, 20), CaptureAlpha.Value, "Capture alpha");
 
 
             if (GUI.changed)
@@ -190,22 +199,22 @@ namespace Screencap
                 BepInEx.Config.SaveOnConfigSet = false;
 
                 if (int.TryParse(resX, out int x))
-                    ResolutionX = Mathf.Clamp(x, 2, 4096);
+                    ResolutionX.Value = Mathf.Clamp(x, 2, 4096);
 
                 if (int.TryParse(resY, out int y))
-                    ResolutionY = Mathf.Clamp(y, 2, 4096);
+                    ResolutionY.Value = Mathf.Clamp(y, 2, 4096);
 
                 if (screenSize)
                 {
-                    ResolutionX = Screen.width;
-                    ResolutionY = Screen.height;
+                    ResolutionX.Value = Screen.width;
+                    ResolutionY.Value = Screen.height;
                 }
 
-                DownscalingRate = downscale;
+                DownscalingRate.Value = downscale;
 
-                CardDownscalingRate = carddownscale;
+                CardDownscalingRate.Value = carddownscale;
 
-                CaptureAlpha = capturealpha;
+                CaptureAlpha.Value = capturealpha;
 
                 BepInEx.Config.SaveOnConfigSet = true;
                 BepInEx.Config.SaveConfig();
