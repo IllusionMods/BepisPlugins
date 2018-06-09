@@ -1,11 +1,9 @@
-﻿using BepInEx;
-using Illusion.Game;
+﻿using Illusion.Game;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
+using BepInEx.Logging;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace ResourceRedirector
 {
@@ -31,7 +29,7 @@ namespace ResourceRedirector
                 if (File.Exists(path))
                 {
 
-                    BepInLogger.Log($"Loading {path}");
+                    Logger.Log(LogLevel.Info, $"Loading {path}");
 
                     result = new AssetBundleLoadAssetOperationSimulation(AssetLoader.LoadAudioClip(path, AudioType.WAV));
 

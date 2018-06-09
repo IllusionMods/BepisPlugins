@@ -4,8 +4,10 @@ using System;
 using System.IO;
 using System.Reflection;
 using BepInEx.Bootstrap;
+using BepInEx.Logging;
 using IllusionPlugin;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace IPALoader
 {
@@ -37,12 +39,12 @@ namespace IPALoader
 		        $@"{System.Diagnostics.Process.GetCurrentProcess().ProcessName}_Data\Managed");
 
 		    if (File.Exists(Path.Combine(managedDir, "IllusionPlugin.dll")))
-		        BepInLogger.Log("WARNING: IPA has been detected to be installed! IPALoader may not function correctly!", true, ConsoleColor.Red);
+		        Logger.Log(LogLevel.Error | LogLevel.Message, "IPA has been detected to be installed! IPALoader may not function correctly!");
 
 
 			if (!Directory.Exists(IPAPluginDir))
 			{
-				BepInLogger.Log("No IPA plugin directory, skipping load");
+				Logger.Log(LogLevel.Message, "No IPA plugin directory, skipping load");
 				return;
 			}
 
@@ -54,7 +56,7 @@ namespace IPALoader
 			DontDestroyOnLoad(IPAManagerObject);
 			IPAManagerObject.SetActive(false);
 
-			BepInLogger.Log("Loading IPA plugins");
+			Logger.Log(LogLevel.Info, "Loading IPA plugins");
 
 			foreach (string path in Directory.GetFiles(IPAPluginDir, "*.dll"))
 			{
@@ -76,7 +78,7 @@ namespace IPALoader
 
 							Component c = Chainloader.ManagerObject.AddComponent<IPAPlugin>();
 
-							BepInLogger.Log($"Loaded IPA plugin [{pluginToLoad.Name}]");
+							Logger.Log(LogLevel.Info, $"Loaded IPA plugin [{pluginToLoad.Name}]");
 
 							pluginToLoad = null;
 						}
@@ -84,8 +86,8 @@ namespace IPALoader
 				}
 				catch (Exception ex)
 				{
-					BepInLogger.Log($"Error loading IPA plugin {Path.GetFileName(path)}");
-					BepInLogger.Log(ex.ToString());
+					Logger.Log(LogLevel.Error | LogLevel.Message, $"Error loading IPA plugin {Path.GetFileName(path)}");
+					Logger.Log(LogLevel.Error, ex.ToString());
 				}
 			}
 

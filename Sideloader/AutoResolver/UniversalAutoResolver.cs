@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using BepInEx.Logging;
 
 namespace Sideloader.AutoResolver
 {
@@ -59,16 +60,14 @@ namespace Sideloader.AutoResolver
                         if (intResolve != null)
                         {
                             //found a match to a corrosponding internal mod
-                            BepInLogger.Log(
-                                $"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
+                            Logger.Log(LogLevel.Info, $"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
 
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }
                         else
                         {
                             //did not find a match, we don't have the mod
-                            BepInLogger.Log($"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]", true,
-                                ConsoleColor.Yellow);
+                            Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]");
 
                             kv.Value.SetMethod(structure, 999999); //set to an invalid ID
                         }
@@ -88,7 +87,7 @@ namespace Sideloader.AutoResolver
                         if (intResolve != null)
                         {
                             //found a match
-                            BepInLogger.Log($"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+                            Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
 
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }

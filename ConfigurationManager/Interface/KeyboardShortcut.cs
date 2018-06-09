@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using BepInEx.Logging;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace BepInEx
 {
@@ -102,7 +104,7 @@ namespace BepInEx
             }
             catch (SystemException ex)
             {
-                BepInLogger.Log("Failed to read keybind from settings: " + ex.Message);
+                Logger.Log(LogLevel.Error, "Failed to read keybind from settings: " + ex.Message);
                 return null;
             }
         }
