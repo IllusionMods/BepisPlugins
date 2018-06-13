@@ -20,7 +20,6 @@ namespace ExtensibleSaveFormat
 		{
 			var harmony = HarmonyInstance.Create("com.bepis.bepinex.extensiblesaveformat");
 			harmony.PatchAll(typeof(Hooks));
-            ManualPatchSceneInfoLoad(harmony); //Manually patching because I can't find a way to automatically patch a method with a ref/out parameter (at least I think this is the issue here).
         }
 
 
@@ -241,20 +240,7 @@ namespace ExtensibleSaveFormat
 	        ExtendedSave.cardReadEvent(__instance);
 	    }
 
-
-	    public static void ManualPatchSceneInfoLoad(HarmonyInstance instance)
-	    {
-	        foreach (MethodInfo methodInfo in typeof(SceneInfo).GetMethods())
-	        {
-	            if (methodInfo.Name.Equals("Load") && methodInfo.GetParameters().Length == 2)
-	            {
-	                instance.Patch(methodInfo, null, null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(SceneInfoLoadTranspiler))));
-	                break;
-	            }
-	        }
-        }
-
-	    //[HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Load", new[] {typeof(string), typeof(Version)})]
+	    [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Load", new[] {typeof(string), typeof(Version)}, new []{1})]
 	    public static IEnumerable<CodeInstruction> SceneInfoLoadTranspiler(IEnumerable<CodeInstruction> instructions)
 	    {
 	        bool set = false;
