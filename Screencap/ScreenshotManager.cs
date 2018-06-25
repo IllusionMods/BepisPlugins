@@ -84,28 +84,29 @@ namespace Screencap
         void Update()
         {
             if (CK_Gui.IsDown()) showingUI = !showingUI;
-            else if (CK_CaptureAlpha.IsDown()) TakeCharScreenshot();
-            else if (CK_Capture.IsDown()) StartCoroutine(TakeScreenshot());
+            else if (CK_CaptureAlpha.IsDown()) StartCoroutine(TakeCharScreenshot());
+            else if (CK_Capture.IsDown()) TakeScreenshot();
         }
 
-        IEnumerator TakeScreenshot()
+        void TakeScreenshot()
         {
             Application.CaptureScreenshot(filename);
             Utils.Sound.Play(SystemSE.photo);
 
-            yield return new WaitUntil(() => File.Exists(filename));
-
             BepInEx.Logger.Log(LogLevel.Message, $"Screenshot saved to {filename}");
         }
 
-        void TakeCharScreenshot()
+        IEnumerator TakeCharScreenshot()
         {
-            if (as2 == null) return;
+            yield return new WaitForEndOfFrame();
 
-            File.WriteAllBytes(filename, as2.Capture(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value));
-            
-            Utils.Sound.Play(SystemSE.photo);
-            BepInEx.Logger.Log(LogLevel.Message, $"Character screenshot saved to {filename}");
+            if (as2 != null)
+            {
+                File.WriteAllBytes(filename, as2.Capture(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value));
+
+                Utils.Sound.Play(SystemSE.photo);
+                BepInEx.Logger.Log(LogLevel.Message, $"Character screenshot saved to {filename}");
+            }
 
             //GC.Collect();
         }
