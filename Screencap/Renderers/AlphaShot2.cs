@@ -16,6 +16,7 @@ namespace alphaShot
             var abd = Screencap.Properties.Resources.blackout;
             var ab = AssetBundle.LoadFromMemory(abd);
             matBlackout = new Material(ab.LoadAsset<Shader>("assets/blackout.shader"));
+            matBlackout.SetColor(col, Color.black);
             matMask = new Material(ab.LoadAsset<Shader>("assets/alphamask.shader"));
             ab.Unload(false);
         }
@@ -136,7 +137,6 @@ namespace alphaShot
                 GL.Clear(true, true, Color.white);
                 renderCam.backgroundColor = Color.white;
                 renderCam.renderingPath = RenderingPath.VertexLit;
-                matBlackout.SetColor(col, Color.black);
                 renderCam.RenderWithShader(matBlackout.shader, null);
                 Shader.SetGlobalColor(ChaShader._LineColorG, lc);
             }
