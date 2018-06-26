@@ -8,14 +8,14 @@ namespace Sideloader.AutoResolver
     [MessagePackObject(true)]
     public class ResolveInfo
     {
-        public string ModID { get; set; }
+        public string GUID { get; set; }
         public int Slot { get; set; }
         public int LocalSlot { get; set; }
         public string Property { get; set; }
 
         public bool CanResolve(ResolveInfo other)
         {
-            return ModID == other.ModID
+            return GUID == other.GUID
                     && Property == other.Property
                     && Slot == other.Slot;
         }

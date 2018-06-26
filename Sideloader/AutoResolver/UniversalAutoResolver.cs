@@ -54,22 +54,31 @@ namespace Sideloader.AutoResolver
                     if (extResolve != null)
                     {
                         //the property has external slot information 
-                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x =>
-                            x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve));
+                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve));
 
                         if (intResolve != null)
                         {
                             //found a match to a corrosponding internal mod
-                            Logger.Log(LogLevel.Info, $"[UAR] Resolving {extResolve.ModID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
+                            Logger.Log(LogLevel.Info, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
 
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }
-                        else
+                        else 
                         {
-                            //did not find a match, we don't have the mod
-                            Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]");
+							//we didn't find a match, check if we have the same GUID loaded
 
-                            kv.Value.SetMethod(structure, 999999); //set to an invalid ID
+	                        if (LoadedResolutionInfo.Any(x => x.GUID == extResolve.GUID))
+							{
+								//we have the GUID loaded, so the user has an outdated mod
+								Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! ({save.parameter.lastname} {save.parameter.firstname}) Outdated mod detected! [{extResolve.GUID}]");
+							}
+							else
+							{
+								//did not find a match, we don't have the mod
+								Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! ({save.parameter.lastname} {save.parameter.firstname}) Missing mod detected! [{extResolve.GUID}]");
+							}
+
+	                        kv.Value.SetMethod(structure, 999999); //set to an invalid ID
                         }
                     }
                 }
@@ -127,7 +136,7 @@ namespace Sideloader.AutoResolver
 
                     LoadedResolutionInfo.Add(new ResolveInfo
                     {
-                        ModID = manifest.GUID,
+                        GUID = manifest.GUID,
                         Slot = int.Parse(kv.Value[0]),
                         LocalSlot = newSlot,
                         Property = property.Key.ToString()
