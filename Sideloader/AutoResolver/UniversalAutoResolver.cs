@@ -67,7 +67,7 @@ namespace Sideloader.AutoResolver
                         else
                         {
                             //did not find a match, we don't have the mod
-                            Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.ModID}]");
+                            Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! ({save.parameter.lastname} {save.parameter.firstname}) Missing mod detected! [{extResolve.ModID}]");
 
                             kv.Value.SetMethod(structure, 999999); //set to an invalid ID
                         }
