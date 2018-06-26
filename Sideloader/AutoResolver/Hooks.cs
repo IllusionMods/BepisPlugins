@@ -62,7 +62,7 @@ namespace Sideloader.AutoResolver
 				Logger.Log(LogLevel.Debug, "Sideloader marker found");
 				Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count()}");
 				foreach (ResolveInfo info in extInfo)
-					Logger.Log(LogLevel.Debug, $"External info: {info.ModID} : {info.Property} : {info.Slot}");
+					Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
 			}
 
 			IteratePrefixes(UniversalAutoResolver.ResolveStructure, file);
@@ -117,7 +117,7 @@ namespace Sideloader.AutoResolver
 
 			Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count()}");
 			foreach (ResolveInfo info in extInfo)
-				Logger.Log(LogLevel.Debug, $"External info: {info.ModID} : {info.Property} : {info.Slot}");
+				Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
 
 			void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ChaFile file, string propertyPrefix = "")
 			{
@@ -129,7 +129,7 @@ namespace Sideloader.AutoResolver
 					{
 						kv.Value.SetMethod(structure, extResolve.LocalSlot);
 
-						Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.ModID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
+						Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
 					}
 				}
 			}
