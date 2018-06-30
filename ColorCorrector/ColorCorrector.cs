@@ -36,13 +36,14 @@ namespace ColorCorrector
             {
                 amplifyComponent = Camera.main.gameObject.GetComponent<AmplifyColorEffect>();
                 bloomComponent = Camera.main.gameObject.GetComponent<BloomAndFlares>();
-
+                
                 SetEffects(SaturationEnabled.Value, BloomStrength.Value);
             }
         }
 
         void SetEffects(bool satEnabled, float bloomPower)
         {
+            //TODO allow to modify amplifyComponent.Exposure and others if possible
             if (amplifyComponent != null)
                 amplifyComponent.enabled = satEnabled;
 
@@ -60,6 +61,22 @@ namespace ColorCorrector
         {
             SceneManager.sceneLoaded -= LevelFinishedLoading;
         }
+
+        void Start()
+        {
+            // TODO use an event instead
+            StartCoroutine(SettingUpdate());
+        }
+
+        System.Collections.IEnumerator SettingUpdate ()
+        {
+            while(true)
+            {
+                yield return new WaitForSecondsRealtime(0.5f);
+                SetEffects(SaturationEnabled.Value, BloomStrength.Value);
+            }
+        }
+
         /*
         void Update()
         {
