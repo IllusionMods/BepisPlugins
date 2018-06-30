@@ -103,7 +103,7 @@ namespace ConfigurationManager
                 if (pluginInfo == null)
                 {
                     Logger.Log(LogLevel.Error, $"Plugin {type.FullName} is missing the BepInPlugin attribute!");
-                    skippedList.Add(pluginInfo.Name);
+                    skippedList.Add(type.FullName);
                     continue;
                 }
 
@@ -153,8 +153,7 @@ namespace ConfigurationManager
                     normalPropsStatic.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
 
                 // Allow to enable/disable plugin if it uses any update methods ------
-                if (!type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .All(x => !updateMethodNames.Contains(x.Name)))
+                if (type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => updateMethodNames.Contains(x.Name)))
                 {
                     var enabledSetting =
                         PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
