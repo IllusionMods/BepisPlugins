@@ -10,37 +10,27 @@ using UnityEngine;
 namespace BepInEx
 {
     /// <summary>
-    /// A keyboard shortcut that can be used in Update method to check if user presses a key combo.
-    /// Use SavedKeyboardShortcut to allow user to change this shortcut and have the changes saved.
-    ///
-    /// How to use: Use IsDown instead of the Imput.GetKeyDown in the Update loop.
+    ///     A keyboard shortcut that can be used in Update method to check if user presses a key combo.
+    ///     Use SavedKeyboardShortcut to allow user to change this shortcut and have the changes saved.
+    ///     How to use: Use IsDown instead of the Imput.GetKeyDown in the Update loop.
     /// </summary>
     public class KeyboardShortcut : INotifyPropertyChanged
     {
         public static readonly KeyboardShortcut Empty = new KeyboardShortcut(KeyCode.None);
 
-        public static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[])Enum.GetValues(typeof(KeyCode));
+        public static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[]) Enum.GetValues(typeof(KeyCode));
 
         private KeyCode[] allKeys;
         private HashSet<KeyCode> allKeysLookup;
 
-        public KeyCode[] AllKeys
-        {
-            get => allKeys; set
-            {
-                allKeys = value;
-                allKeysLookup = new HashSet<KeyCode>(value);
-            }
-        }
-
         /// <summary>
-        /// Create a new keyboard shortcut.
+        ///     Create a new keyboard shortcut.
         /// </summary>
         /// <param name="mainKey">Main key to press</param>
         /// <param name="modifiers">Keys that should be held down before main key is registered</param>
         public KeyboardShortcut(KeyCode mainKey, params KeyCode[] modifiers)
         {
-            AllKeys = new[] { mainKey }.Concat(modifiers).ToArray();
+            AllKeys = new[] {mainKey}.Concat(modifiers).ToArray();
         }
 
         private KeyboardShortcut(params KeyCode[] keys)
@@ -53,14 +43,19 @@ namespace BepInEx
             AllKeys = new KeyCode[] { };
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public KeyCode[] AllKeys
+        {
+            get => allKeys;
+            set
+            {
+                allKeys = value;
+                allKeysLookup = new HashSet<KeyCode>(value);
+            }
+        }
 
         public KeyCode MainKey
         {
-            get
-            {
-                return AllKeys.Length > 0 ? AllKeys[0] : KeyCode.None;
-            }
+            get => AllKeys.Length > 0 ? AllKeys[0] : KeyCode.None;
 
             set
             {
@@ -69,7 +64,7 @@ namespace BepInEx
                 if (AllKeys.Length > 0)
                     AllKeys[0] = value;
                 else
-                    AllKeys = new[] { value };
+                    AllKeys = new[] {value};
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainKey)));
             }
@@ -77,15 +72,12 @@ namespace BepInEx
 
         public IEnumerable<KeyCode> Modifiers
         {
-            get
-            {
-                return AllKeys.Skip(1);
-            }
+            get => AllKeys.Skip(1);
 
             set
             {
                 if (AllKeys.Length > 0)
-                    AllKeys = new[] { AllKeys[0] }.Concat(value).ToArray();
+                    AllKeys = new[] {AllKeys[0]}.Concat(value).ToArray();
                 else
                     AllKeys = value.ToArray();
 
@@ -93,11 +85,14 @@ namespace BepInEx
             }
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public static KeyboardShortcut Deserialize(string str)
         {
             try
             {
-                var parts = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(x => (KeyCode)Enum.Parse(typeof(KeyCode), x)).ToArray();
+                var parts = str.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => (KeyCode) Enum.Parse(typeof(KeyCode), x)).ToArray();
                 return new KeyboardShortcut(parts);
             }
             catch (SystemException ex)
@@ -113,7 +108,7 @@ namespace BepInEx
         }
 
         /// <summary>
-        /// Check if the main key was just pressed (Input.GetKeyDown), and specified modifier keys are all pressed
+        ///     Check if the main key was just pressed (Input.GetKeyDown), and specified modifier keys are all pressed
         /// </summary>
         public bool IsDown()
         {
@@ -123,7 +118,7 @@ namespace BepInEx
         }
 
         /// <summary>
-        /// Check if the main key is currently held down (Input.GetKey), and specified modifier keys are all pressed
+        ///     Check if the main key is currently held down (Input.GetKey), and specified modifier keys are all pressed
         /// </summary>
         public bool IsPressed()
         {
@@ -133,7 +128,7 @@ namespace BepInEx
         }
 
         /// <summary>
-        /// Check if the main key was just lifted (Input.GetKeyUp), and specified modifier keys are all pressed.
+        ///     Check if the main key was just lifted (Input.GetKeyUp), and specified modifier keys are all pressed.
         /// </summary>
         public bool IsUp()
         {
@@ -152,10 +147,7 @@ namespace BepInEx
                         return true;
                     return Input.GetKey(c);
                 }
-                else
-                {
-                    return !Input.GetKey(c);
-                }
+                return !Input.GetKey(c);
             });
         }
 

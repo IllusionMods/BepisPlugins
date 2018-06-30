@@ -6,20 +6,27 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using BepInEx;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace ConfigurationManager.Utilities
 {
     public static class Utils
     {
         /// <summary>
-        /// Return items with browsable attribute same as expectedBrowsable, and optionally items with no browsable attribute
+        ///     Return items with browsable attribute same as expectedBrowsable, and optionally items with no browsable attribute
         /// </summary>
-        public static IEnumerable<T> FilterBrowsable<T>(this T[] props, bool expectedBrowsable, bool includeNotSet = false) where T : MemberInfo
+        public static IEnumerable<T> FilterBrowsable<T>(this T[] props, bool expectedBrowsable,
+            bool includeNotSet = false) where T : MemberInfo
         {
             if (includeNotSet)
-                return props.Where(p => p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().All(x => x.Browsable == expectedBrowsable));
-            else
-                return props.Where(p => p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().Any(x => x.Browsable != expectedBrowsable));
+                return props.Where(p =>
+                    p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>()
+                        .All(x => x.Browsable == expectedBrowsable));
+            return props.Where(p =>
+                p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>()
+                    .Any(x => x.Browsable != expectedBrowsable));
         }
 
         public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)
@@ -28,9 +35,7 @@ namespace ConfigurationManager.Utilities
             {
                 var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
                 if (generic == cur)
-                {
                     return true;
-                }
                 toCheck = toCheck.BaseType;
             }
             return false;
@@ -38,15 +43,13 @@ namespace ConfigurationManager.Utilities
 
         public static void SetGameCanvasInputsEnabled(bool mouseInputEnabled)
         {
-            foreach (var c in UnityEngine.Object.FindObjectsOfType<UnityEngine.UI.GraphicRaycaster>())
-            {
+            foreach (var c in Object.FindObjectsOfType<GraphicRaycaster>())
                 c.enabled = mouseInputEnabled;
-            }
         }
 
-        public static BepInEx.BaseUnityPlugin[] FindPlugins()
+        public static BaseUnityPlugin[] FindPlugins()
         {
-            return UnityEngine.Object.FindObjectsOfType<BepInEx.BaseUnityPlugin>();
+            return Object.FindObjectsOfType<BaseUnityPlugin>();
         }
     }
 }

@@ -1,50 +1,55 @@
 ﻿// Made by MarC0 / ManlyMarco
 // Copyright 2018 GNU General Public License v3.0
 
-using BepInEx;
-using ConfigurationManager.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using BepInEx;
+using ConfigurationManager.Utilities;
+using Manager;
 using UnityEngine;
 
 namespace ConfigurationManager
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.configurationmanager", Name: "Configuration Manager", Version: "1.0")]
+    [BepInPlugin("com.bepis.bepinex.configurationmanager", "Configuration Manager", "1.0")]
     [Browsable(false)]
     public class ConfigurationManager : BaseUnityPlugin
     {
         private static readonly GUIContent KeyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
-            "The first key is the main key, while the rest are modifiers.\nThe shortcut will only fire when you press \nthe main key while all modifiers are already pressed.");
-        private readonly Type baseSettingType = typeof(ConfigWrapper<>);
+                "The first key is the main key, while the rest are modifiers.\nThe shortcut will only fire when you press \nthe main key while all modifiers are already pressed.")
+            ;
 
-        private bool displayingButton, displayingWindow;
-
-        private List<PropSettingEntry> settings;
-        private string modsWithoutSettings;
-
-        private SettingFieldDrawer fieldDrawer = new SettingFieldDrawer();
-        private Dictionary<Type, Action<PropSettingEntry>> _settingDrawHandlers;
-
-        private Rect settingWindowRect, buttonRect, screenRect;
-        private Vector2 settingWindowScrollPos;
-
-        private ConfigWrapper<bool> showKeybinds = new ConfigWrapper<bool>("showKeybinds", true);
-        private ConfigWrapper<bool> showSettings = new ConfigWrapper<bool>("showSettings", true);
-        private ConfigWrapper<bool> showAdvanced = new ConfigWrapper<bool>("showAdvanced", false);
-
-        private static readonly ICollection<string> updateMethodNames = new[] {
+        private static readonly ICollection<string> updateMethodNames = new[]
+        {
             "Update",
             "FixedUpdate",
             "LateUpdate",
             "OnGUI"
         };
 
+        private readonly Type baseSettingType = typeof(ConfigWrapper<>);
+        private Dictionary<Type, Action<PropSettingEntry>> _settingDrawHandlers;
+
+        private bool displayingButton, displayingWindow;
+
+        private readonly SettingFieldDrawer fieldDrawer = new SettingFieldDrawer();
+        private string modsWithoutSettings;
+
+        private List<PropSettingEntry> settings;
+
+        private Rect settingWindowRect, buttonRect, screenRect;
+        private Vector2 settingWindowScrollPos;
+        private readonly ConfigWrapper<bool> showAdvanced = new ConfigWrapper<bool>("showAdvanced", false);
+
+        private readonly ConfigWrapper<bool> showKeybinds = new ConfigWrapper<bool>("showKeybinds", true);
+        private readonly ConfigWrapper<bool> showSettings = new ConfigWrapper<bool>("showSettings", true);
+
         public bool DisplayingButton
         {
-            get => displayingButton; set
+            get => displayingButton;
+            set
             {
                 if (displayingButton == value) return;
 
@@ -68,7 +73,8 @@ namespace ConfigurationManager
 
         public bool DisplayingWindow
         {
-            get => displayingWindow; set
+            get => displayingWindow;
+            set
             {
                 if (displayingWindow == value) return;
                 displayingWindow = value;
@@ -79,7 +85,7 @@ namespace ConfigurationManager
 
         private static bool IsConfigOpened()
         {
-            return Manager.Scene.Instance.AddSceneName == "Config";
+            return Scene.Instance.AddSceneName == "Config";
         }
 
         private void BuildSettingList()
@@ -99,7 +105,8 @@ namespace ConfigurationManager
                     continue;
                 }
 
-                if (type.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().Any(x => !x.Browsable))
+                if (type.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>()
+                    .Any(x => !x.Browsable))
                 {
                     skippedList.Add(pluginInfo.Name);
                     continue;
@@ -109,40 +116,49 @@ namespace ConfigurationManager
 
                 // Config wrappers ------
 
-                var settingProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                var settingProps = type
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                detected.AddRange(settingProps.Select((x) => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)));
+                detected.AddRange(settingProps.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)));
 
-                var settingPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                var settingPropsStatic = type
+                    .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                     .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                detected.AddRange(settingPropsStatic.Select((x) => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)));
+                detected.AddRange(
+                    settingPropsStatic.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)));
 
                 // Normal properties ------
 
-                var normalProps = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                var normalProps = type
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
                     .FilterBrowsable(true, true)
                     .Concat(type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                            .FilterBrowsable(true, false))
+                        .FilterBrowsable(true, false))
                     .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                detected.AddRange(normalProps.Select((x) => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
+                detected.AddRange(normalProps.Select(x => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
 
-                var normalPropsStatic = type.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                var normalPropsStatic = type
+                    .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
                     .FilterBrowsable(true, true)
                     .Concat(type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-                            .FilterBrowsable(true, false))
+                        .FilterBrowsable(true, false))
                     .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-                detected.AddRange(normalPropsStatic.Select((x) => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
+                detected.AddRange(
+                    normalPropsStatic.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
 
                 // Allow to enable/disable plugin if it uses any update methods ------
-                if (!type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).All(x => !updateMethodNames.Contains(x.Name)))
+                if (!type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .All(x => !updateMethodNames.Contains(x.Name)))
                 {
-                    var enabledSetting = PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
+                    var enabledSetting =
+                        PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
                     enabledSetting.DispName = "!Allow plugin to run on every frame";
-                    enabledSetting.Description = "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
+                    enabledSetting.Description =
+                        "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
                     enabledSetting.IsAdvanced = true;
                     detected.Add(enabledSetting);
                 }
@@ -150,13 +166,9 @@ namespace ConfigurationManager
                 detected.RemoveAll(x => x.Browsable == false);
 
                 if (detected.Any())
-                {
                     results = results.Concat(detected);
-                }
                 else
-                {
                     skippedList.Add(pluginInfo.Name);
-                }
             }
 
             if (!showAdvanced.Value)
@@ -168,7 +180,8 @@ namespace ConfigurationManager
 
             settings = results.ToList();
 
-            modsWithoutSettings = string.Join(", ", skippedList.Select(x => x.TrimStart('!')).OrderBy(x => x).ToArray());
+            modsWithoutSettings =
+                string.Join(", ", skippedList.Select(x => x.TrimStart('!')).OrderBy(x => x).ToArray());
         }
 
         private void CalculateWindowRect()
@@ -179,7 +192,8 @@ namespace ConfigurationManager
 
             var buttonOffsetH = Screen.width * 0.12f;
             var buttonWidth = 215f;
-            buttonRect = new Rect(Screen.width - buttonOffsetH - buttonWidth, Screen.height * 0.033f, buttonWidth, Screen.height * 0.04f);
+            buttonRect = new Rect(Screen.width - buttonOffsetH - buttonWidth, Screen.height * 0.033f, buttonWidth,
+                Screen.height * 0.04f);
 
             screenRect = new Rect(0, 0, Screen.width, Screen.height);
         }
@@ -188,29 +202,33 @@ namespace ConfigurationManager
         {
             if (!DisplayingButton) return;
 
-            if (GUI.Button(buttonRect, new GUIContent("Plugin / mod settings", "Change settings of the installed \nBepInEx plugins, if they have any.")))
-            {
+            if (GUI.Button(buttonRect,
+                new GUIContent("Plugin / mod settings",
+                    "Change settings of the installed \nBepInEx plugins, if they have any.")))
                 DisplayingWindow = !DisplayingWindow;
-            }
 
             if (DisplayingWindow)
             {
-                if (GUI.Button(screenRect, string.Empty, GUI.skin.box) && !settingWindowRect.Contains(Input.mousePosition))
+                if (GUI.Button(screenRect, string.Empty, GUI.skin.box) &&
+                    !settingWindowRect.Contains(Input.mousePosition))
                     DisplayingWindow = false;
 
                 GUILayout.Window(-68, settingWindowRect, SettingsWindow, "Plugin / mod settings");
             }
             else
+            {
                 DrawTooltip();
+            }
         }
 
         private static void DrawTooltip()
         {
             if (!string.IsNullOrEmpty(GUI.tooltip))
             {
-                Event currentEvent = Event.current;
+                var currentEvent = Event.current;
 
-                GUI.Label(new Rect(currentEvent.mousePosition.x, currentEvent.mousePosition.y + 25, 400, 500), GUI.tooltip);
+                GUI.Label(new Rect(currentEvent.mousePosition.x, currentEvent.mousePosition.y + 25, 400, 500),
+                    GUI.tooltip);
             }
         }
 
@@ -222,9 +240,7 @@ namespace ConfigurationManager
                 DrawWindowHeader();
 
                 foreach (var plugin in settings.GroupBy(x => x.PluginInfo).OrderBy(x => x.Key.Name))
-                {
                     DrawSinglePlugin(plugin);
-                }
 
                 GUILayout.Space(10);
                 GUILayout.Label("Plugins with no options available: " + modsWithoutSettings);
@@ -267,16 +283,19 @@ namespace ConfigurationManager
         {
             GUILayout.BeginVertical(GUI.skin.box);
             {
-                fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version.ToString()}");
+                fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}");
 
-                foreach (var category in plugin.Select(x => new { plugin = x, category = (x.SettingType == typeof(KeyboardShortcut) ? KeyboardShortcutsCategoryName : new GUIContent(x.Category)) })
-                .GroupBy(a => a.category.text).OrderBy(x => x.Key))
+                foreach (var category in plugin.Select(x => new
+                    {
+                        plugin = x,
+                        category = x.SettingType == typeof(KeyboardShortcut)
+                            ? KeyboardShortcutsCategoryName
+                            : new GUIContent(x.Category)
+                    })
+                    .GroupBy(a => a.category.text).OrderBy(x => x.Key))
                 {
                     if (!string.IsNullOrEmpty(category.Key))
-                    {
-                        //GUILayout.BeginVertical(GUI.skin.box);
                         fieldDrawer.DrawCenteredLabel(category.First().category);
-                    }
 
                     foreach (var setting in category.OrderBy(x => x.plugin.DispName))
                     {
@@ -298,24 +317,17 @@ namespace ConfigurationManager
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description), GUILayout.Width(settingWindowRect.width / 2.5f));
+                GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description),
+                    GUILayout.Width(settingWindowRect.width / 2.5f));
 
                 if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
-                {
                     fieldDrawer.DrawRangeField(setting, range);
-                }
                 else if (setting.AcceptableValues is AcceptableValueListAttribute list)
-                {
                     fieldDrawer.DrawComboboxField(setting, list.AcceptableValues);
-                }
                 else if (setting.SettingType.IsEnum)
-                {
                     fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType));
-                }
                 else
-                {
                     DrawFieldBasedOnValueType(setting);
-                }
 
                 if (setting.DefaultValue != null)
                 {
@@ -324,11 +336,10 @@ namespace ConfigurationManager
                 }
                 else if (setting.Wrapper != null)
                 {
-                    var method = setting.Wrapper.GetType().GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
+                    var method = setting.Wrapper.GetType()
+                        .GetMethod("Clear", BindingFlags.Instance | BindingFlags.Public);
                     if (method != null && DrawDefaultButton())
-                    {
                         method.Invoke(setting.Wrapper, null);
-                    }
                 }
             }
             GUILayout.EndHorizontal();
@@ -337,13 +348,9 @@ namespace ConfigurationManager
         private void DrawFieldBasedOnValueType(PropSettingEntry setting)
         {
             if (_settingDrawHandlers.TryGetValue(setting.SettingType, out var drawMethod))
-            {
                 drawMethod(setting);
-            }
             else
-            {
                 fieldDrawer.DrawUnknownField(setting);
-            }
         }
 
         private static bool DrawDefaultButton()
@@ -356,8 +363,8 @@ namespace ConfigurationManager
         {
             _settingDrawHandlers = new Dictionary<Type, Action<PropSettingEntry>>
             {
-                {typeof(bool), fieldDrawer.DrawBoolField },
-                {typeof(KeyboardShortcut),fieldDrawer.DrawKeyboardShortcut }
+                {typeof(bool), fieldDrawer.DrawBoolField},
+                {typeof(KeyboardShortcut), fieldDrawer.DrawKeyboardShortcut}
             };
         }
 

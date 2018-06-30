@@ -1,9 +1,9 @@
 ﻿// Made by MarC0 / ManlyMarco
 // Copyright 2018 GNU General Public License v3.0
 
-using BepInEx;
 using System;
 using System.Reflection;
+using BepInEx;
 
 namespace ConfigurationManager
 {
@@ -17,10 +17,7 @@ namespace ConfigurationManager
 
         public override string DispName
         {
-            get
-            {
-                return string.IsNullOrEmpty(base.DispName) ? Property.Name : base.DispName;
-            }
+            get => string.IsNullOrEmpty(base.DispName) ? Property.Name : base.DispName;
             internal set => base.DispName = value;
         }
 
@@ -39,13 +36,14 @@ namespace ConfigurationManager
             Property.SetValue(Instance, newVal, null);
         }
 
-        public static PropSettingEntry FromConfigWrapper(object instance, PropertyInfo settingProp, BepInPlugin pluginInfo)
+        public static PropSettingEntry FromConfigWrapper(object instance, PropertyInfo settingProp,
+            BepInPlugin pluginInfo)
         {
             var wrapper = settingProp.GetValue(instance, null);
 
             var innerProp = wrapper.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
-            
-            PropSettingEntry entry = new PropSettingEntry();
+
+            var entry = new PropSettingEntry();
             entry.SetFromAttributes(settingProp, pluginInfo);
 
             entry.Browsable = innerProp.CanRead && innerProp.CanWrite && entry.Browsable != false;
@@ -54,13 +52,15 @@ namespace ConfigurationManager
             entry.Instance = wrapper;
 
             entry.Wrapper = wrapper;
-            
+
             if (entry.DispName == "Value")
-                entry.DispName = wrapper.GetType().GetProperty("Key", BindingFlags.Instance | BindingFlags.Public).GetValue(wrapper, null) as string;
+                entry.DispName = wrapper.GetType().GetProperty("Key", BindingFlags.Instance | BindingFlags.Public)
+                    .GetValue(wrapper, null) as string;
 
             if (string.IsNullOrEmpty(entry.Category))
             {
-                var section = wrapper.GetType().GetProperty("Section", BindingFlags.Instance | BindingFlags.Public).GetValue(wrapper, null) as string;
+                var section = wrapper.GetType().GetProperty("Section", BindingFlags.Instance | BindingFlags.Public)
+                    .GetValue(wrapper, null) as string;
                 if (section != pluginInfo.GUID)
                     entry.Category = section;
             }
@@ -68,9 +68,10 @@ namespace ConfigurationManager
             return entry;
         }
 
-        public static PropSettingEntry FromNormalProperty(object instance, PropertyInfo settingProp, BepInPlugin pluginInfo)
+        public static PropSettingEntry FromNormalProperty(object instance, PropertyInfo settingProp,
+            BepInPlugin pluginInfo)
         {
-            PropSettingEntry entry = new PropSettingEntry();
+            var entry = new PropSettingEntry();
             entry.SetFromAttributes(settingProp, pluginInfo);
 
             entry.Browsable = settingProp.CanRead && settingProp.CanWrite && entry.Browsable != false;
