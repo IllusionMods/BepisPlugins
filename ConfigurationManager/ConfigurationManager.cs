@@ -215,7 +215,7 @@ namespace ConfigurationManager
                     DisplayingWindow = !DisplayingWindow;
             }
 
-            if (DisplayingWindow && (DisplayingButton || IsStudio()))
+            if (DisplayingWindow && (DisplayingButton || IsStudio))
             {
                 if (GUI.Button(_screenRect, string.Empty, GUI.skin.box) &&
                     !_settingWindowRect.Contains(Input.mousePosition))
@@ -223,7 +223,7 @@ namespace ConfigurationManager
 
                 GUILayout.Window(-68, _settingWindowRect, SettingsWindow, "Plugin / mod settings");
             }
-            else
+            else if(DisplayingButton)
             {
                 DrawTooltip();
             }
@@ -380,13 +380,10 @@ namespace ConfigurationManager
         {
             DisplayingButton = IsConfigOpened();
 
-            if (IsStudio() && Input.GetKeyUp(KeyCode.F1))
+            if (IsStudio && Input.GetKeyUp(KeyCode.F1))
                 DisplayingWindow = !DisplayingWindow;
         }
 
-        private static bool IsStudio()
-        {
-            return Studio.Studio.Instance != null;
-        }
+        private static bool IsStudio { get; } = Application.productName == "CharaStudio";
     }
 }
