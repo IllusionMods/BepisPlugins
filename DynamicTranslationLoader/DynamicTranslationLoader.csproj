@@ -78,6 +78,7 @@
     <ProjectReference Include="..\ResourceRedirector\ResourceRedirector.csproj">
       <Project>{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}</Project>
       <Name>ResourceRedirector</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
