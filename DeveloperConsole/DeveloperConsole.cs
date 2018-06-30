@@ -1,6 +1,8 @@
 ﻿using BepInEx;
 using UnityEngine;
 using System.Linq;
+using BepInEx.Logging;
+using Logger = BepInEx.Logger;
 
 namespace DeveloperConsole
 {
@@ -16,7 +18,7 @@ namespace DeveloperConsole
 
         private void Awake()
         {
-            BepInLogger.EntryLogged += (log, show) =>
+            Logger.EntryLogged += (level, log) =>
             {
                 string current = $"{TotalLog}\r\n{log}";
                 if (current.Length > 3000)
@@ -33,7 +35,7 @@ namespace DeveloperConsole
 
                 scrollPosition = new Vector2(0, float.MaxValue);
 
-                if (show)
+                if ((level & LogLevel.Message) != LogLevel.None)
                 {
                     if (showCounter == 0)
                         TotalShowingLog = "";

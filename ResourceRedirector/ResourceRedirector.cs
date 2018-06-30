@@ -3,7 +3,9 @@ using BepInEx.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using BepInEx.Logging;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace ResourceRedirector
 {
@@ -45,7 +47,7 @@ namespace ResourceRedirector
                 }
                 catch (Exception ex)
                 {
-                    BepInLogger.Log(ex.ToString());
+                    Logger.Log(LogLevel.Error, ex.ToString());
                 }
             }
 
@@ -61,7 +63,7 @@ namespace ResourceRedirector
                     if (!File.Exists(path))
                         return __result;
 
-                    BepInLogger.Log($"Loading emulated asset {path}");
+                    Logger.Log(LogLevel.Info, $"Loading emulated asset {path}");
 
                     var tex = AssetLoader.LoadTexture(path);
 
@@ -80,7 +82,7 @@ namespace ResourceRedirector
                     if (!File.Exists(path))
                         return __result;
 
-                    BepInLogger.Log($"Loading emulated asset {path}");
+                    Logger.Log(LogLevel.Info, $"Loading emulated asset {path}");
 
                     return new AssetBundleLoadAssetOperationSimulation(AssetLoader.LoadAudioClip(path, AudioType.WAV));
                 }

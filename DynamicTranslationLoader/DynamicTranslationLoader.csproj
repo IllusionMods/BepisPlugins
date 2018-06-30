@@ -67,13 +67,22 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicTranslator.cs" />
+    <Compile Include="GameObjectUtils.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextureMetadata.cs" />
+    <Compile Include="TextureUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="translation\translation.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ResourceRedirector\ResourceRedirector.csproj">
+      <Project>{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}</Project>
+      <Name>ResourceRedirector</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

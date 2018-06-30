@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D56DD83D-7471-463F-B4FF-8910A335833C}</ProjectGuid>
+    <ProjectGuid>{DA10AC40-3C59-404A-8054-21053EB32D09}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConfigurationManager</RootNamespace>
-    <AssemblyName>ConfigurationManager</AssemblyName>
+    <RootNamespace>CardCacher</RootNamespace>
+    <AssemblyName>CardCacher</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\BepInEx\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -30,11 +30,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>..\lib\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\lib\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\lib\BepInEx.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,23 +52,11 @@
       <HintPath>..\lib\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\lib\UnityEngine.UI.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interface\AcceptableValueBaseAttribute.cs" />
-    <Compile Include="Interface\AcceptableValueListAttribute.cs" />
-    <Compile Include="Interface\AcceptableValueRangeAttribute.cs" />
-    <Compile Include="Utilities\ComboBox.cs" />
-    <Compile Include="ConfigurationManager.cs" />
-    <Compile Include="Interface\KeyboardShortcut.cs" />
+    <Compile Include="CardCacher.cs" />
+    <Compile Include="Hooks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Interface\SavedKeyboardShortcut.cs" />
-    <Compile Include="SettingEntry.cs" />
-    <Compile Include="SettingEntryBase.cs" />
-    <Compile Include="SettingFieldDrawer.cs" />
-    <Compile Include="Utilities\Utilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

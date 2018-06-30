@@ -9,7 +9,9 @@ using System.Reflection;
 using BepInEx;
 using ConfigurationManager.Utilities;
 using Manager;
+using BepInEx.Logging;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace ConfigurationManager
 {
@@ -97,10 +99,10 @@ namespace ConfigurationManager
             {
                 var type = plugin.GetType();
 
-                var pluginInfo = TypeLoader.GetMetadata(type);
+                var pluginInfo = MetadataHelper.GetMetadata(type);
                 if (pluginInfo == null)
                 {
-                    BepInLogger.Log($"Error: Plugin {type.FullName} is missing the BepInPlugin attribute!");
+                    Logger.Log(LogLevel.Error, $"Plugin {type.FullName} is missing the BepInPlugin attribute!");
                     skippedList.Add(pluginInfo.Name);
                     continue;
                 }
