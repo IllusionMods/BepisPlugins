@@ -62,8 +62,6 @@ namespace ConfigurationManager
                 {
                     CalculateWindowRect();
 
-                    BuildSettingList();
-
                     if (_displayingWindow)
                         Utils.SetGameCanvasInputsEnabled(false);
                 }
@@ -81,6 +79,13 @@ namespace ConfigurationManager
             {
                 if (_displayingWindow == value) return;
                 _displayingWindow = value;
+
+                if(_displayingWindow)
+                {
+                    CalculateWindowRect();
+
+                    BuildSettingList();
+                }
 
                 Utils.SetGameCanvasInputsEnabled(!_displayingWindow);
             }
@@ -202,14 +207,15 @@ namespace ConfigurationManager
 
         private void OnGUI()
         {
-            if (!DisplayingButton) return;
+            if (DisplayingButton)
+            {
+                if (GUI.Button(_buttonRect,
+                    new GUIContent("Plugin / mod settings",
+                        "Change settings of the installed \nBepInEx plugins, if they have any.")))
+                    DisplayingWindow = !DisplayingWindow;
+            }
 
-            if (GUI.Button(_buttonRect,
-                new GUIContent("Plugin / mod settings",
-                    "Change settings of the installed \nBepInEx plugins, if they have any.")))
-                DisplayingWindow = !DisplayingWindow;
-
-            if (DisplayingWindow)
+            if (DisplayingWindow && (DisplayingButton || IsStudio()))
             {
                 if (GUI.Button(_screenRect, string.Empty, GUI.skin.box) &&
                     !_settingWindowRect.Contains(Input.mousePosition))
@@ -373,6 +379,14 @@ namespace ConfigurationManager
         private void Update()
         {
             DisplayingButton = IsConfigOpened();
+
+            if (IsStudio() && Input.GetKeyUp(KeyCode.F1))
+                DisplayingWindow = !DisplayingWindow;
+        }
+
+        private static bool IsStudio()
+        {
+            return Studio.Studio.Instance != null;
         }
     }
 }
