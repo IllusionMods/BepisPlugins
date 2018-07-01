@@ -1,5 +1,3 @@
-using System;
-
 namespace Scaling
 {
 	public struct SColor

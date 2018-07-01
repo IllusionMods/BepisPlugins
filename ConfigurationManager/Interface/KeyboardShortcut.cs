@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using BepInEx.Logging;
 using UnityEngine;
-using Logger = BepInEx.Logger;
 
 namespace BepInEx
 {

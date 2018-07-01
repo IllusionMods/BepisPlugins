@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using BepInEx;
 using Studio;
 
 namespace ExtensibleSaveFormat
