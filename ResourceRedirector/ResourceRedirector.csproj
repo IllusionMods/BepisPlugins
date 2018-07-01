@@ -58,7 +58,6 @@
   <ItemGroup>
     <Compile Include="AssetLoader.cs" />
     <Compile Include="ListLoader.cs" />
-    <Compile Include="Loaders\BGMLoader.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="Loaders\IntroVoiceClipLoader.cs" />
     <Compile Include="ReflectionHelper.cs" />
