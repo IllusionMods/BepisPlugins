@@ -5,8 +5,9 @@
 
 		<ItemGroup>
 			<InputAssemblies Include="$(OutputPath)\$(AssemblyName)1.dll" />
-			<InputAssemblies Include="$(OutputPath)\NAudio.dll" />
-			<InputAssemblies Include="$(OutputPath)\NVorbis.dll" />
+		  <InputAssemblies Include="$(OutputPath)\I18N.dll" />
+		  <InputAssemblies Include="$(OutputPath)\I18N.West.dll" />
+		  <InputAssemblies Include="$(OutputPath)\ICSharpCode.SharpZipLib.dll" />
 		</ItemGroup>
 
 		<ILRepack 

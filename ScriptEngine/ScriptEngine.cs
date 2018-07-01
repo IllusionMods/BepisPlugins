@@ -1,12 +1,12 @@
 ﻿using BepInEx;
 using BepInEx.Common;
+using BepInEx.Logging;
 using Mono.Cecil;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace ScriptEngine
 {
@@ -42,6 +42,8 @@ namespace ScriptEngine
             {
                 LoadDLL(path, scriptManager);
             }
+
+	        Logger.Log(LogLevel.Message, "Reloaded script plugins!");
         }
 
         private void LoadDLL(string path, GameObject obj)
@@ -55,7 +57,7 @@ namespace ScriptEngine
                 AssemblyResolver = defaultResolver
             });
 
-            dll.Name.Name = $"{dll.Name.Name}-{DateTime.Now.Ticks.ToString()}";
+            dll.Name.Name = $"{dll.Name.Name}-{DateTime.Now.Ticks}";
 
             using (var ms = new MemoryStream())
             {

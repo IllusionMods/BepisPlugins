@@ -5,8 +5,7 @@
 
 		<ItemGroup>
 			<InputAssemblies Include="$(OutputPath)\$(AssemblyName)1.dll" />
-			<InputAssemblies Include="$(OutputPath)\NAudio.dll" />
-			<InputAssemblies Include="$(OutputPath)\NVorbis.dll" />
+		  <InputAssemblies Include="$(OutputPath)\IllusionPlugin.dll" />
 		</ItemGroup>
 
 		<ILRepack 
@@ -20,6 +19,6 @@
 			OutputFile="$(OutputPath)\$(AssemblyName).dll" 
 		/>
 
-		<Delete Files="@(InputAssemblies)" />
+    <Delete Files="@(InputAssemblies)" />
   </Target>
 </Project>
