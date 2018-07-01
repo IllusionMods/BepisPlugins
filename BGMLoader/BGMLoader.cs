@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using BepInEx;
+using BepInEx.Common;
 using BepInEx.Logging;
 using Illusion.Game;
-using UnityEngine;
 using Logger = BepInEx.Logger;
 
 namespace BGMLoader
@@ -20,24 +20,15 @@ namespace BGMLoader
 	    {
 		    if (assetName.StartsWith("bgm") && assetName.Length > 4)
 		    {
-			    string path;
+				int bgmTrack = int.Parse(assetName.Remove(0, 4));
 
-			    switch ((BGM)int.Parse(assetName.Remove(0, 4)))
-			    {
-				    case BGM.Title:
-				    default:
-					    path = $"{BepInEx.Common.Utility.PluginsDirectory}\\title.wav";
-					    break;
-				    case BGM.Custom:
-					    path = $"{BepInEx.Common.Utility.PluginsDirectory}\\custom.wav";
-					    break;
-			    }
-
+			    var path = Utility.CombinePaths(Utility.PluginsDirectory, "bgm", $"BGM{bgmTrack:00}.ogg");
+				
 			    if (File.Exists(path))
 			    {
-				    Logger.Log(LogLevel.Info, $"Loading {path}");
+				    Logger.Log(LogLevel.Info, $"Loading BGM track \"{(BGM)bgmTrack}\" from {path}");
 
-				    result = new AssetBundleLoadAssetOperationSimulation(ResourceRedirector.AssetLoader.LoadAudioClip(path, AudioType.WAV));
+				    result = new AssetBundleLoadAssetOperationSimulation(AudioLoader.LoadVorbis(path));
 
 				    return true;
 			    }

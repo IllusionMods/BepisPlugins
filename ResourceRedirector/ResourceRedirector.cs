@@ -31,8 +31,6 @@ namespace ResourceRedirector
             Hooks.InstallHooks();
 
             EmulationEnabled = Directory.Exists(EmulatedDir);
-
-            AssetResolvers.Add(BGMLoader.HandleAsset);
         }
 
         
