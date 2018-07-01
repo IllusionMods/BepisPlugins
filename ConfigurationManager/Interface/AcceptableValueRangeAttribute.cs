@@ -2,16 +2,21 @@
 // Copyright 2018 GNU General Public License v3.0
 
 using System;
+
 namespace BepInEx
 {
     /// <summary>
-    /// Specify the range of acceptable values for this variable. It will allow the configuration window to show a slider and filter inputs.
+    ///     Specify the range of acceptable values for this variable. It will allow the configuration window to show a slider
+    ///     and filter inputs.
     /// </summary>
     public sealed class AcceptableValueRangeAttribute : AcceptableValueBaseAttribute
     {
         /// <param name="minValue">Lowest acceptable value</param>
         /// <param name="maxValue">Highest acceptable value</param>
-        /// <param name="showAsPercentage">Show the current value as % between min and max values if possible. Otherwise show the value itself.</param>
+        /// <param name="showAsPercentage">
+        ///     Show the current value as % between min and max values if possible. Otherwise show the
+        ///     value itself.
+        /// </param>
         public AcceptableValueRangeAttribute(object minValue, object maxValue, bool showAsPercentage = true)
         {
             if (maxValue == null)

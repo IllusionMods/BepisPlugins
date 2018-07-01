@@ -57,37 +57,40 @@ namespace ConfigurationManager.Utilities
 {
     public class ComboBox
     {
-        private static bool forceToUnShow = false;
+        private static bool forceToUnShow;
         private static int useControlID = -1;
-        private bool isClickedComboButton = false;
-        private int selectedItemIndex = 0;
-
-        private Rect rect;
-        private GUIContent buttonContent;
-        private GUIContent[] listContent;
-        private string buttonStyle;
-        private string boxStyle;
-        private GUIStyle listStyle;
+        private readonly string boxStyle;
+        private readonly string buttonStyle;
+        private bool isClickedComboButton;
+        private readonly GUIContent[] listContent;
+        private readonly GUIStyle listStyle;
 
         public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle)
         {
-            this.rect = rect;
-            this.buttonContent = buttonContent;
+            Rect = rect;
+            ButtonContent = buttonContent;
             this.listContent = listContent;
-            this.buttonStyle = "button";
-            this.boxStyle = "box";
+            buttonStyle = "button";
+            boxStyle = "box";
             this.listStyle = listStyle;
         }
 
-        public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, string buttonStyle, string boxStyle, GUIStyle listStyle)
+        public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, string buttonStyle,
+            string boxStyle, GUIStyle listStyle)
         {
-            this.rect = rect;
-            this.buttonContent = buttonContent;
+            Rect = rect;
+            ButtonContent = buttonContent;
             this.listContent = listContent;
             this.buttonStyle = buttonStyle;
             this.boxStyle = boxStyle;
             this.listStyle = listStyle;
         }
+
+        public int SelectedItemIndex { get; set; }
+
+        public Rect Rect { get; set; }
+
+        public GUIContent ButtonContent { get; set; }
 
         public int Show()
         {
@@ -97,22 +100,20 @@ namespace ConfigurationManager.Utilities
                 isClickedComboButton = false;
             }
 
-            bool done = false;
-            int controlID = GUIUtility.GetControlID(FocusType.Passive);
+            var done = false;
+            var controlID = GUIUtility.GetControlID(FocusType.Passive);
 
             switch (Event.current.GetTypeForControl(controlID))
             {
                 case EventType.mouseUp:
-                    {
-                        if (isClickedComboButton)
-                        {
-                            done = true;
-                        }
-                    }
+                {
+                    if (isClickedComboButton)
+                        done = true;
+                }
                     break;
             }
 
-            if (GUI.Button(rect, buttonContent, buttonStyle))
+            if (GUI.Button(Rect, ButtonContent, buttonStyle))
             {
                 if (useControlID == -1)
                 {
@@ -128,38 +129,23 @@ namespace ConfigurationManager.Utilities
                 isClickedComboButton = true;
             }
 
-            selectedItemIndex = -1;
+            SelectedItemIndex = -1;
             if (isClickedComboButton)
             {
-                Rect listRect = new Rect(rect.x, rect.y + listStyle.CalcHeight(listContent[0], 1.0f),
-                          rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
+                var listRect = new Rect(Rect.x, Rect.y + listStyle.CalcHeight(listContent[0], 1.0f),
+                    Rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
 
                 GUI.Box(listRect, "", boxStyle);
 
-                int newSelectedItemIndex = GUI.SelectionGrid(listRect, selectedItemIndex, listContent, 1, listStyle);
-                if (newSelectedItemIndex != selectedItemIndex)
-                    selectedItemIndex = newSelectedItemIndex;
+                var newSelectedItemIndex = GUI.SelectionGrid(listRect, SelectedItemIndex, listContent, 1, listStyle);
+                if (newSelectedItemIndex != SelectedItemIndex)
+                    SelectedItemIndex = newSelectedItemIndex;
             }
 
             if (done)
                 isClickedComboButton = false;
 
-            return selectedItemIndex;
+            return SelectedItemIndex;
         }
-
-        public int SelectedItemIndex
-        {
-            get
-            {
-                return selectedItemIndex;
-            }
-            set
-            {
-                selectedItemIndex = value;
-            }
-        }
-
-        public Rect Rect { get => rect; set => rect = value; }
-        public GUIContent ButtonContent { get => buttonContent; set => buttonContent = value; }
     }
 }

@@ -47,10 +47,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="TextMeshPro-1.0.55.56.0b12">
       <HintPath>..\lib\TextMeshPro-1.0.55.56.0b12.dll</HintPath>
       <Private>False</Private>
@@ -82,6 +78,7 @@
     <ProjectReference Include="..\ResourceRedirector\ResourceRedirector.csproj">
       <Project>{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}</Project>
       <Name>ResourceRedirector</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

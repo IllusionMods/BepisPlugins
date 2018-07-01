@@ -1,21 +1,25 @@
 ﻿// Made by MarC0 / ManlyMarco
 // Copyright 2018 GNU General Public License v3.0
 
-using BepInEx;
-using ConfigurationManager.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using BepInEx;
+using ConfigurationManager.Utilities;
 using UnityEngine;
 
 namespace ConfigurationManager
 {
     internal class SettingFieldDrawer
     {
-        private Dictionary<PropSettingEntry, ComboBox> _comboBoxCache = new Dictionary<PropSettingEntry, ComboBox>();
+        private static readonly IEnumerable<KeyCode> KeysToCheck =
+            KeyboardShortcut.AllKeyCodes.Except(new[] {KeyCode.Mouse0}).ToArray();
+
+        private readonly Dictionary<PropSettingEntry, ComboBox> _comboBoxCache =
+            new Dictionary<PropSettingEntry, ComboBox>();
 
         private PropSettingEntry CurrentKeyboardShortcutToSet;
-        private static readonly IEnumerable<KeyCode> KeysToCheck = KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
 
         public void ClearCache()
         {
@@ -24,7 +28,7 @@ namespace ConfigurationManager
 
         public void DrawBoolField(PropSettingEntry setting)
         {
-            var boolVal = (bool)setting.Get();
+            var boolVal = (bool) setting.Get();
             var result = GUILayout.Toggle(boolVal, boolVal ? "Enabled" : "Disabled", GUILayout.ExpandWidth(true));
             if (result != boolVal)
                 setting.Set(result);
@@ -48,14 +52,15 @@ namespace ConfigurationManager
             GUILayout.EndHorizontal();
         }
 
-        public void DrawComboboxField(PropSettingEntry setting, System.Collections.IList list)
+        public void DrawComboboxField(PropSettingEntry setting, IList list)
         {
             var buttonText = new GUIContent(setting.Get().ToString());
             var dispRect = GUILayoutUtility.GetRect(buttonText, GUI.skin.button, GUILayout.ExpandWidth(true));
 
-            if (!_comboBoxCache.TryGetValue(setting, out ComboBox box))
+            if (!_comboBoxCache.TryGetValue(setting, out var box))
             {
-                box = new ComboBox(dispRect, buttonText, list.Cast<object>().Select(x => new GUIContent(x.ToString())).ToArray(), GUI.skin.button);
+                box = new ComboBox(dispRect, buttonText,
+                    list.Cast<object>().Select(x => new GUIContent(x.ToString())).ToArray(), GUI.skin.button);
                 _comboBoxCache[setting] = box;
             }
             else
@@ -66,17 +71,15 @@ namespace ConfigurationManager
 
             var id = box.Show();
             if (id >= 0 && id < list.Count)
-            {
                 setting.Set(list[id]);
-            }
         }
 
         public void DrawRangeField(PropSettingEntry setting, AcceptableValueRangeAttribute range)
         {
-            object value = setting.Get();
-            var converted = (float)Convert.ToDouble(value);
-            var leftValue = (float)Convert.ToDouble(range.MinValue);
-            var rightValue = (float)Convert.ToDouble(range.MaxValue);
+            var value = setting.Get();
+            var converted = (float) Convert.ToDouble(value);
+            var leftValue = (float) Convert.ToDouble(range.MinValue);
+            var rightValue = (float) Convert.ToDouble(range.MaxValue);
 
             var result = GUILayout.HorizontalSlider(converted, leftValue, rightValue, GUILayout.ExpandWidth(true));
             if (Math.Abs(result - converted) > Mathf.Abs(rightValue - leftValue) / 1000)
@@ -86,13 +89,15 @@ namespace ConfigurationManager
             }
 
             if (range.ShowAsPercentage)
-                DrawCenteredLabel(Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%", GUILayout.Width(50));
+                DrawCenteredLabel(
+                    Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%",
+                    GUILayout.Width(50));
             else
                 DrawCenteredLabel(value.ToString(), GUILayout.Width(50));
         }
 
         /// <summary>
-        /// Unknown type, read only
+        ///     Unknown type, read only
         /// </summary>
         public void DrawUnknownField(PropSettingEntry setting)
         {
@@ -101,7 +106,7 @@ namespace ConfigurationManager
 
         public void DrawKeyboardShortcut(PropSettingEntry setting)
         {
-            var shortcut = (KeyboardShortcut)setting.Get();
+            var shortcut = (KeyboardShortcut) setting.Get();
 
             GUILayout.BeginHorizontal();
             {
@@ -110,7 +115,6 @@ namespace ConfigurationManager
                     GUILayout.TextArea("Press any key combination", GUILayout.ExpandWidth(true));
 
                     foreach (var key in KeysToCheck)
-                    {
                         if (Input.GetKeyUp(key))
                         {
                             shortcut.MainKey = key;
@@ -119,7 +123,6 @@ namespace ConfigurationManager
                             CurrentKeyboardShortcutToSet = null;
                             break;
                         }
-                    }
 
                     if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
                         CurrentKeyboardShortcutToSet = null;

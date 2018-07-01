@@ -51,10 +51,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\lib\UnityEngine.dll</HintPath>
       <Private>False</Private>
@@ -79,6 +75,7 @@
     <ProjectReference Include="..\ConfigurationManager\ConfigurationManager.csproj">
       <Project>{d56dd83d-7471-463f-b4ff-8910a335833c}</Project>
       <Name>ConfigurationManager</Name>
+      <Private>False</Private>
     </ProjectReference>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
