@@ -9,10 +9,8 @@ namespace DeveloperConsole
     [BepInPlugin(GUID: "com.bepis.bepinex.developerconsole", Name: "Developer Console", Version: "1.0.1")]
     public class DeveloperConsole : BaseUnityPlugin
     {
-        private int showCounter = 0;
         private bool showingUI = false;
         private string TotalLog = "";
-        private string TotalShowingLog = "";
         private Rect UI = new Rect(20, 20, 400, 400);
         private Vector2 scrollPosition = Vector2.zero;
 
@@ -34,42 +32,13 @@ namespace DeveloperConsole
                 TotalLog = current;
 
                 scrollPosition = new Vector2(0, float.MaxValue);
-
-                if ((level & LogLevel.Message) != LogLevel.None)
-                {
-                    if (showCounter == 0)
-                        TotalShowingLog = "";
-
-                    showCounter = 400;
-                    TotalShowingLog = $"{TotalShowingLog}\r\n{log}";
-                }
             };
         }
 
         private void OnGUI()
         {
-            ShowLog();
-
             if (showingUI)
                 UI = GUILayout.Window("com.bepis.bepinex.developerconsole".GetHashCode() + 0, UI, WindowFunction, "Developer Console");
-        }
-
-        private void ShowLog()
-        {
-            if (showCounter != 0)
-            {
-                showCounter--;
-
-                GUI.Label(new Rect(40, 0, 600, 160), TotalShowingLog, new GUIStyle
-                {
-                    alignment = TextAnchor.UpperLeft,
-                    fontSize = 26,
-                    normal = new GUIStyleState
-                    {
-                        textColor = Color.white
-                    }
-                });
-            }
         }
 
         private void Update()

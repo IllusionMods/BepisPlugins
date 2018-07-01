@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationManager", "Con
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BGMLoader", "BGMLoader\BGMLoader.csproj", "{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageCenter", "MessageCenter\MessageCenter.csproj", "{404612B2-190B-4ADF-BA30-0C7959F99E96}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
@@ -97,6 +99,10 @@ Global
 		{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}.Release|Any CPU.Build.0 = Release|Any CPU
+		{404612B2-190B-4ADF-BA30-0C7959F99E96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{404612B2-190B-4ADF-BA30-0C7959F99E96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{404612B2-190B-4ADF-BA30-0C7959F99E96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{404612B2-190B-4ADF-BA30-0C7959F99E96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
