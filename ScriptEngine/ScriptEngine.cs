@@ -24,7 +24,7 @@ namespace ScriptEngine
 
         void Update()
         {
-            if (Event.current.control && Event.current.keyCode == KeyCode.Delete)
+            if (Event.current.control && Input.GetKeyDown(KeyCode.Delete))
             {
                 ReloadPlugins();
             }
