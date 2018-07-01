@@ -1,12 +1,8 @@
 ﻿using MessagePack;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ExtensibleSaveFormat
 {
-    //[MessagePackObject(keyAsPropertyName: true)]
     [MessagePackObject]
     public class PluginData
     {
