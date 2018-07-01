@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Target Name="ILRepacker" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+  <Target Name="ILRepacker" AfterTargets="Build">
 		<Move SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFiles="$(OutputPath)\$(AssemblyName)1.dll" />
 
 		<ItemGroup>
@@ -19,6 +19,6 @@
 			OutputFile="$(OutputPath)\$(AssemblyName).dll" 
 		/>
 
-		<Delete Files="@(InputAssemblies)" />
-    </Target>
+    <Delete Files="@(InputAssemblies)" />
+  </Target>
 </Project>
