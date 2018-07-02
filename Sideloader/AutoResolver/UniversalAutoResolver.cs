@@ -15,8 +15,6 @@ namespace Sideloader.AutoResolver
 
         public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ChaFile save, string propertyPrefix = "")
         {
-            //BepInLogger.Log($"Tried to resolve structure: {structure.GetType().Name}");
-
             var extData = ExtendedSave.GetExtendedDataById(save, UARExtID);
 
             IEnumerable<ResolveInfo> extInfo;
@@ -32,16 +30,44 @@ namespace Sideloader.AutoResolver
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x));
             }
 
-            //BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
-            //foreach (ResolveInfo info in LoadedResolutionInfo)
-            //    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
+			//BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
+			//foreach (ResolveInfo info in LoadedResolutionInfo)
+			//    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
 
-            //if (extInfo.Any())
-            //{
-            //    BepInLogger.Log($"External info count: {extInfo.Count()}");
-            //    foreach (ResolveInfo info in extInfo)
-            //        BepInLogger.Log($"External info: {info.ModID} : {info.Property} : {info.Slot}");
-            //}
+			if (extInfo != null && extInfo.Any())
+			{
+				Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count()}");
+				foreach (ResolveInfo info in extInfo)
+					Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+			}
+
+			void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
+	        {
+		        //check if it's a vanilla item
+		        if (!ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category]
+			        .ContainsKey(kv.Value.GetMethod(structure)))
+		        {
+			        //the property does not have external slot information
+			        //check if we have a corrosponding item for backwards compatbility
+			        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
+			                                                                  && x.Slot == kv.Value.GetMethod(structure));
+
+			        if (intResolve != null)
+			        {
+				        //found a match
+				        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+
+				        kv.Value.SetMethod(structure, intResolve.LocalSlot);
+			        }
+			        //otherwise ignore if not found
+		        }
+		        else
+		        {
+			        //not resolving since we prioritize vanilla items over modded items
+			        //BepInLogger.Log($"[UAR] Not resolving item due to vanilla ID range");
+			        //log commented out because it causes too much spam
+		        }
+	        }
 
             foreach (var kv in propertyDict)
             {
@@ -79,33 +105,14 @@ namespace Sideloader.AutoResolver
 	                        kv.Value.SetMethod(structure, 999999); //set to an invalid ID
                         }
                     }
+                    else if (UnityEngine.Event.current.alt)
+                    {
+						CompatibilityResolve(kv);
+                    }
                 }
                 else
                 {
-                    //check if it's a vanilla item
-                    if (!ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category]
-                        .ContainsKey(kv.Value.GetMethod(structure)))
-                    {
-                        //the property does not have external slot information
-                        //check if we have a corrosponding item for backwards compatbility
-                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
-                                                                                  && x.Slot == kv.Value.GetMethod(structure));
-
-                        if (intResolve != null)
-                        {
-                            //found a match
-                            Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
-
-                            kv.Value.SetMethod(structure, intResolve.LocalSlot);
-                        }
-                        //otherwise ignore if not found
-                    }
-                    else
-                    {
-                        //not resolving since we prioritize vanilla items over modded items
-                        //BepInLogger.Log($"[UAR] Not resolving item due to vanilla ID range");
-                        //log commented out because it causes too much spam
-                    }
+					CompatibilityResolve(kv);
                 }
             }
         }
