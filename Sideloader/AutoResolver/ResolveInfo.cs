@@ -5,12 +5,16 @@ using MessagePack;
 namespace Sideloader.AutoResolver
 {
     [Serializable]
-    [MessagePackObject(true)]
+    [MessagePackObject]
     public class ResolveInfo
     {
+		[Key("ModID")]
         public string GUID { get; set; }
+		[Key("Slot")]
         public int Slot { get; set; }
+	    [Key("LocalSlot")]
         public int LocalSlot { get; set; }
+	    [Key("Property")]
         public string Property { get; set; }
 
         public bool CanResolve(ResolveInfo other)
