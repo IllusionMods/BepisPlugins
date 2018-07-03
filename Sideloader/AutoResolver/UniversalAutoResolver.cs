@@ -30,17 +30,6 @@ namespace Sideloader.AutoResolver
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x));
             }
 
-			//BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
-			//foreach (ResolveInfo info in LoadedResolutionInfo)
-			//    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
-
-			if (extInfo != null && extInfo.Any())
-			{
-				Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count()}");
-				foreach (ResolveInfo info in extInfo)
-					Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
-			}
-
 			void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
 	        {
 		        //check if it's a vanilla item
@@ -152,6 +141,10 @@ namespace Sideloader.AutoResolver
 
                 kv.Value[0] = newSlot.ToString();
             }
+
+	        //BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
+	        //foreach (ResolveInfo info in LoadedResolutionInfo)
+	        //    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
         }
     }
 }
