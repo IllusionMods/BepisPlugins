@@ -58,11 +58,20 @@ namespace Sideloader.AutoResolver
 		        }
 	        }
 
+			HashSet<string> keyHashset = new HashSet<string>();
+
             foreach (var kv in propertyDict)
             {
+	            string property = $"{propertyPrefix}{kv.Key}";
+
+	            if (keyHashset.Contains(property))
+		            continue;
+
+	            keyHashset.Add(property);
+
                 if (extInfo != null)
                 {
-                    var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
+                    var extResolve = extInfo.FirstOrDefault(x => x.Property == property);
 
                     if (extResolve != null)
                     {
