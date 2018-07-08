@@ -92,7 +92,7 @@ namespace DeveloperConsole
 
                 LogDebug = GUILayout.Toggle(LogDebug, "Debug");
                 LogInfo = GUILayout.Toggle(LogInfo, "Info");
-                LogMessage = GUILayout.Toggle(LogMessage, "Message");
+                LogUnity = GUILayout.Toggle(LogUnity, "Unity");
             }
             GUILayout.EndHorizontal();
 
@@ -115,6 +115,16 @@ namespace DeveloperConsole
         }
 
         #region LogSettings
+
+        [Browsable(true)]
+        [DisplayName("Enable Unity message logging")]
+        [DefaultValue(false)]
+        [Description("Needs BepInEx later than v4.0\nChanges take effect after game reload.")]
+        public static bool LogUnity
+        {
+            get => bool.Parse(Config.GetEntry("log_unity_messages", "false", "Global"));
+            set => Config.SetEntry("log_unity_messages", value.ToString(), "Global");
+        }
 
         [Browsable(true)]
         [DisplayName("Enable DEBUG logging")]
