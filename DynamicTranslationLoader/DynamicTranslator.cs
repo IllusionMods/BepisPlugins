@@ -39,7 +39,7 @@ namespace DynamicTranslationLoader
         //ITL
         private static string TL_DIR_ROOT = null;
         private static string TL_DIR_SCENE = null;
-        private static bool isDumpingEnabled = true;
+        private static ConfigWrapper<bool> isDumpingEnabled;
         private static Dictionary<string, Dictionary<string, byte[]>> textureLoadTargets = new Dictionary<string, Dictionary<string, byte[]>>();
         private static Dictionary<string, HashSet<TextureMetadata>> textureDumpTargets = new Dictionary<string, HashSet<TextureMetadata>>();
         private static Dictionary<string, FileStream> fs_textureNameDump = new Dictionary<string, FileStream>();
@@ -48,6 +48,8 @@ namespace DynamicTranslationLoader
 
         void Awake()
         {
+            isDumpingEnabled = new ConfigWrapper<bool>("Enable image dumping", this);
+
             LoadTranslations();
 
             Hooks.InstallHooks();
@@ -88,8 +90,6 @@ namespace DynamicTranslationLoader
             TL_DIR_ROOT = $"{di_tl.FullName}/{Application.productName}";
             TL_DIR_SCENE = $"{TL_DIR_ROOT}/Scenes";
 
-            isDumpingEnabled = BepInEx.Config.GetEntry(nameof(isDumpingEnabled), "1", nameof(DynamicTranslator)) == "1";
-
             var di = new DirectoryInfo(TL_DIR_SCENE);
             if (!di.Exists) di.Create();
 
@@ -109,7 +109,7 @@ namespace DynamicTranslationLoader
 
             SceneManager.sceneUnloaded += (s) =>
             {
-                if (isDumpingEnabled)
+                if (isDumpingEnabled.Value)
                 {
                     var sn = s.name;
                     StreamWriter sw = null;
@@ -265,7 +265,7 @@ namespace DynamicTranslationLoader
         #region ITL
         internal static void PrepDumper(string s)
         {
-            if (isDumpingEnabled)
+            if (isDumpingEnabled.Value)
             {
                 if (textureDumpTargets.ContainsKey(s)) return;
                 textureDumpTargets[s] = new HashSet<TextureMetadata>(tmdc);
@@ -348,7 +348,7 @@ namespace DynamicTranslationLoader
 
         internal static void RegisterTexture(Texture tex, string path, string s)
         {
-            if (isDumpingEnabled)
+            if (isDumpingEnabled.Value)
             {
                 if (tex == null) return;
                 if (IsSwappedTexture(tex)) return;
@@ -365,7 +365,7 @@ namespace DynamicTranslationLoader
 
         internal static void RegisterTexture(Image i, string path, string s)
         {
-            if (isDumpingEnabled)
+            if (isDumpingEnabled.Value)
             {
                 var tex = i.mainTexture;
                 if (tex == null) return;
