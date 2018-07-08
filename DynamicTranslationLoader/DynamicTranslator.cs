@@ -80,6 +80,11 @@ namespace DynamicTranslationLoader
                     continue;
 
                 string[] split = line.Split('=');
+                if (split.Length != 2)
+                {
+                    Logger.Log(LogLevel.Warning, "Invalid text translation entry: " + line);
+                    continue;
+                }
 
                 translations[split[0].Trim()] = split[1];
             }
@@ -95,14 +100,22 @@ namespace DynamicTranslationLoader
 
             foreach (var t in new DirectoryInfo(TL_DIR_ROOT).GetFiles("*.txt"))
             {
-                var sceneName = t.Name;
-                sceneName = sceneName.Substring(0, sceneName.Length - 4);   //Trim .txt
+                var sceneName = Path.GetFileNameWithoutExtension(t.Name);
                 textureLoadTargets[sceneName] = new Dictionary<string, byte[]>();
                 foreach (var tl in File.ReadAllLines(t.FullName))
                 {
                     var tp = tl.Split('=');
+                    if (tp.Length != 2)
+                    {
+                        Logger.Log(LogLevel.Warning, "Invalid entry in " + t.Name + " - " + tl);
+                        continue;
+                    }
                     var path = $"{TL_DIR_SCENE}/{tp[1]}";
-                    if (!File.Exists(path)) continue;
+                    if (!File.Exists(path))
+                    {
+                        Logger.Log(LogLevel.Warning, "Missing TL image: " + path);
+                        continue;
+                    }
                     textureLoadTargets[sceneName][tp[0]] = File.ReadAllBytes(path);
                 }
             }
