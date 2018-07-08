@@ -29,27 +29,30 @@ namespace DynamicTranslationLoader
         public static event Func<object, string, string> OnUnableToTranslateUGUI;
 
         public static event Func<object, string, string> OnUnableToTranslateTextMeshPro;
-
-
-
-        Event ReloadTranslationsKeyEvent = Event.KeyboardEvent("f10");
-        Event DumpUntranslatedTextKeyEvent = Event.KeyboardEvent("#f10");
-
+        
+        public SavedKeyboardShortcut ReloadTranslations { get; }
+        public SavedKeyboardShortcut DumpUntranslatedText { get; }
+        
+        public static ConfigWrapper<bool> IsDumpingEnabled { get; private set; }
 
         //ITL
         private static string TL_DIR_ROOT = null;
         private static string TL_DIR_SCENE = null;
-        private static ConfigWrapper<bool> isDumpingEnabled;
         private static Dictionary<string, Dictionary<string, byte[]>> textureLoadTargets = new Dictionary<string, Dictionary<string, byte[]>>();
         private static Dictionary<string, HashSet<TextureMetadata>> textureDumpTargets = new Dictionary<string, HashSet<TextureMetadata>>();
         private static Dictionary<string, FileStream> fs_textureNameDump = new Dictionary<string, FileStream>();
         private static Dictionary<string, StreamWriter> sw_textureNameDump = new Dictionary<string, StreamWriter>();
         private static IEqualityComparer<TextureMetadata> tmdc = new TextureMetadataComparer();
 
+        public DynamicTranslator()
+        {
+            IsDumpingEnabled = new ConfigWrapper<bool>("Enable image dumping", this);
+            ReloadTranslations = new SavedKeyboardShortcut("Reload translations", this, new KeyboardShortcut(KeyCode.F10));
+            DumpUntranslatedText = new SavedKeyboardShortcut("Dump untranslated text", this, new KeyboardShortcut(KeyCode.F10, KeyCode.LeftShift));
+        }
+
         void Awake()
         {
-            isDumpingEnabled = new ConfigWrapper<bool>("Enable image dumping", this);
-
             LoadTranslations();
 
             Hooks.InstallHooks();
@@ -122,7 +125,7 @@ namespace DynamicTranslationLoader
 
             SceneManager.sceneUnloaded += (s) =>
             {
-                if (isDumpingEnabled.Value)
+                if (IsDumpingEnabled.Value)
                 {
                     var sn = s.name;
                     StreamWriter sw = null;
@@ -262,12 +265,12 @@ namespace DynamicTranslationLoader
         void Update()
         {
             if (Event.current == null) return;
-            if (UnityEngine.Event.current.Equals(ReloadTranslationsKeyEvent))
+            if (ReloadTranslations.IsDown())
             {
                 Retranslate();
-                Logger.Log(LogLevel.Message, $"Translation reloaded.");
+                Logger.Log(LogLevel.Message, "Translation reloaded.");
             }
-            if (UnityEngine.Event.current.Equals(DumpUntranslatedTextKeyEvent))
+            else if (DumpUntranslatedText.IsDown())
             {
                 Dump();
                 Logger.Log(LogLevel.Message, $"Text dumped to \"{Path.GetFullPath("dumped-tl.txt")}\"");
@@ -278,7 +281,7 @@ namespace DynamicTranslationLoader
         #region ITL
         internal static void PrepDumper(string s)
         {
-            if (isDumpingEnabled.Value)
+            if (IsDumpingEnabled.Value)
             {
                 if (textureDumpTargets.ContainsKey(s)) return;
                 textureDumpTargets[s] = new HashSet<TextureMetadata>(tmdc);
@@ -361,7 +364,7 @@ namespace DynamicTranslationLoader
 
         internal static void RegisterTexture(Texture tex, string path, string s)
         {
-            if (isDumpingEnabled.Value)
+            if (IsDumpingEnabled.Value)
             {
                 if (tex == null) return;
                 if (IsSwappedTexture(tex)) return;
@@ -378,7 +381,7 @@ namespace DynamicTranslationLoader
 
         internal static void RegisterTexture(Image i, string path, string s)
         {
-            if (isDumpingEnabled.Value)
+            if (IsDumpingEnabled.Value)
             {
                 var tex = i.mainTexture;
                 if (tex == null) return;
