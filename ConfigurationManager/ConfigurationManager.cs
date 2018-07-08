@@ -215,7 +215,7 @@ namespace ConfigurationManager
                     DisplayingWindow = !DisplayingWindow;
             }
 
-            if (DisplayingWindow && (DisplayingButton || IsStudio))
+            if (DisplayingWindow && (DisplayingButton || _isStudio))
             {
                 if (GUI.Button(_screenRect, string.Empty, GUI.skin.box) &&
                     !_settingWindowRect.Contains(Input.mousePosition))
@@ -374,16 +374,18 @@ namespace ConfigurationManager
                 {typeof(bool), _fieldDrawer.DrawBoolField},
                 {typeof(KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut}
             };
+
+            _isStudio = Application.productName == "CharaStudio";
         }
 
         private void Update()
         {
             DisplayingButton = IsConfigOpened();
 
-            if (IsStudio && Input.GetKeyUp(KeyCode.F1))
+            if (_isStudio && Input.GetKeyUp(KeyCode.F1))
                 DisplayingWindow = !DisplayingWindow;
         }
 
-        private static bool IsStudio { get; } = Application.productName == "CharaStudio";
+        private static bool _isStudio;
     }
 }
