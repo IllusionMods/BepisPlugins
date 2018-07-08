@@ -21,8 +21,37 @@ namespace Screencap
         private AlphaShot2 as2 = null;
 
         #region Config properties
+        
+        public SavedKeyboardShortcut CK_Capture { get; private set; }
+        public SavedKeyboardShortcut CK_CaptureAlpha { get; private set; }
+        public SavedKeyboardShortcut CK_Gui { get; private set; }
 
-        public ScreenshotManager()
+        [Category("Output resolution")]
+        [DisplayName("Horizontal (Width in px)")]
+        [AcceptableValueRange(2, 4096, false)]
+        public ConfigWrapper<int> ResolutionX { get; private set; }
+
+        [Category("Output resolution")]
+        [DisplayName("Vertical (Height in px)")]
+        [AcceptableValueRange(2, 4096, false)]
+        public ConfigWrapper<int> ResolutionY { get; private set; }
+
+        [DisplayName("!Downscaling rate (x times)")]
+        [AcceptableValueRange(1, 4, false)]
+        public ConfigWrapper<int> DownscalingRate { get; private set; }
+
+        [DisplayName("Card downscaling rate (x times)")]
+        [AcceptableValueRange(1, 4, false)]
+        public ConfigWrapper<int> CardDownscalingRate { get; private set; }
+
+        [DisplayName("!Capture alpha")]
+        public ConfigWrapper<bool> CaptureAlpha { get; private set; }
+
+        #endregion
+
+        private string filename => Path.GetFullPath(Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png"));
+
+        void Awake()
         {
             CK_Capture = new SavedKeyboardShortcut("Take screenshot", this, new KeyboardShortcut(KeyCode.F9));
             CK_CaptureAlpha = new SavedKeyboardShortcut("Take character screenshot", this, new KeyboardShortcut(KeyCode.F11));
@@ -33,39 +62,7 @@ namespace Screencap
             DownscalingRate = new ConfigWrapper<int>("downscalerate", this, 1);
             CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 1);
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
-        }
 
-        public SavedKeyboardShortcut CK_Capture { get; }
-        public SavedKeyboardShortcut CK_CaptureAlpha { get; }
-        public SavedKeyboardShortcut CK_Gui { get; }
-
-        [Category("Output resolution")]
-        [DisplayName("Horizontal (Width in px)")]
-        [AcceptableValueRange(2, 4096, false)]
-        public ConfigWrapper<int> ResolutionX { get; }
-
-        [Category("Output resolution")]
-        [DisplayName("Vertical (Height in px)")]
-        [AcceptableValueRange(2, 4096, false)]
-        public ConfigWrapper<int> ResolutionY { get; }
-
-        [DisplayName("!Downscaling rate (x times)")]
-        [AcceptableValueRange(1, 4, false)]
-        public ConfigWrapper<int> DownscalingRate { get; }
-
-        [DisplayName("Card downscaling rate (x times)")]
-        [AcceptableValueRange(1, 4, false)]
-        public ConfigWrapper<int> CardDownscalingRate { get; }
-
-        [DisplayName("!Capture alpha")]
-        public ConfigWrapper<bool> CaptureAlpha { get; }
-
-        #endregion
-
-        private string filename => Path.GetFullPath(Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png"));
-
-        void Awake()
-        {
             SceneManager.sceneLoaded += (s, a) => Install();
             Install();
 
