@@ -20,8 +20,8 @@ namespace ConfigurationManager
     public class ConfigurationManager : BaseUnityPlugin
     {
         private static readonly GUIContent KeyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
-            "The first key is the main key, while the rest are modifiers." + 
-            "\nThe shortcut will only fire when you press \n" + 
+            "The first key is the main key, while the rest are modifiers." +
+            "\nThe shortcut will only fire when you press \n" +
             "the main key while all modifiers are already pressed.");
 
         private static readonly ICollection<string> UpdateMethodNames = new[]
@@ -80,7 +80,7 @@ namespace ConfigurationManager
                 if (_displayingWindow == value) return;
                 _displayingWindow = value;
 
-                if(_displayingWindow)
+                if (_displayingWindow)
                 {
                     CalculateWindowRect();
 
@@ -128,14 +128,14 @@ namespace ConfigurationManager
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
-                detected.AddRange(settingProps.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)));
+                detected.AddRange(settingProps.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)).Where(x => x != null));
 
                 var settingPropsStatic = type
                     .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                     .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
                 detected.AddRange(
-                    settingPropsStatic.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)));
+                    settingPropsStatic.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x != null));
 
                 // Normal properties ------
 
@@ -146,7 +146,7 @@ namespace ConfigurationManager
                         .FilterBrowsable(true, false))
                     .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
-                detected.AddRange(normalProps.Select(x => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)));
+                detected.AddRange(normalProps.Select(x => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)).Where(x => x != null));
 
                 var normalPropsStatic = type
                     .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
@@ -156,7 +156,7 @@ namespace ConfigurationManager
                     .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
                 detected.AddRange(
-                    normalPropsStatic.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)));
+                    normalPropsStatic.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)).Where(x => x != null));
 
                 // Allow to enable/disable plugin if it uses any update methods ------
                 if (type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => UpdateMethodNames.Contains(x.Name)))
@@ -223,7 +223,7 @@ namespace ConfigurationManager
 
                 GUILayout.Window(-68, _settingWindowRect, SettingsWindow, "Plugin / mod settings");
             }
-            else if(DisplayingButton)
+            else if (DisplayingButton)
             {
                 DrawTooltip();
             }
@@ -294,12 +294,12 @@ namespace ConfigurationManager
                 _fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}");
 
                 foreach (var category in plugin.Select(x => new
-                    {
-                        plugin = x,
-                        category = x.SettingType == typeof(KeyboardShortcut)
+                {
+                    plugin = x,
+                    category = x.SettingType == typeof(KeyboardShortcut)
                             ? KeyboardShortcutsCategoryName
                             : new GUIContent(x.Category)
-                    })
+                })
                     .GroupBy(a => a.category.text).OrderBy(x => x.Key))
                 {
                     if (!string.IsNullOrEmpty(category.Key))

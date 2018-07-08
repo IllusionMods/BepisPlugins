@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using BepInEx;
+using BepInEx.Logging;
 
 namespace ConfigurationManager
 {
@@ -39,33 +40,49 @@ namespace ConfigurationManager
         public static PropSettingEntry FromConfigWrapper(object instance, PropertyInfo settingProp,
             BepInPlugin pluginInfo)
         {
-            var wrapper = settingProp.GetValue(instance, null);
-
-            var innerProp = wrapper.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
-
-            var entry = new PropSettingEntry();
-            entry.SetFromAttributes(settingProp, pluginInfo);
-
-            entry.Browsable = innerProp.CanRead && innerProp.CanWrite && entry.Browsable != false;
-
-            entry.Property = innerProp;
-            entry.Instance = wrapper;
-
-            entry.Wrapper = wrapper;
-
-            if (entry.DispName == "Value")
-                entry.DispName = wrapper.GetType().GetProperty("Key", BindingFlags.Instance | BindingFlags.Public)
-                    .GetValue(wrapper, null) as string;
-
-            if (string.IsNullOrEmpty(entry.Category))
+            try
             {
-                var section = wrapper.GetType().GetProperty("Section", BindingFlags.Instance | BindingFlags.Public)
-                    .GetValue(wrapper, null) as string;
-                if (section != pluginInfo.GUID)
-                    entry.Category = section;
-            }
+                var wrapper = settingProp.GetValue(instance, null);
 
-            return entry;
+                var innerProp = wrapper.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
+
+                var entry = new PropSettingEntry();
+                entry.SetFromAttributes(settingProp, pluginInfo);
+
+                if (innerProp == null)
+                {
+                    Logger.Log(LogLevel.Error, "Failed to find property Value of ConfigWrapper");
+                    return null;
+                }
+
+                entry.Browsable = innerProp.CanRead && innerProp.CanWrite && entry.Browsable != false;
+
+                entry.Property = innerProp;
+                entry.Instance = wrapper;
+
+                entry.Wrapper = wrapper;
+
+                if (entry.DispName == "Value")
+                    entry.DispName = wrapper.GetType().GetProperty("Key", BindingFlags.Instance | BindingFlags.Public)
+                        ?.GetValue(wrapper, null) as string;
+
+                if (string.IsNullOrEmpty(entry.Category))
+                {
+                    var section = wrapper.GetType().GetProperty("Section", BindingFlags.Instance | BindingFlags.Public)
+                        ?.GetValue(wrapper, null) as string;
+                    if (section != pluginInfo?.GUID)
+                        entry.Category = section;
+                }
+
+                return entry;
+            }
+            catch (SystemException ex)
+            {
+                Logger.Log(LogLevel.Error,
+                    "Failed to create ConfigWrapper entry : " + instance?.ToString() + " | " + settingProp?.Name +
+                    " | " + pluginInfo?.Name);
+                return null;
+            }
         }
 
         public static PropSettingEntry FromNormalProperty(object instance, PropertyInfo settingProp,
