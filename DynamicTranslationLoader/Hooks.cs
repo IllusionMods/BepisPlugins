@@ -278,6 +278,18 @@ namespace DynamicTranslationLoader
             return true;
         }
 
+        [HarmonyPrefix, HarmonyPatch(typeof(Selectable), "DoSpriteSwap")]
+        public static void DoSpriteSwapHook(ref Selectable __instance, ref Sprite newSprite)
+        {
+            if (newSprite == null) newSprite = __instance.image.sprite;
+            var go = __instance.gameObject;
+            var path = GameObjectUtils.AbsoluteTransform(go);
+            var scene = go.scene.name;
+
+            DynamicTranslator.RegisterTexture(newSprite, path, scene);
+            DynamicTranslator.ReplaceTexture(ref newSprite, path, scene);
+        }
+
         #endregion
     }
 }

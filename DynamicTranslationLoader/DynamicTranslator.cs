@@ -294,6 +294,12 @@ namespace DynamicTranslationLoader
             ReplaceTexture((Texture2D)mat.mainTexture, path, s);
         }
 
+        private static string GetAtlasTextureName(Sprite spr)
+        {
+            var rect = spr.textureRect;
+            return $"[{rect.width},{rect.height},{rect.x},{rect.y}]{spr.texture.name}";
+        }
+
         private static string GetAtlasTextureName(Image i)
         {
             var rect = i.sprite.textureRect;
@@ -363,6 +369,39 @@ namespace DynamicTranslationLoader
 
         private static Dictionary<string, Texture2D> readableTextures = new Dictionary<string, Texture2D>();
 
+        internal static void RegisterTexture(Sprite spr, string path, string s)
+        {
+            if (isDumpingEnabled)
+            {
+                if (spr == null) return;
+                var tex = spr.texture;
+                if (IsSwappedTexture(spr.texture)) return;
+                if (string.IsNullOrEmpty(tex.name)) return;
+                PrepDumper(s);
+                RegisterTexture(tex, path, s);
+
+                var rect = spr.textureRect;
+                if (rect == null || rect == new Rect(0, 0, tex.width, tex.height)) return;
+                Texture2D readable = null;
+                if (!readableTextures.TryGetValue(tex.name, out readable))
+                {
+                    readableTextures[tex.name] = TextureUtils.MakeReadable(tex);
+                    readable = readableTextures[tex.name];
+                }
+                var cropped = readable.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
+                var nt2d = new Texture2D((int)rect.width, (int)rect.height);
+                nt2d.SetPixels(cropped);
+                nt2d.Apply();
+
+                nt2d.name = spr.texture.name.ToLower().Contains("atlas") ? GetAtlasTextureName(spr) : spr.texture.name;
+                var tm = new TextureMetadata(nt2d, path, s);
+
+                if (textureDumpTargets[s].Contains(tm)) return;
+                textureDumpTargets[s].Add(tm);
+                DumpTexture(tm);
+            }
+        }
+
         internal static void RegisterTexture(Image i, string path, string s)
         {
             if (isDumpingEnabled)
@@ -392,7 +431,7 @@ namespace DynamicTranslationLoader
                 nt2d.SetPixels(cropped);
                 nt2d.Apply();
 
-                nt2d.name = GetAtlasTextureName(i);
+                nt2d.name = tex.name.ToLower().Contains("atlas") ? GetAtlasTextureName(i) : tex.name;
                 var tm = new TextureMetadata(nt2d, path, s);
 
                 if (textureDumpTargets[s].Contains(tm)) return;
@@ -405,21 +444,34 @@ namespace DynamicTranslationLoader
         {
             if (spr == null || spr.texture == null) return;
             if (!textureLoadTargets.ContainsKey(s)) return;
-            if (!textureLoadTargets[s].ContainsKey(spr.texture.name)) return;    //TODO: Hash?
             if (IsSwappedTexture(spr.texture)) return;
-            var tex = textureLoadTargets[s][spr.texture.name];
-
-            if (spr.texture.name.ToLower().Contains("atlas"))
+            if (textureLoadTargets[s].ContainsKey(spr.texture.name))
             {
-                spr.texture.LoadImage(tex);
+                var tex = textureLoadTargets[s][spr.texture.name];
+                if (spr.texture.name.ToLower().Contains("atlas"))
+                {
+                    spr.texture.LoadImage(tex);
+                }
+                else
+                {
+                    var t2d = new Texture2D(2, 2);
+                    t2d.LoadImage(tex);
+
+                    spr = Sprite.Create(t2d, spr.rect, spr.pivot);
+                }
             }
             else
             {
+                var name = GetAtlasTextureName(spr);
+                if (!textureLoadTargets[s].ContainsKey(name)) return;
+                Console.WriteLine(name);
+                var tex = textureLoadTargets[s][name];
+
                 var t2d = new Texture2D(2, 2);
                 t2d.LoadImage(tex);
+
                 spr = Sprite.Create(t2d, spr.rect, spr.pivot);
             }
-
             spr.texture.name = "*" + spr.texture.name;
         }
 
