@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using System.ComponentModel;
+using BepInEx;
 using UnityEngine;
 using System.Linq;
 using BepInEx.Logging;
@@ -13,15 +14,15 @@ namespace DeveloperConsole
         private string TotalLog = "";
         private Rect UI = new Rect(20, 20, 400, 400);
         private Vector2 scrollPosition = Vector2.zero;
-
+        
         private void Awake()
         {
             Logger.EntryLogged += (level, log) =>
             {
                 string current = $"{TotalLog}\r\n{log}";
-                if (current.Length > 3000)
+                if (current.Length > 15000)
                 {
-                    var trimmed = current.Remove(0, 500);
+                    var trimmed = current.Remove(0, 1000);
 
                     // Trim until the first newline to avoid partial line
                     var newlineHit = false;
@@ -57,6 +58,10 @@ namespace DeveloperConsole
                     TotalLog = "Log cleared";
                 if (GUILayout.Button("Dump scene"))
                     SceneDumper.DumpScene();
+
+                LogDebug = GUILayout.Toggle(LogDebug, "Debug");
+                LogInfo = GUILayout.Toggle(LogInfo, "Info");
+                LogUnity = GUILayout.Toggle(LogUnity, "Unity");
             }
             GUILayout.EndHorizontal();
 
@@ -77,5 +82,59 @@ namespace DeveloperConsole
 
             GUI.DragWindow();
         }
+
+        #region LogSettings
+
+        [Browsable(true)]
+        [DisplayName("Enable Unity message logging")]
+        [DefaultValue(false)]
+        [Description("Needs BepInEx later than v4.0\nChanges take effect after game reload.")]
+        public static bool LogUnity
+        {
+            get => bool.Parse(Config.GetEntry("log_unity_messages", "false", "Global"));
+            set => Config.SetEntry("log_unity_messages", value.ToString(), "Global");
+        }
+
+        [Browsable(true)]
+        [DisplayName("Enable DEBUG logging")]
+        [DefaultValue(false)]
+        public static bool LogDebug
+        {
+            get => GetDebugFlag(LogLevel.Debug);
+            set => SetDebugFlag(value, LogLevel.Debug);
+        }
+        [Browsable(true)]
+        [DisplayName("Enable INFO logging")]
+        [DefaultValue(false)]
+        public static bool LogInfo
+        {
+            get => GetDebugFlag(LogLevel.Info);
+            set => SetDebugFlag(value, LogLevel.Info);
+        }
+        [Browsable(true)]
+        [DisplayName("Enable MESSAGE logging")]
+        [DefaultValue(true)]
+        public static bool LogMessage
+        {
+            get => GetDebugFlag(LogLevel.Message);
+            set => SetDebugFlag(value, LogLevel.Message);
+        }
+
+        private static void SetDebugFlag(bool value, LogLevel level)
+        {
+            if (value)
+                Logger.CurrentLogger.DisplayedLevels |= level;
+            else
+                Logger.CurrentLogger.DisplayedLevels &= ~level;
+            
+            Config.SetEntry("logger-displayed-levels", ((int)Logger.CurrentLogger.DisplayedLevels).ToString(), "");
+        }
+
+        private static bool GetDebugFlag(LogLevel level)
+        {
+            return (Logger.CurrentLogger.DisplayedLevels & level) == level;
+        }
+
+        #endregion
     }
 }
