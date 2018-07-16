@@ -5,12 +5,26 @@ using MessagePack;
 namespace Sideloader.AutoResolver
 {
     [Serializable]
-    [MessagePackObject]
+    [MessagePackObject(true)]
     public class ResolveInfo
     {
-		[Key("ModID")]
-        public string GUID { get; set; }
-		[Key("Slot")]
+        [Key("ModID")]
+        public string m_GUID { get; set; }
+
+        [Key("GUID")]
+        public string m_GUID2 { get; set; }
+
+        public string GUID
+        {
+            get => $"{m_GUID}{m_GUID2}";
+            set
+            {
+                m_GUID2 = "";
+                m_GUID = value;
+            }
+        }
+
+        [Key("Slot")]
         public int Slot { get; set; }
 	    [Key("LocalSlot")]
         public int LocalSlot { get; set; }
