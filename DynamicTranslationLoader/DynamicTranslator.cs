@@ -387,7 +387,7 @@ namespace DynamicTranslationLoader
 
         internal static void RegisterTexture(Sprite spr, string path, string s)
         {
-            if (isDumpingEnabled)
+            if (IsDumpingEnabled.Value)
             {
                 if (spr == null) return;
                 var tex = spr.texture;
