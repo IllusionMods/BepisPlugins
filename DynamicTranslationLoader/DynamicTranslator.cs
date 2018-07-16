@@ -34,6 +34,8 @@ namespace DynamicTranslationLoader
         public static ConfigWrapper<bool> IsDumpingEnabled { get; private set; }
 
         //ITL
+        public static readonly string GlobalTextureTargetName = "_Global";
+        private static bool GlobalTextureTargetExists { get; set; }
         private static string TL_DIR_ROOT;
         private static string TL_DIR_SCENE;
         private static readonly Dictionary<string, Dictionary<string, byte[]>> textureLoadTargets = new Dictionary<string, Dictionary<string, byte[]>>();
@@ -118,6 +120,8 @@ namespace DynamicTranslationLoader
                     textureLoadTargets[sceneName][tp[0]] = File.ReadAllBytes(path);
                 }
             }
+
+            GlobalTextureTargetExists = textureLoadTargets.ContainsKey(GlobalTextureTargetName);
 
             SceneManager.sceneUnloaded += s =>
             {
@@ -277,21 +281,38 @@ namespace DynamicTranslationLoader
 
         internal static bool IsSwappedTexture(Texture t) => t.name.StartsWith("*");
 
+        private static bool TryGetOverrideTexture(string texName, string sceneName, out byte[] tex)
+        {
+            if (textureLoadTargets.ContainsKey(sceneName) &&
+                textureLoadTargets[sceneName].ContainsKey(texName))
+            {
+                tex = textureLoadTargets[sceneName][texName];
+                return true;
+            }
+            if (GlobalTextureTargetExists &&
+                     textureLoadTargets[GlobalTextureTargetName].ContainsKey(texName))
+            {
+                tex = textureLoadTargets[GlobalTextureTargetName][texName];
+                return true;
+            }
+            tex = null;
+            return false;
+        }
+
         internal static void ReplaceTexture(Texture2D t2d, string path, string s)
         {
             if (t2d == null) return;
-            if (!textureLoadTargets.ContainsKey(s)) return;
-            if (!textureLoadTargets[s].ContainsKey(t2d.name)) return;    //TODO: Hash?
-            var tex = textureLoadTargets[s][t2d.name];
-            if (IsSwappedTexture(t2d)) return;
-            t2d.LoadImage(tex);
-            t2d.name = "*" + t2d.name;
+
+            if (TryGetOverrideTexture(t2d.name, s, out var tex) && !IsSwappedTexture(t2d))
+            {
+                t2d.LoadImage(tex);
+                t2d.name = "*" + t2d.name;
+            }
         }
 
         internal static void ReplaceTexture(Material mat, string path, string s)
         {
             if (mat == null) return;
-            if (!textureLoadTargets.ContainsKey(s)) return;
             ReplaceTexture((Texture2D)mat.mainTexture, path, s);
         }
 
@@ -313,37 +334,40 @@ namespace DynamicTranslationLoader
 
             if (img.sprite == null) return;
 
-            if (!textureLoadTargets.ContainsKey(s)) return;
+            if (!GlobalTextureTargetExists && !textureLoadTargets.ContainsKey(s)) return;
 
-            var tex = img.mainTexture;
-            if (tex == null) return;
+            var mainTexture = img.mainTexture;
+            if (mainTexture == null) return;
 
             var rect = img.sprite.textureRect;
-            if (rect == new Rect(0, 0, tex.width, tex.height))
+            if (rect == new Rect(0, 0, mainTexture.width, mainTexture.height))
             {
-                if (IsSwappedTexture(tex)) return;
-                if (string.IsNullOrEmpty(tex.name)) return;
-                if (!textureLoadTargets[s].ContainsKey(img.mainTexture.name)) return;
-                var t2d = new Texture2D(2, 2);
-                t2d.LoadImage(textureLoadTargets[s][img.mainTexture.name]);
-                img.sprite = Sprite.Create(t2d, img.sprite.rect, img.sprite.pivot);
-                tex.name = "*" + img.mainTexture.name;
+                if (IsSwappedTexture(mainTexture)) return;
+                if (string.IsNullOrEmpty(mainTexture.name)) return;
+
+                if (TryGetOverrideTexture(img.mainTexture.name, s, out var newTexture))
+                {
+                    var t2D = new Texture2D(2, 2);
+                    t2D.LoadImage(newTexture);
+                    img.sprite = Sprite.Create(t2D, img.sprite.rect, img.sprite.pivot);
+                    mainTexture.name = "*" + img.mainTexture.name;
+                }
             }
             else
             {
                 //Atlas
                 if (IsSwappedTexture(img.sprite.texture)) return;
                 var name = GetAtlasTextureName(img);
-                if (textureLoadTargets[s].TryGetValue(img.mainTexture.name, out var newTex))
+                if (TryGetOverrideTexture(img.mainTexture.name, s, out var newTex))
                 {
                     img.sprite.texture.LoadImage(newTex);
                     img.sprite.texture.name = "*" + img.mainTexture.name;
                 }
-                else if (textureLoadTargets[s].TryGetValue(name, out newTex))
+                else if (TryGetOverrideTexture(name, s, out newTex))
                 {
-                    var t2d = new Texture2D(2, 2);
-                    t2d.LoadImage(newTex);
-                    img.sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
+                    var t2D = new Texture2D(2, 2);
+                    t2D.LoadImage(newTex);
+                    img.sprite = Sprite.Create(t2D, new Rect(0, 0, t2D.width, t2D.height), Vector2.zero);
                     img.sprite.texture.name = "*" + name;
                 }
             }
@@ -443,34 +467,36 @@ namespace DynamicTranslationLoader
         internal static void ReplaceTexture(ref Sprite spr, string path, string s)
         {
             if (spr == null || spr.texture == null) return;
-            if (!textureLoadTargets.ContainsKey(s)) return;
+
+            if (!GlobalTextureTargetExists && !textureLoadTargets.ContainsKey(s)) return;
+
             if (IsSwappedTexture(spr.texture)) return;
-            if (textureLoadTargets[s].ContainsKey(spr.texture.name))
+
+            if (TryGetOverrideTexture(spr.texture.name, s, out var newTex))
             {
-                var tex = textureLoadTargets[s][spr.texture.name];
                 if (spr.texture.name.ToLower().Contains("atlas"))
                 {
-                    spr.texture.LoadImage(tex);
+                    spr.texture.LoadImage(newTex);
                 }
                 else
                 {
-                    var t2d = new Texture2D(2, 2);
-                    t2d.LoadImage(tex);
+                    var t2D = new Texture2D(2, 2);
+                    t2D.LoadImage(newTex);
 
-                    spr = Sprite.Create(t2d, spr.rect, spr.pivot);
+                    spr = Sprite.Create(t2D, spr.rect, spr.pivot);
                 }
             }
             else
             {
                 var name = GetAtlasTextureName(spr);
-                if (!textureLoadTargets[s].ContainsKey(name)) return;
+                if (!TryGetOverrideTexture(name, s, out var tex)) return;
+
                 Console.WriteLine(name);
-                var tex = textureLoadTargets[s][name];
 
-                var t2d = new Texture2D(2, 2);
-                t2d.LoadImage(tex);
+                var t2D = new Texture2D(2, 2);
+                t2D.LoadImage(tex);
 
-                spr = Sprite.Create(t2d, spr.rect, spr.pivot);
+                spr = Sprite.Create(t2D, spr.rect, spr.pivot);
             }
             spr.texture.name = "*" + spr.texture.name;
         }
