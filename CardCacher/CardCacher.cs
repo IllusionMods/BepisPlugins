@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
 using BepInEx;
 using BepInEx.Logging;
 
@@ -7,6 +8,7 @@ namespace CardCacher
     [BepInPlugin(GUID: "com.bepis.bepinex.cardcacher", Name: "Card Cacher", Version: "1.0")]
     public class CardCacher : BaseUnityPlugin
     {
+        [Browsable(false)]
         public FileSystemWatcher FemaleCharaWatcher { get; set; }
 
         public CardCacher()
