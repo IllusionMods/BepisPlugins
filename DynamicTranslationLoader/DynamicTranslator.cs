@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using ADV;
 using BepInEx.Logging;
+using H;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,29 +21,26 @@ namespace DynamicTranslationLoader
     [BepInPlugin(GUID: "com.bepis.bepinex.dynamictranslator", Name: "Dynamic Translator", Version: "3.0")]
     public class DynamicTranslator : BaseUnityPlugin
     {
-        private static Dictionary<string, string> translations = new Dictionary<string, string>();
-
-        private static Dictionary<WeakReference, string> originalTranslations = new Dictionary<WeakReference, string>();
-
-        private static HashSet<string> untranslated = new HashSet<string>();
+        private static readonly Dictionary<string, string> translations = new Dictionary<string, string>();
+        private static readonly Dictionary<WeakReference, string> originalTranslations = new Dictionary<WeakReference, string>();
+        private static readonly HashSet<string> untranslated = new HashSet<string>();
 
         public static event Func<object, string, string> OnUnableToTranslateUGUI;
-
         public static event Func<object, string, string> OnUnableToTranslateTextMeshPro;
-        
+
+        // Settings
         public SavedKeyboardShortcut ReloadTranslations { get; }
         public SavedKeyboardShortcut DumpUntranslatedText { get; }
-        
         public static ConfigWrapper<bool> IsDumpingEnabled { get; private set; }
 
         //ITL
-        private static string TL_DIR_ROOT = null;
-        private static string TL_DIR_SCENE = null;
-        private static Dictionary<string, Dictionary<string, byte[]>> textureLoadTargets = new Dictionary<string, Dictionary<string, byte[]>>();
-        private static Dictionary<string, HashSet<TextureMetadata>> textureDumpTargets = new Dictionary<string, HashSet<TextureMetadata>>();
-        private static Dictionary<string, FileStream> fs_textureNameDump = new Dictionary<string, FileStream>();
-        private static Dictionary<string, StreamWriter> sw_textureNameDump = new Dictionary<string, StreamWriter>();
-        private static IEqualityComparer<TextureMetadata> tmdc = new TextureMetadataComparer();
+        private static string TL_DIR_ROOT;
+        private static string TL_DIR_SCENE;
+        private static readonly Dictionary<string, Dictionary<string, byte[]>> textureLoadTargets = new Dictionary<string, Dictionary<string, byte[]>>();
+        private static readonly Dictionary<string, HashSet<TextureMetadata>> textureDumpTargets = new Dictionary<string, HashSet<TextureMetadata>>();
+        private static readonly Dictionary<string, FileStream> fs_textureNameDump = new Dictionary<string, FileStream>();
+        private static readonly Dictionary<string, StreamWriter> sw_textureNameDump = new Dictionary<string, StreamWriter>();
+        private static readonly IEqualityComparer<TextureMetadata> tmdc = new TextureMetadataComparer();
 
         public DynamicTranslator()
         {
@@ -51,7 +49,7 @@ namespace DynamicTranslationLoader
             DumpUntranslatedText = new SavedKeyboardShortcut("Dump untranslated text", this, new KeyboardShortcut(KeyCode.F10, KeyCode.LeftShift));
         }
 
-        void Awake()
+        private void Awake()
         {
             LoadTranslations();
 
@@ -62,8 +60,7 @@ namespace DynamicTranslationLoader
             TranslateAll();
         }
 
-
-        void LoadTranslations()
+        private void LoadTranslations()
         {
             translations.Clear();
             var dirTranslation = Path.Combine(Utility.PluginsDirectory, "translation");
@@ -72,17 +69,16 @@ namespace DynamicTranslationLoader
             if (!Directory.Exists(dirTranslationText))
                 Directory.CreateDirectory(dirTranslationText);
 
-            string[] translation = Directory.GetFiles(dirTranslationText, "*.txt", SearchOption.AllDirectories)
-                .SelectMany(file => File.ReadAllLines(file))
+            var translation = Directory.GetFiles(dirTranslationText, "*.txt", SearchOption.AllDirectories)
+                .SelectMany(File.ReadAllLines)
                 .ToArray();
 
-            for (int i = 0; i < translation.Length; i++)
+            foreach (var line in translation)
             {
-                string line = translation[i];
                 if (!line.Contains('='))
                     continue;
 
-                string[] split = line.Split('=');
+                var split = line.Split('=');
                 if (split.Length != 2)
                 {
                     Logger.Log(LogLevel.Warning, "Invalid text translation entry: " + line);
@@ -123,19 +119,18 @@ namespace DynamicTranslationLoader
                 }
             }
 
-            SceneManager.sceneUnloaded += (s) =>
+            SceneManager.sceneUnloaded += s =>
             {
                 if (IsDumpingEnabled.Value)
                 {
                     var sn = s.name;
-                    StreamWriter sw = null;
-                    if (!sw_textureNameDump.TryGetValue(sn, out sw)) return;
-                    sw.Flush();
+                    if (sw_textureNameDump.TryGetValue(sn, out var sw))
+                        sw.Flush();
                 }
             };
         }
 
-        void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
+        private void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
             //TranslateScene(scene);
         }
@@ -144,31 +139,29 @@ namespace DynamicTranslationLoader
         {
             GUIUtility.systemCopyBuffer = input;
 
-            if(string.IsNullOrEmpty(input)) return input;
+            if (string.IsNullOrEmpty(input)) return input;
 
             // Consider changing this! You have a dictionary, but you iterate instead of making a lookup. Why do you not use the WeakKeyDictionary, you have instead? 
-            if (!originalTranslations.Any(x => x.Key.Target == obj)) //check if we don't have the object in the dictionary
+            if (originalTranslations.All(x => x.Key.Target != obj)) //check if we don't have the object in the dictionary
             {
                 //add to untranslated list
                 originalTranslations.Add(new WeakReference(obj), input);
             }
 
-            string translation;
-            if (translations.TryGetValue(input.Trim(), out translation))
-            { 
+            if (translations.TryGetValue(input.Trim(), out var translation))
                 return translation;
-            }
-            else if(obj is Text)
+
+            if (obj is Text)
             {
-                var immediatelyTranslated = OnUnableToTranslateUGUI?.Invoke( obj, input );
-                if( immediatelyTranslated != null ) return immediatelyTranslated;
+                var immediatelyTranslated = OnUnableToTranslateUGUI?.Invoke(obj, input);
+                if (immediatelyTranslated != null) return immediatelyTranslated;
             }
-            else if(obj is TMP_Text)
+            else if (obj is TMP_Text)
             {
-                var immediatelyTranslated = OnUnableToTranslateTextMeshPro?.Invoke( obj, input );
-                if( immediatelyTranslated != null ) return immediatelyTranslated;
+                var immediatelyTranslated = OnUnableToTranslateTextMeshPro?.Invoke(obj, input);
+                if (immediatelyTranslated != null) return immediatelyTranslated;
             }
-            
+
             // Consider changing this! You make a value lookup in a dictionary, which scales really poorly
             if (!untranslated.Contains(input) && !translations.ContainsValue(input))
                 untranslated.Add(input);
@@ -176,55 +169,46 @@ namespace DynamicTranslationLoader
             return input;
         }
 
-        void TranslateAll()
+        private void TranslateAll()
         {
-            foreach (TextMeshProUGUI gameObject in Resources.FindObjectsOfTypeAll<TextMeshProUGUI>())
+            foreach (var textMesh in Resources.FindObjectsOfTypeAll<TextMeshProUGUI>())
             {
                 //gameObject.text = "Harsh is shit";
 
-                gameObject.text = Translate(gameObject.text, gameObject);
+                textMesh.text = Translate(textMesh.text, textMesh);
             }
         }
 
-        void UntranslateAll()
+        private void UntranslateAll()
         {
             Hooks.TranslationHooksEnabled = false;
 
-            int i = 0;
+            var aliveCount = 0;
 
             foreach (var kv in originalTranslations)
             {
-                if (kv.Key.IsAlive)
+                if (!kv.Key.IsAlive) continue;
+
+                aliveCount++;
+
+                switch (kv.Key.Target)
                 {
-                    i++;
-
-                    if (kv.Key.Target is TMP_Text)
-                    {
-                        TMP_Text tmtext = (TMP_Text)kv.Key.Target;
-
+                    case TMP_Text tmtext:
                         tmtext.text = kv.Value;
-                    }
-                    else if (kv.Key.Target is TextMeshProUGUI)
-                    {
-                        TextMeshProUGUI tmtext = (TextMeshProUGUI)kv.Key.Target;
+                        break;
 
+                    case Text tmtext:
                         tmtext.text = kv.Value;
-                    }
-                    else if (kv.Key.Target is UnityEngine.UI.Text)
-                    {
-                        UnityEngine.UI.Text tmtext = (UnityEngine.UI.Text)kv.Key.Target;
-
-                        tmtext.text = kv.Value;
-                    }
+                        break;
                 }
             }
 
-            Logger.Log(LogLevel.Message, $"{i} translations reloaded.");
+            Logger.Log(LogLevel.Message, $"{aliveCount} translations reloaded.");
 
             Hooks.TranslationHooksEnabled = true;
         }
 
-        void Retranslate()
+        private void Retranslate()
         {
             UntranslateAll();
 
@@ -233,7 +217,7 @@ namespace DynamicTranslationLoader
             TranslateAll();
         }
 
-        void TranslateScene(Scene scene)
+        private void TranslateScene(Scene scene)
         {
             //foreach (GameObject obj in scene.GetRootGameObjects())
             //    foreach (TextMeshProUGUI gameObject in obj.GetComponentsInChildren<TextMeshProUGUI>(true))
@@ -244,9 +228,9 @@ namespace DynamicTranslationLoader
             //    }
         }
 
-        void Dump()
+        private void Dump()
         {
-            string output = "";
+            var output = string.Empty;
 
             var fullUntranslated = originalTranslations
                 .Where(x => !translations.ContainsKey(x.Value))
@@ -255,14 +239,16 @@ namespace DynamicTranslationLoader
                 .Union(untranslated);
 
             foreach (var text in fullUntranslated)
+            {
                 if (!Regex.Replace(text, @"[\d-]", string.Empty).IsNullOrWhiteSpace()
                         && !text.Contains("Reset"))
                     output += $"{text.Trim()}=\r\n";
+            }
 
             File.WriteAllText("dumped-tl.txt", output);
         }
 
-        void Update()
+        public void Update()
         {
             if (Event.current == null) return;
             if (ReloadTranslations.IsDown())
@@ -276,7 +262,6 @@ namespace DynamicTranslationLoader
                 Logger.Log(LogLevel.Message, $"Text dumped to \"{Path.GetFullPath("dumped-tl.txt")}\"");
             }
         }
-
 
         #region ITL
         internal static void PrepDumper(string s)
@@ -325,40 +310,41 @@ namespace DynamicTranslationLoader
         internal static void ReplaceTexture(Image img, string path, string s)
         {
             ReplaceTexture(img.material, path, s);
-            if (img.sprite != null)
-            {
-                if (!textureLoadTargets.ContainsKey(s)) return;
 
-                var tex = img.mainTexture;
-                if (tex == null) return;
-                var rect = img.sprite.textureRect;
-                if (rect == null || rect == new Rect(0, 0, tex.width, tex.height))
+            if (img.sprite == null) return;
+
+            if (!textureLoadTargets.ContainsKey(s)) return;
+
+            var tex = img.mainTexture;
+            if (tex == null) return;
+
+            var rect = img.sprite.textureRect;
+            if (rect == new Rect(0, 0, tex.width, tex.height))
+            {
+                if (IsSwappedTexture(tex)) return;
+                if (string.IsNullOrEmpty(tex.name)) return;
+                if (!textureLoadTargets[s].ContainsKey(img.mainTexture.name)) return;
+                var t2d = new Texture2D(2, 2);
+                t2d.LoadImage(textureLoadTargets[s][img.mainTexture.name]);
+                img.sprite = Sprite.Create(t2d, img.sprite.rect, img.sprite.pivot);
+                tex.name = "*" + img.mainTexture.name;
+            }
+            else
+            {
+                //Atlas
+                if (IsSwappedTexture(img.sprite.texture)) return;
+                var name = GetAtlasTextureName(img);
+                if (textureLoadTargets[s].TryGetValue(img.mainTexture.name, out var newTex))
                 {
-                    if (IsSwappedTexture(tex)) return;
-                    if (string.IsNullOrEmpty(tex.name)) return;
-                    if (!textureLoadTargets[s].ContainsKey(img.mainTexture.name)) return;
-                    var t2d = new Texture2D(2, 2);
-                    t2d.LoadImage(textureLoadTargets[s][img.mainTexture.name]);
-                    img.sprite = Sprite.Create(t2d, img.sprite.rect, img.sprite.pivot);
-                    tex.name = "*" + img.mainTexture.name;
+                    img.sprite.texture.LoadImage(newTex);
+                    img.sprite.texture.name = "*" + img.mainTexture.name;
                 }
-                else
+                else if (textureLoadTargets[s].TryGetValue(name, out newTex))
                 {
-                    //Atlas
-                    if (IsSwappedTexture(img.sprite.texture)) return;
-                    var name = GetAtlasTextureName(img);
-                    byte[] newTex = null;
-                    if (textureLoadTargets[s].TryGetValue(img.mainTexture.name, out newTex))
-                    {
-                        img.sprite.texture.LoadImage(newTex);
-                        img.sprite.texture.name = "*" + img.mainTexture.name;
-                    } else if (textureLoadTargets[s].TryGetValue(name, out newTex))
-                    {
-                        var t2d = new Texture2D(2, 2);
-                        t2d.LoadImage(newTex);
-                        img.sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
-                        img.sprite.texture.name = "*" + name;
-                    }
+                    var t2d = new Texture2D(2, 2);
+                    t2d.LoadImage(newTex);
+                    img.sprite = Sprite.Create(t2d, new Rect(0, 0, t2d.width, t2d.height), Vector2.zero);
+                    img.sprite.texture.name = "*" + name;
                 }
             }
         }
@@ -383,7 +369,7 @@ namespace DynamicTranslationLoader
             }
         }
 
-        private static Dictionary<string, Texture2D> readableTextures = new Dictionary<string, Texture2D>();
+        private static readonly Dictionary<string, Texture2D> readableTextures = new Dictionary<string, Texture2D>();
 
         internal static void RegisterTexture(Sprite spr, string path, string s)
         {
@@ -397,9 +383,8 @@ namespace DynamicTranslationLoader
                 RegisterTexture(tex, path, s);
 
                 var rect = spr.textureRect;
-                if (rect == null || rect == new Rect(0, 0, tex.width, tex.height)) return;
-                Texture2D readable = null;
-                if (!readableTextures.TryGetValue(tex.name, out readable))
+                if (rect == new Rect(0, 0, tex.width, tex.height)) return;
+                if (!readableTextures.TryGetValue(tex.name, out var readable))
                 {
                     readableTextures[tex.name] = TextureUtils.MakeReadable(tex);
                     readable = readableTextures[tex.name];
@@ -431,13 +416,12 @@ namespace DynamicTranslationLoader
                 if (i.sprite == null) return;
 
                 var rect = i.sprite.textureRect;
-                if (rect == null || rect == new Rect(0, 0, tex.width, tex.height))
+                if (rect == new Rect(0, 0, tex.width, tex.height))
                 {
                     RegisterTexture(i.mainTexture, path, s);
                     return;
                 }
-                Texture2D readable = null;
-                if (!readableTextures.TryGetValue(tex.name, out readable))
+                if (!readableTextures.TryGetValue(tex.name, out var readable))
                 {
                     readableTextures[tex.name] = TextureUtils.MakeReadable(tex);
                     readable = readableTextures[tex.name];
@@ -549,7 +533,7 @@ namespace DynamicTranslationLoader
             ReplaceTexture(i, path, scene);
         }
 
-        private static void TranslateHSpriteChangeCtrl(H.SpriteChangeCtrl hscc, string path, string scene)
+        private static void TranslateHSpriteChangeCtrl(SpriteChangeCtrl hscc, string path, string scene)
         {
             var sprs = hscc.sprites;
             RegisterSprites(ref sprs, path, scene);
@@ -564,10 +548,21 @@ namespace DynamicTranslationLoader
                 scene = SceneManager.GetActiveScene().name;
             foreach (var comp in go.GetComponents<Component>())
             {
-                if (comp is Image) TranslateImage((Image)comp, zettai, scene);
-                else if (comp is RawImage) TranslateRawImage((RawImage)comp, zettai, scene);
-                else if (comp is Button) TranslateButton((Button)comp, zettai, scene);
-                else if (comp is H.SpriteChangeCtrl) TranslateHSpriteChangeCtrl((H.SpriteChangeCtrl)comp, zettai, scene);
+                switch (comp)
+                {
+                    case Image i:
+                        TranslateImage(i, zettai, scene);
+                        break;
+                    case RawImage i:
+                        TranslateRawImage(i, zettai, scene);
+                        break;
+                    case Button b:
+                        TranslateButton(b, zettai, scene);
+                        break;
+                    case SpriteChangeCtrl s:
+                        TranslateHSpriteChangeCtrl(s, zettai, scene);
+                        break;
+                }
             }
         }
 
@@ -581,12 +576,11 @@ namespace DynamicTranslationLoader
             var sw = sw_textureNameDump[tm.scene];
             if (sw == null) return;
             //if (sw.BaseStream == null) return;
-            sw.WriteLine(string.Format("{0}={1}", tm.SafeID, path.Replace(TL_DIR_SCENE + "/", "")));
+            sw.WriteLine("{0}={1}", tm.SafeID, path.Replace(TL_DIR_SCENE + "/", ""));
             sw.Flush();
         }
 
         #endregion
-
 
         #region MonoBehaviour
         //void OnEnable()
@@ -601,21 +595,20 @@ namespace DynamicTranslationLoader
         #endregion
 
         #region Scenario & Communication Translation
-
         private static FieldInfo f_commandPacks =
-            typeof(TextScenario).GetField("commandPacks", BindingFlags.NonPublic | BindingFlags.Instance);
-        
+        typeof(TextScenario).GetField("commandPacks", BindingFlags.NonPublic | BindingFlags.Instance);
+
         private static readonly string scenarioDir = Path.Combine(Utility.PluginsDirectory, "translation\\scenario");
         private static readonly string communicationDir = Path.Combine(Utility.PluginsDirectory, "translation\\communication");
 
 
         public static T ManualLoadAsset<T>(string bundle, string asset, string manifest) where T : UnityEngine.Object
         {
-            string path = $@"{Application.dataPath}\..\{(string.IsNullOrEmpty(manifest) ? "abdata" : manifest)}\{bundle}";
+            var path = $@"{Application.dataPath}\..\{(string.IsNullOrEmpty(manifest) ? "abdata" : manifest)}\{bundle}";
 
             var assetBundle = AssetBundle.LoadFromFile(path);
 
-            T output = assetBundle.LoadAsset<T>(asset);
+            var output = assetBundle.LoadAsset<T>(asset);
             assetBundle.Unload(false);
 
             return output;
@@ -626,10 +619,10 @@ namespace DynamicTranslationLoader
             StringBuilder bodyBuilder = new StringBuilder();
 
             // here we build rows, one by one
-            int i = 0;
+            var i = 0;
             var row = new List<string>();
             var limit = source.Length;
-            bool inQuote = false;
+            var inQuote = false;
 
             while (i < limit)
             {
@@ -684,13 +677,15 @@ namespace DynamicTranslationLoader
                 yield return row;
         }
 
-
         protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
             if (type == typeof(ScenarioData))
             {
-                string scenarioPath = Path.Combine(scenarioDir, Path.Combine(assetBundleName, $"{assetName}.csv")).Replace('/', '\\').Replace(".unity3d", "").Replace(@"adv\scenario\", "");
-                
+                var scenarioPath = Path.Combine(scenarioDir, Path.Combine(assetBundleName, $"{assetName}.csv"))
+                    .Replace('/', '\\')
+                    .Replace(".unity3d", "")
+                    .Replace(@"adv\scenario\", "");
+
                 if (File.Exists(scenarioPath))
                 {
                     var rawData = ManualLoadAsset<ScenarioData>(assetBundleName, assetName, manifestAssetBundleName);
@@ -699,13 +694,13 @@ namespace DynamicTranslationLoader
 
                     foreach (IEnumerable<string> line in SplitAndEscape(File.ReadAllText(scenarioPath, Encoding.UTF8)))
                     {
-                        string[] data = line.ToArray();
+                        var data = line.ToArray();
 
-                        string[] args = new string[data.Length - 4];
+                        var args = new string[data.Length - 4];
 
                         Array.Copy(data, 4, args, 0, args.Length);
 
-                        ScenarioData.Param param = new ScenarioData.Param(bool.Parse(data[3]), (Command)int.Parse(data[2]), args);
+                        var param = new ScenarioData.Param(bool.Parse(data[3]), (Command)int.Parse(data[2]), args);
 
                         param.SetHash(int.Parse(data[0]));
 
@@ -718,8 +713,10 @@ namespace DynamicTranslationLoader
             }
             else if (type == typeof(ExcelData))
             {
-                string communicationPath = Path.Combine(communicationDir, Path.Combine(assetBundleName.Replace("communication/", ""), $"{assetName}.csv")).Replace('/', '\\').Replace(".unity3d", "");
-                
+                var communicationPath = Path.Combine(communicationDir,
+                    Path.Combine(assetBundleName.Replace("communication/", ""), $"{assetName}.csv"))
+                    .Replace('/', '\\')
+                    .Replace(".unity3d", "");
 
                 if (File.Exists(communicationPath))
                 {
@@ -729,7 +726,7 @@ namespace DynamicTranslationLoader
 
                     foreach (IEnumerable<string> line in SplitAndEscape(File.ReadAllText(communicationPath, Encoding.UTF8)))
                     {
-                        ExcelData.Param param = new ExcelData.Param()
+                        var param = new ExcelData.Param
                         {
                             list = line.ToList()
                         };
@@ -745,7 +742,6 @@ namespace DynamicTranslationLoader
             result = null;
             return false;
         }
-
         #endregion
     }
 }
