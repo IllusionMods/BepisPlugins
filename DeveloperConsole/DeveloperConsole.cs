@@ -14,13 +14,13 @@ namespace DeveloperConsole
         private string TotalLog = "";
         private Rect UI = new Rect(20, 20, 400, 400);
         private Vector2 scrollPosition = Vector2.zero;
-        
+
         private void Awake()
         {
             Logger.EntryLogged += (level, log) =>
             {
                 string current = $"{TotalLog}\r\n{log}";
-                if (current.Length > 15000)
+                if (current.Length > LogDepth.Value)
                 {
                     var trimmed = current.Remove(0, 1000);
 
@@ -118,6 +118,15 @@ namespace DeveloperConsole
         {
             get => GetDebugFlag(LogLevel.Message);
             set => SetDebugFlag(value, LogLevel.Message);
+        }
+
+        [DisplayName("Size of the log buffor in characters")]
+        [AcceptableValueRange(10000, 200000, false)]
+        public ConfigWrapper<int> LogDepth { get; private set; }
+
+        public DeveloperConsole()
+        {
+            LogDepth = new ConfigWrapper<int>("LogDepth", this, 50000);
         }
 
         private static void SetDebugFlag(bool value, LogLevel level)
