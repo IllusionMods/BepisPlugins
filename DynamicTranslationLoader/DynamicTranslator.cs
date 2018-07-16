@@ -47,7 +47,7 @@ namespace DynamicTranslationLoader
 
         public DynamicTranslator()
         {
-            IsDumpingEnabled = new ConfigWrapper<bool>("Enable image dumping", this);
+            IsDumpingEnabled = new ConfigWrapper<bool>("!Enable image dumping", this);
             DumpingAllToGlobal = new ConfigWrapper<bool>("Dump all images to global folder", this);
             ReloadTranslations = new SavedKeyboardShortcut("Reload translations", this, new KeyboardShortcut(KeyCode.F10));
             DumpUntranslatedText = new SavedKeyboardShortcut("Dump untranslated text", this, new KeyboardShortcut(KeyCode.F10, KeyCode.LeftShift));
@@ -636,12 +636,8 @@ namespace DynamicTranslationLoader
         #endregion
 
         #region Scenario & Communication Translation
-        private static FieldInfo f_commandPacks =
-        typeof(TextScenario).GetField("commandPacks", BindingFlags.NonPublic | BindingFlags.Instance);
-
         private static readonly string scenarioDir = Path.Combine(Utility.PluginsDirectory, "translation\\scenario");
         private static readonly string communicationDir = Path.Combine(Utility.PluginsDirectory, "translation\\communication");
-
 
         public static T ManualLoadAsset<T>(string bundle, string asset, string manifest) where T : UnityEngine.Object
         {
