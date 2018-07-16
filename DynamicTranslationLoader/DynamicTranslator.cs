@@ -32,6 +32,7 @@ namespace DynamicTranslationLoader
         public SavedKeyboardShortcut ReloadTranslations { get; }
         public SavedKeyboardShortcut DumpUntranslatedText { get; }
         public static ConfigWrapper<bool> IsDumpingEnabled { get; private set; }
+        public static ConfigWrapper<bool> DumpingAllToGlobal { get; private set; }
 
         //ITL
         public static readonly string GlobalTextureTargetName = "_Global";
@@ -47,6 +48,7 @@ namespace DynamicTranslationLoader
         public DynamicTranslator()
         {
             IsDumpingEnabled = new ConfigWrapper<bool>("Enable image dumping", this);
+            DumpingAllToGlobal = new ConfigWrapper<bool>("Dump all images to global folder", this);
             ReloadTranslations = new SavedKeyboardShortcut("Reload translations", this, new KeyboardShortcut(KeyCode.F10));
             DumpUntranslatedText = new SavedKeyboardShortcut("Dump untranslated text", this, new KeyboardShortcut(KeyCode.F10, KeyCode.LeftShift));
         }
@@ -127,7 +129,7 @@ namespace DynamicTranslationLoader
             {
                 if (IsDumpingEnabled.Value)
                 {
-                    var sn = s.name;
+                    var sn = DumpingAllToGlobal.Value ? GlobalTextureTargetName : s.name;
                     if (sw_textureNameDump.TryGetValue(sn, out var sw))
                         sw.Flush();
                 }
@@ -272,6 +274,8 @@ namespace DynamicTranslationLoader
         {
             if (IsDumpingEnabled.Value)
             {
+                if (DumpingAllToGlobal.Value) s = GlobalTextureTargetName;
+
                 if (textureDumpTargets.ContainsKey(s)) return;
                 textureDumpTargets[s] = new HashSet<TextureMetadata>(tmdc);
                 fs_textureNameDump[s] = new FileStream($"{TL_DIR_ROOT}/dump_{s}.txt", FileMode.Create, FileAccess.Write);  //TODO: Sanitise scene name?
@@ -385,6 +389,9 @@ namespace DynamicTranslationLoader
                 if (tex == null) return;
                 if (IsSwappedTexture(tex)) return;
                 if (string.IsNullOrEmpty(tex.name)) return;
+
+                if (DumpingAllToGlobal.Value) s = GlobalTextureTargetName;
+
                 PrepDumper(s);
                 var tm = new TextureMetadata(tex, path, s);
                 if (textureDumpTargets[s].Contains(tm)) return;
@@ -403,6 +410,9 @@ namespace DynamicTranslationLoader
                 var tex = spr.texture;
                 if (IsSwappedTexture(spr.texture)) return;
                 if (string.IsNullOrEmpty(tex.name)) return;
+
+                if (DumpingAllToGlobal.Value) s = GlobalTextureTargetName;
+
                 PrepDumper(s);
                 RegisterTexture(tex, path, s);
 
@@ -435,6 +445,9 @@ namespace DynamicTranslationLoader
                 if (tex == null) return;
                 if (IsSwappedTexture(tex)) return;
                 if (string.IsNullOrEmpty(tex.name)) return;
+
+                if (DumpingAllToGlobal.Value) s = GlobalTextureTargetName;
+
                 PrepDumper(s);
                 RegisterTexture(i.mainTexture, path, s);
                 if (i.sprite == null) return;
@@ -599,7 +612,9 @@ namespace DynamicTranslationLoader
             if (!di.Exists) di.Create();
             var path = $"{dir}/{tm.SafeID}.png";
             if (!File.Exists(path)) TextureUtils.SaveTex(tm.texture, path);
-            var sw = sw_textureNameDump[tm.scene];
+
+            var s = DumpingAllToGlobal.Value ? GlobalTextureTargetName : tm.scene;
+            var sw = sw_textureNameDump[s];
             if (sw == null) return;
             //if (sw.BaseStream == null) return;
             sw.WriteLine("{0}={1}", tm.SafeID, path.Replace(TL_DIR_SCENE + "/", ""));
