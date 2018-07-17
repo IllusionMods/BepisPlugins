@@ -543,7 +543,7 @@ namespace DynamicTranslationLoader
             ReplaceTexture(ri, path, scene);
         }
 
-        private static void TranslateImage(Image i, string path, string scene)
+        public static void TranslateImage(Image i, string path, string scene)
         {
             RegisterTexture(i, path, scene);
             ReplaceTexture(i, path, scene);
