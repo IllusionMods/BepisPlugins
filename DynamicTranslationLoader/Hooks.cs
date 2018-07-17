@@ -290,6 +290,16 @@ namespace DynamicTranslationLoader
             DynamicTranslator.ReplaceTexture(ref newSprite, path, scene);
         }
 
+        [HarmonyPostfix, HarmonyPatch(typeof(Illusion.Game.Utils.Bundle), "LoadSprite")]
+        public static void LoadSpriteHook(ref Image image)
+        {
+            var go = image.gameObject;
+            var path = GameObjectUtils.AbsoluteTransform(go);
+            var scene = go.scene.name;
+
+            DynamicTranslator.TranslateImage(image, path, scene);
+        }
+
         #endregion
     }
 }
