@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
@@ -20,11 +22,18 @@ namespace CardCacher
 
         private static FieldInfo listCtrl_info =
             typeof(CustomCharaFile).GetField("listCtrl", BindingFlags.Instance | BindingFlags.NonPublic);
-
+		
         [HarmonyPrefix, HarmonyPatch(typeof(CustomCharaFile), "Initialize")]
         public static bool InitializePrehook(CustomCharaFile __instance)
         {
-            Stopwatch stopwatch = new Stopwatch();
+	        PropertyInfo IsResolving = AppDomain.CurrentDomain.GetAssemblies()
+		        .SelectMany(x => x.GetTypes())
+		        .FirstOrDefault(x => x.Name == "Hooks" && x.Namespace == "Sideloader.AutoResolver")
+		        ?.GetProperty("IsResolving", BindingFlags.Static | BindingFlags.Public);
+
+	        IsResolving?.SetValue(null, false, null);
+
+	        Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
 
@@ -90,6 +99,8 @@ namespace CardCacher
             listCtrl.Create(__instance.OnChangeSelect);
             Logger.Log(LogLevel.Error, $"Cards load stage 2: {stopwatch.Elapsed}");
             stopwatch.Stop();
+
+	        IsResolving?.SetValue(null, true, null);
 
             return false;
         }
