@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
+using ChaCustom;
 using Illusion.Extensions;
 
 namespace Sideloader.AutoResolver
@@ -20,6 +21,8 @@ namespace Sideloader.AutoResolver
 			var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
 			harmony.PatchAll(typeof(Hooks));
 		}
+
+		public static bool IsResolving { get; set; } = true;
 
 		private static void IteratePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ChaFile, string> action, ChaFile file)
 		{
@@ -46,6 +49,9 @@ namespace Sideloader.AutoResolver
 
 		private static void ExtendedCardLoad(ChaFile file)
 		{
+			if (!IsResolving)
+				return;
+			
 			Logger.Log(LogLevel.Debug, $"Loading card [{file.charaFileName}]");
 
 			var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
@@ -136,5 +142,23 @@ namespace Sideloader.AutoResolver
 
 			IteratePrefixes(ResetStructResolveStructure, __instance);
 		}
+
+		#region CustomScnene Load Hooks
+		
+		[HarmonyPrefix, HarmonyPatch(typeof(CustomCharaFile), "Initialize")]
+		public static void CustomScenePreHook()
+		{
+			IsResolving = false;
+		}
+
+		[HarmonyPostfix, HarmonyPatch(typeof(CustomCharaFile), "Initialize")]
+		public static void CustomScenePostHook()
+		{
+			IsResolving = true;
+		}
+
+		#endregion
+
+		
 	}
 }

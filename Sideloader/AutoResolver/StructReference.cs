@@ -1,8 +1,6 @@
 ﻿using Harmony;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Shared;
 using CategoryNo = ChaListDefine.CategoryNo;
 using static ChaFileDefine;
 
@@ -88,10 +86,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        private static readonly Lazy<Dictionary<CategoryProperty, StructValue<int>>> _chaFileFacePropertiesLazy =
-            Lazy<Dictionary<CategoryProperty, StructValue<int>>>.Create(_chaFileFaceGenerator);
-
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties => _chaFileFacePropertiesLazy;
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties { get; } = _chaFileFaceGenerator();
         #endregion
 
         #region ChaFileBody
@@ -137,11 +132,9 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        private static readonly Lazy<Dictionary<CategoryProperty, StructValue<int>>> _chaFileBodyPropertiesLazy =
-            Lazy<Dictionary<CategoryProperty, StructValue<int>>>.Create(_chaFileBodyGenerator);
+	    public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = _chaFileBodyGenerator();
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties => _chaFileBodyPropertiesLazy;
-        #endregion
+	    #endregion
 
         #region ChaFileHair
         private static Dictionary<CategoryProperty, StructValue<int>> _chaFileHairGenerator()
@@ -182,10 +175,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        private static readonly Lazy<Dictionary<CategoryProperty, StructValue<int>>> _chaFileHairPropertiesLazy =
-            Lazy<Dictionary<CategoryProperty, StructValue<int>>>.Create(_chaFileHairGenerator);
-
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties => _chaFileHairPropertiesLazy;
+	    public static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties { get; } = _chaFileHairGenerator();
         #endregion
 
         #region ChaFileMakeup
@@ -219,10 +209,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        private static readonly Lazy<Dictionary<CategoryProperty, StructValue<int>>> _chaFileMakeupPropertiesLazy =
-            Lazy<Dictionary<CategoryProperty, StructValue<int>>>.Create(_chaFileMakeupGenerator);
-
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties => _chaFileMakeupPropertiesLazy;
+	    public static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties { get; } = _chaFileMakeupGenerator();
         #endregion
 
         #region ChaFileClothes
@@ -333,10 +320,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        private static readonly Lazy<Dictionary<CategoryProperty, StructValue<int>>> _chaFileClothesPropertiesLazy =
-            Lazy<Dictionary<CategoryProperty, StructValue<int>>>.Create(_chaFileClothesGenerator);
-
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesProperties => _chaFileClothesPropertiesLazy;
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesProperties { get; } = _chaFileClothesGenerator();
         #endregion
 
         #region ChaFileAccessory.PartsInfo
@@ -366,10 +350,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        private static readonly Lazy<Dictionary<CategoryProperty, StructValue<int>>> _chaFileAccessoryPartsInfoPropertiesLazy =
-            Lazy<Dictionary<CategoryProperty, StructValue<int>>>.Create(_chaFileAccessoryPartsInfoGenerator);
-
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoProperties => _chaFileAccessoryPartsInfoPropertiesLazy;
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoProperties { get; } = _chaFileAccessoryPartsInfoGenerator();
         #endregion
 
         #region Collated
@@ -377,21 +358,18 @@ namespace Sideloader.AutoResolver
         {
             var collated = new Dictionary<CategoryProperty, StructValue<int>>();
 
-            ChaFileFaceProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
-            ChaFileBodyProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
-            ChaFileHairProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
-            
-            ChaFileClothesProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
-            ChaFileMakeupProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
-            ChaFileAccessoryPartsInfoProperties.ToList().ForEach(x => collated.Add(x.Key, x.Value));
+	        foreach (var kv in ChaFileFaceProperties) collated.Add(kv.Key, kv.Value);
+	        foreach (var kv in ChaFileBodyProperties) collated.Add(kv.Key, kv.Value);
+	        foreach (var kv in ChaFileHairProperties) collated.Add(kv.Key, kv.Value);
+
+	        foreach (var kv in ChaFileClothesProperties) collated.Add(kv.Key, kv.Value);
+	        foreach (var kv in ChaFileMakeupProperties) collated.Add(kv.Key, kv.Value);
+	        foreach (var kv in ChaFileAccessoryPartsInfoProperties) collated.Add(kv.Key, kv.Value);
 
             return collated;
         }
 
-        private static readonly Lazy<Dictionary<CategoryProperty, StructValue<int>>> _collatedLazy =
-            Lazy<Dictionary<CategoryProperty, StructValue<int>>>.Create(_collatedGenerator);
-
-        public static Dictionary<CategoryProperty, StructValue<int>> CollatedStructValues => _collatedLazy.Instance;
+        public static Dictionary<CategoryProperty, StructValue<int>> CollatedStructValues { get; } = _collatedGenerator();
         #endregion
     }
 }
