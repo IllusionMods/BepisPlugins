@@ -126,7 +126,7 @@ namespace DynamicTranslationLoader.Image
         internal static void ReplaceTexture(Material mat, string path, string s)
         {
             if (mat == null) return;
-            ReplaceTexture((Texture2D) mat.mainTexture, path, s);
+            ReplaceTexture((Texture2D)mat.mainTexture, path, s);
         }
 
         private static string GetAtlasTextureName(Sprite spr)
@@ -230,8 +230,8 @@ namespace DynamicTranslationLoader.Image
                     ReadableTextures[tex.name] = TextureUtils.MakeReadable(tex);
                     readable = ReadableTextures[tex.name];
                 }
-                var cropped = readable.GetPixels((int) rect.x, (int) rect.y, (int) rect.width, (int) rect.height);
-                var nt2D = new Texture2D((int) rect.width, (int) rect.height);
+                var cropped = readable.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
+                var nt2D = new Texture2D((int)rect.width, (int)rect.height);
                 nt2D.SetPixels(cropped);
                 nt2D.Apply();
 
@@ -270,8 +270,8 @@ namespace DynamicTranslationLoader.Image
                     ReadableTextures[tex.name] = TextureUtils.MakeReadable(tex);
                     readable = ReadableTextures[tex.name];
                 }
-                var cropped = readable.GetPixels((int) rect.x, (int) rect.y, (int) rect.width, (int) rect.height);
-                var nt2D = new Texture2D((int) rect.width, (int) rect.height);
+                var cropped = readable.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
+                var nt2D = new Texture2D((int)rect.width, (int)rect.height);
                 nt2D.SetPixels(cropped);
                 nt2D.Apply();
 
@@ -368,7 +368,10 @@ namespace DynamicTranslationLoader.Image
         private static void TranslateRawImage(RawImage ri, string path, string scene)
         {
             RegisterTexture(ri.mainTexture, path, scene);
-            ReplaceTexture((Texture2D)ri.mainTexture, path, scene);
+            if (ri.mainTexture is Texture2D ri2d)
+                ReplaceTexture(ri2d, path, scene);
+            else
+                ReplaceTexture(ri, path, scene);
         }
 
         public static void TranslateImage(UnityEngine.UI.Image i, string path, string scene)
