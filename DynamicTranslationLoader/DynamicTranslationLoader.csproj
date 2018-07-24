@@ -63,11 +63,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DynamicTranslator.cs" />
-    <Compile Include="GameObjectUtils.cs" />
-    <Compile Include="Hooks.cs" />
+    <Compile Include="Image\GameObjectUtils.cs" />
+    <Compile Include="Text\TextHooks.cs" />
+    <Compile Include="Image\ImageHooks.cs" />
+    <Compile Include="Image\ImageTranslator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TextureMetadata.cs" />
-    <Compile Include="TextureUtils.cs" />
+    <Compile Include="Text\TextTranslator.cs" />
+    <Compile Include="Image\TextureMetadata.cs" />
+    <Compile Include="Image\TextureUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="translation\translation.txt">
@@ -85,6 +88,7 @@
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
