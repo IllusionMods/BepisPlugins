@@ -2,10 +2,9 @@
 using BepInEx.Logging;
 using Harmony;
 using TMPro;
-using UnityEngine.UI;
 using Logger = BepInEx.Logger;
 
-namespace DynamicTranslationLoader
+namespace DynamicTranslationLoader.Text
 {
     public static class TextHooks
     {
@@ -69,8 +68,8 @@ namespace DynamicTranslationLoader
             }
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(Text), "OnEnable")]
-        public static void OnEnableHook(Text __instance)
+        [HarmonyPostfix, HarmonyPatch(typeof(UnityEngine.UI.Text), "OnEnable")]
+        public static void OnEnableHook(UnityEngine.UI.Text __instance)
         {
             if (TranslationHooksEnabled)
             {

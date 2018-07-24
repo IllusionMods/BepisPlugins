@@ -3,6 +3,8 @@ using BepInEx.Common;
 using System;
 using System.IO;
 using BepInEx.Logging;
+using DynamicTranslationLoader.Image;
+using DynamicTranslationLoader.Text;
 using UnityEngine;
 using Logger = BepInEx.Logger;
 

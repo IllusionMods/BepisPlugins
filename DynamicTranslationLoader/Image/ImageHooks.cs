@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Logger = BepInEx.Logger;
 
-namespace DynamicTranslationLoader
+namespace DynamicTranslationLoader.Image
 {
     public static class ImageHooks
     {
@@ -56,7 +56,7 @@ namespace DynamicTranslationLoader
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(Illusion.Game.Utils.Bundle), "LoadSprite")]
-        public static void LoadSpriteHook(ref Image image)
+        public static void LoadSpriteHook(ref UnityEngine.UI.Image image)
         {
             var go = image.gameObject;
             var path = GameObjectUtils.AbsoluteTransform(go);

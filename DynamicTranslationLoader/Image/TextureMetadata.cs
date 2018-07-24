@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace DynamicTranslationLoader
+namespace DynamicTranslationLoader.Image
 {
     internal class TextureMetadataComparer : IEqualityComparer<TextureMetadata>
     {
@@ -27,21 +27,9 @@ namespace DynamicTranslationLoader
             this.scene = scene;
         }
 
-        public string ID
-        {
-            get
-            {
-                return $"{texture.name}";
-            }
-        }
+        public string ID => $"{texture.name}";
 
-        public string SafeID
-        {
-            get
-            {
-                return $"{texture.name}";
-            }
-        }
+        public string SafeID => $"{texture.name}";
 
         public override int GetHashCode()
         {

@@ -10,22 +10,23 @@ using BepInEx.Logging;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 using Logger = BepInEx.Logger;
+using Object = UnityEngine.Object;
 
-namespace DynamicTranslationLoader
+namespace DynamicTranslationLoader.Text
 {
     public class TextTranslator
     {
-        private static readonly Dictionary<string, string> translations = new Dictionary<string, string>();
-        private static readonly Dictionary<WeakReference, string> originalTranslations = new Dictionary<WeakReference, string>();
-        private static readonly HashSet<string> untranslated = new HashSet<string>();
-        private static readonly string scenarioDir = Path.Combine(Utility.PluginsDirectory, "translation\\scenario");
-        private static readonly string communicationDir = Path.Combine(Utility.PluginsDirectory, "translation\\communication");
-        
+        private static readonly Dictionary<string, string> Translations = new Dictionary<string, string>();
+        private static readonly Dictionary<WeakReference, string> OriginalTranslations = new Dictionary<WeakReference, string>();
+        private static readonly HashSet<string> Untranslated = new HashSet<string>();
+
+        private static readonly string ScenarioDir = Path.Combine(Utility.PluginsDirectory, @"translation\scenario");
+        private static readonly string CommunicationDir = Path.Combine(Utility.PluginsDirectory, @"translation\communication");
+
         public static void LoadTextTranslations(string dirTranslation)
         {
-            translations.Clear();
+            Translations.Clear();
             var dirTranslationText = Path.Combine(dirTranslation, "Text");
 
             if (!Directory.Exists(dirTranslationText))
@@ -47,7 +48,7 @@ namespace DynamicTranslationLoader
                     continue;
                 }
 
-                translations[split[0].Trim()] = split[1];
+                Translations[split[0].Trim()] = split[1];
             }
         }
 
@@ -58,16 +59,14 @@ namespace DynamicTranslationLoader
             if (string.IsNullOrEmpty(input)) return input;
 
             // Consider changing this! You have a dictionary, but you iterate instead of making a lookup. Why do you not use the WeakKeyDictionary, you have instead? 
-            if (originalTranslations.All(x => x.Key.Target != obj)) //check if we don't have the object in the dictionary
-            {
-                //add to untranslated list
-                originalTranslations.Add(new WeakReference(obj), input);
-            }
+            if (OriginalTranslations.All(x => x.Key.Target != obj)
+            ) //check if we don't have the object in the dictionary
+                OriginalTranslations.Add(new WeakReference(obj), input);
 
-            if (translations.TryGetValue(input.Trim(), out var translation))
+            if (Translations.TryGetValue(input.Trim(), out var translation))
                 return translation;
 
-            if (obj is Text)
+            if (obj is UnityEngine.UI.Text)
             {
                 var immediatelyTranslated = DynamicTranslator.OnOnUnableToTranslateUgui(obj, input);
                 if (immediatelyTranslated != null) return immediatelyTranslated;
@@ -79,8 +78,8 @@ namespace DynamicTranslationLoader
             }
 
             // Consider changing this! You make a value lookup in a dictionary, which scales really poorly
-            if (!untranslated.Contains(input) && !translations.ContainsValue(input))
-                untranslated.Add(input);
+            if (!Untranslated.Contains(input) && !Translations.ContainsValue(input))
+                Untranslated.Add(input);
 
             return input;
         }
@@ -88,11 +87,9 @@ namespace DynamicTranslationLoader
         public static void TranslateTextAll()
         {
             foreach (var textMesh in Resources.FindObjectsOfTypeAll<TextMeshProUGUI>())
-            {
                 //gameObject.text = "Harsh is shit";
 
                 textMesh.text = TranslateText(textMesh.text, textMesh);
-            }
         }
 
         private static void UntranslateTextAll()
@@ -101,7 +98,7 @@ namespace DynamicTranslationLoader
 
             var aliveCount = 0;
 
-            foreach (var kv in originalTranslations)
+            foreach (var kv in OriginalTranslations)
             {
                 if (!kv.Key.IsAlive) continue;
 
@@ -113,7 +110,7 @@ namespace DynamicTranslationLoader
                         tmtext.text = kv.Value;
                         break;
 
-                    case Text tmtext:
+                    case UnityEngine.UI.Text tmtext:
                         tmtext.text = kv.Value;
                         break;
                 }
@@ -148,23 +145,21 @@ namespace DynamicTranslationLoader
         {
             var output = string.Empty;
 
-            var fullUntranslated = originalTranslations
-                .Where(x => !translations.ContainsKey(x.Value))
+            var fullUntranslated = OriginalTranslations
+                .Where(x => !Translations.ContainsKey(x.Value))
                 .Select(x => x.Value)
                 .Distinct()
-                .Union(untranslated);
+                .Union(Untranslated);
 
             foreach (var text in fullUntranslated)
-            {
                 if (!Regex.Replace(text, @"[\d-]", string.Empty).IsNullOrWhiteSpace()
                     && !text.Contains("Reset"))
                     output += $"{text.Trim()}=\r\n";
-            }
 
             File.WriteAllText("dumped-tl.txt", output);
         }
 
-        public static T ManualLoadAsset<T>(string bundle, string asset, string manifest) where T : UnityEngine.Object
+        public static T ManualLoadAsset<T>(string bundle, string asset, string manifest) where T : Object
         {
             var path = $@"{Application.dataPath}\..\{(string.IsNullOrEmpty(manifest) ? "abdata" : manifest)}\{bundle}";
 
@@ -178,7 +173,7 @@ namespace DynamicTranslationLoader
 
         protected static IEnumerable<IEnumerable<string>> SplitAndEscape(string source)
         {
-            StringBuilder bodyBuilder = new StringBuilder();
+            var bodyBuilder = new StringBuilder();
 
             // here we build rows, one by one
             var i = 0;
@@ -211,7 +206,9 @@ namespace DynamicTranslationLoader
                 else if (source[i] == '"')
                 {
                     if (!inQuote)
+                    {
                         inQuote = true;
+                    }
                     else
                     {
                         if (i + 1 < limit
@@ -221,7 +218,9 @@ namespace DynamicTranslationLoader
                             i++;
                         }
                         else
+                        {
                             inQuote = false;
+                        }
                     }
                 }
                 else
@@ -239,11 +238,12 @@ namespace DynamicTranslationLoader
                 yield return row;
         }
 
-        public static bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
+        public static bool RedirectHook(string assetBundleName, string assetName, Type type,
+            string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
             if (type == typeof(ScenarioData))
             {
-                var scenarioPath = Path.Combine(scenarioDir, Path.Combine(assetBundleName, $"{assetName}.csv"))
+                var scenarioPath = Path.Combine(ScenarioDir, Path.Combine(assetBundleName, $"{assetName}.csv"))
                     .Replace('/', '\\')
                     .Replace(".unity3d", "")
                     .Replace(@"adv\scenario\", "");
@@ -254,7 +254,7 @@ namespace DynamicTranslationLoader
 
                     rawData.list.Clear();
 
-                    foreach (IEnumerable<string> line in SplitAndEscape(File.ReadAllText(scenarioPath, Encoding.UTF8)))
+                    foreach (var line in SplitAndEscape(File.ReadAllText(scenarioPath, Encoding.UTF8)))
                     {
                         var data = line.ToArray();
 
@@ -262,7 +262,7 @@ namespace DynamicTranslationLoader
 
                         Array.Copy(data, 4, args, 0, args.Length);
 
-                        var param = new ScenarioData.Param(bool.Parse(data[3]), (Command)int.Parse(data[2]), args);
+                        var param = new ScenarioData.Param(bool.Parse(data[3]), (Command) int.Parse(data[2]), args);
 
                         param.SetHash(int.Parse(data[0]));
 
@@ -275,7 +275,7 @@ namespace DynamicTranslationLoader
             }
             else if (type == typeof(ExcelData))
             {
-                var communicationPath = Path.Combine(communicationDir,
+                var communicationPath = Path.Combine(CommunicationDir,
                         Path.Combine(assetBundleName.Replace("communication/", ""), $"{assetName}.csv"))
                     .Replace('/', '\\')
                     .Replace(".unity3d", "");
@@ -286,7 +286,7 @@ namespace DynamicTranslationLoader
 
                     rawData.list.Clear();
 
-                    foreach (IEnumerable<string> line in SplitAndEscape(File.ReadAllText(communicationPath, Encoding.UTF8)))
+                    foreach (var line in SplitAndEscape(File.ReadAllText(communicationPath, Encoding.UTF8)))
                     {
                         var param = new ExcelData.Param
                         {

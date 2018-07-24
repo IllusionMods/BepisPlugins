@@ -2,9 +2,9 @@
 using System.Linq;
 using UnityEngine;
 
-namespace DynamicTranslationLoader
+namespace DynamicTranslationLoader.Image
 {
-    class GameObjectUtils
+    internal class GameObjectUtils
     {
         internal static string AbsoluteTransform(GameObject go)
         {

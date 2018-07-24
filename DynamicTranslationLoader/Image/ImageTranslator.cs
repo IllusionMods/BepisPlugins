@@ -8,26 +8,33 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Logger = BepInEx.Logger;
 
-namespace DynamicTranslationLoader
+namespace DynamicTranslationLoader.Image
 {
     public class ImageTranslator
     {
         public static readonly string GlobalTextureTargetName = "_Global";
+        private static bool GlobalTextureTargetExists { get; set; }
+
         private static string TL_DIR_ROOT;
         private static string TL_DIR_SCENE;
-        private static readonly Dictionary<string, Dictionary<string, byte[]>> textureLoadTargets = new Dictionary<string, Dictionary<string, byte[]>>();
-        private static readonly Dictionary<string, HashSet<TextureMetadata>> textureDumpTargets = new Dictionary<string, HashSet<TextureMetadata>>();
-        private static readonly Dictionary<string, FileStream> fs_textureNameDump = new Dictionary<string, FileStream>();
-        private static readonly Dictionary<string, StreamWriter> sw_textureNameDump = new Dictionary<string, StreamWriter>();
-        private static readonly IEqualityComparer<TextureMetadata> tmdc = new TextureMetadataComparer();
-        private static readonly Dictionary<string, Texture2D> readableTextures = new Dictionary<string, Texture2D>();
-        private static bool GlobalTextureTargetExists { get; set; }
+
+        private static readonly Dictionary<string, Dictionary<string, byte[]>> TextureLoadTargets =
+            new Dictionary<string, Dictionary<string, byte[]>>();
+        private static readonly Dictionary<string, HashSet<TextureMetadata>> TextureDumpTargets =
+            new Dictionary<string, HashSet<TextureMetadata>>();
+
+        private static readonly Dictionary<string, FileStream> FsTextureNameDump = new Dictionary<string, FileStream>();
+        private static readonly Dictionary<string, StreamWriter> SwTextureNameDump = new Dictionary<string, StreamWriter>();
+
+        private static readonly IEqualityComparer<TextureMetadata> Tmdc = new TextureMetadataComparer();
+
+        private static readonly Dictionary<string, Texture2D> ReadableTextures = new Dictionary<string, Texture2D>();
 
         public static void LoadImageTranslations(string dirTranslation)
         {
-            var di_tl = new DirectoryInfo(Path.Combine(dirTranslation, "Images"));
+            var diTl = new DirectoryInfo(Path.Combine(dirTranslation, "Images"));
 
-            TL_DIR_ROOT = $"{di_tl.FullName}/{Application.productName}";
+            TL_DIR_ROOT = $"{diTl.FullName}/{Application.productName}";
             TL_DIR_SCENE = $"{TL_DIR_ROOT}/Scenes";
 
             var di = new DirectoryInfo(TL_DIR_SCENE);
@@ -36,7 +43,7 @@ namespace DynamicTranslationLoader
             foreach (var t in new DirectoryInfo(TL_DIR_ROOT).GetFiles("*.txt"))
             {
                 var sceneName = Path.GetFileNameWithoutExtension(t.Name);
-                textureLoadTargets[sceneName] = new Dictionary<string, byte[]>();
+                TextureLoadTargets[sceneName] = new Dictionary<string, byte[]>();
                 foreach (var tl in File.ReadAllLines(t.FullName))
                 {
                     var tp = tl.Split('=');
@@ -51,18 +58,18 @@ namespace DynamicTranslationLoader
                         Logger.Log(LogLevel.Warning, "Missing TL image: " + path);
                         continue;
                     }
-                    textureLoadTargets[sceneName][tp[0]] = File.ReadAllBytes(path);
+                    TextureLoadTargets[sceneName][tp[0]] = File.ReadAllBytes(path);
                 }
             }
 
-            GlobalTextureTargetExists = textureLoadTargets.ContainsKey(GlobalTextureTargetName);
+            GlobalTextureTargetExists = TextureLoadTargets.ContainsKey(GlobalTextureTargetName);
 
             SceneManager.sceneUnloaded += s =>
             {
                 if (DynamicTranslator.IsDumpingEnabled.Value)
                 {
                     var sn = DynamicTranslator.DumpingAllToGlobal.Value ? GlobalTextureTargetName : s.name;
-                    if (sw_textureNameDump.TryGetValue(sn, out var sw))
+                    if (SwTextureNameDump.TryGetValue(sn, out var sw))
                         sw.Flush();
                 }
             };
@@ -74,48 +81,52 @@ namespace DynamicTranslationLoader
             {
                 if (DynamicTranslator.DumpingAllToGlobal.Value) s = GlobalTextureTargetName;
 
-                if (textureDumpTargets.ContainsKey(s)) return;
-                textureDumpTargets[s] = new HashSet<TextureMetadata>(tmdc);
-                fs_textureNameDump[s] = new FileStream($"{TL_DIR_ROOT}/dump_{s}.txt", FileMode.Create, FileAccess.Write);  //TODO: Sanitise scene name?
-                sw_textureNameDump[s] = new StreamWriter(fs_textureNameDump[s]);
+                if (TextureDumpTargets.ContainsKey(s)) return;
+                TextureDumpTargets[s] = new HashSet<TextureMetadata>(Tmdc);
+                FsTextureNameDump[s] =
+                    new FileStream($"{TL_DIR_ROOT}/dump_{s}.txt", FileMode.Create, FileAccess.Write); //TODO: Sanitise scene name?
+                SwTextureNameDump[s] = new StreamWriter(FsTextureNameDump[s]);
             }
         }
 
-        internal static bool IsSwappedTexture(Texture t) => t.name.StartsWith("*");
+        internal static bool IsSwappedTexture(Texture t)
+        {
+            return t.name.StartsWith("*");
+        }
 
         private static bool TryGetOverrideTexture(string texName, string sceneName, out byte[] tex)
         {
-            if (textureLoadTargets.ContainsKey(sceneName) &&
-                textureLoadTargets[sceneName].ContainsKey(texName))
+            if (TextureLoadTargets.ContainsKey(sceneName) &&
+                TextureLoadTargets[sceneName].ContainsKey(texName))
             {
-                tex = textureLoadTargets[sceneName][texName];
+                tex = TextureLoadTargets[sceneName][texName];
                 return true;
             }
             if (GlobalTextureTargetExists &&
-                textureLoadTargets[GlobalTextureTargetName].ContainsKey(texName))
+                TextureLoadTargets[GlobalTextureTargetName].ContainsKey(texName))
             {
-                tex = textureLoadTargets[GlobalTextureTargetName][texName];
+                tex = TextureLoadTargets[GlobalTextureTargetName][texName];
                 return true;
             }
             tex = null;
             return false;
         }
 
-        internal static void ReplaceTexture(Texture2D t2d, string path, string s)
+        internal static void ReplaceTexture(Texture2D t2D, string path, string s)
         {
-            if (t2d == null) return;
+            if (t2D == null) return;
 
-            if (TryGetOverrideTexture(t2d.name, s, out var tex) && !IsSwappedTexture(t2d))
+            if (TryGetOverrideTexture(t2D.name, s, out var tex) && !IsSwappedTexture(t2D))
             {
-                t2d.LoadImage(tex);
-                t2d.name = "*" + t2d.name;
+                t2D.LoadImage(tex);
+                t2D.name = "*" + t2D.name;
             }
         }
 
         internal static void ReplaceTexture(Material mat, string path, string s)
         {
             if (mat == null) return;
-            ReplaceTexture((Texture2D)mat.mainTexture, path, s);
+            ReplaceTexture((Texture2D) mat.mainTexture, path, s);
         }
 
         private static string GetAtlasTextureName(Sprite spr)
@@ -124,19 +135,19 @@ namespace DynamicTranslationLoader
             return $"[{rect.width},{rect.height},{rect.x},{rect.y}]{spr.texture.name}";
         }
 
-        private static string GetAtlasTextureName(Image i)
+        private static string GetAtlasTextureName(UnityEngine.UI.Image i)
         {
             var rect = i.sprite.textureRect;
             return $"[{rect.width},{rect.height},{rect.x},{rect.y}]{i.mainTexture.name}";
         }
 
-        internal static void ReplaceTexture(Image img, string path, string s)
+        internal static void ReplaceTexture(UnityEngine.UI.Image img, string path, string s)
         {
             ReplaceTexture(img.material, path, s);
 
             if (img.sprite == null) return;
 
-            if (!GlobalTextureTargetExists && !textureLoadTargets.ContainsKey(s)) return;
+            if (!GlobalTextureTargetExists && !TextureLoadTargets.ContainsKey(s)) return;
 
             var mainTexture = img.mainTexture;
             if (mainTexture == null) return;
@@ -192,8 +203,8 @@ namespace DynamicTranslationLoader
 
                 PrepDumper(s);
                 var tm = new TextureMetadata(tex, path, s);
-                if (textureDumpTargets[s].Contains(tm)) return;
-                textureDumpTargets[s].Add(tm);
+                if (TextureDumpTargets[s].Contains(tm)) return;
+                TextureDumpTargets[s].Add(tm);
                 DumpTexture(tm);
             }
         }
@@ -214,26 +225,26 @@ namespace DynamicTranslationLoader
 
                 var rect = spr.textureRect;
                 if (rect == new Rect(0, 0, tex.width, tex.height)) return;
-                if (!readableTextures.TryGetValue(tex.name, out var readable))
+                if (!ReadableTextures.TryGetValue(tex.name, out var readable))
                 {
-                    readableTextures[tex.name] = TextureUtils.MakeReadable(tex);
-                    readable = readableTextures[tex.name];
+                    ReadableTextures[tex.name] = TextureUtils.MakeReadable(tex);
+                    readable = ReadableTextures[tex.name];
                 }
-                var cropped = readable.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
-                var nt2d = new Texture2D((int)rect.width, (int)rect.height);
-                nt2d.SetPixels(cropped);
-                nt2d.Apply();
+                var cropped = readable.GetPixels((int) rect.x, (int) rect.y, (int) rect.width, (int) rect.height);
+                var nt2D = new Texture2D((int) rect.width, (int) rect.height);
+                nt2D.SetPixels(cropped);
+                nt2D.Apply();
 
-                nt2d.name = spr.texture.name.ToLower().Contains("atlas") ? GetAtlasTextureName(spr) : spr.texture.name;
-                var tm = new TextureMetadata(nt2d, path, s);
+                nt2D.name = spr.texture.name.ToLower().Contains("atlas") ? GetAtlasTextureName(spr) : spr.texture.name;
+                var tm = new TextureMetadata(nt2D, path, s);
 
-                if (textureDumpTargets[s].Contains(tm)) return;
-                textureDumpTargets[s].Add(tm);
+                if (TextureDumpTargets[s].Contains(tm)) return;
+                TextureDumpTargets[s].Add(tm);
                 DumpTexture(tm);
             }
         }
 
-        internal static void RegisterTexture(Image i, string path, string s)
+        internal static void RegisterTexture(UnityEngine.UI.Image i, string path, string s)
         {
             if (DynamicTranslator.IsDumpingEnabled.Value)
             {
@@ -254,21 +265,21 @@ namespace DynamicTranslationLoader
                     RegisterTexture(i.mainTexture, path, s);
                     return;
                 }
-                if (!readableTextures.TryGetValue(tex.name, out var readable))
+                if (!ReadableTextures.TryGetValue(tex.name, out var readable))
                 {
-                    readableTextures[tex.name] = TextureUtils.MakeReadable(tex);
-                    readable = readableTextures[tex.name];
+                    ReadableTextures[tex.name] = TextureUtils.MakeReadable(tex);
+                    readable = ReadableTextures[tex.name];
                 }
-                var cropped = readable.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
-                var nt2d = new Texture2D((int)rect.width, (int)rect.height);
-                nt2d.SetPixels(cropped);
-                nt2d.Apply();
+                var cropped = readable.GetPixels((int) rect.x, (int) rect.y, (int) rect.width, (int) rect.height);
+                var nt2D = new Texture2D((int) rect.width, (int) rect.height);
+                nt2D.SetPixels(cropped);
+                nt2D.Apply();
 
-                nt2d.name = tex.name.ToLower().Contains("atlas") ? GetAtlasTextureName(i) : tex.name;
-                var tm = new TextureMetadata(nt2d, path, s);
+                nt2D.name = tex.name.ToLower().Contains("atlas") ? GetAtlasTextureName(i) : tex.name;
+                var tm = new TextureMetadata(nt2D, path, s);
 
-                if (textureDumpTargets[s].Contains(tm)) return;
-                textureDumpTargets[s].Add(tm);
+                if (TextureDumpTargets[s].Contains(tm)) return;
+                TextureDumpTargets[s].Add(tm);
                 DumpTexture(tm);
             }
         }
@@ -277,7 +288,7 @@ namespace DynamicTranslationLoader
         {
             if (spr == null || spr.texture == null) return;
 
-            if (!GlobalTextureTargetExists && !textureLoadTargets.ContainsKey(s)) return;
+            if (!GlobalTextureTargetExists && !TextureLoadTargets.ContainsKey(s)) return;
 
             if (IsSwappedTexture(spr.texture)) return;
 
@@ -338,7 +349,6 @@ namespace DynamicTranslationLoader
         internal static void RegisterSprites(ref Sprite[] sprites, string path, string s)
         {
             for (var i = 0; i < sprites.Length; i++)
-            {
                 if (sprites[i] != null)
                 {
                     RegisterTexture(sprites[i]?.texture, path, s);
@@ -346,7 +356,6 @@ namespace DynamicTranslationLoader
                     ReplaceTexture(ref spr, path, s);
                     sprites[i] = spr;
                 }
-            }
         }
 
         private static void TranslateButton(Button b, string path, string scene)
@@ -362,7 +371,7 @@ namespace DynamicTranslationLoader
             ReplaceTexture(ri, path, scene);
         }
 
-        public static void TranslateImage(Image i, string path, string scene)
+        public static void TranslateImage(UnityEngine.UI.Image i, string path, string scene)
         {
             RegisterTexture(i, path, scene);
             ReplaceTexture(i, path, scene);
@@ -382,10 +391,9 @@ namespace DynamicTranslationLoader
             if (scene == "DontDestroyOnLoad")
                 scene = SceneManager.GetActiveScene().name;
             foreach (var comp in go.GetComponents<Component>())
-            {
                 switch (comp)
                 {
-                    case Image i:
+                    case UnityEngine.UI.Image i:
                         TranslateImage(i, zettai, scene);
                         break;
                     case RawImage i:
@@ -398,7 +406,6 @@ namespace DynamicTranslationLoader
                         TranslateHSpriteChangeCtrl(s, zettai, scene);
                         break;
                 }
-            }
         }
 
         internal static void DumpTexture(TextureMetadata tm)
@@ -410,7 +417,7 @@ namespace DynamicTranslationLoader
             if (!File.Exists(path)) TextureUtils.SaveTex(tm.texture, path);
 
             var s = DynamicTranslator.DumpingAllToGlobal.Value ? GlobalTextureTargetName : tm.scene;
-            var sw = sw_textureNameDump[s];
+            var sw = SwTextureNameDump[s];
             if (sw == null) return;
             //if (sw.BaseStream == null) return;
             sw.WriteLine("{0}={1}", tm.SafeID, path.Replace(TL_DIR_SCENE + "/", ""));

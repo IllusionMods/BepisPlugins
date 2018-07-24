@@ -1,15 +1,15 @@
 ﻿using System.IO;
 using UnityEngine;
 
-namespace DynamicTranslationLoader
+namespace DynamicTranslationLoader.Image
 {
-    class TextureUtils
+    internal class TextureUtils
     {
         internal static Texture2D MakeReadable(Texture tex)
         {
             var tmp = TextureToRenderTexture(tex);
             var readable = GetT2D(tmp);
-            GameObject.DestroyImmediate(tmp);
+            Object.DestroyImmediate(tmp);
             return readable;
         }
 
@@ -36,7 +36,7 @@ namespace DynamicTranslationLoader
         {
             var tex = GetT2D(renderTexture);
             File.WriteAllBytes(path, tex.EncodeToPNG());
-            GameObject.DestroyImmediate(tex);
+            Object.DestroyImmediate(tex);
         }
 
         internal static void SaveTex(Texture tex, string name, RenderTextureFormat rtf = RenderTextureFormat.Default, RenderTextureReadWrite cs = RenderTextureReadWrite.Default)
