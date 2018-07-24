@@ -368,7 +368,7 @@ namespace DynamicTranslationLoader.Image
         private static void TranslateRawImage(RawImage ri, string path, string scene)
         {
             RegisterTexture(ri.mainTexture, path, scene);
-            ReplaceTexture(ri, path, scene);
+            ReplaceTexture((Texture2D)ri.mainTexture, path, scene);
         }
 
         public static void TranslateImage(UnityEngine.UI.Image i, string path, string scene)
