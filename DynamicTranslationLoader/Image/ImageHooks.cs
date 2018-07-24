@@ -1,4 +1,5 @@
-﻿using BepInEx.Logging;
+﻿using ActionGame;
+using BepInEx.Logging;
 using Harmony;
 using UnityEngine;
 using UnityEngine.UI;
@@ -63,6 +64,19 @@ namespace DynamicTranslationLoader.Image
             var scene = go.scene.name;
 
             ImageTranslator.TranslateImage(image, path, scene);
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(ActionChangeUI), "Set", new[] { typeof(int) })]
+        public static void ActionChangeUISetHook(ref ActionChangeUI __instance)
+        {
+            var image = (UnityEngine.UI.Image)AccessTools.Field(typeof(ActionChangeUI), "target").GetValue(__instance);
+            if (image == null) return;
+            var go = __instance.gameObject;
+            var path = GameObjectUtils.AbsoluteTransform(go);
+            var scene = go.scene.name;
+
+            ImageTranslator.RegisterTexture(image, path, scene);
+            ImageTranslator.ReplaceTexture(image, path, scene);
         }
     }
 }
