@@ -22,7 +22,7 @@ namespace BGMLoader
 		    {
 				int bgmTrack = int.Parse(assetName.Remove(0, 4));
 
-			    var path = Utility.CombinePaths(Utility.PluginsDirectory, "bgm", $"BGM{bgmTrack:00}.ogg");
+			    var path = Utility.CombinePaths(Paths.PluginPath, "bgm", $"BGM{bgmTrack:00}.ogg");
 				
 			    if (File.Exists(path))
 			    {

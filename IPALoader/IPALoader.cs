@@ -19,7 +19,7 @@ namespace IPALoader
 
 		internal static IPlugin pluginToLoad;
 
-		public string IPAPluginDir => Path.Combine(Utility.PluginsDirectory, "IPA");
+		public string IPAPluginDir => Path.Combine(Paths.PluginPath, "IPA");
 
 		public IPALoader()
 		{
@@ -35,13 +35,9 @@ namespace IPALoader
 
 		void Start()
 		{
-		    string managedDir = Path.Combine(Utility.ExecutingDirectory,
-		        $@"{System.Diagnostics.Process.GetCurrentProcess().ProcessName}_Data\Managed");
-
-		    if (File.Exists(Path.Combine(managedDir, "IllusionPlugin.dll")))
+		    if (File.Exists(Path.Combine(Paths.ManagedPath, "IllusionPlugin.dll")))
 		        Logger.Log(LogLevel.Error | LogLevel.Message, "IPA has been detected to be installed! IPALoader may not function correctly!");
-
-
+			
 			if (!Directory.Exists(IPAPluginDir))
 			{
 				Logger.Log(LogLevel.Message, "No IPA plugin directory, skipping load");

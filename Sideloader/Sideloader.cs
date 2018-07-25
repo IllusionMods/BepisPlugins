@@ -48,7 +48,7 @@ namespace Sideloader
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
 
             //check mods directory
-            string modDirectory = Path.Combine(Utility.ExecutingDirectory, "mods");
+            string modDirectory = Path.Combine(Paths.GameRootPath, "mods");
 
             if (!Directory.Exists(modDirectory))
                 return;

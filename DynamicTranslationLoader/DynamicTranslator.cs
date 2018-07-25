@@ -67,7 +67,7 @@ namespace DynamicTranslationLoader
         private void LoadTranslations()
         {
             translations.Clear();
-            var dirTranslation = Path.Combine(Utility.PluginsDirectory, "translation");
+            var dirTranslation = Path.Combine(Paths.PluginPath, "translation");
             var dirTranslationText = Path.Combine(dirTranslation, "Text");
 
             if (!Directory.Exists(dirTranslationText))
@@ -636,8 +636,8 @@ namespace DynamicTranslationLoader
         #endregion
 
         #region Scenario & Communication Translation
-        private static readonly string scenarioDir = Path.Combine(Utility.PluginsDirectory, "translation\\scenario");
-        private static readonly string communicationDir = Path.Combine(Utility.PluginsDirectory, "translation\\communication");
+        private static readonly string scenarioDir = Path.Combine(Paths.PluginPath, "translation\\scenario");
+        private static readonly string communicationDir = Path.Combine(Paths.PluginPath, "translation\\communication");
 
         public static T ManualLoadAsset<T>(string bundle, string asset, string manifest) where T : UnityEngine.Object
         {
