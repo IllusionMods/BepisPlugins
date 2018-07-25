@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Common;
 using ICSharpCode.SharpZipLib.Zip;
 using ResourceRedirector;
 using System;
@@ -48,7 +47,7 @@ namespace Sideloader
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
 
             //check mods directory
-            string modDirectory = Path.Combine(Utility.ExecutingDirectory, "mods");
+            string modDirectory = Path.Combine(Paths.GameRootPath, "mods");
 
             if (!Directory.Exists(modDirectory))
                 return;

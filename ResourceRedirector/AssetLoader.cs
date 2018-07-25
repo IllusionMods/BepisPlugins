@@ -1,5 +1,5 @@
-﻿using BepInEx.Common;
-using System.IO;
+﻿using System.IO;
+using BepInEx.Common;
 using UnityEngine;
 
 namespace ResourceRedirector

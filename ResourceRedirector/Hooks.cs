@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using BepInEx;
 using UnityEngine;
 
 namespace ResourceRedirector
@@ -106,7 +107,7 @@ namespace ResourceRedirector
 			if (assetBundleName == "sound/data/systemse/brandcall/00.unity3d" ||
 			    assetBundleName == "sound/data/systemse/titlecall/00.unity3d")
 			{
-				string dir = $"{BepInEx.Common.Utility.PluginsDirectory}\\introclips";
+				string dir = $"{Paths.PluginPath}\\introclips";
 
 				if (!Directory.Exists(dir))
 					Directory.CreateDirectory(dir);

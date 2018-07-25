@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Common;
 using System;
 using System.IO;
 using BepInEx.Logging;
@@ -32,7 +31,7 @@ namespace DynamicTranslationLoader
 
         public void Awake()
         {
-            var dirTranslation = Path.Combine(Utility.PluginsDirectory, "translation");
+            var dirTranslation = Path.Combine(Paths.PluginPath, "translation");
             SetupTextTl(dirTranslation);
             SetupImageTl(dirTranslation);
         }

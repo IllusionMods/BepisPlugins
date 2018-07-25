@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +11,7 @@ namespace ResourceRedirector
     [BepInPlugin(GUID: "com.bepis.bepinex.resourceredirector", Name: "Asset Emulator", Version: "1.3")]
     public class ResourceRedirector : BaseUnityPlugin
     {
-        public static string EmulatedDir => Path.Combine(Utility.ExecutingDirectory, "abdata-emulated");
+        public static string EmulatedDir => Path.Combine(Paths.GameRootPath, "abdata-emulated");
 
         public static bool EmulationEnabled;
 

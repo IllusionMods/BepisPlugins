@@ -27,8 +27,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sideloader", "Sideloader\Si
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared", "Shared\Shared.shproj", "{356EB041-D692-45B5-ACF6-0F393A62CB4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardCacher", "CardCacher\CardCacher.csproj", "{DA10AC40-3C59-404A-8054-21053EB32D09}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationManager", "ConfigurationManager\ConfigurationManager.csproj", "{D56DD83D-7471-463F-B4FF-8910A335833C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BGMLoader", "BGMLoader\BGMLoader.csproj", "{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}"
@@ -87,8 +85,6 @@ Global
 		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.Release|Any CPU.ActiveCfg = Mono|Any CPU
 		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.Release|Any CPU.Build.0 = Mono|Any CPU
-		{DA10AC40-3C59-404A-8054-21053EB32D09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DA10AC40-3C59-404A-8054-21053EB32D09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D56DD83D-7471-463F-B4FF-8910A335833C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D56DD83D-7471-463F-B4FF-8910A335833C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D56DD83D-7471-463F-B4FF-8910A335833C}.Release|Any CPU.ActiveCfg = Release|Any CPU

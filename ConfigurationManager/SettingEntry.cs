@@ -10,7 +10,7 @@ namespace ConfigurationManager
 {
     internal class PropSettingEntry : SettingEntryBase
     {
-        private Type settingType;
+        private Type _settingType;
 
         private PropSettingEntry()
         {
@@ -25,7 +25,7 @@ namespace ConfigurationManager
         public object Instance { get; internal set; }
         public PropertyInfo Property { get; internal set; }
 
-        public override Type SettingType => settingType ?? (settingType = Property.PropertyType);
+        public override Type SettingType => _settingType ?? (_settingType = Property.PropertyType);
 
         public override object Get()
         {
@@ -79,8 +79,7 @@ namespace ConfigurationManager
             catch (SystemException ex)
             {
                 Logger.Log(LogLevel.Error,
-                    "Failed to create ConfigWrapper entry : " + instance?.ToString() + " | " + settingProp?.Name +
-                    " | " + pluginInfo?.Name);
+                    $"Failed to create ConfigWrapper entry : {instance} | {settingProp?.Name} | {pluginInfo?.Name} | Error: {ex.Message}");
                 return null;
             }
         }
