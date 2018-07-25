@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Common;
 using System;
 using System.IO;
 using System.Reflection;

@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Common;
 using ICSharpCode.SharpZipLib.Zip;
 using ResourceRedirector;
 using System;
