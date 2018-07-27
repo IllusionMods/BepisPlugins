@@ -121,12 +121,12 @@ namespace DeveloperConsole
         }
 
         [DisplayName("Size of the log buffor in characters")]
-        [AcceptableValueRange(10000, 200000, false)]
-        public ConfigWrapper<int> LogDepth { get; private set; }
+        [AcceptableValueRange(4000, 16300, false)]
+        public ConfigWrapper<int> LogDepth { get; }
 
         public DeveloperConsole()
         {
-            LogDepth = new ConfigWrapper<int>("LogDepth", this, 50000);
+            LogDepth = new ConfigWrapper<int>("LogDepth", this, 16300);
         }
 
         private static void SetDebugFlag(bool value, LogLevel level)

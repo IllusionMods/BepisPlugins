@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using BepInEx;
+using BepInEx.Common;
 using BepInEx.Logging;
 using Illusion.Game;
 using Logger = BepInEx.Logger;

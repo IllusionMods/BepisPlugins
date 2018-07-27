@@ -1,23 +1,23 @@
 ﻿using System.Text;
+using BepInEx.Logging;
 using Harmony;
 using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
+using Logger = BepInEx.Logger;
 
-namespace DynamicTranslationLoader
+namespace DynamicTranslationLoader.Text
 {
-    public static class Hooks
+    public static class TextHooks
     {
         public static void InstallHooks()
         {
             try
             {
                 var harmony = HarmonyInstance.Create("com.bepis.bepinex.dynamictranslationloader");
-                harmony.PatchAll(typeof(Hooks));
+                harmony.PatchAll(typeof(TextHooks));
             }
             catch (System.Exception e)
             {
-                System.Console.WriteLine(e);
+                Logger.Log(LogLevel.Error, e);
             }
         }
 
@@ -34,7 +34,7 @@ namespace DynamicTranslationLoader
                 TranslationHooksEnabled = false;
                 try
                 {
-                    var newText = DynamicTranslator.Translate(__instance.text, __instance);
+                    var newText = TextTranslator.TranslateText(__instance.text, __instance);
                     if (newText != null)
                     {
                         __instance.text = newText;
@@ -55,7 +55,7 @@ namespace DynamicTranslationLoader
                 TranslationHooksEnabled = false;
                 try
                 {
-                    var newText = DynamicTranslator.Translate(__instance.text, __instance);
+                    var newText = TextTranslator.TranslateText(__instance.text, __instance);
                     if (newText != null)
                     {
                         __instance.text = newText;
@@ -68,15 +68,15 @@ namespace DynamicTranslationLoader
             }
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(Text), "OnEnable")]
-        public static void OnEnableHook(Text __instance)
+        [HarmonyPostfix, HarmonyPatch(typeof(UnityEngine.UI.Text), "OnEnable")]
+        public static void OnEnableHook(UnityEngine.UI.Text __instance)
         {
             if (TranslationHooksEnabled)
             {
                 TranslationHooksEnabled = false;
                 try
                 {
-                    var newText = DynamicTranslator.Translate(__instance.text, __instance);
+                    var newText = TextTranslator.TranslateText(__instance.text, __instance);
                     if (newText != null)
                     {
                         __instance.text = newText;
@@ -105,7 +105,7 @@ namespace DynamicTranslationLoader
                 TranslationHooksEnabled = false;
                 try
                 {
-                    value = DynamicTranslator.Translate(value, __instance);
+                    value = TextTranslator.TranslateText(value, __instance);
                 }
                 finally
                 {
@@ -124,7 +124,7 @@ namespace DynamicTranslationLoader
                 TranslationHooksEnabled = false;
                 try
                 {
-                    value = DynamicTranslator.Translate(value, __instance);
+                    value = TextTranslator.TranslateText(value, __instance);
                 }
                 finally
                 {
@@ -141,7 +141,7 @@ namespace DynamicTranslationLoader
                 TranslationHooksEnabled = false;
                 try
                 {
-                    text = DynamicTranslator.Translate(text, __instance);
+                    text = TextTranslator.TranslateText(text, __instance);
                 }
                 finally
                 {
@@ -158,7 +158,7 @@ namespace DynamicTranslationLoader
                 TranslationHooksEnabled = false;
                 try
                 {
-                    text = new StringBuilder(DynamicTranslator.Translate(text.ToString(), __instance));
+                    text = new StringBuilder(TextTranslator.TranslateText(text.ToString(), __instance));
                 }
                 finally
                 {
@@ -175,7 +175,7 @@ namespace DynamicTranslationLoader
                 TranslationHooksEnabled = false;
                 try
                 {
-                    text = DynamicTranslator.Translate(text, __instance);
+                    text = TextTranslator.TranslateText(text, __instance);
                 }
                 finally
                 {
@@ -252,54 +252,6 @@ namespace DynamicTranslationLoader
         //   }
         //}
         #endregion
-
-        #region ITL
-
-        [HarmonyPrefix, HarmonyPatch(typeof(GraphicRegistry), "RegisterGraphicForCanvas")]
-        public static bool RegisterGraphicForCanvasHook(ref Canvas c, ref Graphic graphic)
-        {
-            if (graphic)
-            {
-                var go = graphic.gameObject;
-                if (go == null) return true;
-                DynamicTranslator.TranslateComponents(go);
-            }
-            return true;
-        }
-
-
-        [HarmonyPrefix, HarmonyPatch(typeof(Cursor), "SetCursor", new[] { typeof(Texture2D), typeof(Vector2), typeof(CursorMode) })]
-        public static bool SetCursorHook(ref Texture2D texture)
-        {
-            var scene = "Cursors";
-
-            DynamicTranslator.RegisterTexture(texture, string.Empty, scene);
-            DynamicTranslator.ReplaceTexture(texture, string.Empty, scene);
-            return true;
-        }
-
-        [HarmonyPrefix, HarmonyPatch(typeof(Selectable), "DoSpriteSwap")]
-        public static void DoSpriteSwapHook(ref Selectable __instance, ref Sprite newSprite)
-        {
-            if (newSprite == null) newSprite = __instance.image.sprite;
-            var go = __instance.gameObject;
-            var path = GameObjectUtils.AbsoluteTransform(go);
-            var scene = go.scene.name;
-
-            DynamicTranslator.RegisterTexture(newSprite, path, scene);
-            DynamicTranslator.ReplaceTexture(ref newSprite, path, scene);
-        }
-
-        [HarmonyPostfix, HarmonyPatch(typeof(Illusion.Game.Utils.Bundle), "LoadSprite")]
-        public static void LoadSpriteHook(ref Image image)
-        {
-            var go = image.gameObject;
-            var path = GameObjectUtils.AbsoluteTransform(go);
-            var scene = go.scene.name;
-
-            DynamicTranslator.TranslateImage(image, path, scene);
-        }
-
-        #endregion
+        
     }
 }
