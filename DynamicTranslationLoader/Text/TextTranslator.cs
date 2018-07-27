@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using ADV;
-using BepInEx.Common;
+using BepInEx;
 using BepInEx.Logging;
 using TMPro;
 using UnityEngine;
@@ -21,8 +21,8 @@ namespace DynamicTranslationLoader.Text
         private static readonly Dictionary<WeakReference, string> OriginalTranslations = new Dictionary<WeakReference, string>();
         private static readonly HashSet<string> Untranslated = new HashSet<string>();
 
-        private static readonly string ScenarioDir = Path.Combine(Utility.PluginsDirectory, @"translation\scenario");
-        private static readonly string CommunicationDir = Path.Combine(Utility.PluginsDirectory, @"translation\communication");
+        private static readonly string ScenarioDir = Path.Combine(Paths.PluginPath, @"translation\scenario");
+        private static readonly string CommunicationDir = Path.Combine(Paths.PluginPath, @"translation\communication");
 
         public static void LoadTextTranslations(string dirTranslation)
         {
@@ -125,7 +125,7 @@ namespace DynamicTranslationLoader.Text
         {
             UntranslateTextAll();
 
-            LoadTextTranslations(Path.Combine(Utility.PluginsDirectory, "translation"));
+            LoadTextTranslations(Path.Combine(Paths.PluginPath, "translation"));
 
             TranslateTextAll();
         }
