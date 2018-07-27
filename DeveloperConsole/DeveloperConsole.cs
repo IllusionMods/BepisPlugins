@@ -84,6 +84,7 @@ namespace DeveloperConsole
 
         [DisplayName("Size of the log buffer in characters")]
         [AcceptableValueRange(4000, 16300, false)]
+        [Advanced(true)]
         public ConfigWrapper<int> LogDepth { get; }
 
         public DeveloperConsole()

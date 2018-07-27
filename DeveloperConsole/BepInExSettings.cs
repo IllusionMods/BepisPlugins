@@ -6,6 +6,7 @@ using BepInEx.Logging;
 namespace DeveloperConsole
 {
     [BepInPlugin("com.bepis.bepinex.commonsettings", "BepInEx settings", "1.0")]
+    [Advanced(true)]
     public class BepInExSettings : BaseUnityPlugin
     {
         private const string LogFiltersGroup = "Log filtering";

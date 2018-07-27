@@ -79,6 +79,7 @@ namespace ConfigurationManager
 
             ReadOnly = attribs.OfType<ReadOnlyAttribute>().FirstOrDefault()?.IsReadOnly;
             Browsable = attribs.OfType<BrowsableAttribute>().FirstOrDefault()?.Browsable;
+            IsAdvanced = attribs.OfType<AdvancedAttribute>().FirstOrDefault()?.IsAdvanced;
         }
     }
 }

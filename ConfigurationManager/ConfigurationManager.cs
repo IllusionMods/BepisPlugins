@@ -171,11 +171,20 @@ namespace ConfigurationManager
                 }
 
                 detected.RemoveAll(x => x.Browsable == false);
-
+                
                 if (detected.Any())
+                {
+                    var isAdvancedPlugin = type.GetCustomAttributes(typeof(AdvancedAttribute), false).Cast<AdvancedAttribute>()
+                        .Any(x => x.IsAdvanced);
+                    if(isAdvancedPlugin)
+                        detected.ForEach(entry => entry.IsAdvanced = true);
+
                     results = results.Concat(detected);
+                }
                 else
+                {
                     skippedList.Add(pluginInfo.Name);
+                }
             }
 
             if (!_showAdvanced.Value)

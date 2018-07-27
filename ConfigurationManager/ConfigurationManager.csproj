@@ -54,6 +54,7 @@
     <Compile Include="Interface\AcceptableValueBaseAttribute.cs" />
     <Compile Include="Interface\AcceptableValueListAttribute.cs" />
     <Compile Include="Interface\AcceptableValueRangeAttribute.cs" />
+    <Compile Include="Interface\AdvancedAttribute.cs" />
     <Compile Include="Utilities\ComboBox.cs" />
     <Compile Include="ConfigurationManager.cs" />
     <Compile Include="Interface\KeyboardShortcut.cs" />
