@@ -15,7 +15,7 @@ namespace DeveloperConsole
         private Rect UI = new Rect(20, 20, 400, 400);
         private Vector2 scrollPosition = Vector2.zero;
 
-        private void Awake()
+        protected void Awake()
         {
             Logger.EntryLogged += (level, log) =>
             {
@@ -36,13 +36,13 @@ namespace DeveloperConsole
             };
         }
 
-        private void OnGUI()
+        protected void OnGUI()
         {
             if (showingUI)
                 UI = GUILayout.Window("com.bepis.bepinex.developerconsole".GetHashCode() + 0, UI, WindowFunction, "Developer Console");
         }
 
-        private void Update()
+        protected void Update()
         {
             if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F12))
             {
@@ -135,8 +135,8 @@ namespace DeveloperConsole
                 Logger.CurrentLogger.DisplayedLevels |= level;
             else
                 Logger.CurrentLogger.DisplayedLevels &= ~level;
-            
-            Config.SetEntry("logger-displayed-levels", ((int)Logger.CurrentLogger.DisplayedLevels).ToString(), "");
+
+            Config.SetEntry("logger-displayed-levels", Logger.CurrentLogger.DisplayedLevels.ToString(), "BepInEx");
         }
 
         private static bool GetDebugFlag(LogLevel level)
