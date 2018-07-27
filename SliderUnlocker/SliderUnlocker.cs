@@ -2,6 +2,7 @@
 using ChaCustom;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using UnityEngine.SceneManagement;
@@ -12,19 +13,15 @@ namespace SliderUnlocker
     [BepInPlugin(GUID: "com.bepis.bepinex.sliderunlocker", Name: "Slider Unlocker", Version: "1.5")]
     public class SliderUnlocker : BaseUnityPlugin
     {
-        public float Minimum => int.Parse(this.GetEntry("wideslider-minimum", "-100")) / (float)100;
-        public float Maximum => int.Parse(this.GetEntry("wideslider-maximum", "200")) / (float)100;
-
-        void Awake()
+        protected void Awake()
         {
             Hooks.InstallHooks();
         }
 
-        void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
+        private void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
-            SetAllSliders(scene, Minimum, Maximum);
+            SetAllSliders(scene, Minimum.Value / 100f, Maximum.Value / 100f);
         }
-
 
         public void SetAllSliders(Scene scene, float minimum, float maximum)
         {
@@ -45,9 +42,8 @@ namespace SliderUnlocker
                         cvsInstances.AddRange(obj.GetComponentsInChildren(type));
                     }
                 }
-
             }
-                
+
             foreach (object cvs in cvsInstances)
             {
                 if (cvs == null)
@@ -68,14 +64,33 @@ namespace SliderUnlocker
         }
 
         #region MonoBehaviour
-        void OnEnable()
+
+        protected void OnEnable()
         {
             SceneManager.sceneLoaded += LevelFinishedLoading;
         }
 
-        void OnDisable()
+        protected void OnDisable()
         {
             SceneManager.sceneLoaded -= LevelFinishedLoading;
+        }
+        #endregion
+
+        #region Settings
+        [DisplayName("Minimum slider value")]
+        [Description("Changes will take effect next time the editor is lodaded.")]
+        [AcceptableValueRange(-500, 0, false)]
+        public ConfigWrapper<int> Minimum { get; }
+
+        [DisplayName("Maximum slider value")]
+        [Description("Changes will take effect next time the editor is lodaded.")]
+        [AcceptableValueRange(100, 500, false)]
+        public ConfigWrapper<int> Maximum { get; }
+
+        public SliderUnlocker()
+        {
+            Minimum = new ConfigWrapper<int>("wideslider-minimum", this, -100);
+            Maximum = new ConfigWrapper<int>("wideslider-maximum", this, 200);
         }
         #endregion
     }
