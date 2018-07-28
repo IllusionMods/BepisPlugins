@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Common;
 using BepInEx.Logging;
 using Mono.Cecil;
 using System;
@@ -13,7 +12,7 @@ namespace ScriptEngine
     [BepInPlugin(GUID: "com.bepis.bepinex.scriptengine", Name: "Script Engine", Version: "2.0")]
     public class ScriptEngine : BaseUnityPlugin
     {
-        public string ScriptDirectory => Path.Combine(Utility.PluginsDirectory, "scripts");
+        public string ScriptDirectory => Path.Combine(Paths.PluginPath, "scripts");
 
         private GameObject scriptManager = new GameObject();
 
@@ -50,7 +49,7 @@ namespace ScriptEngine
         {
             var defaultResolver = new DefaultAssemblyResolver();
             defaultResolver.AddSearchDirectory(ScriptDirectory);
-            defaultResolver.AddSearchDirectory(Path.Combine(Utility.ExecutingDirectory, @"KoikatuTrial_Data\Managed"));
+	        defaultResolver.AddSearchDirectory(Paths.ManagedPath);
             
             AssemblyDefinition dll = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
             {
