@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using System;
+using System.ComponentModel;
 using System.IO;
 using BepInEx.Logging;
 using DynamicTranslationLoader.Image;
@@ -18,13 +19,19 @@ namespace DynamicTranslationLoader
         // Settings
         public static SavedKeyboardShortcut ReloadTranslations { get; set; }
         public static SavedKeyboardShortcut DumpUntranslatedText { get; set; }
+
+        [DisplayName("!Enable image dumping")]
+        [Description("Extract and save all in-game UI images to BepInEx\\translation\\Images\nWarning: Very slow, disable when not needed")]
+        [Advanced(true)]
         public static ConfigWrapper<bool> IsDumpingEnabled { get; set; }
+        [DisplayName("Dump all images to global folder")]
+        [Advanced(true)]
         public static ConfigWrapper<bool> DumpingAllToGlobal { get; set; }
         
         public DynamicTranslator()
         {
-            IsDumpingEnabled = new ConfigWrapper<bool>("!Enable image dumping", this);
-            DumpingAllToGlobal = new ConfigWrapper<bool>("Dump all images to global folder", this);
+            IsDumpingEnabled = new ConfigWrapper<bool>("dumping", this);
+            DumpingAllToGlobal = new ConfigWrapper<bool>("dump-to-global", this);
             ReloadTranslations = new SavedKeyboardShortcut("Reload translations", this, new KeyboardShortcut(KeyCode.F10));
             DumpUntranslatedText = new SavedKeyboardShortcut("Dump untranslated text", this, new KeyboardShortcut(KeyCode.F10, KeyCode.LeftShift));
         }
