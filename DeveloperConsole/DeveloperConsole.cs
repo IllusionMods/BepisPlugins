@@ -2,6 +2,7 @@
 using BepInEx;
 using UnityEngine;
 using System.Linq;
+using ConfigurationManager;
 using Logger = BepInEx.Logger;
 
 namespace DeveloperConsole

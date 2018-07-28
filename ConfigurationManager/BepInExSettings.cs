@@ -3,7 +3,7 @@ using System.ComponentModel;
 using BepInEx;
 using BepInEx.Logging;
 
-namespace DeveloperConsole
+namespace ConfigurationManager
 {
     [BepInPlugin("com.bepis.bepinex.commonsettings", "BepInEx settings", "1.0")]
     [Advanced(true)]
@@ -17,8 +17,8 @@ namespace DeveloperConsole
         [Category(LogFiltersGroup)]
         public static bool LogUnity
         {
-            get => Boolean.Parse(Config.GetEntry("chainloader-log-unity-messages", "false", "BepInEx"));
-            set => Config.SetEntry("chainloader-log-unity-messages", value.ToString(), "BepInEx");
+            get => Boolean.Parse(BepInEx.Config.GetEntry("chainloader-log-unity-messages", "false", "BepInEx"));
+            set => BepInEx.Config.SetEntry("chainloader-log-unity-messages", value.ToString(), "BepInEx");
         }
 
         [DisplayName("Show system console")]
@@ -26,8 +26,8 @@ namespace DeveloperConsole
         [Description("Changes take effect after game restart.")]
         public static bool ShowConsole
         {
-            get => Boolean.Parse(Config.GetEntry("console", "false", "BepInEx"));
-            set => Config.SetEntry("console", value.ToString(), "BepInEx");
+            get => Boolean.Parse(BepInEx.Config.GetEntry("console", "false", "BepInEx"));
+            set => BepInEx.Config.SetEntry("console", value.ToString(), "BepInEx");
         }
 
         [Browsable(true)]
@@ -67,7 +67,7 @@ namespace DeveloperConsole
             else
                 Logger.CurrentLogger.DisplayedLevels &= ~level;
 
-            Config.SetEntry("logger-displayed-levels", Logger.CurrentLogger.DisplayedLevels.ToString(), "BepInEx");
+            BepInEx.Config.SetEntry("logger-displayed-levels", Logger.CurrentLogger.DisplayedLevels.ToString(), "BepInEx");
         }
 
         private static bool GetDebugFlag(LogLevel level)

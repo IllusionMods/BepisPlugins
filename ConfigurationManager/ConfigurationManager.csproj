@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BepInExSettings.cs" />
     <Compile Include="Interface\AcceptableValueBaseAttribute.cs" />
     <Compile Include="Interface\AcceptableValueListAttribute.cs" />
     <Compile Include="Interface\AcceptableValueRangeAttribute.cs" />
