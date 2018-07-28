@@ -10,8 +10,7 @@ namespace Sideloader
     public static class BundleManager
     {
         public static Dictionary<string, List<Lazy<AssetBundle>>> Bundles = new Dictionary<string, List<Lazy<AssetBundle>>>();
-
-
+		
         public static string DummyPath => "list/characustom/00.unity3d";
         
         private static long CABCounter = 0;
@@ -33,6 +32,9 @@ namespace Sideloader
 
             if (cabIndex < 0)
                 return;
+
+	        if (ascii.IndexOf('\0') != 36)
+		        return;
 
             string CAB = GenerateCAB();
             byte[] cabBytes = Encoding.ASCII.GetBytes(CAB);
