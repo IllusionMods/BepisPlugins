@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using BepInEx.Logging;
 using Harmony;
 using TMPro;
@@ -253,5 +254,23 @@ namespace DynamicTranslationLoader.Text
         //}
         #endregion
         
+	    #region Text break hooks
+	    [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "IsLatin")]
+	    public static bool UpdateText(ref bool __result, ref char s)
+	    {
+		    // Break only on space?
+		    __result = s != ' ';
+		    return false;
+	    }
+	    [HarmonyPostfix, HarmonyPatch(typeof(HyphenationJpn), "GetFormatedText")]
+	    public static void GetFormatedText(ref string __result)
+	    {
+		    // When the width of the text is greater than its container, a space is inserted.
+		    // This can throw off our formatting, so we remove all occurrences of it.
+            
+		    __result = __result.Replace("\u3000", "");
+		    __result = string.Join("\n", __result.Split('\n').Select(x => x.Trim()).ToArray());
+	    }
+	    #endregion
     }
 }

@@ -47,6 +47,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="TARC.Core">
+      <HintPath>..\lib\TARC.Core.dll</HintPath>
+    </Reference>
     <Reference Include="TextMeshPro-1.0.55.56.0b12">
       <HintPath>..\lib\TextMeshPro-1.0.55.56.0b12.dll</HintPath>
       <Private>False</Private>

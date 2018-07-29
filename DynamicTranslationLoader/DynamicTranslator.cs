@@ -6,6 +6,7 @@ using BepInEx.Logging;
 using DynamicTranslationLoader.Image;
 using DynamicTranslationLoader.Text;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Logger = BepInEx.Logger;
 
 namespace DynamicTranslationLoader
@@ -57,6 +58,16 @@ namespace DynamicTranslationLoader
                 Logger.Log(LogLevel.Message, $"Text dumped to \"{Path.GetFullPath("dumped-tl.txt")}\"");
             }
         }
+
+	    public void OnEnable()
+	    {
+		    SceneManager.sceneLoaded += TextTranslator.TranslateScene;
+	    }
+		
+	    public void OnDisable()
+	    {
+		    SceneManager.sceneLoaded -= TextTranslator.TranslateScene;
+	    }
 
         private static void SetupTextTl(string dirTranslation)
         {
