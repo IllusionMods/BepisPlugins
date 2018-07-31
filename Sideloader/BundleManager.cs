@@ -33,13 +33,12 @@ namespace Sideloader
             if (cabIndex < 0)
                 return;
 
-	        if (ascii.IndexOf('\0') != 36)
-		        return;
+	        int endIndex = ascii.Substring(cabIndex).IndexOf('\0');
 
-            string CAB = GenerateCAB();
+            string CAB = GenerateCAB().Substring(4);
             byte[] cabBytes = Encoding.ASCII.GetBytes(CAB);
-
-            Buffer.BlockCopy(cabBytes, 0, assetBundleData, cabIndex, 36);
+			
+            Buffer.BlockCopy(cabBytes, 36 - endIndex, assetBundleData, cabIndex + 4, endIndex - 4);
         }
 
         public static void AddBundleLoader(Func<AssetBundle> func, string path, out string warning)
