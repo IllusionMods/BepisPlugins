@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -29,7 +28,7 @@ namespace DynamicTranslationLoader.Text
         private static readonly string ScenarioDir = Path.Combine(Paths.PluginPath, @"translation\scenario");
         private static readonly string CommunicationDir = Path.Combine(Paths.PluginPath, @"translation\communication");
 
-	    private static readonly string CurrentExe = Process.GetCurrentProcess().ProcessName.Replace(".exe", "");
+	    private static readonly string CurrentExe = Paths.ProcessName;
 
         public static void LoadTextTranslations(string dirTranslation)
         {
