@@ -174,6 +174,9 @@ namespace DynamicTranslationLoader.Text
 				    }
 			    }
 		    }
+
+			
+		    Logger.Log(LogLevel.Debug, $"Filtered {Translations.Count} / {TLArchives.Sum(x => x.Sections.Sum(y => y.Lines.Count))} lines");
 	    }
 
         public static void TranslateScene(Scene scene, LoadSceneMode loadMode)
