@@ -42,7 +42,7 @@ namespace BepisPlugins
 
         public override bool Equals(object obj)
         {
-            return TargetHashCode == obj.GetHashCode();// && Reference.IsAlive && Target == obj;
+            return TargetHashCode == obj?.GetHashCode();// && Reference.IsAlive && Target == obj;
         }
     }
 }

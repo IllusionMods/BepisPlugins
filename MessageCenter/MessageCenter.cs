@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using System.ComponentModel;
+using BepInEx;
 using BepInEx.Logging;
 using UnityEngine;
 using Logger = BepInEx.Logger;
@@ -8,21 +9,31 @@ namespace MessageCenter
 	[BepInPlugin("com.bepis.messagecenter", "Message Center", "1.0")]
     public class MessageCenter : BaseUnityPlugin
     {
-	    private int showCounter = 0;
-	    private string TotalShowingLog = string.Empty;
+        [DisplayName("Show messages in UI")]
+        [Description("Allows plugins to show pop-up messages")]
+        [Advanced(true)]
+        public ConfigWrapper<bool> Enabled { get; }
 
+        public MessageCenter()
+        {
+            Enabled = new ConfigWrapper<bool>("enabled", this, true);
+        }
+
+        private int showCounter = 0;
+	    private string TotalShowingLog = string.Empty;
+        
 	    private void Awake()
 	    {
 		    Logger.EntryLogged += (level, log) =>
 		    {
-			    if ((level & LogLevel.Message) != LogLevel.None)
-			    {
-				    if (showCounter == 0)
-					    TotalShowingLog = string.Empty;
+		        if (Enabled.Value && (level & LogLevel.Message) != LogLevel.None)
+		        {
+		            if (showCounter == 0)
+		                TotalShowingLog = string.Empty;
 
-				    showCounter = 600;
-				    TotalShowingLog = $"{log}\r\n{TotalShowingLog}";
-			    }
+		            showCounter = 600;
+		            TotalShowingLog = $"{log}\r\n{TotalShowingLog}";
+		        }
 		    };
 	    }
 

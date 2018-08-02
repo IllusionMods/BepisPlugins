@@ -2,6 +2,7 @@
 using Harmony;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ namespace SliderUnlocker
 		public static void ConvertTextFromRateHook(ref string __result, int min, int max, float value)
 		{
 			if (min == 0 && max == 100)
-				__result = Math.Round(100 * value).ToString();
+				__result = Math.Round(100 * value).ToString(CultureInfo.InvariantCulture);
 		}
 		
 		[HarmonyPostfix, HarmonyPatch(typeof(CustomBase), "ConvertRateFromText")]

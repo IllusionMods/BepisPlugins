@@ -35,7 +35,7 @@ namespace Sideloader
 
             manifest = new Manifest(zip.GetInputStream(entry));
 
-            if (manifest.manifestDocument.Root.Attribute("schema-ver")?.Value != manifest.SchemaVer.ToString())
+            if (manifest.manifestDocument?.Root?.Attribute("schema-ver")?.Value != manifest.SchemaVer.ToString())
                 return false;
 
             if (manifest.GUID == null)

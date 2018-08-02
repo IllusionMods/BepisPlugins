@@ -73,7 +73,7 @@ namespace Sideloader.AutoResolver
 				extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 				
 				Logger.Log(LogLevel.Debug, "Sideloader marker found");
-				Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count()}");
+				Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
 				foreach (ResolveInfo info in extInfo)
 					Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
 			}
@@ -188,7 +188,7 @@ namespace Sideloader.AutoResolver
 				extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
 				Logger.Log(LogLevel.Debug, "Sideloader marker found");
-				Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count()}");
+				Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
 				foreach (ResolveInfo info in extInfo)
 					Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
 			}
