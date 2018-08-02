@@ -13,23 +13,8 @@ namespace Sideloader.AutoResolver
 
         public static List<ResolveInfo> LoadedResolutionInfo = new List<ResolveInfo>();
 
-        public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ChaFile save, string propertyPrefix = "")
+        public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
         {
-            var extData = ExtendedSave.GetExtendedDataById(save, UARExtID);
-
-            IEnumerable<ResolveInfo> extInfo;
-
-            if (extData == null || !extData.data.ContainsKey("info"))
-            {
-                extInfo = null;
-                //BepInLogger.Log("Nothing to load!");
-            }
-            else
-            {
-                var tmpExtInfo = (object[])extData.data["info"];
-                extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x));
-            }
-
 			void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
 	        {
 		        //check if it's a vanilla item
@@ -92,12 +77,12 @@ namespace Sideloader.AutoResolver
 	                        if (LoadedResolutionInfo.Any(x => x.GUID == extResolve.GUID))
 							{
 								//we have the GUID loaded, so the user has an outdated mod
-								Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! ({save.parameter.lastname} {save.parameter.firstname}) Outdated mod detected! [{extResolve.GUID}]");
+								Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{extResolve.GUID}]");
 							}
 							else
 							{
 								//did not find a match, we don't have the mod
-								Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! ({save.parameter.lastname} {save.parameter.firstname}) Missing mod detected! [{extResolve.GUID}]");
+								Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.GUID}]");
 							}
 
 	                        kv.Value.SetMethod(structure, 999999); //set to an invalid ID
