@@ -1,45 +1,38 @@
 ﻿using BepInEx;
-using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace InputUnlocker
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.inputunlocker", Name: "Input Length Unlocker", Version: "1.0.1")]
-    class InputUnlocker : BaseUnityPlugin
+    [BepInPlugin("com.bepis.bepinex.inputunlocker", "Input Length Unlocker", "1.0.1")]
+    internal class InputUnlocker : BaseUnityPlugin
     {
-        void Awake()
+        protected void Awake()
         {
-            foreach (InputField gameObject in GameObject.FindObjectsOfType<InputField>())
-            {
-                UnlockInput(gameObject);
-            }
+            foreach (var inputFieldObject in FindObjectsOfType<InputField>())
+                UnlockInput(inputFieldObject);
         }
 
-        void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
+        private void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
-            foreach (GameObject obj in scene.GetRootGameObjects())
-                foreach (InputField gameObject in obj.GetComponentsInChildren<InputField>(true))
-                {
-                    UnlockInput(gameObject);
-                }
+            foreach (var obj in scene.GetRootGameObjects())
+            foreach (var inputFieldObject in obj.GetComponentsInChildren<InputField>(true))
+                UnlockInput(inputFieldObject);
         }
 
-        void UnlockInput(InputField input)
+        private void UnlockInput(InputField input)
         {
             input.characterLimit = 999;
         }
-
-        #region MonoBehaviour
-        void OnEnable()
+        
+        protected void OnEnable()
         {
             SceneManager.sceneLoaded += LevelFinishedLoading;
         }
 
-        void OnDisable()
+        protected void OnDisable()
         {
             SceneManager.sceneLoaded -= LevelFinishedLoading;
         }
-        #endregion
     }
 }
