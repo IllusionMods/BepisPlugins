@@ -70,11 +70,11 @@ namespace Sideloader
                     continue;
                 }
 
-                string name = !string.IsNullOrEmpty(manifest.Name?.Trim())
+                var manifestName = !string.IsNullOrEmpty(manifest.Name?.Trim())
                     ? manifest.Name
                     : Path.GetFileName(archivePath);
 
-                Logger.Log(LogLevel.Info, $"[SIDELOADER] Loaded {name} {manifest.Version ?? ""}");
+                Logger.Log(LogLevel.Info, $"[SIDELOADER] Loaded {manifestName} {manifest.Version ?? ""}");
 
                 Archives.Add(archive);
                 LoadedManifests.Add(manifest);
