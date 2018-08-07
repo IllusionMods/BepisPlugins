@@ -106,7 +106,7 @@ namespace Sideloader.AutoResolver
         {
             var category = (ChaListDefine.CategoryNo)data.categoryNo;
 
-            var properties = StructReference.CollatedStructValues.Where(x => x.Key.Category == category);
+            var propertyKeys = StructReference.CollatedStructValues.Keys.Where(x => x.Category == category).ToList();
 
             //BepInLogger.Log(category.ToString());
             //BepInLogger.Log(StructReference.CollatedStructValues.Count.ToString());
@@ -118,7 +118,7 @@ namespace Sideloader.AutoResolver
 
                 //BepInLogger.Log(kv.Value[0] + " | " + newSlot);
 
-                foreach (var property in properties)
+                foreach (var propertyKey in propertyKeys)
                 {
                     //BepInLogger.Log(property.Key.ToString());
 
@@ -127,7 +127,7 @@ namespace Sideloader.AutoResolver
                         GUID = manifest.GUID,
                         Slot = int.Parse(kv.Value[0]),
                         LocalSlot = newSlot,
-                        Property = property.Key.ToString()
+                        Property = propertyKey.ToString()
                     });
                     
                     //BepInLogger.Log($"LOADED COUNT {LoadedResolutionInfo.Count}");

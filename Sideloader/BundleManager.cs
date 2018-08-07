@@ -28,7 +28,7 @@ namespace Sideloader
         {
             string ascii = Encoding.ASCII.GetString(assetBundleData, 0, 256);
 
-            int cabIndex = ascii.IndexOf("CAB-");
+            int cabIndex = ascii.IndexOf("CAB-", StringComparison.Ordinal);
 
             if (cabIndex < 0)
                 return;

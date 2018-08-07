@@ -2,8 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using BepInEx.Logging;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Logger = BepInEx.Logger;
 
 namespace DeveloperConsole
 {
@@ -53,7 +55,7 @@ namespace DeveloperConsole
                     }
                     catch (Exception e)
                     {
-                        //Console.WriteLine(e.Message);
+                        Logger.Log(LogLevel.Debug, e);
                     }
                 }
 

@@ -44,10 +44,17 @@ namespace ConfigurationManager
 
         private Rect _settingWindowRect, _buttonRect, _screenRect;
         private Vector2 _settingWindowScrollPos;
-        private readonly ConfigWrapper<bool> _showAdvanced = new ConfigWrapper<bool>("showAdvanced", false);
 
-        private readonly ConfigWrapper<bool> _showKeybinds = new ConfigWrapper<bool>("showKeybinds", true);
-        private readonly ConfigWrapper<bool> _showSettings = new ConfigWrapper<bool>("showSettings", true);
+        private readonly ConfigWrapper<bool> _showAdvanced;
+        private readonly ConfigWrapper<bool> _showKeybinds;
+        private readonly ConfigWrapper<bool> _showSettings;
+
+        public ConfigurationManager()
+        {
+            _showAdvanced = new ConfigWrapper<bool>("showAdvanced", this, false);
+            _showKeybinds = new ConfigWrapper<bool>("showKeybinds", this, true);
+            _showSettings = new ConfigWrapper<bool>("showSettings", this, true);
+        }
 
         public bool DisplayingButton
         {
