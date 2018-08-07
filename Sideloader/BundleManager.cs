@@ -35,6 +35,9 @@ namespace Sideloader
 
 	        int endIndex = ascii.Substring(cabIndex).IndexOf('\0');
 
+            if (endIndex > 36)
+                return;
+
             string CAB = GenerateCAB().Substring(4);
             byte[] cabBytes = Encoding.ASCII.GetBytes(CAB);
 			
