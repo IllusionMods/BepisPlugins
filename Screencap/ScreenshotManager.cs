@@ -90,7 +90,7 @@ namespace Screencap
             Application.CaptureScreenshot(filename);
             Utils.Sound.Play(SystemSE.photo);
 
-            BepInEx.Logger.Log(LogLevel.Message, $"Screenshot saved to {filename}");
+            BepInEx.Logger.Log(LogLevel.Info, $"Screenshot saved to {filename}");
         }
 
         IEnumerator TakeCharScreenshot()
