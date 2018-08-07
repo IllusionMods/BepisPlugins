@@ -45,8 +45,10 @@ namespace ExtensibleSaveFormat
 
 	            var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(data);
 
-	            ExtendedSave.internalCharaDictionary.Set(file, dictionary);
-	        }
+                ExtendedSave.internalCharaDictionary.Set(file, dictionary);
+
+	            ExtendedSave.cardReadEvent(file);
+            }
 	        else
 	        {
 	            ExtendedSave.internalCharaDictionary.Set(file, new Dictionary<string, PluginData>());
