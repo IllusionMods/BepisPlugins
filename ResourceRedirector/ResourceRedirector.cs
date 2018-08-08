@@ -72,7 +72,8 @@ namespace ResourceRedirector
 
                     return new AssetBundleLoadAssetOperationSimulation(tex);
                 }
-                else if (type == typeof(AudioClip))
+
+                if (type == typeof(AudioClip) || type == typeof(UnityEngine.Object) && assetBundleName.StartsWith("sound", StringComparison.Ordinal))
                 {
                     string path = Path.Combine(dir, $"{assetName}.wav");
 
