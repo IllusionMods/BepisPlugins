@@ -27,6 +27,8 @@ namespace ColorCorrector
         {
             SaturationEnabled = new ConfigWrapper<bool>("SaturationEnabled", this, true);
             BloomStrength = new ConfigWrapper<float>("BloomStrength", this, 1);
+            SaturationEnabled.SettingChanged += OnSettingChanged;
+            BloomStrength.SettingChanged += OnSettingChanged;
         }
 
         protected void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
@@ -40,7 +42,7 @@ namespace ColorCorrector
             }
         }
 
-        void SetEffects(bool satEnabled, float bloomPower)
+        private void SetEffects(bool satEnabled, float bloomPower)
         {
             //TODO allow to modify amplifyComponent.Exposure and others if possible
             if (amplifyComponent != null)
@@ -50,71 +52,19 @@ namespace ColorCorrector
                 bloomComponent.bloomIntensity = bloomPower;
         }
 
-        //#region MonoBehaviour
-        void OnEnable()
+        protected void OnEnable()
         {
             SceneManager.sceneLoaded += LevelFinishedLoading;
         }
 
-        void OnDisable()
+        protected void OnDisable()
         {
             SceneManager.sceneLoaded -= LevelFinishedLoading;
         }
 
-        void Start()
+        private void OnSettingChanged(object sender, System.EventArgs e)
         {
-            // TODO use an event instead
-            StartCoroutine(SettingUpdate());
+            SetEffects(SaturationEnabled.Value, BloomStrength.Value);
         }
-
-        System.Collections.IEnumerator SettingUpdate ()
-        {
-            while(true)
-            {
-                yield return new WaitForSecondsRealtime(0.5f);
-                SetEffects(SaturationEnabled.Value, BloomStrength.Value);
-            }
-        }
-
-        /*
-        void Update()
-        {
-            if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F6))
-            {
-                showingUI = !showingUI;
-            }
-        }
-        #endregion
-
-        #region UI 
-        private Rect UI = new Rect(20, 20, 300, 100);
-        private bool showingUI = false;
-
-        void OnGUI()
-        {
-            if (showingUI)
-                UI = GUI.Window("com.bepis.bepinex.colorcorrector".GetHashCode() + 0, UI, WindowFunction, "Post processing settings");
-        }
-
-        void WindowFunction(int windowID)
-        {
-            bool satEnabled = GUI.Toggle(new Rect(10, 20, 180, 20), SaturationEnabled.Value, " Enable saturation filter");
-
-            GUI.Label(new Rect(10, 40, 180, 20), "Strength of the bloom filter");
-
-            float bloomPower = GUI.HorizontalSlider(new Rect(10, 60, 180, 20), BloomStrength.Value, 0, 1);
-
-            if (GUI.changed)
-            {
-                SaturationEnabled.Value = satEnabled;
-                BloomStrength.Value = bloomPower;
-
-                SetEffects(satEnabled, bloomPower);
-            }
-
-            GUI.DragWindow();
-        }
-        #endregion
-        */
     }
 }
