@@ -19,8 +19,8 @@ namespace DynamicTranslationLoader.Text
     public class TextTranslator
     {
 	    public static List<Archive> TLArchives = new List<Archive>();
-	    private static Dictionary<string, CompiledLine> Translations = new Dictionary<string, CompiledLine>();
-	    private static Dictionary<Regex, CompiledLine> regexTranslations = new Dictionary<Regex, CompiledLine>();
+	    private static readonly Dictionary<string, CompiledLine> Translations = new Dictionary<string, CompiledLine>();
+	    private static readonly Dictionary<Regex, CompiledLine> regexTranslations = new Dictionary<Regex, CompiledLine>();
 
         private static readonly Dictionary<WeakReference, string> OriginalTranslations = new Dictionary<WeakReference, string>();
         private static readonly HashSet<string> Untranslated = new HashSet<string>();
@@ -55,16 +55,17 @@ namespace DynamicTranslationLoader.Text
 
 	    private static bool TryGetRegex(string input, out CompiledLine line, out Match regexMatch)
 	    {
-		    Match match;
-		    foreach (var kv in regexTranslations)
+	        foreach (var kv in regexTranslations)
 		    {
-			    if ((match = kv.Key.Match(input)).Success)
-			    {
-				    line = kv.Value;
-				    regexMatch = match;
-				    return true;
-			    }
+		        Match match = kv.Key.Match(input);
+		        if (!match.Success)
+		            continue;
+
+		        line = kv.Value;
+		        regexMatch = match;
+		        return true;
 		    }
+
 		    line = null;
 		    regexMatch = null;
 		    return false;
@@ -72,7 +73,8 @@ namespace DynamicTranslationLoader.Text
 
         public static string TranslateText(string input, object obj)
         {
-            GUIUtility.systemCopyBuffer = input;
+            if (DynamicTranslator.IsPastingToClipboard.Value)
+                GUIUtility.systemCopyBuffer = input;
 
 	        if(string.IsNullOrEmpty(input)) 
 		        return input;
@@ -86,10 +88,12 @@ namespace DynamicTranslationLoader.Text
 	        {
 				return translation.TranslatedLine;
 	        }
-			else if (TryGetRegex(input, out translation, out Match match))
-	        {
-		        return translation.TranslatedLine;
-	        }
+
+            if (TryGetRegex(input, out translation, out Match match))
+            {
+                return translation.TranslatedLine;
+            }
+
             if (obj is UnityEngine.UI.Text)
             {
                 var immediatelyTranslated = DynamicTranslator.OnOnUnableToTranslateUgui(obj, input);
@@ -110,9 +114,11 @@ namespace DynamicTranslationLoader.Text
         public static void TranslateTextAll()
         {
             foreach (var textMesh in Resources.FindObjectsOfTypeAll<TextMeshProUGUI>())
+            {
                 //gameObject.text = "Harsh is shit";
 
                 textMesh.text = TranslateText(textMesh.text, textMesh);
+            }
         }
 
         private static void UntranslateTextAll()
