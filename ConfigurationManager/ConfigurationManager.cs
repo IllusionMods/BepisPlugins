@@ -368,7 +368,6 @@ namespace ConfigurationManager
             }
             GUILayout.EndHorizontal();
         }
-
         private void DrawFieldBasedOnValueType(PropSettingEntry setting)
         {
             if (_settingDrawHandlers.TryGetValue(setting.SettingType, out var drawMethod))

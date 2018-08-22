@@ -8,13 +8,14 @@ using System.Linq;
 using BepInEx;
 using ConfigurationManager.Utilities;
 using UnityEngine;
+using Config = BepInEx.Config;
 
 namespace ConfigurationManager
 {
     internal class SettingFieldDrawer
     {
         private static readonly IEnumerable<KeyCode> KeysToCheck =
-            KeyboardShortcut.AllKeyCodes.Except(new[] {KeyCode.Mouse0}).ToArray();
+            KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
 
         private readonly Dictionary<PropSettingEntry, ComboBox> _comboBoxCache =
             new Dictionary<PropSettingEntry, ComboBox>();
@@ -28,7 +29,7 @@ namespace ConfigurationManager
 
         public void DrawBoolField(PropSettingEntry setting)
         {
-            var boolVal = (bool) setting.Get();
+            var boolVal = (bool)setting.Get();
             var result = GUILayout.Toggle(boolVal, boolVal ? "Enabled" : "Disabled", GUILayout.ExpandWidth(true));
             if (result != boolVal)
                 setting.Set(result);
@@ -77,9 +78,9 @@ namespace ConfigurationManager
         public void DrawRangeField(PropSettingEntry setting, AcceptableValueRangeAttribute range)
         {
             var value = setting.Get();
-            var converted = (float) Convert.ToDouble(value);
-            var leftValue = (float) Convert.ToDouble(range.MinValue);
-            var rightValue = (float) Convert.ToDouble(range.MaxValue);
+            var converted = (float)Convert.ToDouble(value);
+            var leftValue = (float)Convert.ToDouble(range.MinValue);
+            var rightValue = (float)Convert.ToDouble(range.MaxValue);
 
             var result = GUILayout.HorizontalSlider(converted, leftValue, rightValue, GUILayout.ExpandWidth(true));
             if (Math.Abs(result - converted) > Mathf.Abs(rightValue - leftValue) / 1000)
@@ -101,12 +102,52 @@ namespace ConfigurationManager
         /// </summary>
         public void DrawUnknownField(PropSettingEntry setting)
         {
-            GUILayout.TextArea(setting.Get()?.ToString() ?? "NULL");
+            // Try to use user-supplied converters
+            if (setting.ObjToStr != null && setting.StrToObj != null)
+            {
+                var text = setting.ObjToStr(setting.Get());
+                var result = GUILayout.TextField(text);
+                if (result != text)
+                    setting.Set(setting.StrToObj(result));
+                return;
+            }
+
+            // Fall back to slow/less reliable method
+            var value = setting.Get()?.ToString() ?? "NULL";
+            if (CanCovert(value, setting.SettingType))
+            {
+                var result = GUILayout.TextField(value);
+                if (result != value)
+                    setting.Set(Convert.ChangeType(result, setting.SettingType));
+            }
+            else
+            {
+                GUILayout.TextArea(value);
+            }
+        }
+
+        private readonly Dictionary<Type, bool> _canCovertCache = new Dictionary<Type, bool>();
+        private Boolean CanCovert(string value, Type type)
+        {
+            if (_canCovertCache.ContainsKey(type))
+                return _canCovertCache[type];
+
+            try
+            {
+                var _ = Convert.ChangeType(value, type);
+                _canCovertCache[type] = true;
+                return true;
+            }
+            catch
+            {
+                _canCovertCache[type] = false;
+                return false;
+            }
         }
 
         public void DrawKeyboardShortcut(PropSettingEntry setting)
         {
-            var shortcut = (KeyboardShortcut) setting.Get();
+            var shortcut = (KeyboardShortcut)setting.Get();
 
             GUILayout.BeginHorizontal();
             {

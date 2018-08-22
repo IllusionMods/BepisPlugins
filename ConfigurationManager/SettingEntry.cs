@@ -74,6 +74,28 @@ namespace ConfigurationManager
                         entry.Category = section;
                 }
 
+                var strToObj = wrapper.GetType().GetField("_strToObj",
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(wrapper);
+                if (strToObj != null)
+                {
+                    var inv = strToObj.GetType().GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
+                    if (inv != null)
+                        entry.StrToObj = s => inv.Invoke(strToObj, new object[] { s });
+                }
+
+                var objToStr = wrapper.GetType().GetField("_objToStr",
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(wrapper); ;
+                if (objToStr != null)
+                {
+                    var inv = objToStr.GetType().GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
+                    if (inv != null)
+                        entry.ObjToStr = o => inv.Invoke(objToStr, new object[] {o}) as string;
+                }
+                else
+                {
+                    entry.ObjToStr = o => o.ToString();
+                }
+
                 return entry;
             }
             catch (SystemException ex)
@@ -83,6 +105,10 @@ namespace ConfigurationManager
                 return null;
             }
         }
+
+        public Func<object, string> ObjToStr { get; private set; }
+
+        public Func<string, object> StrToObj { get; private set; }
 
         public static PropSettingEntry FromNormalProperty(object instance, PropertyInfo settingProp,
             BepInPlugin pluginInfo)
