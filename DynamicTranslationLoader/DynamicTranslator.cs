@@ -28,10 +28,14 @@ namespace DynamicTranslationLoader
         [DisplayName("Dump all images to global folder")]
         [Advanced(true)]
         public static ConfigWrapper<bool> DumpingAllToGlobal { get; set; }
-        
+
+        [DisplayName("Enable pasting text to clipboard")]
+        public static ConfigWrapper<bool> IsPastingToClipboard { get; set; }
+
         public DynamicTranslator()
         {
             IsDumpingEnabled = new ConfigWrapper<bool>("dumping", this);
+            IsPastingToClipboard = new ConfigWrapper<bool>("paste-to-clipboard", this);
             DumpingAllToGlobal = new ConfigWrapper<bool>("dump-to-global", this);
             ReloadTranslations = new SavedKeyboardShortcut("Reload translations", this, new KeyboardShortcut(KeyCode.F10));
             DumpUntranslatedText = new SavedKeyboardShortcut("Dump untranslated text", this, new KeyboardShortcut(KeyCode.F10, KeyCode.LeftShift));
