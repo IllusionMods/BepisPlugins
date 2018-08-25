@@ -51,10 +51,10 @@ namespace Sideloader
 
             if (!Directory.Exists(modDirectory))
                 return;
-
             
             //load zips
-            foreach (string archivePath in Directory.GetFiles(modDirectory, "*.zip", SearchOption.AllDirectories))
+            foreach (string archivePath in Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories)
+                .Where(x => x.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase)))
             {
                 var archive = new ZipFile(archivePath);
 
@@ -108,7 +108,7 @@ namespace Sideloader
             }
             else
             {
-                LoadedData.Add(manifest, new List<ChaListData>(new [] { data } ));
+                LoadedData.Add(manifest, new List<ChaListData>(new[] { data }));
             }
         }
 
@@ -119,7 +119,7 @@ namespace Sideloader
                 if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     var stream = arc.GetInputStream(entry);
-                    
+
                     var chaListData = ListLoader.LoadCSV(stream);
 
                     SetPossessNew(chaListData);
@@ -188,8 +188,8 @@ namespace Sideloader
                     {
                         var stream = archive.GetInputStream(entry);
 
-                        var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int) entry.Size);
-                        
+                        var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size);
+
                         if (zipPath.Contains("clamp"))
                             tex.wrapMode = TextureWrapMode.Clamp;
                         else if (zipPath.Contains("repeat"))
@@ -204,7 +204,7 @@ namespace Sideloader
             if (BundleManager.TryGetObjectFromName(assetName, assetBundleName, type, out UnityEngine.Object obj))
             {
                 result = new AssetBundleLoadAssetOperationSimulation(obj);
-                    return true;
+                return true;
             }
 
             result = null;
