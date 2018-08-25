@@ -36,15 +36,20 @@ namespace Screencap
         [AcceptableValueRange(2, 4096, false)]
         public ConfigWrapper<int> ResolutionY { get; private set; }
 
-        [DisplayName("!Downscaling rate (x times)")]
+        [DisplayName("Character screenshot upsampling ratio")]
+        [Description("Capture character screenshots in a higher resolution and then downscale them to desired size. " +
+                     "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
         public ConfigWrapper<int> DownscalingRate { get; private set; }
 
-        [DisplayName("Card downscaling rate (x times)")]
+        [DisplayName("Card image upsampling ratio")]
+        [Description("Capture card images in a higher resolution and then downscale them to desired size. " +
+                     "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
         public ConfigWrapper<int> CardDownscalingRate { get; private set; }
 
-        [DisplayName("!Capture alpha")]
+        [DisplayName("Transparent background in character screenshots")]
+        [Description("Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio.")]
         public ConfigWrapper<bool> CaptureAlpha { get; private set; }
 
         #endregion
@@ -59,8 +64,8 @@ namespace Screencap
 
             ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
             ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
-            DownscalingRate = new ConfigWrapper<int>("downscalerate", this, 1);
-            CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 1);
+            DownscalingRate = new ConfigWrapper<int>("downscalerate", this, 2);
+            CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 2);
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
 
             SceneManager.sceneLoaded += (s, a) => Install();
