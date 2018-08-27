@@ -21,6 +21,9 @@ namespace IPALoader
 
             SceneManager.sceneLoaded += (scene, mode) =>
             {
+                if (mode != LoadSceneMode.Single)
+                    return;
+
                 BasePlugin.OnLevelWasLoaded(scene.buildIndex);
                 init = true;
             };
@@ -44,8 +47,8 @@ namespace IPALoader
 
         void LateUpdate()
         {
-            if (BasePlugin is IEnhancedPlugin)
-                ((IEnhancedPlugin)BasePlugin).OnLateUpdate();
+            if (BasePlugin is IEnhancedPlugin plugin)
+                plugin.OnLateUpdate();
         }
 
         void FixedUpdate()
