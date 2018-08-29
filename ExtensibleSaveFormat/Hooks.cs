@@ -15,22 +15,29 @@ namespace ExtensibleSaveFormat
 		public static string Marker = "KKEx";
 		public static int Version = 3;
 
+	    private static bool cardReadEventCalled;
+
 		public static void InstallHooks()
 		{
 			var harmony = HarmonyInstance.Create("com.bepis.bepinex.extensiblesaveformat");
 			harmony.PatchAll(typeof(Hooks));
         }
 
-		
-		#region ChaFile
 
-		#region Loading
+        #region ChaFile
 
-		public static void ChaFileLoadFileHook(ChaFile file, BlockHeader header, BinaryReader reader)
+        #region Loading
+	    [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "LoadFile", new[] {typeof(BinaryReader), typeof(bool), typeof(bool)})]
+	    public static void ChaFileLoadFilePreHook(ChaFile __instance, BinaryReader br, bool noLoadPNG, bool noLoadStatus)
+	    {
+	        cardReadEventCalled = false;
+	    }
+
+        public static void ChaFileLoadFileHook(ChaFile file, BlockHeader header, BinaryReader reader)
 	    {
 	        var info = header.SearchInfo(Marker);
 
-	        if (info != null && info.version == Version.ToString())
+            if (info != null && info.version == Version.ToString())
 	        {
 	            long originalPosition = reader.BaseStream.Position;
 	            long basePosition = originalPosition - header.lstInfo.Sum(x => x.size);
@@ -45,13 +52,14 @@ namespace ExtensibleSaveFormat
 
 	            var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(data);
 
+	            cardReadEventCalled = true;
                 ExtendedSave.internalCharaDictionary.Set(file, dictionary);
 
 	            ExtendedSave.cardReadEvent(file);
             }
 	        else
 	        {
-	            ExtendedSave.internalCharaDictionary.Set(file, new Dictionary<string, PluginData>());
+                ExtendedSave.internalCharaDictionary.Set(file, new Dictionary<string, PluginData>());
 	        }
 	    }
 
@@ -97,20 +105,21 @@ namespace ExtensibleSaveFormat
 	                string marker = br.ReadString();
 	                int version = br.ReadInt32();
 
-	                if (marker == "KKEx" && version == 2)
+                    if (marker == "KKEx" && version == 2)
 	                {
-	                    int length = br.ReadInt32();
+                        int length = br.ReadInt32();
 
 	                    if (length > 0)
 	                    {
 	                        byte[] bytes = br.ReadBytes(length);
 	                        var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
 
+	                        cardReadEventCalled = true;
 	                        ExtendedSave.internalCharaDictionary.Set(__instance, dictionary);
-	        
-		                    ExtendedSave.cardReadEvent(__instance);
+
+	                        ExtendedSave.cardReadEvent(__instance);
 	                    }
-	                }
+                    }
 	                else
 	                {
 	                    br.BaseStream.Position = originalPosition;
@@ -118,14 +127,19 @@ namespace ExtensibleSaveFormat
 	            }
 	            catch (EndOfStreamException)
 	            {
-	                /* Incomplete/non-existant data */
+                    /* Incomplete/non-existant data */
 	            }
-	            catch (InvalidOperationException)
+                catch (InvalidOperationException)
 	            {
 	                /* Invalid/unexpected deserialized data */
 	            }
 	        }
-	    }
+	        if (cardReadEventCalled == false) //If the event wasn't called at this point, it means the card doesn't contain any data, but we still need to call the even for consistency.
+	        {
+	            ExtendedSave.internalCharaDictionary.Set(__instance, new Dictionary<string, PluginData>());
+                ExtendedSave.cardReadEvent(__instance);
+            }
+        }
 
 		#endregion
 
