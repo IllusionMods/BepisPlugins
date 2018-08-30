@@ -543,38 +543,42 @@ namespace ExtensibleSaveFormat
 
 		public static void ChaFileCoordinateLoadHook(ChaFileCoordinate coordinate, BinaryReader br)
 		{
-			try
-			{
-				string marker = br.ReadString(); 
-				int version = br.ReadInt32();    
+		    try
+		    {
+		        string marker = br.ReadString();
+		        int version = br.ReadInt32();
 
-				int length = br.ReadInt32();
+		        int length = br.ReadInt32();
 
-				if (marker == Marker && version == Version && length > 0)
-				{
-					byte[] bytes = br.ReadBytes(length);
-					var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+		        if (marker == Marker && version == Version && length > 0)
+		        {
+		            byte[] bytes = br.ReadBytes(length);
+		            var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
 
-					ExtendedSave.internalCoordinateDictionary.Set(coordinate, dictionary);
-				}
+		            ExtendedSave.internalCoordinateDictionary.Set(coordinate, dictionary);
+		        }
+		        else
+		            ExtendedSave.internalCoordinateDictionary.Set(coordinate, new Dictionary<string, PluginData>()); //Overriding with empty data just in case there is some remnant from former loads.
 
-				ExtendedSave.coordinateReadEvent(coordinate);
-			}
-			catch (EndOfStreamException)
-			{
-				/* Incomplete/non-existant data */
-			}
-			catch (InvalidOperationException)
-			{
-				/* Invalid/unexpected deserialized data */
-			}
+		    }
+		    catch (EndOfStreamException)
+		    {
+                /* Incomplete/non-existant data */
+		        ExtendedSave.internalCoordinateDictionary.Set(coordinate, new Dictionary<string, PluginData>());
+            }
+		    catch (InvalidOperationException)
+		    {
+                /* Invalid/unexpected deserialized data */
+		        ExtendedSave.internalCoordinateDictionary.Set(coordinate, new Dictionary<string, PluginData>());
+		    }
+		    ExtendedSave.coordinateReadEvent(coordinate); //Firing the event in any case
 		}
 
-		#endregion
+        #endregion
 
-		#region Saving
+        #region Saving
 
-		[HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), new[] {typeof(string)})]
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), new[] {typeof(string)})]
 		public static IEnumerable<CodeInstruction> ChaFileCoordinateSaveTranspiler(IEnumerable<CodeInstruction> instructions)
 		{
 			bool hooked = false;
