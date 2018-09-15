@@ -16,7 +16,7 @@ namespace Sideloader
 {
     [BepInDependency("com.bepis.bepinex.resourceredirector")]
     [BepInDependency("com.bepis.bepinex.extendedsave")]
-    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.2")]
+    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.3")]
     public class Sideloader : BaseUnityPlugin
     {
         protected List<ZipFile> Archives = new List<ZipFile>();
@@ -79,7 +79,7 @@ namespace Sideloader
                 Archives.Add(archive);
                 LoadedManifests.Add(manifest);
 
-                LoadAllUnityArchives(archive);
+                LoadAllUnityArchives(archive, archivePath);
 
                 LoadAllLists(archive, manifest);
             }
@@ -140,7 +140,9 @@ namespace Sideloader
             }
         }
 
-        protected void LoadAllUnityArchives(ZipFile arc)
+		private static MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        protected void LoadAllUnityArchives(ZipFile arc, string archiveFilename)
         {
             foreach (ZipEntry entry in arc)
             {
@@ -153,6 +155,14 @@ namespace Sideloader
 
                     Func<AssetBundle> getBundleFunc = () =>
                     {
+						if (entry.CompressionMethod == CompressionMethod.Stored)
+						{
+							long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
+
+							Logger.Log(LogLevel.Info, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
+							return AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
+						}
+
                         var stream = arc.GetInputStream(entry);
 
                         byte[] buffer = new byte[entry.Size];
