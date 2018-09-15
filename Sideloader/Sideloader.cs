@@ -154,25 +154,36 @@ namespace Sideloader
                         assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
 
                     Func<AssetBundle> getBundleFunc = () =>
-                    {
+					{
+						AssetBundle bundle;
+
 						if (entry.CompressionMethod == CompressionMethod.Stored)
 						{
 							long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
 
 							Logger.Log(LogLevel.Info, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
-							return AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
+							bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
+						}
+						else
+						{
+							var stream = arc.GetInputStream(entry);
+
+							byte[] buffer = new byte[entry.Size];
+
+							stream.Read(buffer, 0, (int)entry.Size);
+
+							//BundleManager.RandomizeCAB(buffer);
+
+							bundle = AssetBundle.LoadFromMemory(buffer);
 						}
 
-                        var stream = arc.GetInputStream(entry);
+						if (bundle == null)
+						{
+							Logger.Log(LogLevel.Error, $"Asset bundle \"{entry.Name}\" ({Path.GetFileName(archiveFilename)}) failed to load! Does it have a conflicting CAB string?");
+						}
 
-                        byte[] buffer = new byte[entry.Size];
-
-                        stream.Read(buffer, 0, (int)entry.Size);
-
-                        //BundleManager.RandomizeCAB(buffer);
-
-                        return AssetBundle.LoadFromMemory(buffer);
-                    };
+						return bundle;
+					};
 
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
