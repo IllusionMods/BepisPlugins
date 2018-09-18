@@ -55,7 +55,6 @@
     <Compile Include="AssetLoader.cs" />
     <Compile Include="ListLoader.cs" />
     <Compile Include="Hooks.cs" />
-    <Compile Include="Loaders\IntroVoiceClipLoader.cs" />
     <Compile Include="ReflectionHelper.cs" />
     <Compile Include="ResourceRedirector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
