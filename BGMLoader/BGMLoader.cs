@@ -12,7 +12,9 @@ namespace BGMLoader
     {
 	    public BGMLoader()
 	    {
-			ResourceRedirector.ResourceRedirector.AssetResolvers.Add(HandleAsset);
+	        Hooks.InstallHooks();
+
+            ResourceRedirector.ResourceRedirector.AssetResolvers.Add(HandleAsset);
 	    }
 
 	    public static bool HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
