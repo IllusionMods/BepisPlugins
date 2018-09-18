@@ -13,7 +13,9 @@ You can download nightly builds [here](http://bepisbuilds.dyn.mk/bepis_plugins),
 
 ## Plugin descriptions
 ### BGMLoader
-Loads custom BGMs and clips played on game startup. Stock audio is replaced during runtime by custom clips in .wav format from BepInEx\BGM and BepInEx\introclips directories.
+Loads custom BGMs and clips played on game startup. Stock audio is replaced during runtime by custom clips from BepInEx\BGM and BepInEx\IntroClips directories.
+
+[Tutorial on how to replace sound clips and background music using BGMLoader.](BGMLoader/README.md)
 
 ### ColorCorrector
 Allows configuration of some post-processing filters. (change of bloom amount, disable saturation filter)
