@@ -83,6 +83,18 @@ namespace Sideloader.AutoResolver
                     (obj, value) => { ((ChaFileFace)obj).pupil[1].id = value; },
                     (obj) =>          ((ChaFileFace)obj).pupil[1].id));
 
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_eye_gradation, "PupilGradient1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileFace)obj).pupil[0].gradMaskId = value; },
+                    (obj) => ((ChaFileFace)obj).pupil[0].gradMaskId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_eye_gradation, "PupilGradient2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileFace)obj).pupil[1].gradMaskId = value; },
+                    (obj) => ((ChaFileFace)obj).pupil[1].gradMaskId));
+
             return generatedProperties;
         }
 
@@ -316,6 +328,287 @@ namespace Sideloader.AutoResolver
                     (obj, value) => { ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC] = value; },
                     (obj) =>          ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC]));
 
+
+            //Emblems
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesTopEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].emblemeId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesBotEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].emblemeId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesBraEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].emblemeId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesShortsEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].emblemeId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesGlovesEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].emblemeId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesPantsEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].emblemeId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesSocksEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].emblemeId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesShoesInnerEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].emblemeId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_emblem, "ClothesShoesOuterEmblem", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].emblemeId = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].emblemeId));
+
+            //Patterns
+            //top
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesTopPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesTopPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesTopPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesTopPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[3].pattern));
+
+            //bot
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesBotPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesBotPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesBotPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesBotPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[3].pattern));
+
+            //bra
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesBraPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesBraPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesBraPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesBraPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[3].pattern));
+
+            //shorts
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShortsPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShortsPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShortsPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShortsPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[3].pattern));
+
+            //gloves
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesGlovesPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesGlovesPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesGlovesPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesGlovesPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[3].pattern));
+
+            //pants
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesPantsPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesPantsPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesPantsPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesPantsPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[3].pattern));
+
+            //socks
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesSocksPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesSocksPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesSocksPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesSocksPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[3].pattern));
+
+            //shoes inner
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShoesInnerPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShoesInnerPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShoesInnerPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShoesInnerPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[3].pattern));
+
+            //shoes outer
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShoesOuterPattern0", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[0].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[0].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShoesOuterPattern1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[1].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[1].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShoesOuterPattern2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[2].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[2].pattern));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, "ClothesShoesOuterPattern3", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[3].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[3].pattern));
 
             return generatedProperties;
         }

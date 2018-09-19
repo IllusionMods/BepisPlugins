@@ -34,16 +34,16 @@ namespace Sideloader.AutoResolver
 			action(StructReference.ChaFileFaceProperties, file.custom.face, extInfo, "");
 			action(StructReference.ChaFileBodyProperties, file.custom.body, extInfo, "");
 			action(StructReference.ChaFileHairProperties, file.custom.hair, extInfo, "");
+            action(StructReference.ChaFileMakeupProperties, file.custom.face.baseMakeup, extInfo, "");
 
-			for (int i = 0; i < file.coordinate.Length; i++)
+            for (int i = 0; i < file.coordinate.Length; i++)
 			{
 				var coordinate = file.coordinate[i];
 				string prefix = $"outfit{i}.";
                 
 				action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, prefix);
-				action(StructReference.ChaFileMakeupProperties, coordinate.makeup, extInfo, prefix);
 
-				for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
+                for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
 				{
 					string accPrefix = $"{prefix}accessory{acc}.";
 
