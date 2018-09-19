@@ -10,7 +10,7 @@ namespace Sideloader
         protected readonly int SchemaVer = 1;
 
         protected XDocument manifestDocument;
-        
+
         public string GUID => manifestDocument.Root?.Element("guid")?.Value;
         public string Name => manifestDocument.Root?.Element("name")?.Value;
         public string Version => manifestDocument.Root?.Element("version")?.Value;
@@ -23,25 +23,33 @@ namespace Sideloader
             using (XmlReader reader = XmlReader.Create(stream))
                 manifestDocument = XDocument.Load(reader);
         }
-        
+
         public static bool TryLoadFromZip(ZipFile zip, out Manifest manifest)
         {
             manifest = null;
+            try
+            {
+                ZipEntry entry = zip.GetEntry("manifest.xml");
 
-            ZipEntry entry = zip.GetEntry("manifest.xml");
+                if (entry == null)
+                    return false;
 
-            if (entry == null)
+                manifest = new Manifest(zip.GetInputStream(entry));
+
+                if (manifest.manifestDocument?.Root?.Attribute("schema-ver")?.Value != manifest.SchemaVer.ToString())
+                    return false;
+
+                if (manifest.GUID == null)
+                    return false;
+
+                return true;
+            }
+            //catch any exceptions caused by improperly formatted xml files
+            catch
+            {
                 return false;
+            }
 
-            manifest = new Manifest(zip.GetInputStream(entry));
-
-            if (manifest.manifestDocument?.Root?.Attribute("schema-ver")?.Value != manifest.SchemaVer.ToString())
-                return false;
-
-            if (manifest.GUID == null)
-                return false;
-
-            return true;
         }
     }
 }
