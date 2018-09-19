@@ -26,9 +26,7 @@ namespace Sideloader
         protected List<Manifest> LoadedManifests = new List<Manifest>();
 
         public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
-
-
-
+        
         public Sideloader()
         {
             //ilmerge
@@ -51,37 +49,44 @@ namespace Sideloader
 
             if (!Directory.Exists(modDirectory))
                 return;
-            
+
             //load zips
-            foreach (string archivePath in Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories)
+            foreach (var archivePath in Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories)
                 .Where(x => x.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase)))
             {
-                var archive = new ZipFile(archivePath);
-
-                if (!Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                try
                 {
-                    Logger.Log(LogLevel.Warning, $"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
-                    continue;
-                }
+                    var archive = new ZipFile(archivePath);
 
-                if (LoadedManifests.Any(x => x.GUID == manifest.GUID))
+                    if (!Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                    {
+                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
+                        continue;
+                    }
+
+                    if (LoadedManifests.Any(x => x.GUID == manifest.GUID))
+                    {
+                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".");
+                        continue;
+                    }
+
+                    var manifestName = !string.IsNullOrEmpty(manifest.Name?.Trim())
+                        ? manifest.Name
+                        : Path.GetFileName(archivePath);
+
+                    Logger.Log(LogLevel.Info, $"[SIDELOADER] Loaded {manifestName} {manifest.Version ?? ""}");
+
+                    Archives.Add(archive);
+                    LoadedManifests.Add(manifest);
+
+                    LoadAllUnityArchives(archive, archivePath);
+
+                    LoadAllLists(archive, manifest);
+                }
+                catch (SystemException ex)
                 {
-                    Logger.Log(LogLevel.Warning, $"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".");
-                    continue;
+                    Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load archive \"{archivePath}\" with error: {ex}");
                 }
-
-                var manifestName = !string.IsNullOrEmpty(manifest.Name?.Trim())
-                    ? manifest.Name
-                    : Path.GetFileName(archivePath);
-
-                Logger.Log(LogLevel.Info, $"[SIDELOADER] Loaded {manifestName} {manifest.Version ?? ""}");
-
-                Archives.Add(archive);
-                LoadedManifests.Add(manifest);
-
-                LoadAllUnityArchives(archive, archivePath);
-
-                LoadAllLists(archive, manifest);
             }
         }
 
@@ -118,29 +123,36 @@ namespace Sideloader
             {
                 if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
-                    var stream = arc.GetInputStream(entry);
-
-                    var chaListData = ListLoader.LoadCSV(stream);
-
-                    SetPossessNew(chaListData);
-                    UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData);
-                    IndexList(manifest, chaListData);
-
-                    ListLoader.ExternalDataList.Add(chaListData);
-
-                    if (LoadedData.TryGetValue(manifest, out lists))
+                    try
                     {
-                        lists.Add(chaListData);
+                        var stream = arc.GetInputStream(entry);
+
+                        var chaListData = ListLoader.LoadCSV(stream);
+
+                        SetPossessNew(chaListData);
+                        UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData);
+                        IndexList(manifest, chaListData);
+
+                        ListLoader.ExternalDataList.Add(chaListData);
+
+                        if (LoadedData.TryGetValue(manifest, out lists))
+                        {
+                            lists.Add(chaListData);
+                        }
+                        else
+                        {
+                            LoadedData[manifest] = new List<ChaListData> { chaListData };
+                        }
                     }
-                    else
+                    catch (SystemException ex)
                     {
-                        LoadedData[manifest] = new List<ChaListData> { chaListData };
+                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex}");
                     }
                 }
             }
         }
 
-		private static MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", BindingFlags.NonPublic | BindingFlags.Instance);
 
         protected void LoadAllUnityArchives(ZipFile arc, string archiveFilename)
         {
@@ -154,36 +166,36 @@ namespace Sideloader
                         assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
 
                     Func<AssetBundle> getBundleFunc = () =>
-					{
-						AssetBundle bundle;
+                    {
+                        AssetBundle bundle;
 
-						if (entry.CompressionMethod == CompressionMethod.Stored)
-						{
-							long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
+                        if (entry.CompressionMethod == CompressionMethod.Stored)
+                        {
+                            long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
 
-							Logger.Log(LogLevel.Info, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
-							bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
-						}
-						else
-						{
-							var stream = arc.GetInputStream(entry);
+                            Logger.Log(LogLevel.Info, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
+                            bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
+                        }
+                        else
+                        {
+                            var stream = arc.GetInputStream(entry);
 
-							byte[] buffer = new byte[entry.Size];
+                            byte[] buffer = new byte[entry.Size];
 
-							stream.Read(buffer, 0, (int)entry.Size);
+                            stream.Read(buffer, 0, (int)entry.Size);
 
-							//BundleManager.RandomizeCAB(buffer);
+                            //BundleManager.RandomizeCAB(buffer);
 
-							bundle = AssetBundle.LoadFromMemory(buffer);
-						}
+                            bundle = AssetBundle.LoadFromMemory(buffer);
+                        }
 
-						if (bundle == null)
-						{
-							Logger.Log(LogLevel.Error, $"Asset bundle \"{entry.Name}\" ({Path.GetFileName(archiveFilename)}) failed to load! Does it have a conflicting CAB string?");
-						}
+                        if (bundle == null)
+                        {
+                            Logger.Log(LogLevel.Error, $"Asset bundle \"{entry.Name}\" ({Path.GetFileName(archiveFilename)}) failed to load! Does it have a conflicting CAB string?");
+                        }
 
-						return bundle;
-					};
+                        return bundle;
+                    };
 
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 

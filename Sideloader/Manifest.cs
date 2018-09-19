@@ -44,12 +44,11 @@ namespace Sideloader
 
                 return true;
             }
-            //catch any exceptions caused by improperly formatted xml files
             catch
             {
+                // Badly formatted manifest or bad data
                 return false;
             }
-
         }
     }
 }
