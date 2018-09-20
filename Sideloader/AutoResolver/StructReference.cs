@@ -469,22 +469,91 @@ namespace Sideloader.AutoResolver
         {
             string prefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";
 
-            var baseProperties = new List<CategoryProperty>
-            {
-                new CategoryProperty(CategoryNo.ao_none , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_hair , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_head , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_face , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_neck , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_body , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_waist , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_leg , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_arm , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_hand , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_kokan , "id", prefix)
-            };
+            //var baseProperties = new List<CategoryProperty>
+            //{
+            //    new CategoryProperty(CategoryNo.ao_none , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_hair , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_head , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_face , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_neck , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_body , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_waist , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_leg , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_arm , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_hand , "id", prefix),
+            //    new CategoryProperty(CategoryNo.ao_kokan , "id", prefix)
+            //};
 
-            var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileAccessory.PartsInfo), baseProperties, prefix);
+            //var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileAccessory.PartsInfo), baseProperties, prefix);
+
+            var generatedProperties = new Dictionary<CategoryProperty, StructValue<int>>();
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_none, "AccessoryNone", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_hair, "AccessoryHair", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_head, "AccessoryHead", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_face, "AccessoryFace", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_neck, "AccessoryNeck", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_body, "AccessoryBody", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_waist, "AccessoryWaist", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_leg, "AccessoryLeg", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_arm, "AccessoryArm", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_hand, "AccessoryHand", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.ao_kokan, "AccessoryKokan", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileAccessory.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileAccessory.PartsInfo)obj).id));
+
 
             return generatedProperties;
         }
