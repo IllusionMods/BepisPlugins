@@ -26,7 +26,7 @@ namespace Sideloader
         protected List<Manifest> LoadedManifests = new List<Manifest>();
 
         public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
-        
+
         public Sideloader()
         {
             //ilmerge
@@ -45,47 +45,100 @@ namespace Sideloader
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
 
             //check mods directory
-            string modDirectory = Path.Combine(Paths.GameRootPath, "mods");
+            var modDirectory = Path.Combine(Paths.GameRootPath, "mods");
 
             if (!Directory.Exists(modDirectory))
-                return;
-
-            //load zips
-            foreach (var archivePath in Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories)
-                .Where(x => x.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || x.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase)))
             {
+                Logger.Log(LogLevel.Warning, "[SIDELOADER] Could not find the \"mods\" directory");
+                return;
+            }
+
+            LoadModsFromDirectory(modDirectory);
+        }
+
+        private void LoadModsFromDirectory(string modDirectory)
+        {
+            string GetRelativeArchiveDir(string archiveDir)
+            {
+                if (archiveDir.Length < modDirectory.Length)
+                    return archiveDir;
+                return archiveDir.Substring(modDirectory.Length).Trim(' ', '/', '\\');
+            }
+
+            Logger.Log(LogLevel.Info, "[SIDELOADER] Scanning the \"mods\" directory...");
+
+            // Look for mods, load their manifests
+            var allMods = Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories)
+                .Where(x => x.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
+                            x.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase));
+
+            var archives = new Dictionary<ZipFile, Manifest>();
+
+            foreach (var archivePath in allMods)
+            {
+                ZipFile archive = null;
                 try
                 {
-                    var archive = new ZipFile(archivePath);
+                    archive = new ZipFile(archivePath);
 
-                    if (!Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                    if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                    {
+                        archives.Add(archive, manifest);
+                    }
+                    else
                     {
                         Logger.Log(LogLevel.Warning, $"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
-                        continue;
                     }
-
-                    if (LoadedManifests.Any(x => x.GUID == manifest.GUID))
-                    {
-                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] Skipping {Path.GetFileName(archivePath)} due to duplicate GUID \"{manifest.GUID}\".");
-                        continue;
-                    }
-
-                    var manifestName = !string.IsNullOrEmpty(manifest.Name?.Trim())
-                        ? manifest.Name
-                        : Path.GetFileName(archivePath);
-
-                    Logger.Log(LogLevel.Info, $"[SIDELOADER] Loaded {manifestName} {manifest.Version ?? ""}");
-
-                    Archives.Add(archive);
-                    LoadedManifests.Add(manifest);
-
-                    LoadAllUnityArchives(archive, archivePath);
-
-                    LoadAllLists(archive, manifest);
                 }
                 catch (SystemException ex)
                 {
-                    Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load archive \"{archivePath}\" with error: {ex}");
+                    Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load archive \"{GetRelativeArchiveDir(archivePath)}\" with error: {ex.Message}");
+                    Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
+                    archive?.Close();
+                }
+            }
+
+            // Handlie duplicate GUIDs and load unique mods
+            foreach (var modGroup in archives.GroupBy(x => x.Value.GUID))
+            {
+                // Order by version if available, else use modified dates (less reliable)
+                var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.Value.Version))
+                    ? modGroup.OrderByDescending(x => x.Value.Version, new ManifestVersionComparer())
+                    : modGroup.OrderByDescending(x => File.GetLastWriteTime(x.Key.Name));
+
+                var orderedMods = orderedModsQuery.ToList();
+
+                if (orderedMods.Count > 1)
+                {
+                    var modList = string.Join(", ", orderedMods.Select(x => '"' + GetRelativeArchiveDir(x.Key.Name) + '"').ToArray());
+                    Logger.Log(LogLevel.Warning, $"[SIDELOADER] Archives with identical GUIDs detected! Archives: {modList}");
+                    Logger.Log(LogLevel.Warning, $"[SIDELOADER] Only \"{GetRelativeArchiveDir(orderedMods[0].Key.Name)}\" will be loaded because it's the newest");
+
+                    // Don't keep the duplicate archives in memory
+                    foreach (var dupeMod in orderedMods.Skip(1))
+                        dupeMod.Key.Close();
+                }
+
+                // Actually load the mods (only one per GUID, the newest one)
+                var archive = orderedMods[0].Key;
+                var manifest = orderedMods[0].Value;
+                try
+                {
+                    Archives.Add(archive);
+                    LoadedManifests.Add(manifest);
+
+                    LoadAllUnityArchives(archive, archive.Name);
+                    LoadAllLists(archive, manifest);
+
+                    var trimmedName = manifest.Name?.Trim();
+                    var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
+
+                    Logger.Log(LogLevel.Info, $"[SIDELOADER] Loaded {displayName} {manifest.Version ?? ""}");
+                }
+                catch (SystemException ex)
+                {
+                    Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load archive \"{GetRelativeArchiveDir(archive.Name)}\" with error: {ex.Message}");
+                    Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
                 }
             }
         }
@@ -146,7 +199,8 @@ namespace Sideloader
                     }
                     catch (SystemException ex)
                     {
-                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex}");
+                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
+                        Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
                     }
                 }
             }
