@@ -8,14 +8,16 @@ namespace Sideloader.AutoResolver
     [MessagePackObject]
     public class ResolveInfo
     {
-		[Key("ModID")]
+        [Key("ModID")]
         public string GUID { get; set; }
-		[Key("Slot")]
+        [Key("Slot")]
         public int Slot { get; set; }
-	    [Key("LocalSlot")]
+        [Key("LocalSlot")]
         public int LocalSlot { get; set; }
-	    [Key("Property")]
+        [Key("Property")]
         public string Property { get; set; }
+        [Key("CategoryNo")]
+        public ChaListDefine.CategoryNo CategoryNo { get; set; }
 
         public bool CanResolve(ResolveInfo other)
         {
@@ -28,7 +30,7 @@ namespace Sideloader.AutoResolver
         {
             return MessagePackSerializer.Deserialize<ResolveInfo>(data);
         }
-        
+
         public byte[] Serialize()
         {
             return MessagePackSerializer.Serialize(this);
