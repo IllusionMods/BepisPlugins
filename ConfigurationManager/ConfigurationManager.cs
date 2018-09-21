@@ -141,29 +141,44 @@ namespace ConfigurationManager
                     .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                     .FilterBrowsable(true, true)
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
-                detected.AddRange(
-                    settingPropsStatic.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x != null));
+                detected.AddRange(settingPropsStatic.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x != null));
 
                 // Normal properties ------
 
-                var normalProps = type
+                bool IsPropSafeToShow(PropertyInfo p)
+                {
+                    return p.GetSetMethod()?.IsPublic == true && (p.PropertyType.IsValueType || p.PropertyType == typeof(string));
+                }
+                
+                var normalPropsSafeToShow = type
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                    .Where(IsPropSafeToShow)
                     .FilterBrowsable(true, true)
-                    .Concat(type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                        .FilterBrowsable(true, false))
-                    .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+
+                var normalPropsWithBrowsable = type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .FilterBrowsable(true, false)
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+
+                var normalProps = normalPropsSafeToShow.Concat(normalPropsWithBrowsable).Distinct();
+
                 detected.AddRange(normalProps.Select(x => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)).Where(x => x != null));
 
-                var normalPropsStatic = type
+                // Normal static properties ------
+
+                var normalStaticPropsSafeToShow = type
                     .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                    .Where(IsPropSafeToShow)
                     .FilterBrowsable(true, true)
-                    .Concat(type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-                        .FilterBrowsable(true, false))
-                    .Distinct()
                     .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
-                detected.AddRange(
-                    normalPropsStatic.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)).Where(x => x != null));
+
+                var normalStaticPropsWithBrowsable = type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
+                    .FilterBrowsable(true, false)
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+
+                var normalStaticProps = normalStaticPropsSafeToShow.Concat(normalStaticPropsWithBrowsable).Distinct();
+
+                detected.AddRange(normalStaticProps.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)).Where(x => x != null));
 
                 // Allow to enable/disable plugin if it uses any update methods ------
                 if (type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => UpdateMethodNames.Contains(x.Name)))

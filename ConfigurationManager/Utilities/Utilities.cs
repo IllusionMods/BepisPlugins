@@ -17,7 +17,7 @@ namespace ConfigurationManager.Utilities
         /// <summary>
         ///     Return items with browsable attribute same as expectedBrowsable, and optionally items with no browsable attribute
         /// </summary>
-        public static IEnumerable<T> FilterBrowsable<T>(this T[] props, bool expectedBrowsable,
+        public static IEnumerable<T> FilterBrowsable<T>(this IEnumerable<T> props, bool expectedBrowsable,
             bool includeNotSet = false) where T : MemberInfo
         {
             if (includeNotSet)
