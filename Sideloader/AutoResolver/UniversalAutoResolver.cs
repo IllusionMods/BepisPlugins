@@ -24,18 +24,6 @@ namespace Sideloader.AutoResolver
                     //the property does not have external slot information
                     //check if we have a corrosponding item for backwards compatbility
 
-                    //For accessories, make sure we're checking the appropriate category
-                    if (kv.Key.Category.ToString().Contains("ao_"))
-                    {
-                        ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)structure;
-
-                        if ((int)kv.Key.Category != AccessoryInfo.type)
-                        {
-                            //If the current category does not match the category saved to the card do not attempt resolving
-                            return;
-                        }
-                    }
-
                     var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
                                                                               && x.Slot == kv.Value.GetMethod(structure)
                                                                               && x.CategoryNo == kv.Key.Category);
@@ -60,11 +48,21 @@ namespace Sideloader.AutoResolver
                 }
             }
 
-            HashSet<string> keyHashset = new HashSet<string>();
-
             foreach (var kv in propertyDict)
             {
                 string property = $"{propertyPrefix}{kv.Key}";
+
+                //For accessories, make sure we're checking the appropriate category
+                if (kv.Key.Category.ToString().Contains("ao_"))
+                {
+                    ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)structure;
+
+                    if ((int)kv.Key.Category != AccessoryInfo.type)
+                    {
+                        //If the current category does not match the category saved to the card do not attempt resolving
+                        continue;
+                    }
+                }
 
                 if (extInfo != null)
                 {
@@ -72,13 +70,9 @@ namespace Sideloader.AutoResolver
 
                     if (extResolve != null)
                     {
-                        //prevent resolving 11 times per accessory
-                        if (keyHashset.Contains(property))
-                            continue;
-                        keyHashset.Add(property);
-
                         //the property has external slot information 
-                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve));
+                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve)
+                                                                               && x.CategoryNo == kv.Key.Category);
 
                         if (intResolve != null)
                         {
