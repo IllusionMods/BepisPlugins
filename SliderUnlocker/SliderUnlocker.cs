@@ -1,10 +1,14 @@
 ﻿using BepInEx;
 using ChaCustom;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -49,16 +53,24 @@ namespace SliderUnlocker
                 if (cvs == null)
                     continue;
 
-                var fields = cvs.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                                    .Where(x => typeof(Slider).IsAssignableFrom(x.FieldType));
+                var fields = cvs.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-                foreach (Slider slider in fields.Select(x => x.GetValue(cvs)))
+                foreach (Slider slider in fields.Where(x => typeof(Slider).IsAssignableFrom(x.FieldType)).Select(x => x.GetValue(cvs)))
                 {
                     if (slider == null)
                         continue;
 
                     slider.minValue = minimum;
                     slider.maxValue = maximum;
+                }
+
+                var possibleDigitCountIncludingMinus = Math.Max(Minimum.Value.ToString(CultureInfo.InvariantCulture).Length, Maximum.Value.ToString(CultureInfo.InvariantCulture).Length);
+                foreach (TMP_InputField inputField in fields.Where(x => typeof(TMP_InputField).IsAssignableFrom(x.FieldType)).Select(x => x.GetValue(cvs)))
+                {
+                    if (inputField == null)
+                        continue;
+
+                    inputField.characterLimit = possibleDigitCountIncludingMinus;
                 }
             }
         }
