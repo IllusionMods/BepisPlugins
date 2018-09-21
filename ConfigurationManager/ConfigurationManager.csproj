@@ -64,6 +64,7 @@
     <Compile Include="SettingEntry.cs" />
     <Compile Include="SettingEntryBase.cs" />
     <Compile Include="SettingFieldDrawer.cs" />
+    <Compile Include="Utilities\FieldToPropertyInfoWrapper.cs" />
     <Compile Include="Utilities\Utilities.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

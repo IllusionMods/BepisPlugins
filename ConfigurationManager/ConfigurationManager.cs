@@ -133,15 +133,33 @@ namespace ConfigurationManager
 
                 var settingProps = type
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .FilterBrowsable(true, true)
-                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
-                detected.AddRange(settingProps.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)).Where(x => x != null));
+                    .FilterBrowsable(true, true);
 
-                var settingPropsStatic = type
-                    .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                var settingFields = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
+                    .Where(f => !f.IsSpecialName)
                     .FilterBrowsable(true, true)
+                    .Select(f => new FieldToPropertyInfoWrapper(f));
+
+                var settingEntries = settingProps.Concat(settingFields.Cast<PropertyInfo>())
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
-                detected.AddRange(settingPropsStatic.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x != null));
+
+                detected.AddRange(settingEntries.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)).Where(x => x != null));
+
+                // Config wrappers static ------
+
+                var settingStaticProps = type
+                    .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                    .FilterBrowsable(true, true);
+
+                var settingStaticFields = type.GetFields(BindingFlags.Static | BindingFlags.Public)
+                    .Where(f => !f.IsSpecialName)
+                    .FilterBrowsable(true, true)
+                    .Select(f => new FieldToPropertyInfoWrapper(f));
+
+                var settingStaticEntries = settingStaticProps.Concat(settingStaticFields.Cast<PropertyInfo>())
+                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+
+                detected.AddRange(settingStaticEntries.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x != null));
 
                 // Normal properties ------
 
@@ -149,7 +167,7 @@ namespace ConfigurationManager
                 {
                     return p.GetSetMethod()?.IsPublic == true && (p.PropertyType.IsValueType || p.PropertyType == typeof(string));
                 }
-                
+
                 var normalPropsSafeToShow = type
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
                     .Where(IsPropSafeToShow)
@@ -193,12 +211,12 @@ namespace ConfigurationManager
                 }
 
                 detected.RemoveAll(x => x.Browsable == false);
-                
+
                 if (detected.Any())
                 {
                     var isAdvancedPlugin = type.GetCustomAttributes(typeof(AdvancedAttribute), false).Cast<AdvancedAttribute>()
                         .Any(x => x.IsAdvanced);
-                    if(isAdvancedPlugin)
+                    if (isAdvancedPlugin)
                         detected.ForEach(entry => entry.IsAdvanced = true);
 
                     results = results.Concat(detected);
