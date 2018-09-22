@@ -23,10 +23,9 @@ namespace Sideloader.AutoResolver
                 {
                     //the property does not have external slot information
                     //check if we have a corrosponding item for backwards compatbility
-
                     var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
-                                                                              && x.Slot == kv.Value.GetMethod(structure)
-                                                                              && x.CategoryNo == kv.Key.Category);
+                                                                           && x.Slot == kv.Value.GetMethod(structure)
+                                                                           && x.CategoryNo == kv.Key.Category);
 
                     if (intResolve != null)
                     {
@@ -38,6 +37,7 @@ namespace Sideloader.AutoResolver
                     else
                     {
                         //No match was found
+                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
                     }
                 }
                 else
@@ -71,7 +71,12 @@ namespace Sideloader.AutoResolver
                     if (extResolve != null)
                     {
                         //the property has external slot information 
-                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve)
+                        //var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve)
+                        //                                                       && x.CategoryNo == kv.Key.Category);
+
+                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
+                                                                               && x.Slot == extResolve.Slot
+                                                                               && x.GUID == extResolve.GUID
                                                                                && x.CategoryNo == kv.Key.Category);
 
                         if (intResolve != null)
@@ -119,20 +124,14 @@ namespace Sideloader.AutoResolver
 
             var propertyKeys = StructReference.CollatedStructValues.Keys.Where(x => x.Category == category).ToList();
 
-            //Logger.Log(LogLevel.Debug, category.ToString());
             //Logger.Log(LogLevel.Debug, StructReference.CollatedStructValues.Count.ToString());
-
 
             foreach (var kv in data.dictList)
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                //Logger.Log(LogLevel.Debug, kv.Value[0] + " | " + newSlot);
-
                 foreach (var propertyKey in propertyKeys)
                 {
-                    //Logger.Log(LogLevel.Debug, propertyKey.ToString());
-
                     LoadedResolutionInfo.Add(new ResolveInfo
                     {
                         GUID = manifest.GUID,
@@ -142,15 +141,17 @@ namespace Sideloader.AutoResolver
                         CategoryNo = category
                     });
 
-                    //Logger.Log(LogLevel.Debug, $"LOADED COUNT {LoadedResolutionInfo.Count}");
+                    //Logger.Log(LogLevel.Info, $"ResolveInfo - " +
+                    //                          $"GUID: {manifest.GUID} " +
+                    //                          $"Slot: {int.Parse(kv.Value[0])} " +
+                    //                          $"LocalSlot: {newSlot} " +
+                    //                          $"Property: {propertyKey.ToString()} " +
+                    //                          $"CategoryNo: {category} " +
+                    //                          $"Total Count: {LoadedResolutionInfo.Count}");
                 }
 
                 kv.Value[0] = newSlot.ToString();
             }
-
-            //Logger.Log(LogLevel.Debug, $"Internal info count: {LoadedResolutionInfo.Count}");
-            //foreach (ResolveInfo info in LoadedResolutionInfo)
-            //    Logger.Log(LogLevel.Debug, $"Internal info: {info.GUID} : {info.Property} : {info.Slot}");
         }
     }
 }
