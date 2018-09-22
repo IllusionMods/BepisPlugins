@@ -15,44 +15,54 @@ namespace Sideloader.AutoResolver
 
         public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
         {
-			void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
-	        {
-		        //check if it's a vanilla item
-		        if (!ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category]
-			        .ContainsKey(kv.Value.GetMethod(structure)))
-		        {
-			        //the property does not have external slot information
-			        //check if we have a corrosponding item for backwards compatbility
-			        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
-			                                                                  && x.Slot == kv.Value.GetMethod(structure));
+            void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
+            {
+                //check if it's a vanilla item
+                if (!ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category]
+                    .ContainsKey(kv.Value.GetMethod(structure)))
+                {
+                    //the property does not have external slot information
+                    //check if we have a corrosponding item for backwards compatbility
 
-			        if (intResolve != null)
-			        {
-				        //found a match
-				        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+                    var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
+                                                                              && x.Slot == kv.Value.GetMethod(structure)
+                                                                              && x.CategoryNo == kv.Key.Category);
 
-				        kv.Value.SetMethod(structure, intResolve.LocalSlot);
-			        }
-			        //otherwise ignore if not found
-		        }
-		        else
-		        {
-			        //not resolving since we prioritize vanilla items over modded items
-			        //BepInLogger.Log($"[UAR] Not resolving item due to vanilla ID range");
-			        //log commented out because it causes too much spam
-		        }
-	        }
+                    if (intResolve != null)
+                    {
+                        //found a match
+                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
 
-			HashSet<string> keyHashset = new HashSet<string>();
+                        kv.Value.SetMethod(structure, intResolve.LocalSlot);
+                    }
+                    else
+                    {
+                        //No match was found
+                    }
+                }
+                else
+                {
+                    //not resolving since we prioritize vanilla items over modded items
+                    //BepInLogger.Log($"[UAR] Not resolving item due to vanilla ID range");
+                    //log commented out because it causes too much spam
+                }
+            }
 
             foreach (var kv in propertyDict)
             {
-	            string property = $"{propertyPrefix}{kv.Key}";
+                string property = $"{propertyPrefix}{kv.Key}";
 
-	            if (keyHashset.Contains(property))
-		            continue;
+                //For accessories, make sure we're checking the appropriate category
+                if (kv.Key.Category.ToString().Contains("ao_"))
+                {
+                    ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)structure;
 
-	            keyHashset.Add(property);
+                    if ((int)kv.Key.Category != AccessoryInfo.type)
+                    {
+                        //If the current category does not match the category saved to the card do not attempt resolving
+                        continue;
+                    }
+                }
 
                 if (extInfo != null)
                 {
@@ -61,7 +71,8 @@ namespace Sideloader.AutoResolver
                     if (extResolve != null)
                     {
                         //the property has external slot information 
-                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve));
+                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve)
+                                                                               && x.CategoryNo == kv.Key.Category);
 
                         if (intResolve != null)
                         {
@@ -70,36 +81,36 @@ namespace Sideloader.AutoResolver
 
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }
-                        else 
+                        else
                         {
-							//we didn't find a match, check if we have the same GUID loaded
+                            //we didn't find a match, check if we have the same GUID loaded
 
-	                        if (LoadedResolutionInfo.Any(x => x.GUID == extResolve.GUID))
-							{
-								//we have the GUID loaded, so the user has an outdated mod
-								Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{extResolve.GUID}]");
-							}
-							else
-							{
-								//did not find a match, we don't have the mod
-								Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.GUID}]");
-							}
+                            if (LoadedResolutionInfo.Any(x => x.GUID == extResolve.GUID))
+                            {
+                                //we have the GUID loaded, so the user has an outdated mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{extResolve.GUID}]");
+                            }
+                            else
+                            {
+                                //did not find a match, we don't have the mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.GUID}]");
+                            }
 
-	                        kv.Value.SetMethod(structure, 999999); //set to an invalid ID
+                            kv.Value.SetMethod(structure, 999999); //set to an invalid ID
                         }
                     }
-                    else if (UnityEngine.Event.current.alt)
+                    else //if (UnityEngine.Event.current.alt)
                     {
-						CompatibilityResolve(kv);
+                        CompatibilityResolve(kv);
                     }
                 }
                 else
                 {
-					CompatibilityResolve(kv);
+                    CompatibilityResolve(kv);
                 }
             }
         }
-        
+
         private static int CurrentSlotID = 100000000;
 
         public static void GenerateResolutionInfo(Manifest manifest, ChaListData data)
@@ -108,37 +119,38 @@ namespace Sideloader.AutoResolver
 
             var propertyKeys = StructReference.CollatedStructValues.Keys.Where(x => x.Category == category).ToList();
 
-            //BepInLogger.Log(category.ToString());
-            //BepInLogger.Log(StructReference.CollatedStructValues.Count.ToString());
+            //Logger.Log(LogLevel.Debug, category.ToString());
+            //Logger.Log(LogLevel.Debug, StructReference.CollatedStructValues.Count.ToString());
 
 
             foreach (var kv in data.dictList)
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                //BepInLogger.Log(kv.Value[0] + " | " + newSlot);
+                //Logger.Log(LogLevel.Debug, kv.Value[0] + " | " + newSlot);
 
                 foreach (var propertyKey in propertyKeys)
                 {
-                    //BepInLogger.Log(property.Key.ToString());
+                    //Logger.Log(LogLevel.Debug, propertyKey.ToString());
 
                     LoadedResolutionInfo.Add(new ResolveInfo
                     {
                         GUID = manifest.GUID,
                         Slot = int.Parse(kv.Value[0]),
                         LocalSlot = newSlot,
-                        Property = propertyKey.ToString()
+                        Property = propertyKey.ToString(),
+                        CategoryNo = category
                     });
-                    
-                    //BepInLogger.Log($"LOADED COUNT {LoadedResolutionInfo.Count}");
+
+                    //Logger.Log(LogLevel.Debug, $"LOADED COUNT {LoadedResolutionInfo.Count}");
                 }
 
                 kv.Value[0] = newSlot.ToString();
             }
 
-	        //BepInLogger.Log($"Internal info count: {LoadedResolutionInfo.Count}");
-	        //foreach (ResolveInfo info in LoadedResolutionInfo)
-	        //    BepInLogger.Log($"Internal info: {info.ModID} : {info.Property} : {info.Slot}");
+            //Logger.Log(LogLevel.Debug, $"Internal info count: {LoadedResolutionInfo.Count}");
+            //foreach (ResolveInfo info in LoadedResolutionInfo)
+            //    Logger.Log(LogLevel.Debug, $"Internal info: {info.GUID} : {info.Property} : {info.Slot}");
         }
     }
 }
