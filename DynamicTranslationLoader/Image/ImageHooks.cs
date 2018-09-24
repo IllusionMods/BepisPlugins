@@ -78,5 +78,25 @@ namespace DynamicTranslationLoader.Image
             ImageTranslator.RegisterTexture(image, path, scene);
             ImageTranslator.ReplaceTexture(image, path, scene);
         }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Studio.CheckScene), "Start")]
+        public static void CheckSceneHook(ref Studio.CheckScene __instance)
+        {
+            foreach (var image in __instance.GetComponentsInChildren<UnityEngine.UI.Image>())
+            {
+                image.enabled = false;
+                image.enabled = true;
+            }
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Studio.NotificationScene), "Awake")]
+        public static void NotificationSceneHook(ref Studio.NotificationScene __instance)
+        {
+            foreach (var image in __instance.GetComponentsInChildren<UnityEngine.UI.Image>())
+            {
+                image.enabled = false;
+                image.enabled = true;
+            }
+        }
     }
 }
