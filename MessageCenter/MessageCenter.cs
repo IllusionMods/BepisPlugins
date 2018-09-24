@@ -6,7 +6,7 @@ using Logger = BepInEx.Logger;
 
 namespace MessageCenter
 {
-	[BepInPlugin("com.bepis.messagecenter", "Message Center", "1.0")]
+    [BepInPlugin("com.bepis.messagecenter", "Message Center", "1.0")]
     public class MessageCenter : BaseUnityPlugin
     {
         [DisplayName("Show messages in UI")]
@@ -20,44 +20,45 @@ namespace MessageCenter
         }
 
         private int showCounter = 0;
-	    private string TotalShowingLog = string.Empty;
-        
-	    private void Awake()
-	    {
-		    Logger.EntryLogged += (level, log) =>
-		    {
-		        if (Enabled.Value && (level & LogLevel.Message) != LogLevel.None)
-		        {
-		            if (showCounter == 0)
-		                TotalShowingLog = string.Empty;
+        private string TotalShowingLog = string.Empty;
 
-		            showCounter = 600;
-		            TotalShowingLog = $"{log}\r\n{TotalShowingLog}";
-		        }
-		    };
-	    }
+        private void Awake()
+        {
+            Logger.EntryLogged += (level, log) =>
+            {
+                if(Enabled.Value && (level & LogLevel.Message) != LogLevel.None)
+                {
+                    if(showCounter == 0)
+                        TotalShowingLog = string.Empty;
 
-	    private void OnGUI()
-	    {
-			if (showCounter != 0)
-			{
-				showCounter--;
+                    showCounter = 600;
+                    TotalShowingLog = $"{log}\r\n{TotalShowingLog}";
+                }
+            };
+        }
 
-				Color color = Color.white;
+        private void OnGUI()
+        {
+            if(showCounter != 0)
+            {
+                showCounter--;
 
-				if (showCounter < 100)
-					color.a = (float)showCounter / 100;
+                Color color = Color.white;
+                Color color2 = Color.black;
 
-				GUI.Label(new Rect(40, 20, 600, 160), TotalShowingLog, new GUIStyle
-				{
-					alignment = TextAnchor.UpperLeft,
-					fontSize = 26,
-					normal = new GUIStyleState
-					{
-						textColor = color
-					}
-				});
-			}
-	    }
+                if(showCounter < 100)
+                {
+                    var a = (float)showCounter / 100;
+                    color.a = a;
+                    color2.a = a;
+                }
+
+                ShadowAndOutline.DrawOutline(new Rect(40, 20, 600, 160), TotalShowingLog, new GUIStyle
+                {
+                    alignment = TextAnchor.UpperLeft,
+                    fontSize = 26,
+                }, color2, color, 2f);
+            }
+        }
     }
 }
