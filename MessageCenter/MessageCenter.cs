@@ -41,23 +41,24 @@ namespace MessageCenter
 	    {
 			if (showCounter != 0)
 			{
-				showCounter--;
+                showCounter--;
 
-				Color color = Color.white;
+                Color color = Color.white;
+                Color color2 = Color.black;
 
-				if (showCounter < 100)
-					color.a = (float)showCounter / 100;
+                if(showCounter < 100)
+                {
+                    var a = (float)showCounter / 100;
+                    color.a = a;
+                    color2.a = a;
+                }
 
-				GUI.Label(new Rect(40, 20, 600, 160), TotalShowingLog, new GUIStyle
-				{
-					alignment = TextAnchor.UpperLeft,
-					fontSize = 26,
-					normal = new GUIStyleState
-					{
-						textColor = color
-					}
-				});
-			}
+                ShadowAndOutline.DrawOutline(new Rect(40, 20, 600, 160), TotalShowingLog, new GUIStyle
+                {
+                    alignment = TextAnchor.UpperLeft,
+                    fontSize = 26,
+                }, color2, color, 2f);
+            }
 	    }
     }
 }
