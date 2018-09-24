@@ -200,7 +200,7 @@ namespace Sideloader
                     catch (SystemException ex)
                     {
                         Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
-                        Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
+                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
                     }
                 }
             }
@@ -238,7 +238,7 @@ namespace Sideloader
 
                             stream.Read(buffer, 0, (int)entry.Size);
 
-                            //BundleManager.RandomizeCAB(buffer);
+                            BundleManager.RandomizeCAB(buffer);
 
                             bundle = AssetBundle.LoadFromMemory(buffer);
                         }
