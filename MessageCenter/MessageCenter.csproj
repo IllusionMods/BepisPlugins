@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="MessageCenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShadowAndOutline.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConfigurationManager\ConfigurationManager.csproj">
