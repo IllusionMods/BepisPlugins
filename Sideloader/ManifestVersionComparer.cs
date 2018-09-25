@@ -15,9 +15,22 @@ namespace Sideloader
             {
                 var first = version.First.ElementAtOrDefault(i) ?? string.Empty;
                 var second = version.Second.ElementAtOrDefault(i) ?? string.Empty;
-                var result = first.CompareTo(second);
-                if (result != 0)
-                    return result;
+                try
+                {
+                    var result = first.CompareTo(second);
+                    if (result != 0)
+                        return result;
+                }
+                catch (ArgumentException)
+                {
+                    if(first is string s1 && second is string s2)
+                    {
+                        // Handle invalid characters in strings by comparing them byte by byte
+                        var result = string.CompareOrdinal(s1, s2);
+                        if (result != 0)
+                            return result;
+                    }
+                }
             }
             return version.First.Length.CompareTo(version.Second.Length);
         }
