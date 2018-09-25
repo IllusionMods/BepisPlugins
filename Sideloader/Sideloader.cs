@@ -82,13 +82,7 @@ namespace Sideloader
                     archive = new ZipFile(archivePath);
 
                     if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
-                    {
                         archives.Add(archive, manifest);
-                    }
-                    else
-                    {
-                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] Cannot load {Path.GetFileName(archivePath)} due to missing/invalid manifest.");
-                    }
                 }
                 catch (SystemException ex)
                 {

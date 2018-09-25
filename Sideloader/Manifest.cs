@@ -1,6 +1,9 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Xml.Linq;
 using System.Xml;
+using BepInEx;
+using BepInEx.Logging;
 using ICSharpCode.SharpZipLib.Zip;
 
 namespace Sideloader
@@ -32,21 +35,23 @@ namespace Sideloader
                 ZipEntry entry = zip.GetEntry("manifest.xml");
 
                 if (entry == null)
-                    return false;
+                    throw new OperationCanceledException("Manifest.xml is missing, make sure this is a zipmod");
 
                 manifest = new Manifest(zip.GetInputStream(entry));
 
                 if (manifest.manifestDocument?.Root?.Attribute("schema-ver")?.Value != manifest.SchemaVer.ToString())
-                    return false;
+                    throw new OperationCanceledException("Manifest.xml is in an invalid format");
 
                 if (manifest.GUID == null)
-                    return false;
+                    throw new OperationCanceledException("Manifest.xml is missing the GUID");
 
                 return true;
             }
-            catch
+            catch (SystemException ex)
             {
-                // Badly formatted manifest or bad data
+                Logger.Log(LogLevel.Warning, $"[SIDELOADER] Cannot load {Path.GetFileName(zip.Name)} - {ex.Message}.");
+                if (!(ex is OperationCanceledException))
+                    Logger.Log(LogLevel.Debug, "Error details: " + ex);
                 return false;
             }
         }
