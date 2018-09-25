@@ -45,6 +45,8 @@ namespace ConfigurationManager
         private Rect _settingWindowRect, _buttonRect, _screenRect;
         private Vector2 _settingWindowScrollPos;
 
+        private static Texture2D _tooltipBG;
+
         private readonly ConfigWrapper<bool> _showAdvanced;
         private readonly ConfigWrapper<bool> _showKeybinds;
         private readonly ConfigWrapper<bool> _showSettings;
@@ -283,9 +285,17 @@ namespace ConfigurationManager
             if (!string.IsNullOrEmpty(GUI.tooltip))
             {
                 var currentEvent = Event.current;
+                
+                var style = new GUIStyle()
+                {
+                    normal = new GUIStyleState(){ textColor = Color.white, background = _tooltipBG },
+                    wordWrap = true,
+                    alignment = TextAnchor.MiddleCenter
+                };
 
-                GUI.Label(new Rect(currentEvent.mousePosition.x, currentEvent.mousePosition.y + 25, 400, 500),
-                    GUI.tooltip);
+                GUI.Box(new Rect(currentEvent.mousePosition.x, currentEvent.mousePosition.y + 25, 400,
+                    style.CalcHeight(new GUIContent(GUI.tooltip), 400) + 10),
+                    GUI.tooltip, style);
             }
         }
 
@@ -424,6 +434,11 @@ namespace ConfigurationManager
             };
 
             _isStudio = Application.productName == "CharaStudio";
+
+            var background = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            background.SetPixel(0, 0, Color.black);
+            background.Apply();
+            _tooltipBG = background;
         }
 
         private void Update()
