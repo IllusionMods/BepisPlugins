@@ -2,7 +2,6 @@
 using BepInEx;
 using BepInEx.Logging;
 using UnityEngine;
-using Logger = BepInEx.Logger;
 
 namespace MessageCenter
 {
@@ -22,9 +21,9 @@ namespace MessageCenter
         private int showCounter = 0;
         private string TotalShowingLog = string.Empty;
 
-        private void Awake()
+        protected void Awake()
         {
-            Logger.EntryLogged += (level, log) =>
+            BepInEx.Logger.EntryLogged += (level, log) =>
             {
                 if(Enabled.Value && (level & LogLevel.Message) != LogLevel.None)
                 {
@@ -37,7 +36,7 @@ namespace MessageCenter
             };
         }
 
-        private void OnGUI()
+        protected void OnGUI()
         {
             if(showCounter != 0)
             {
@@ -56,8 +55,8 @@ namespace MessageCenter
                 ShadowAndOutline.DrawOutline(new Rect(40, 20, 600, 160), TotalShowingLog, new GUIStyle
                 {
                     alignment = TextAnchor.UpperLeft,
-                    fontSize = 26,
-                }, color2, color, 2f);
+                    fontSize = 20,
+                }, color2, color, 3f);
             }
         }
     }
