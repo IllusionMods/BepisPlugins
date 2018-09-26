@@ -11,7 +11,7 @@ using UnityEngine.SceneManagement;
 
 namespace Screencap
 {
-    [BepInPlugin(GUID: GUID, Name: "Screenshot Manager", Version: "2.2")]
+    [BepInPlugin(GUID: GUID, Name: "Screenshot Manager", Version: "2.3")]
     public class ScreenshotManager : BaseUnityPlugin
     {
         internal const string GUID = "com.bepis.bepinex.screenshotmanager";
@@ -35,19 +35,19 @@ namespace Screencap
         [AcceptableValueRange(2, 4096, false)]
         public static ConfigWrapper<int> ResolutionY { get; private set; }
 
-        [DisplayName("Character screenshot upsampling ratio")]
-        [Description("Capture character screenshots in a higher resolution and then downscale them to desired size. " +
+        [DisplayName("Screenshot upsampling ratio")]
+        [Description("Capture screenshots in a higher resolution and then downscale them to desired size. " +
                      "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
         public static ConfigWrapper<int> DownscalingRate { get; private set; }
 
         [DisplayName("Card image upsampling ratio")]
-        [Description("Capture card images in a higher resolution and then downscale them to desired size. " +
+        [Description("Capture character card images in a higher resolution and then downscale them to desired size. " +
                      "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
         public static ConfigWrapper<int> CardDownscalingRate { get; private set; }
 
-        [DisplayName("Transparent background in character screenshots")]
+        [DisplayName("Transparent background in screenshots")]
         [Description("Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio.")]
         public static ConfigWrapper<bool> CaptureAlpha { get; private set; }
 
