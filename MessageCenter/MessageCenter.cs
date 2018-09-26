@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace MessageCenter
 {
-    [BepInPlugin("com.bepis.messagecenter", "Message Center", "1.0")]
+    [BepInPlugin("com.bepis.messagecenter", "Message Center", "1.1")]
     public class MessageCenter : BaseUnityPlugin
     {
         [DisplayName("Show messages in UI")]
