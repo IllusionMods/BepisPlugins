@@ -15,48 +15,50 @@ namespace Screencap
     public class ScreenshotManager : BaseUnityPlugin
     {
         internal const string GUID = "com.bepis.bepinex.screenshotmanager";
-        private int WindowHash = GUID.GetHashCode();
 
-        private string screenshotDir = Path.Combine(Application.dataPath, "..\\UserData\\cap\\");
-        private AlphaShot2 as2 = null;
+        private string screenshotDir = Path.Combine(Paths.GameRootPath, "UserData\\cap\\");
+        private AlphaShot2 currentAlphaShot;
 
         #region Config properties
         
-        public SavedKeyboardShortcut CK_Capture { get; private set; }
-        public SavedKeyboardShortcut CK_CaptureAlpha { get; private set; }
-        public SavedKeyboardShortcut CK_Gui { get; private set; }
+        public static SavedKeyboardShortcut CK_Capture { get; private set; }
+        public static SavedKeyboardShortcut CK_CaptureAlpha { get; private set; }
+        public static SavedKeyboardShortcut CK_Gui { get; private set; }
 
         [Category("Output resolution")]
         [DisplayName("Horizontal (Width in px)")]
         [AcceptableValueRange(2, 4096, false)]
-        public ConfigWrapper<int> ResolutionX { get; private set; }
+        public static ConfigWrapper<int> ResolutionX { get; private set; }
 
         [Category("Output resolution")]
         [DisplayName("Vertical (Height in px)")]
         [AcceptableValueRange(2, 4096, false)]
-        public ConfigWrapper<int> ResolutionY { get; private set; }
+        public static ConfigWrapper<int> ResolutionY { get; private set; }
 
         [DisplayName("Character screenshot upsampling ratio")]
         [Description("Capture character screenshots in a higher resolution and then downscale them to desired size. " +
                      "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
-        public ConfigWrapper<int> DownscalingRate { get; private set; }
+        public static ConfigWrapper<int> DownscalingRate { get; private set; }
 
         [DisplayName("Card image upsampling ratio")]
         [Description("Capture card images in a higher resolution and then downscale them to desired size. " +
                      "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
-        public ConfigWrapper<int> CardDownscalingRate { get; private set; }
+        public static ConfigWrapper<int> CardDownscalingRate { get; private set; }
 
         [DisplayName("Transparent background in character screenshots")]
         [Description("Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio.")]
-        public ConfigWrapper<bool> CaptureAlpha { get; private set; }
+        public static ConfigWrapper<bool> CaptureAlpha { get; private set; }
 
         #endregion
+        
+        private string GetUniqueFilename()
+        {
+            return Path.GetFullPath(Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png"));
+        }
 
-        private string filename => Path.GetFullPath(Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png"));
-
-        void Awake()
+        protected void Awake()
         {
             CK_Capture = new SavedKeyboardShortcut("Take screenshot", this, new KeyboardShortcut(KeyCode.F9));
             CK_CaptureAlpha = new SavedKeyboardShortcut("Take character screenshot", this, new KeyboardShortcut(KeyCode.F11));
@@ -68,8 +70,8 @@ namespace Screencap
             CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 2);
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
 
-            SceneManager.sceneLoaded += (s, a) => Install();
-            Install();
+            SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
+            InstallSceenshotHandler();
 
             if (!Directory.Exists(screenshotDir))
                 Directory.CreateDirectory(screenshotDir);
@@ -77,34 +79,36 @@ namespace Screencap
             Hooks.InstallHooks();
         }
 
-        private void Install()
+        private void InstallSceenshotHandler()
         {
             if (!Camera.main || !Camera.main.gameObject) return;
-            as2 = Camera.main.gameObject.GetOrAddComponent<AlphaShot2>();
+            currentAlphaShot = Camera.main.gameObject.GetOrAddComponent<AlphaShot2>();
         }
 
-        void Update()
+        protected void Update()
         {
-            if (CK_Gui.IsDown()) showingUI = !showingUI;
+            if (CK_Gui.IsDown()) uiShow = !uiShow;
             else if (CK_CaptureAlpha.IsDown()) StartCoroutine(TakeCharScreenshot());
             else if (CK_Capture.IsDown()) TakeScreenshot();
         }
 
-        void TakeScreenshot()
+        private void TakeScreenshot()
         {
+            var filename = GetUniqueFilename();
             Application.CaptureScreenshot(filename);
-            Utils.Sound.Play(SystemSE.photo);
 
-            BepInEx.Logger.Log(LogLevel.Info, $"Screenshot saved to {filename}");
+            Utils.Sound.Play(SystemSE.photo);
+            BepInEx.Logger.Log(LogLevel.Message, $"Screenshot saved to {filename}");
         }
 
-        IEnumerator TakeCharScreenshot()
+        private IEnumerator TakeCharScreenshot()
         {
             yield return new WaitForEndOfFrame();
 
-            if (as2 != null)
+            if (currentAlphaShot != null)
             {
-                File.WriteAllBytes(filename, as2.Capture(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value));
+                var filename = GetUniqueFilename();
+                File.WriteAllBytes(filename, currentAlphaShot.Capture(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value));
 
                 Utils.Sound.Play(SystemSE.photo);
                 BepInEx.Logger.Log(LogLevel.Message, $"Character screenshot saved to {filename}");
@@ -113,18 +117,18 @@ namespace Screencap
             //GC.Collect();
         }
 
-
         #region UI
-        private Rect UI = new Rect(20, 20, 160, 200);
-        private bool showingUI = false;
+        private readonly int uiWindowHash = GUID.GetHashCode();
+        private Rect uiRect = new Rect(20, 20, 160, 200);
+        private bool uiShow = false;
 
-        void OnGUI()
+        protected void OnGUI()
         {
-            if (showingUI)
-                UI = GUI.Window(WindowHash, UI, WindowFunction, "Rendering settings");
+            if (uiShow)
+                uiRect = GUI.Window(uiWindowHash, uiRect, WindowFunction, "Rendering settings");
         }
 
-        void WindowFunction(int windowID)
+        private void WindowFunction(int windowID)
         {
             GUI.Label(new Rect(0, 20, 160, 20), "Output resolution", new GUIStyle
             {
