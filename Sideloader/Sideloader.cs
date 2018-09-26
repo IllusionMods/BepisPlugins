@@ -84,7 +84,7 @@ namespace Sideloader
                     if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
                         archives.Add(archive, manifest);
                 }
-                catch (SystemException ex)
+                catch (Exception ex)
                 {
                     Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load archive \"{GetRelativeArchiveDir(archivePath)}\" with error: {ex.Message}");
                     Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
@@ -129,7 +129,7 @@ namespace Sideloader
 
                     Logger.Log(LogLevel.Info, $"[SIDELOADER] Loaded {displayName} {manifest.Version ?? ""}");
                 }
-                catch (SystemException ex)
+                catch (Exception ex)
                 {
                     Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load archive \"{GetRelativeArchiveDir(archive.Name)}\" with error: {ex.Message}");
                     Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
@@ -191,7 +191,7 @@ namespace Sideloader
                             LoadedData[manifest] = new List<ChaListData> { chaListData };
                         }
                     }
-                    catch (SystemException ex)
+                    catch (Exception ex)
                     {
                         Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
                         Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
