@@ -44,7 +44,6 @@
   <ItemGroup>
     <Compile Include="MessageCenter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ShadowAndOutline.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConfigurationManager\ConfigurationManager.csproj">
@@ -52,5 +51,6 @@
       <Name>ConfigurationManager</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
