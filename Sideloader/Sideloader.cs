@@ -93,6 +93,7 @@ namespace Sideloader
             }
 
             // Handlie duplicate GUIDs and load unique mods
+            List<string> pngFolderList = new List<string>();
             foreach (var modGroup in archives.GroupBy(x => x.Value.GUID))
             {
                 // Order by version if available, else use modified dates (less reliable)
@@ -123,6 +124,7 @@ namespace Sideloader
 
                     LoadAllUnityArchives(archive, archive.Name);
                     LoadAllLists(archive, manifest);
+                    BuildPngFolderList(archive, ref pngFolderList);
 
                     var trimmedName = manifest.Name?.Trim();
                     var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
@@ -135,6 +137,7 @@ namespace Sideloader
                     Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
                 }
             }
+            LoadAllPngArchives(pngFolderList);
         }
 
         protected void SetPossessNew(ChaListData data)
@@ -251,6 +254,65 @@ namespace Sideloader
                         Logger.Log(LogLevel.Warning, $"[SIDELOADER] WARNING! {warning}");
                 }
             }
+        }
+        /// <summary>
+        /// Construct a list of all folders that contain a .png
+        /// </summary>
+        protected void BuildPngFolderList(ZipFile arc, ref List<string> pngFolderList)
+        {
+            foreach (ZipEntry entry in arc)
+            {
+                //Only list folders for .pngs in abdata folder
+                //i.e. skip preview pics or character cards that might be included with the mod
+                if (entry.Name.StartsWith("abdata/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                {
+                    string assetBundlePath = entry.Name;
+
+                    //Remove the .png filename
+                    assetBundlePath = assetBundlePath.Remove(assetBundlePath.LastIndexOf('/'));
+
+                    if (!pngFolderList.Contains(assetBundlePath))
+                    {
+                        pngFolderList.Add(assetBundlePath);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// Use the list of folders that contain .png files to construct an asset bundle for each one that does not match an existing asset bundle
+        /// </summary>
+        protected void LoadAllPngArchives(List<string> pngFolderList)
+        {
+            foreach (string folderPath in pngFolderList)
+            {
+                //Remove "abdata/" from file path and add ".unity3d" to the folder name
+                string assetBundlePath = folderPath.Remove(0, folderPath.IndexOf('/') + 1) + ".unity3d";
+
+                if (File.Exists(Application.dataPath + "/../abdata/" + assetBundlePath))
+                {
+                    //The file exists at this location, no need to add a bundle
+                    continue;
+                }
+                else if (BundleManager.Bundles.ContainsKey(assetBundlePath))
+                {
+                    //Bundle has already been added by LoadAllUnityArchives
+                    continue;
+                }
+                else
+                {
+                    //Create a new bundle and add it to the list of bundles
+                    Func<AssetBundle> getBundleFunc = () =>
+                    {
+                        return new AssetBundle();
+                    };
+
+                    BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
+
+                    if (!string.IsNullOrEmpty(warning))
+                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] WARNING! {warning}");
+                }
+            }
+
         }
 
         protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
