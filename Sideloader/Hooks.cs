@@ -1,4 +1,7 @@
-﻿using Harmony;
+﻿using BepInEx;
+using BepInEx.Logging;
+using Logger = BepInEx.Logger;
+using Harmony;
 
 namespace Sideloader
 {
@@ -13,9 +16,12 @@ namespace Sideloader
         [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
         public static void IsFileHook(string assetBundleName, ref bool __result)
         {
-            if (BundleManager.Bundles.ContainsKey(assetBundleName))
+            if (!__result)
             {
-                __result = true;
+                if (BundleManager.Bundles.ContainsKey(assetBundleName))
+                    __result = true;
+                if (Sideloader.IsPngFolderOnly(assetBundleName))
+                    __result = true;
             }
         }
 
@@ -24,9 +30,12 @@ namespace Sideloader
         [HarmonyPatch(nameof(AssetBundleData.isFile), PropertyMethod.Getter)]
         public static void IsFileHook2(ref bool __result, AssetBundleData __instance)
         {
-            if (BundleManager.Bundles.ContainsKey(__instance.bundle))
+            if (!__result)
             {
-                __result = true;
+                if (BundleManager.Bundles.ContainsKey(__instance.bundle))
+                    __result = true;
+                if (Sideloader.IsPngFolderOnly(__instance.bundle))
+                    __result = true;
             }
         }
     }
