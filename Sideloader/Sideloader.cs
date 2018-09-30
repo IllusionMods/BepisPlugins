@@ -257,10 +257,11 @@ namespace Sideloader
         /// </summary>
         public static bool IsPngFolderOnly(string assetBundleName)
         {
-            if (PngFolderOnlyList.Contains(assetBundleName.Remove(assetBundleName.LastIndexOf('.'))))
+            var extStart = assetBundleName.LastIndexOf('.');
+            var trimmedName = extStart >= 0 ? assetBundleName.Remove(extStart) : assetBundleName;
+            if (PngFolderOnlyList.Contains(trimmedName))
                 return true;
-            else
-                return false;
+            return false;
         }
         /// <summary>
         /// Check whether the .png file comes from a sideloader mod
