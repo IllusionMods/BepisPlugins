@@ -20,22 +20,24 @@ namespace Screencap
         private AlphaShot2 currentAlphaShot;
 
         #region Config properties
-        
+
+        [Description("Capture a simple \"as you see it\" screenshot of the game.\n" +
+                     "Not affected by settings for rendered screenshots.")]
         public static SavedKeyboardShortcut CK_Capture { get; private set; }
         public static SavedKeyboardShortcut CK_CaptureAlpha { get; private set; }
         public static SavedKeyboardShortcut CK_Gui { get; private set; }
 
-        [Category("Output resolution")]
+        [Category("Rendered screenshot output resolution")]
         [DisplayName("Horizontal (Width in px)")]
         [AcceptableValueRange(2, 4096, false)]
         public static ConfigWrapper<int> ResolutionX { get; private set; }
 
-        [Category("Output resolution")]
+        [Category("Rendered screenshot output resolution")]
         [DisplayName("Vertical (Height in px)")]
         [AcceptableValueRange(2, 4096, false)]
         public static ConfigWrapper<int> ResolutionY { get; private set; }
 
-        [DisplayName("Screenshot upsampling ratio")]
+        [DisplayName("Rendered screenshot upsampling ratio")]
         [Description("Capture screenshots in a higher resolution and then downscale them to desired size. " +
                      "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
@@ -47,8 +49,9 @@ namespace Screencap
         [AcceptableValueRange(1, 4, false)]
         public static ConfigWrapper<int> CardDownscalingRate { get; private set; }
 
-        [DisplayName("Transparent background in screenshots")]
-        [Description("Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio.")]
+        [DisplayName("Transparency in rendered screenshots")]
+        [Description("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the " +
+                     "background (e.g. the map). Works well in character creator and studio.")]
         public static ConfigWrapper<bool> CaptureAlpha { get; private set; }
 
         #endregion
@@ -60,8 +63,8 @@ namespace Screencap
 
         protected void Awake()
         {
-            CK_Capture = new SavedKeyboardShortcut("Take screenshot", this, new KeyboardShortcut(KeyCode.F9));
-            CK_CaptureAlpha = new SavedKeyboardShortcut("Take character screenshot", this, new KeyboardShortcut(KeyCode.F11));
+            CK_Capture = new SavedKeyboardShortcut("Take UI screenshot", this, new KeyboardShortcut(KeyCode.F9));
+            CK_CaptureAlpha = new SavedKeyboardShortcut("Take rendered screenshot", this, new KeyboardShortcut(KeyCode.F11));
             CK_Gui = new SavedKeyboardShortcut("Open settings window", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift));
 
             ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
@@ -97,8 +100,14 @@ namespace Screencap
             var filename = GetUniqueFilename();
             Application.CaptureScreenshot(filename);
 
+            StartCoroutine(TakeScreenshotLog(filename));
+        }
+
+        private IEnumerator TakeScreenshotLog(string filename)
+        {
+            yield return new WaitForEndOfFrame();
             Utils.Sound.Play(SystemSE.photo);
-            BepInEx.Logger.Log(LogLevel.Message, $"Screenshot saved to {filename}");
+            BepInEx.Logger.Log(LogLevel.Message, $"UI screenshot saved to {filename}");
         }
 
         private IEnumerator TakeCharScreenshot()
