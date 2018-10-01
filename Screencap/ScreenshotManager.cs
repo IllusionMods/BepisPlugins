@@ -70,7 +70,7 @@ namespace Screencap
             ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
             ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
             DownscalingRate = new ConfigWrapper<int>("downscalerate", this, 2);
-            CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 2);
+            CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 3);
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
 
             SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
