@@ -64,12 +64,33 @@ You can add attributes to your properties to change how the settings are shown. 
 // Show this text in a baloon tip under mouse when your setting is hovered.
 [System.ComponentModel.Description]
 ```
-### How to make my setting into a slider or a combo box?
+### How to make my setting into a slider?
 1. You have to reference the ConfigurationManager project or .dll in your plugin. 
-2. Add AcceptableValueListAttribute or AcceptableValueRangeAttribute to your setting property. Make sure values you enter are the same type as your setting!
+2. Add AcceptableValueRangeAttribute to your setting property. Make sure values you enter are the same type as your setting!
 ```c#
 [AcceptableValueRange(2, 4096, false)]
 public ConfigWrapper<int> ResolutionX { get; }
+```
+
+### How to make my setting into a combo box?
+1. You have to reference the ConfigurationManager project or .dll in your plugin. 
+2. Add AcceptableValueListAttribute or alternatively use an enum type. Make sure values you enter are the same type as your setting!
+```c#
+[AcceptableValueListAttribute(new object[] { 1, 5, 10, 15 })]
+public ConfigWrapper<int> ResolutionX { get; }
+
+// No need to specify AcceptableValueListAttribute, all enum values will be shown automatically.
+public ConfigWrapper<SomeEnumType> TextAlignment { get; }
+```
+Note: You can add System.ComponentModel.DescriptionAttribute to your enum's items to override their displayed names. For example:
+```
+public enum MyEnum
+{
+    // Entry1 will be shown in the combo box as Entry1
+    Entry1,
+    [Description("Entry2 will be shown in the combo box as this string")]
+    Entry2
+}
 ```
 
 ### How to allow user to change my keyboard shorcuts / How to easily check for key presses?

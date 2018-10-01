@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using BepInEx;
 using ConfigurationManager.Utilities;
@@ -51,16 +52,23 @@ namespace ConfigurationManager
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
         }
+        
+        public enum MyEnum
+        {
+            // Entry1 will be shown in the combo box as Entry1
+            Entry1,
+            [Description("Entry2 will be shown in the combo box as this string")]
+            Entry2
+        }
 
         public void DrawComboboxField(PropSettingEntry setting, IList list)
         {
-            var buttonText = new GUIContent(setting.Get().ToString());
+            var buttonText = ObjectToGuiContent(setting.Get());
             var dispRect = GUILayoutUtility.GetRect(buttonText, GUI.skin.button, GUILayout.ExpandWidth(true));
 
             if (!_comboBoxCache.TryGetValue(setting, out var box))
             {
-                box = new ComboBox(dispRect, buttonText,
-                    list.Cast<object>().Select(x => new GUIContent(x.ToString())).ToArray(), GUI.skin.button);
+                box = new ComboBox(dispRect, buttonText, list.Cast<object>().Select(ObjectToGuiContent).ToArray(), GUI.skin.button);
                 _comboBoxCache[setting] = box;
             }
             else
@@ -74,6 +82,19 @@ namespace ConfigurationManager
                 if (id >= 0 && id < list.Count)
                     setting.Set(list[id]);
             });
+        }
+
+        private static GUIContent ObjectToGuiContent(object x)
+        {
+            if (x is Enum)
+            {
+                var enumType = x.GetType();
+                var enumMember = enumType.GetMember(x.ToString()).FirstOrDefault();
+                var attr = enumMember?.GetCustomAttributes(typeof(DescriptionAttribute), false).Cast<DescriptionAttribute>().FirstOrDefault();
+                if (attr != null)
+                    return new GUIContent(attr.Description);
+            }
+            return new GUIContent(x.ToString());
         }
 
         public void DrawCurrentDropdown()
