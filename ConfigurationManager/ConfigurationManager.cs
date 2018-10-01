@@ -45,7 +45,11 @@ namespace ConfigurationManager
         private Rect _settingWindowRect, _buttonRect, _screenRect;
         private Vector2 _settingWindowScrollPos;
 
-        private static Texture2D _tooltipBG;
+        public static Texture2D TooltipBg;
+        private Texture2D _windowBackground;
+        private Texture2D _buttonBackground;
+
+        private static bool _isStudio;
 
         private readonly ConfigWrapper<bool> _showAdvanced;
         private readonly ConfigWrapper<bool> _showKeybinds;
@@ -256,13 +260,13 @@ namespace ConfigurationManager
             _screenRect = new Rect(0, 0, Screen.width, Screen.height);
         }
 
-        private void OnGUI()
+        protected void OnGUI()
         {
             if (DisplayingButton)
             {
-                if (GUI.Button(_buttonRect,
-                    new GUIContent("Plugin / mod settings",
-                        "Change settings of the installed \nBepInEx plugins, if they have any.")))
+                GUI.Box(_buttonRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = _buttonBackground } });
+                if (GUI.Button(_buttonRect, new GUIContent("Plugin / mod settings",
+                    "Change settings of the installed \nBepInEx plugins, if they have any.")))
                     DisplayingWindow = !DisplayingWindow;
             }
 
@@ -271,6 +275,8 @@ namespace ConfigurationManager
                 if (GUI.Button(_screenRect, string.Empty, GUI.skin.box) &&
                     !_settingWindowRect.Contains(Input.mousePosition))
                     DisplayingWindow = false;
+                
+                GUI.Box(_settingWindowRect, GUIContent.none, new GUIStyle{normal = new GUIStyleState{background = _windowBackground}});
 
                 GUILayout.Window(-68, _settingWindowRect, SettingsWindow, "Plugin / mod settings");
             }
@@ -288,7 +294,7 @@ namespace ConfigurationManager
 
                 var style = new GUIStyle
                 {
-                    normal = new GUIStyleState { textColor = Color.white, background = _tooltipBG },
+                    normal = new GUIStyleState { textColor = Color.white, background = TooltipBg },
                     wordWrap = true,
                     alignment = TextAnchor.MiddleCenter
                 };
@@ -296,12 +302,12 @@ namespace ConfigurationManager
                 const int width = 400;
                 var height = style.CalcHeight(new GUIContent(GUI.tooltip), 400) + 10;
 
-                var x = currentEvent.mousePosition.x + width > area.width 
-                    ? area.width - width 
+                var x = currentEvent.mousePosition.x + width > area.width
+                    ? area.width - width
                     : currentEvent.mousePosition.x;
 
-                var y = currentEvent.mousePosition.y + 25 + height > area.height 
-                    ? currentEvent.mousePosition.y - height 
+                var y = currentEvent.mousePosition.y + 25 + height > area.height
+                    ? currentEvent.mousePosition.y - height
                     : currentEvent.mousePosition.y + 25;
 
                 GUI.Box(new Rect(x, y, width, height), GUI.tooltip, style);
@@ -379,12 +385,6 @@ namespace ConfigurationManager
                         DrawSingleSetting(setting.plugin);
                         GUILayout.Space(2);
                     }
-
-                    /*if (!string.IsNullOrEmpty(category.Key))
-                    {
-                        //GUILayout.EndVertical();
-                        GUILayout.Space(2);
-                    }*/
                 }
             }
             GUILayout.EndVertical();
@@ -435,7 +435,7 @@ namespace ConfigurationManager
             return GUILayout.Button("Default", GUILayout.ExpandWidth(false));
         }
 
-        private void Start()
+        protected void Start()
         {
             _settingDrawHandlers = new Dictionary<Type, Action<PropSettingEntry>>
             {
@@ -448,17 +448,25 @@ namespace ConfigurationManager
             var background = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             background.SetPixel(0, 0, Color.black);
             background.Apply();
-            _tooltipBG = background;
+            TooltipBg = background;
+
+            var windowBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            windowBackground.SetPixel(0, 0, new Color(0.5f, 0.5f, 0.5f, 1));
+            windowBackground.Apply();
+            _windowBackground = windowBackground;
+
+            var buttonBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            buttonBackground.SetPixel(0, 0, new Color(0.7f, 0.7f, 0.7f, 0.85f));
+            buttonBackground.Apply();
+            _buttonBackground = buttonBackground;
         }
 
-        private void Update()
+        protected void Update()
         {
             DisplayingButton = IsConfigOpened();
 
             if (_isStudio && Input.GetKeyUp(KeyCode.F1))
                 DisplayingWindow = !DisplayingWindow;
         }
-
-        private static bool _isStudio;
     }
 }

@@ -140,8 +140,7 @@ namespace ConfigurationManager.Utilities
                 {
                     GUI.enabled = true;
 
-                    GUI.Box(listRect, "", boxStyle);
-                    GUI.Box(listRect, "", boxStyle);
+                    GUI.Box(GUIUtility.ScreenToGUIRect(listRect), "", new GUIStyle{normal = new GUIStyleState{background = ConfigurationManager.TooltipBg}});
 
                     const int initialSelectedItem = -1;
                     var newSelectedItemIndex = GUI.SelectionGrid(GUIUtility.ScreenToGUIRect(listRect), initialSelectedItem, listContent, 1, listStyle);
