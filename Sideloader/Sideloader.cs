@@ -25,6 +25,11 @@ namespace Sideloader
 
         protected List<Manifest> LoadedManifests = new List<Manifest>();
 
+        protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
+        protected static List<string> PngFolderList = new List<string>();
+        protected static List<string> PngFolderOnlyList = new List<string>();
+
+
         public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
 
         public Sideloader()
@@ -123,6 +128,7 @@ namespace Sideloader
 
                     LoadAllUnityArchives(archive, archive.Name);
                     LoadAllLists(archive, manifest);
+                    BuildPngFolderList(archive);
 
                     var trimmedName = manifest.Name?.Trim();
                     var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
@@ -135,6 +141,7 @@ namespace Sideloader
                     Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
                 }
             }
+            BuildPngOnlyFolderList();
         }
 
         protected void SetPossessNew(ChaListData data)
@@ -199,6 +206,73 @@ namespace Sideloader
                 }
             }
         }
+        /// <summary>
+        /// Construct a list of all folders that contain a .png
+        /// </summary>
+        protected void BuildPngFolderList(ZipFile arc)
+        {
+            foreach (ZipEntry entry in arc)
+            {
+                //Only list folders for .pngs in abdata folder
+                //i.e. skip preview pics or character cards that might be included with the mod
+                if (entry.Name.StartsWith("abdata/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                {
+                    //Make a list of all the .png files and archive they come from
+                    PngList.Add(entry.Name, arc);
+
+                    string assetBundlePath = entry.Name;
+
+                    //Remove the .png filename and "abdata/"
+                    assetBundlePath = assetBundlePath.Remove(assetBundlePath.LastIndexOf('/')).Remove(0, assetBundlePath.IndexOf('/') + 1);
+                    if (!PngFolderList.Contains(assetBundlePath))
+                    {
+                        //Make a unique list of all folders that contain a .png
+                        PngFolderList.Add(assetBundlePath);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// Build a list of folders that contain .pngs but do not match an existing asset bundle
+        /// </summary>
+        protected void BuildPngOnlyFolderList()
+        {
+            foreach (string folder in PngFolderList) //assetBundlePath
+            {
+                string assetBundlePath = folder + ".unity3d";
+
+                //The file exists at this location, no need to add a bundle
+                if (File.Exists(Application.dataPath + "/../abdata/" + assetBundlePath))
+                    continue;
+
+                //Bundle has already been added by LoadAllUnityArchives
+                if (BundleManager.Bundles.ContainsKey(assetBundlePath))
+                    continue;
+
+                PngFolderOnlyList.Add(folder);
+            }
+        }
+        /// <summary>
+        /// Check whether the asset bundle matches a folder that contains .png files and does not match an existing asset bundle
+        /// </summary>
+        public static bool IsPngFolderOnly(string assetBundleName)
+        {
+            var extStart = assetBundleName.LastIndexOf('.');
+            var trimmedName = extStart >= 0 ? assetBundleName.Remove(extStart) : assetBundleName;
+            if (PngFolderOnlyList.Contains(trimmedName))
+                return true;
+            return false;
+        }
+        /// <summary>
+        /// Check whether the .png file comes from a sideloader mod
+        /// </summary>
+        public static bool IsPng(string pngFile)
+        {
+            if (PngList.ContainsKey(pngFile))
+                return true;
+            else
+                return false;
+        }
 
         private static MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -261,7 +335,8 @@ namespace Sideloader
             {
                 zipPath = $"{zipPath}.png";
 
-                foreach (var archive in Archives)
+                //Only search the archives for a .png that can actually be found
+                if (PngList.TryGetValue(zipPath, out ZipFile archive))
                 {
                     var entry = archive.GetEntry(zipPath);
 
@@ -277,6 +352,16 @@ namespace Sideloader
                             tex.wrapMode = TextureWrapMode.Repeat;
 
                         result = new AssetBundleLoadAssetOperationSimulation(tex);
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (IsPngFolderOnly(assetBundleName))
+                    {
+                        //A .png that does not exist is being requested from from an asset bundle that does not exist
+                        //Return an empty image to prevent crashing
+                        result = new AssetBundleLoadAssetOperationSimulation(new Texture2D(0, 0));
                         return true;
                     }
                 }

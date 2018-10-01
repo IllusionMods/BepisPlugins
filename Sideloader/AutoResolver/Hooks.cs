@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using ExtensibleSaveFormat;
 using Harmony;
 using System.Collections.Generic;
@@ -23,6 +24,9 @@ namespace Sideloader.AutoResolver
 
             var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
             harmony.PatchAll(typeof(Hooks));
+            harmony.Patch(typeof(Studio.MPCharCtrl).GetNestedType("CostumeInfo", BindingFlags.NonPublic).GetMethod("InitFileList", BindingFlags.Instance | BindingFlags.NonPublic),
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPreHook), BindingFlags.Static | BindingFlags.Public)),
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPostHook), BindingFlags.Static | BindingFlags.Public)));
         }
 
         public static bool IsResolving { get; set; } = true;
@@ -306,8 +310,8 @@ namespace Sideloader.AutoResolver
 
         #endregion
 
-        #region CustomScnene Load Hooks
-
+        #region Resolving Override Hooks
+        //Prevent resolving when loading the list of characters in Chara Maker since it is irrelevant here
         [HarmonyPrefix, HarmonyPatch(typeof(CustomCharaFile), "Initialize")]
         public static void CustomScenePreHook()
         {
@@ -319,7 +323,50 @@ namespace Sideloader.AutoResolver
         {
             IsResolving = true;
         }
+        //Prevent resolving when loading the list of coordinates in Chara Maker since it is irrelevant here
+        [HarmonyPrefix, HarmonyPatch(typeof(CustomCoordinateFile), "Initialize")]
+        public static void CustomCoordinatePreHook()
+        {
+            IsResolving = false;
+        }
 
+        [HarmonyPostfix, HarmonyPatch(typeof(CustomCoordinateFile), "Initialize")]
+        public static void CustomCoordinatePostHook()
+        {
+            IsResolving = true;
+        }
+        //Prevent resolving when loading the list of characters in Studio since it is irrelevant here
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.CharaList), "InitFemaleList")]
+        public static void StudioFemaleListPreHook()
+        {
+            IsResolving = false;
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Studio.CharaList), "InitFemaleList")]
+        public static void StudioFemaleListPostHook()
+        {
+            IsResolving = true;
+        }
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.CharaList), "InitMaleList")]
+        public static void StudioMaleListPreHook()
+        {
+            IsResolving = false;
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Studio.CharaList), "InitMaleList")]
+        public static void StudioMaleListPostHook()
+        {
+            IsResolving = true;
+        }
+        //Prevent resolving when loading the list of coordinates in Studio since it is irrelevant here
+        public static void StudioCoordinateListPreHook()
+        {
+            IsResolving = false;
+        }
+        public static void StudioCoordinateListPostHook()
+        {
+            IsResolving = true;
+        }
         #endregion
     }
 }
