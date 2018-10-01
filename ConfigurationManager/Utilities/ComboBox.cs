@@ -131,6 +131,7 @@ namespace ConfigurationManager.Utilities
             if (isClickedComboButton)
             {
                 GUI.enabled = false;
+                GUI.color = new Color(1, 1, 1, 2);
 
                 var location = GUIUtility.GUIToScreenPoint(new Vector2(Rect.x, Rect.y + listStyle.CalcHeight(listContent[0], 1.0f)));
                 var size = new Vector2(Rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
@@ -140,7 +141,7 @@ namespace ConfigurationManager.Utilities
                 {
                     GUI.enabled = true;
 
-                    GUI.Box(GUIUtility.ScreenToGUIRect(listRect), "", new GUIStyle{normal = new GUIStyleState{background = ConfigurationManager.TooltipBg}});
+                    GUI.Box(GUIUtility.ScreenToGUIRect(listRect), "", new GUIStyle { normal = new GUIStyleState { background = ConfigurationManager.TooltipBg } });
 
                     const int initialSelectedItem = -1;
                     var newSelectedItemIndex = GUI.SelectionGrid(GUIUtility.ScreenToGUIRect(listRect), initialSelectedItem, listContent, 1, listStyle);

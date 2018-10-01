@@ -8,7 +8,6 @@ using System.Linq;
 using BepInEx;
 using ConfigurationManager.Utilities;
 using UnityEngine;
-using Config = BepInEx.Config;
 
 namespace ConfigurationManager
 {

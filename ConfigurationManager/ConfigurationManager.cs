@@ -266,10 +266,10 @@ namespace ConfigurationManager
             {
                 GUI.Box(_buttonRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = _buttonBackground } });
                 if (GUI.Button(_buttonRect, new GUIContent("Plugin / mod settings",
-                    "Change settings of the installed \nBepInEx plugins, if they have any.")))
+                    "Change settings of installed BepInEx plugins.")))
                     DisplayingWindow = !DisplayingWindow;
             }
-
+            
             if (DisplayingWindow && (DisplayingButton || _isStudio))
             {
                 if (GUI.Button(_screenRect, string.Empty, GUI.skin.box) &&
