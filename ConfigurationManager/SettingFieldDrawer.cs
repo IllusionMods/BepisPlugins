@@ -52,14 +52,6 @@ namespace ConfigurationManager
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
         }
-        
-        public enum MyEnum
-        {
-            // Entry1 will be shown in the combo box as Entry1
-            Entry1,
-            [Description("Entry2 will be shown in the combo box as this string")]
-            Entry2
-        }
 
         public void DrawComboboxField(PropSettingEntry setting, IList list)
         {
