@@ -70,9 +70,17 @@ namespace ConfigurationManager
                 box.ButtonContent = buttonText;
             }
 
-            var id = box.Show();
-            if (id >= 0 && id < list.Count)
-                setting.Set(list[id]);
+            box.Show(id =>
+            {
+                if (id >= 0 && id < list.Count)
+                    setting.Set(list[id]);
+            });
+        }
+
+        public void DrawCurrentDropdown()
+        {
+            ComboBox.CurrentDropdownDrawer?.Invoke();
+            ComboBox.CurrentDropdownDrawer = null;
         }
 
         public void DrawRangeField(PropSettingEntry setting, AcceptableValueRangeAttribute range)

@@ -51,6 +51,7 @@ public class ComboBoxTest : MonoBehaviour
  
 */
 
+using System;
 using UnityEngine;
 
 namespace ConfigurationManager.Utilities
@@ -86,13 +87,11 @@ namespace ConfigurationManager.Utilities
             this.listStyle = listStyle;
         }
 
-        public int SelectedItemIndex { get; set; }
-
         public Rect Rect { get; set; }
 
         public GUIContent ButtonContent { get; set; }
 
-        public int Show()
+        public void Show(Action<int> onItemSelected)
         {
             if (forceToUnShow)
             {
@@ -106,10 +105,10 @@ namespace ConfigurationManager.Utilities
             switch (Event.current.GetTypeForControl(controlID))
             {
                 case EventType.mouseUp:
-                {
-                    if (isClickedComboButton)
-                        done = true;
-                }
+                    {
+                        if (isClickedComboButton)
+                            done = true;
+                    }
                     break;
             }
 
@@ -129,23 +128,34 @@ namespace ConfigurationManager.Utilities
                 isClickedComboButton = true;
             }
 
-            SelectedItemIndex = -1;
             if (isClickedComboButton)
             {
-                var listRect = new Rect(Rect.x, Rect.y + listStyle.CalcHeight(listContent[0], 1.0f),
-                    Rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
+                GUI.enabled = false;
 
-                GUI.Box(listRect, "", boxStyle);
+                var location = GUIUtility.GUIToScreenPoint(new Vector2(Rect.x, Rect.y + listStyle.CalcHeight(listContent[0], 1.0f)));
+                var size = new Vector2(Rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
+                var listRect = new Rect(location, size);
 
-                var newSelectedItemIndex = GUI.SelectionGrid(listRect, SelectedItemIndex, listContent, 1, listStyle);
-                if (newSelectedItemIndex != SelectedItemIndex)
-                    SelectedItemIndex = newSelectedItemIndex;
+                CurrentDropdownDrawer = () =>
+                {
+                    GUI.enabled = true;
+
+                    GUI.Box(listRect, "", boxStyle);
+                    GUI.Box(listRect, "", boxStyle);
+
+                    const int initialSelectedItem = -1;
+                    var newSelectedItemIndex = GUI.SelectionGrid(GUIUtility.ScreenToGUIRect(listRect), initialSelectedItem, listContent, 1, listStyle);
+                    if (newSelectedItemIndex != initialSelectedItem)
+                    {
+                        onItemSelected(newSelectedItemIndex);
+                    }
+                };
             }
 
             if (done)
                 isClickedComboButton = false;
-
-            return SelectedItemIndex;
         }
+
+        public static Action CurrentDropdownDrawer { get; set; }
     }
 }

@@ -325,6 +325,7 @@ namespace ConfigurationManager
             GUILayout.EndScrollView();
 
             DrawTooltip(_settingWindowRect);
+            _fieldDrawer.DrawCurrentDropdown();
         }
 
         private void DrawWindowHeader()
