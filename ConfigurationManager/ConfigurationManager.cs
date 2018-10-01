@@ -269,14 +269,14 @@ namespace ConfigurationManager
                     "Change settings of installed BepInEx plugins.")))
                     DisplayingWindow = !DisplayingWindow;
             }
-            
+
             if (DisplayingWindow && (DisplayingButton || _isStudio))
             {
                 if (GUI.Button(_screenRect, string.Empty, GUI.skin.box) &&
                     !_settingWindowRect.Contains(Input.mousePosition))
                     DisplayingWindow = false;
-                
-                GUI.Box(_settingWindowRect, GUIContent.none, new GUIStyle{normal = new GUIStyleState{background = _windowBackground}});
+
+                GUI.Box(_settingWindowRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = _windowBackground } });
 
                 GUILayout.Window(-68, _settingWindowRect, SettingsWindow, "Plugin / mod settings");
             }
@@ -330,8 +330,8 @@ namespace ConfigurationManager
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
 
-            DrawTooltip(_settingWindowRect);
-            _fieldDrawer.DrawCurrentDropdown();
+            if (!_fieldDrawer.DrawCurrentDropdown())
+                DrawTooltip(_settingWindowRect);
         }
 
         private void DrawWindowHeader()

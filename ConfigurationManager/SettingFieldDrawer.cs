@@ -89,10 +89,15 @@ namespace ConfigurationManager
             return new GUIContent(x.ToString());
         }
 
-        public void DrawCurrentDropdown()
+        public bool DrawCurrentDropdown()
         {
-            ComboBox.CurrentDropdownDrawer?.Invoke();
-            ComboBox.CurrentDropdownDrawer = null;
+            if (ComboBox.CurrentDropdownDrawer != null)
+            {
+                ComboBox.CurrentDropdownDrawer.Invoke();
+                ComboBox.CurrentDropdownDrawer = null;
+                return true;
+            }
+            return false;
         }
 
         public void DrawRangeField(PropSettingEntry setting, AcceptableValueRangeAttribute range)
