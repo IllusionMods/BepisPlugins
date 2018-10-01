@@ -276,26 +276,35 @@ namespace ConfigurationManager
             }
             else if (DisplayingButton)
             {
-                DrawTooltip();
+                DrawTooltip(_screenRect);
             }
         }
 
-        private static void DrawTooltip()
+        private static void DrawTooltip(Rect area)
         {
             if (!string.IsNullOrEmpty(GUI.tooltip))
             {
                 var currentEvent = Event.current;
-                
-                var style = new GUIStyle()
+
+                var style = new GUIStyle
                 {
-                    normal = new GUIStyleState(){ textColor = Color.white, background = _tooltipBG },
+                    normal = new GUIStyleState { textColor = Color.white, background = _tooltipBG },
                     wordWrap = true,
                     alignment = TextAnchor.MiddleCenter
                 };
 
-                GUI.Box(new Rect(currentEvent.mousePosition.x, currentEvent.mousePosition.y + 25, 400,
-                    style.CalcHeight(new GUIContent(GUI.tooltip), 400) + 10),
-                    GUI.tooltip, style);
+                const int width = 400;
+                var height = style.CalcHeight(new GUIContent(GUI.tooltip), 400) + 10;
+
+                var x = currentEvent.mousePosition.x + width > area.width 
+                    ? area.width - width 
+                    : currentEvent.mousePosition.x;
+
+                var y = currentEvent.mousePosition.y + 25 + height > area.height 
+                    ? currentEvent.mousePosition.y - height 
+                    : currentEvent.mousePosition.y + 25;
+
+                GUI.Box(new Rect(x, y, width, height), GUI.tooltip, style);
             }
         }
 
@@ -315,7 +324,7 @@ namespace ConfigurationManager
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
 
-            DrawTooltip();
+            DrawTooltip(_settingWindowRect);
         }
 
         private void DrawWindowHeader()
