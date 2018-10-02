@@ -53,14 +53,14 @@ namespace ConfigurationManager
             GUILayout.EndHorizontal();
         }
 
-        public void DrawComboboxField(PropSettingEntry setting, IList list, float windowHeight)
+        public void DrawComboboxField(PropSettingEntry setting, IList list, float windowYmax)
         {
             var buttonText = ObjectToGuiContent(setting.Get());
             var dispRect = GUILayoutUtility.GetRect(buttonText, GUI.skin.button, GUILayout.ExpandWidth(true));
 
             if (!_comboBoxCache.TryGetValue(setting, out var box))
             {
-                box = new ComboBox(dispRect, buttonText, list.Cast<object>().Select(ObjectToGuiContent).ToArray(), GUI.skin.button, windowHeight);
+                box = new ComboBox(dispRect, buttonText, list.Cast<object>().Select(ObjectToGuiContent).ToArray(), GUI.skin.button, windowYmax);
                 _comboBoxCache[setting] = box;
             }
             else

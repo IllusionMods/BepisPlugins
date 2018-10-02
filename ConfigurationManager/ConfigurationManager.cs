@@ -401,9 +401,9 @@ namespace ConfigurationManager
                 if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
                     _fieldDrawer.DrawRangeField(setting, range);
                 else if (setting.AcceptableValues is AcceptableValueListAttribute list)
-                    _fieldDrawer.DrawComboboxField(setting, list.AcceptableValues, _settingWindowRect.height);
+                    _fieldDrawer.DrawComboboxField(setting, list.AcceptableValues, _settingWindowRect.yMax);
                 else if (setting.SettingType.IsEnum)
-                    _fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType), _settingWindowRect.height);
+                    _fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType), _settingWindowRect.yMax);
                 else
                     DrawFieldBasedOnValueType(setting);
 

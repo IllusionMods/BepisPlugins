@@ -65,9 +65,9 @@ namespace ConfigurationManager.Utilities
         private bool isClickedComboButton;
         private readonly GUIContent[] listContent;
         private readonly GUIStyle listStyle;
-        private readonly int _windowHeight;
+        private readonly int _windowYmax;
 
-        public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle, float windowHeight)
+        public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle, float windowYmax)
         {
             Rect = rect;
             ButtonContent = buttonContent;
@@ -75,7 +75,7 @@ namespace ConfigurationManager.Utilities
             buttonStyle = "button";
             boxStyle = "box";
             this.listStyle = listStyle;
-            _windowHeight = (int) windowHeight;
+            _windowYmax = (int) windowYmax;
         }
 
         public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, string buttonStyle,
@@ -104,14 +104,14 @@ namespace ConfigurationManager.Utilities
             var done = false;
             var controlID = GUIUtility.GetControlID(FocusType.Passive);
 
-            switch (Event.current.GetTypeForControl(controlID))
+            Vector2 currentMousePosition = Vector2.zero;
+            if (Event.current.GetTypeForControl(controlID) == EventType.mouseUp)
             {
-                case EventType.mouseUp:
-                    {
-                        if (isClickedComboButton)
-                            done = true;
-                    }
-                    break;
+                if (isClickedComboButton)
+                {
+                    done = true;
+                    currentMousePosition = Event.current.mousePosition;
+                }
             }
 
             if (GUI.Button(Rect, ButtonContent, buttonStyle))
@@ -137,21 +137,25 @@ namespace ConfigurationManager.Utilities
 
                 var location = GUIUtility.GUIToScreenPoint(new Vector2(Rect.x, Rect.y + listStyle.CalcHeight(listContent[0], 1.0f)));
                 var size = new Vector2(Rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
-                var outerRectScreen = new Rect(location, size);
+
                 var innerRect = new Rect(Vector2.zero, size);
 
+                var outerRectScreen = new Rect(location, size);
+                if (outerRectScreen.yMax > _windowYmax)
+                {
+                    outerRectScreen.height = _windowYmax - outerRectScreen.y;
+                    outerRectScreen.width += 20;
+                }
+                
+                if (currentMousePosition != Vector2.zero && outerRectScreen.Contains(GUIUtility.GUIToScreenPoint(currentMousePosition)))
+                    done = false;
+                
                 CurrentDropdownDrawer = () =>
                 {
                     GUI.enabled = true;
 
                     var outerRectLocal = GUIUtility.ScreenToGUIRect(outerRectScreen);
-
-                    if (outerRectLocal.height > _windowHeight - outerRectLocal.y)
-                    {
-                        outerRectLocal.height = _windowHeight - outerRectLocal.y;
-                        outerRectLocal.width += 20;
-                    }
-
+                    
                     GUI.Box(outerRectLocal, GUIContent.none, 
                         new GUIStyle { normal = new GUIStyleState { background = ConfigurationManager.WindowBackground } });
 
@@ -162,6 +166,7 @@ namespace ConfigurationManager.Utilities
                         if (newSelectedItemIndex != initialSelectedItem)
                         {
                             onItemSelected(newSelectedItemIndex);
+                            isClickedComboButton = false;
                         }
                     }
                     GUI.EndScrollView(true);
