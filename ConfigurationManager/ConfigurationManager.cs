@@ -472,7 +472,8 @@ namespace ConfigurationManager
 
                 if(!noCtrlConditionDone)
                 {
-                    Studio.Studio.Instance.cameraCtrl.noCtrlCondition += () => DisplayingWindow;
+                    var oldCondition = Studio.Studio.Instance.cameraCtrl.noCtrlCondition;
+                    Studio.Studio.Instance.cameraCtrl.noCtrlCondition = () => DisplayingWindow || oldCondition();
                     noCtrlConditionDone = true;
                 }
             }
