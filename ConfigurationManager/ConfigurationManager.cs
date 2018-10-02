@@ -466,7 +466,7 @@ namespace ConfigurationManager
         {
             DisplayingButton = IsConfigOpened();
 
-            if (_isStudio && Input.GetKeyUp(KeyCode.F1))
+            if (_isStudio && Input.GetKeyUp(KeyCode.F1) && !Scene.Instance.IsNowLoadingFade && Singleton<StudioScene>.Instance)
             {
                 DisplayingWindow = !DisplayingWindow;
 
