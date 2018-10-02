@@ -14,6 +14,24 @@ namespace ConfigurationManager.Utilities
 {
     public static class Utils
     {
+        public static string ToProperCase(this string str)
+        {
+            if (string.IsNullOrEmpty(str)) return string.Empty;
+            if (str.Length < 2) return str;
+
+            // Start with the first character.
+            string result = str.Substring(0, 1).ToUpper();
+
+            // Add the remaining characters.
+            for (int i = 1; i < str.Length; i++)
+            {
+                if (char.IsUpper(str[i])) result += " ";
+                result += str[i];
+            }
+
+            return result;
+        }
+
         /// <summary>
         ///     Return items with browsable attribute same as expectedBrowsable, and optionally items with no browsable attribute
         /// </summary>
