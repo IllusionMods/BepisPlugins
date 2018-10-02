@@ -50,6 +50,7 @@ namespace ConfigurationManager
         private Texture2D _buttonBackground;
 
         private static bool _isStudio;
+        private bool noCtrlConditionDone = false;
 
         private readonly ConfigWrapper<bool> _showAdvanced;
         private readonly ConfigWrapper<bool> _showKeybinds;
@@ -465,8 +466,16 @@ namespace ConfigurationManager
         {
             DisplayingButton = IsConfigOpened();
 
-            if (_isStudio && Input.GetKeyUp(KeyCode.F1))
+            if (_isStudio && Input.GetKeyUp(KeyCode.F1) && !Scene.Instance.IsNowLoadingFade && Singleton<StudioScene>.Instance)
+            {
                 DisplayingWindow = !DisplayingWindow;
+
+                if(!noCtrlConditionDone)
+                {
+                    Studio.Studio.Instance.cameraCtrl.noCtrlCondition += () => DisplayingWindow;
+                    noCtrlConditionDone = true;
+                }
+            }
         }
     }
 }
