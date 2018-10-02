@@ -46,8 +46,8 @@ namespace ConfigurationManager
         private Vector2 _settingWindowScrollPos;
 
         public static Texture2D TooltipBg;
-        private Texture2D _windowBackground;
-        private Texture2D _buttonBackground;
+        public static Texture2D WindowBackground;
+        public static Texture2D ButtonBackground;
 
         private static bool _isStudio;
 
@@ -264,7 +264,7 @@ namespace ConfigurationManager
         {
             if (DisplayingButton)
             {
-                GUI.Box(_buttonRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = _buttonBackground } });
+                GUI.Box(_buttonRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = ButtonBackground } });
                 if (GUI.Button(_buttonRect, new GUIContent("Plugin / mod settings",
                     "Change settings of installed BepInEx plugins.")))
                     DisplayingWindow = !DisplayingWindow;
@@ -276,7 +276,7 @@ namespace ConfigurationManager
                     !_settingWindowRect.Contains(Input.mousePosition))
                     DisplayingWindow = false;
 
-                GUI.Box(_settingWindowRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = _windowBackground } });
+                GUI.Box(_settingWindowRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = WindowBackground } });
 
                 GUILayout.Window(-68, _settingWindowRect, SettingsWindow, "Plugin / mod settings");
             }
@@ -400,9 +400,9 @@ namespace ConfigurationManager
                 if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
                     _fieldDrawer.DrawRangeField(setting, range);
                 else if (setting.AcceptableValues is AcceptableValueListAttribute list)
-                    _fieldDrawer.DrawComboboxField(setting, list.AcceptableValues);
+                    _fieldDrawer.DrawComboboxField(setting, list.AcceptableValues, _settingWindowRect.height);
                 else if (setting.SettingType.IsEnum)
-                    _fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType));
+                    _fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType), _settingWindowRect.height);
                 else
                     DrawFieldBasedOnValueType(setting);
 
@@ -453,12 +453,12 @@ namespace ConfigurationManager
             var windowBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             windowBackground.SetPixel(0, 0, new Color(0.5f, 0.5f, 0.5f, 1));
             windowBackground.Apply();
-            _windowBackground = windowBackground;
+            WindowBackground = windowBackground;
 
             var buttonBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             buttonBackground.SetPixel(0, 0, new Color(0.7f, 0.7f, 0.7f, 0.85f));
             buttonBackground.Apply();
-            _buttonBackground = buttonBackground;
+            ButtonBackground = buttonBackground;
         }
 
         protected void Update()

@@ -65,8 +65,9 @@ namespace ConfigurationManager.Utilities
         private bool isClickedComboButton;
         private readonly GUIContent[] listContent;
         private readonly GUIStyle listStyle;
+        private readonly int _windowHeight;
 
-        public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle)
+        public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, GUIStyle listStyle, float windowHeight)
         {
             Rect = rect;
             ButtonContent = buttonContent;
@@ -74,6 +75,7 @@ namespace ConfigurationManager.Utilities
             buttonStyle = "button";
             boxStyle = "box";
             this.listStyle = listStyle;
+            _windowHeight = (int) windowHeight;
         }
 
         public ComboBox(Rect rect, GUIContent buttonContent, GUIContent[] listContent, string buttonStyle,
@@ -135,20 +137,34 @@ namespace ConfigurationManager.Utilities
 
                 var location = GUIUtility.GUIToScreenPoint(new Vector2(Rect.x, Rect.y + listStyle.CalcHeight(listContent[0], 1.0f)));
                 var size = new Vector2(Rect.width, listStyle.CalcHeight(listContent[0], 1.0f) * listContent.Length);
-                var listRect = new Rect(location, size);
+                var outerRectScreen = new Rect(location, size);
+                var innerRect = new Rect(Vector2.zero, size);
 
                 CurrentDropdownDrawer = () =>
                 {
                     GUI.enabled = true;
 
-                    GUI.Box(GUIUtility.ScreenToGUIRect(listRect), "", new GUIStyle { normal = new GUIStyleState { background = ConfigurationManager.TooltipBg } });
+                    var outerRectLocal = GUIUtility.ScreenToGUIRect(outerRectScreen);
 
-                    const int initialSelectedItem = -1;
-                    var newSelectedItemIndex = GUI.SelectionGrid(GUIUtility.ScreenToGUIRect(listRect), initialSelectedItem, listContent, 1, listStyle);
-                    if (newSelectedItemIndex != initialSelectedItem)
+                    if (outerRectLocal.height > _windowHeight - outerRectLocal.y)
                     {
-                        onItemSelected(newSelectedItemIndex);
+                        outerRectLocal.height = _windowHeight - outerRectLocal.y;
+                        outerRectLocal.width += 20;
                     }
+
+                    GUI.Box(outerRectLocal, GUIContent.none, 
+                        new GUIStyle { normal = new GUIStyleState { background = ConfigurationManager.WindowBackground } });
+
+                    _scrollPosition = GUI.BeginScrollView(outerRectLocal, _scrollPosition, innerRect, false, false);
+                    {
+                        const int initialSelectedItem = -1;
+                        var newSelectedItemIndex = GUI.SelectionGrid(innerRect, initialSelectedItem, listContent, 1, listStyle);
+                        if (newSelectedItemIndex != initialSelectedItem)
+                        {
+                            onItemSelected(newSelectedItemIndex);
+                        }
+                    }
+                    GUI.EndScrollView(true);
                 };
             }
 
@@ -156,6 +172,7 @@ namespace ConfigurationManager.Utilities
                 isClickedComboButton = false;
         }
 
+        Vector2 _scrollPosition = Vector2.zero;
         public static Action CurrentDropdownDrawer { get; set; }
     }
 }
