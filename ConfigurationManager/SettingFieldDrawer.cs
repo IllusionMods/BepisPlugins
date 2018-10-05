@@ -111,7 +111,7 @@ namespace ConfigurationManager
             var result = GUILayout.HorizontalSlider(converted, leftValue, rightValue, GUILayout.ExpandWidth(true));
             if (Math.Abs(result - converted) > Mathf.Abs(rightValue - leftValue) / 1000)
             {
-                var newValue = Convert.ChangeType(result, value.GetType());
+                var newValue = Convert.ChangeType(result, setting.SettingType);
                 setting.Set(newValue);
             }
 
@@ -120,7 +120,12 @@ namespace ConfigurationManager
                     Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%",
                     GUILayout.Width(50));
             else
-                DrawCenteredLabel(value.ToString(), GUILayout.Width(50));
+            {
+                var strVal = value.ToString();
+                var strResult = GUILayout.TextField(strVal, GUILayout.Width(50));
+                if (strResult != strVal)
+                    setting.Set(Convert.ChangeType(strResult, setting.SettingType));
+            }
         }
 
         /// <summary>
