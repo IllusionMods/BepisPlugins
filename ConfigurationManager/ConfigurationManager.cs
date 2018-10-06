@@ -398,7 +398,9 @@ namespace ConfigurationManager
                 GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description),
                     GUILayout.Width(_settingWindowRect.width / 2.5f));
 
-                if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
+                if (setting.AcceptableValues is CustomSettingDrawAttribute customDrawer)
+                    customDrawer.Run(setting.Instance);
+                else if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
                     _fieldDrawer.DrawRangeField(setting, range);
                 else if (setting.AcceptableValues is AcceptableValueListAttribute list)
                     _fieldDrawer.DrawComboboxField(setting, list.AcceptableValues, _settingWindowRect.yMax);

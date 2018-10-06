@@ -83,13 +83,26 @@ public ConfigWrapper<int> ResolutionX { get; }
 public ConfigWrapper<SomeEnumType> TextAlignment { get; }
 ```
 Note: You can add System.ComponentModel.DescriptionAttribute to your enum's items to override their displayed names. For example:
-```
+```c#
 public enum MyEnum
 {
     // Entry1 will be shown in the combo box as Entry1
     Entry1,
     [Description("Entry2 will be shown in the combo box as this string")]
     Entry2
+}
+```
+
+### How to make a custom editor for my setting?
+You can add a [CustomSettingDrawAttribute] to your setting with the name of your custom editor method. The method needs to be an instance method with signature `void Name ()`. It runs in OnGUI in an GUILayout window.
+```c#
+[CustomSettingDrawAttribute(nameof(CustomDrawer))]
+public ConfigWrapper<string> Test { get; }
+
+void CustomDrawer()
+{
+    // Make sure to use GUILayout.ExpandWidth(true) to use all available space
+    GUILayout.Label(Test.Value, GUILayout.ExpandWidth(true));
 }
 ```
 
