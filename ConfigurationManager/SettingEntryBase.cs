@@ -53,6 +53,8 @@ namespace ConfigurationManager
         /// </summary>
         public abstract Type SettingType { get; }
 
+        public BaseUnityPlugin PluginInstance { get; private set; }
+
         public object Wrapper { get; internal set; }
 
         public bool? IsAdvanced { get; internal set; }
@@ -65,8 +67,10 @@ namespace ConfigurationManager
         ///     from method that shows a button?
         ///     change to inheritance? or isbutton and ignore set argument
         /// </summary>
-        public void SetFromAttributes(MemberInfo settingProp, BepInPlugin pluginInfo)
+        public void SetFromAttributes(MemberInfo settingProp, BepInPlugin pluginInfo, BaseUnityPlugin pluginInstance)
         {
+            PluginInstance = pluginInstance;
+
             PluginInfo = pluginInfo;
 
             var attribs = settingProp.GetCustomAttributes(false);

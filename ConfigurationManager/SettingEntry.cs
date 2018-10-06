@@ -38,7 +38,7 @@ namespace ConfigurationManager
         }
 
         public static PropSettingEntry FromConfigWrapper(object instance, PropertyInfo settingProp,
-            BepInPlugin pluginInfo)
+            BepInPlugin pluginInfo, BaseUnityPlugin pluginInstance)
         {
             try
             {
@@ -47,7 +47,7 @@ namespace ConfigurationManager
                 var innerProp = wrapper.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
 
                 var entry = new PropSettingEntry();
-                entry.SetFromAttributes(settingProp, pluginInfo);
+                entry.SetFromAttributes(settingProp, pluginInfo, pluginInstance);
 
                 if (innerProp == null)
                 {
@@ -111,10 +111,10 @@ namespace ConfigurationManager
         public Func<string, object> StrToObj { get; private set; }
 
         public static PropSettingEntry FromNormalProperty(object instance, PropertyInfo settingProp,
-            BepInPlugin pluginInfo)
+            BepInPlugin pluginInfo, BaseUnityPlugin pluginInstance)
         {
             var entry = new PropSettingEntry();
-            entry.SetFromAttributes(settingProp, pluginInfo);
+            entry.SetFromAttributes(settingProp, pluginInfo, pluginInstance);
 
             entry.Browsable = settingProp.CanRead && settingProp.CanWrite && entry.Browsable != false;
 

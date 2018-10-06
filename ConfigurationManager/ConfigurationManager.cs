@@ -150,7 +150,7 @@ namespace ConfigurationManager
                 var settingEntries = settingProps.Concat(settingFields.Cast<PropertyInfo>())
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
 
-                detected.AddRange(settingEntries.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo)).Where(x => x != null));
+                detected.AddRange(settingEntries.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo, plugin)).Where(x => x != null));
 
                 // Config wrappers static ------
 
@@ -166,7 +166,7 @@ namespace ConfigurationManager
                 var settingStaticEntries = settingStaticProps.Concat(settingStaticFields.Cast<PropertyInfo>())
                     .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
 
-                detected.AddRange(settingStaticEntries.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo)).Where(x => x != null));
+                detected.AddRange(settingStaticEntries.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo, plugin)).Where(x => x != null));
 
                 // Normal properties ------
 
@@ -187,7 +187,7 @@ namespace ConfigurationManager
 
                 var normalProps = normalPropsSafeToShow.Concat(normalPropsWithBrowsable).Distinct();
 
-                detected.AddRange(normalProps.Select(x => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo)).Where(x => x != null));
+                detected.AddRange(normalProps.Select(x => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo, plugin)).Where(x => x != null));
 
                 // Normal static properties ------
 
@@ -203,13 +203,13 @@ namespace ConfigurationManager
 
                 var normalStaticProps = normalStaticPropsSafeToShow.Concat(normalStaticPropsWithBrowsable).Distinct();
 
-                detected.AddRange(normalStaticProps.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo)).Where(x => x != null));
+                detected.AddRange(normalStaticProps.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo, plugin)).Where(x => x != null));
 
                 // Allow to enable/disable plugin if it uses any update methods ------
                 if (type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => UpdateMethodNames.Contains(x.Name)))
                 {
                     var enabledSetting =
-                        PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo);
+                        PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo, plugin);
                     enabledSetting.DispName = "!Allow plugin to run on every frame";
                     enabledSetting.Description =
                         "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
@@ -399,7 +399,7 @@ namespace ConfigurationManager
                     GUILayout.Width(_settingWindowRect.width / 2.5f));
 
                 if (setting.AcceptableValues is CustomSettingDrawAttribute customDrawer)
-                    customDrawer.Run(setting.Instance);
+                    customDrawer.Run(setting.PluginInstance);
                 else if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
                     _fieldDrawer.DrawRangeField(setting, range);
                 else if (setting.AcceptableValues is AcceptableValueListAttribute list)
