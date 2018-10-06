@@ -39,12 +39,9 @@ namespace ConfigurationManager.Utilities
             bool includeNotSet = false) where T : MemberInfo
         {
             if (includeNotSet)
-                return props.Where(p =>
-                    p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>()
-                        .All(x => x.Browsable == expectedBrowsable));
-            return props.Where(p =>
-                p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>()
-                    .Any(x => x.Browsable != expectedBrowsable));
+                return props.Where(p => p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().All(x => x.Browsable == expectedBrowsable));
+
+            return props.Where(p => p.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>().Any(x => x.Browsable == expectedBrowsable));
         }
 
         public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)
