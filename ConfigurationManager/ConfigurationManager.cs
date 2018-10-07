@@ -435,7 +435,7 @@ namespace ConfigurationManager
         private static bool DrawDefaultButton()
         {
             GUILayout.Space(5);
-            return GUILayout.Button("Default", GUILayout.ExpandWidth(false));
+            return GUILayout.Button("Reset", GUILayout.ExpandWidth(false));
         }
 
         protected void Start()
