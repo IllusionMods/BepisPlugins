@@ -295,11 +295,12 @@ namespace Sideloader
                         {
                             long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
 
-                            Logger.Log(LogLevel.Info, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
+                            Logger.Log(LogLevel.Info | LogLevel.None, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
                             bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
                         }
                         else
                         {
+                            Logger.Log(LogLevel.Info | LogLevel.None, $"Not Streaming {entry.Name} ({archiveFilename}) unity3d file from disk");
                             var stream = arc.GetInputStream(entry);
 
                             byte[] buffer = new byte[entry.Size];
@@ -361,7 +362,11 @@ namespace Sideloader
                     {
                         //A .png that does not exist is being requested from from an asset bundle that does not exist
                         //Return an empty image to prevent crashing
-                        result = new AssetBundleLoadAssetOperationSimulation(new Texture2D(0, 0));
+                        Texture2D BlankImage = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+                        BlankImage.SetPixel(0, 0, Color.white);
+                        BlankImage.Apply();
+
+                        result = new AssetBundleLoadAssetOperationSimulation(BlankImage);
                         return true;
                     }
                 }
@@ -371,6 +376,28 @@ namespace Sideloader
             {
                 result = new AssetBundleLoadAssetOperationSimulation(obj);
                 return true;
+            }
+            else
+            {
+                if (!File.Exists(Application.dataPath + "/../abdata/" + assetBundleName))
+                {
+                    //Asset does not exist. Unless we return something here the game will attempt to read a file that doesn't exist on disk and crash
+                    if (type == typeof(Texture2D))
+                    {
+                        Logger.Log(LogLevel.Warning | LogLevel.None, $"Asset {assetName} does not exist in asset bundle {assetBundleName}, using blank image instead.");
+                        Texture2D BlankImage = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+                        BlankImage.SetPixel(0, 0, Color.white);
+                        BlankImage.Apply();
+
+                        result = new AssetBundleLoadAssetOperationSimulation(BlankImage);
+                        return true;
+                    }
+                    else
+                    {
+                        //Bad things will happen. These should be properly handled if any such cases are found to exist.
+                        Logger.Log(LogLevel.Error, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
+                    }
+                }
             }
 
             result = null;
