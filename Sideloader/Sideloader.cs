@@ -298,12 +298,12 @@ namespace Sideloader
                         {
                             long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
 
-                            Logger.Log(LogLevel.Info | LogLevel.None, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
+                            Logger.Log(LogLevel.Debug, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
                             bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
                         }
                         else
                         {
-                            Logger.Log(LogLevel.Info | LogLevel.None, $"Not Streaming {entry.Name} ({archiveFilename}) unity3d file from disk");
+                            Logger.Log(LogLevel.Debug, $"Not Streaming {entry.Name} ({archiveFilename}) unity3d file from disk");
                             var stream = arc.GetInputStream(entry);
 
                             byte[] buffer = new byte[entry.Size];
@@ -387,7 +387,7 @@ namespace Sideloader
                     //Asset does not exist. Unless we return something here the game will attempt to read a file that doesn't exist on disk and crash
                     if (type == typeof(Texture2D))
                     {
-                        Logger.Log(LogLevel.Warning | LogLevel.None, $"Asset {assetName} does not exist in asset bundle {assetBundleName}, using blank image instead.");
+                        Logger.Log(LogLevel.Debug, $"Asset {assetName} does not exist in asset bundle {assetBundleName}, using blank image instead.");
                         Texture2D BlankImage = new Texture2D(1, 1, TextureFormat.ARGB32, false);
                         BlankImage.SetPixel(0, 0, Color.white);
                         BlankImage.Apply();
