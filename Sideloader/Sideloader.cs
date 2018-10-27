@@ -217,13 +217,16 @@ namespace Sideloader
                 //i.e. skip preview pics or character cards that might be included with the mod
                 if (entry.Name.StartsWith("abdata/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
                 {
-                    //Make a list of all the .png files and archive they come from
-                    PngList.Add(entry.Name, arc);
-
                     string assetBundlePath = entry.Name;
+                    assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1); //Remove "abdata/"
 
-                    //Remove the .png filename and "abdata/"
-                    assetBundlePath = assetBundlePath.Remove(assetBundlePath.LastIndexOf('/')).Remove(0, assetBundlePath.IndexOf('/') + 1);
+                    //Make a list of all the .png files and archive they come from
+                    if (PngList.ContainsKey(entry.Name))
+                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] Duplicate asset detected! {assetBundlePath}");
+                    else
+                        PngList.Add(entry.Name, arc);
+
+                    assetBundlePath = assetBundlePath.Remove(assetBundlePath.LastIndexOf('/')); //Remove the .png filename
                     if (!PngFolderList.Contains(assetBundlePath))
                     {
                         //Make a unique list of all folders that contain a .png
@@ -323,7 +326,7 @@ namespace Sideloader
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
                     if (!string.IsNullOrEmpty(warning))
-                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] WARNING! {warning}");
+                        Logger.Log(LogLevel.Warning, $"[SIDELOADER] {warning}");
                 }
             }
         }
