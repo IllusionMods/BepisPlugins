@@ -14,9 +14,16 @@ namespace DeveloperConsole
         private string TotalLog = "";
         private Rect UI = new Rect(20, 20, 400, 400);
         private Vector2 scrollPosition = Vector2.zero;
+        private readonly KeyboardShortcut shortcut = new KeyboardShortcut(KeyCode.F12);
 
         protected void Awake()
         {
+            if (BepInExSettings.ShowConsole)
+            {
+                enabled = false;
+                return;
+            }
+
             Logger.EntryLogged += (level, log) =>
             {
                 string current = $"{TotalLog}\r\n{log}";
@@ -39,12 +46,12 @@ namespace DeveloperConsole
         protected void OnGUI()
         {
             if (showingUI)
-                UI = GUILayout.Window("com.bepis.bepinex.developerconsole".GetHashCode() + 0, UI, WindowFunction, "Developer Console");
+                UI = GUILayout.Window(589, UI, WindowFunction, "Developer Console");
         }
 
         protected void Update()
         {
-            if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F12))
+            if (shortcut.IsDown())
             {
                 showingUI = !showingUI;
             }
