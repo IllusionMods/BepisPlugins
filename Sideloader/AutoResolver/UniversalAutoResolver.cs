@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using ExtensibleSaveFormat;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -30,7 +29,7 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //found a match
-                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
 
                         kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
@@ -82,7 +81,7 @@ namespace Sideloader.AutoResolver
                         if (intResolve != null)
                         {
                             //found a match to a corrosponding internal mod
-                            Logger.Log(LogLevel.Info, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
+                            Logger.Log(LogLevel.Debug, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
 
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }

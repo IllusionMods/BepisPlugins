@@ -298,12 +298,12 @@ namespace Sideloader
                         {
                             long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
 
-                            Logger.Log(LogLevel.Debug, $"Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
+                            Logger.Log(LogLevel.Debug, $"[SIDELOADER] Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
                             bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
                         }
                         else
                         {
-                            Logger.Log(LogLevel.Debug, $"Not Streaming {entry.Name} ({archiveFilename}) unity3d file from disk");
+                            Logger.Log(LogLevel.Info, $"[SIDELOADER] Cannot stream {entry.Name} ({archiveFilename}) unity3d file from disk");
                             var stream = arc.GetInputStream(entry);
 
                             byte[] buffer = new byte[entry.Size];
@@ -317,7 +317,7 @@ namespace Sideloader
 
                         if (bundle == null)
                         {
-                            Logger.Log(LogLevel.Error, $"Asset bundle \"{entry.Name}\" ({Path.GetFileName(archiveFilename)}) failed to load! Does it have a conflicting CAB string?");
+                            Logger.Log(LogLevel.Error, $"[SIDELOADER] Asset bundle \"{entry.Name}\" ({Path.GetFileName(archiveFilename)}) failed to load. It might have a conflicting CAB string.");
                         }
 
                         return bundle;
