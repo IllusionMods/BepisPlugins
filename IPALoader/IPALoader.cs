@@ -39,7 +39,7 @@ namespace IPALoader
 			
 			if (!Directory.Exists(IPAPluginDir))
 			{
-				Logger.Log(LogLevel.Message, "No IPA plugin directory, skipping load");
+				Logger.Log(LogLevel.Info, "No IPA plugin directory, skipping load");
 				return;
 			}
 
