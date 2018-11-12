@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using Harmony;
 using TMPro;
 using Logger = BepInEx.Logger;
+using UnityEngine;
 
 namespace DynamicTranslationLoader.Text
 {
@@ -92,7 +93,7 @@ namespace DynamicTranslationLoader.Text
 
         #endregion
 
-        #region Text Chaange Hooks
+        #region Text Change Hooks
 
         // NOTE: Splitting these two hooks AWAY from eachother fixed the primary problem
         // I do not think it is allowed to patch two classes in the same method...
@@ -185,6 +186,82 @@ namespace DynamicTranslationLoader.Text
             }
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GUI), "DoLabel")]
+        public static void DoLabel(GUIContent content, object __instance)
+        {
+            if (TranslationHooksEnabled)
+            {
+                TranslationHooksEnabled = false;
+                try
+                {
+                    content.text = TextTranslator.TranslateText(content.text, __instance);
+                    content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                }
+                finally
+                {
+                    TranslationHooksEnabled = true;
+                }
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GUI), "DoButton")]
+        public static void DoButton(GUIContent content, object __instance)
+        {
+            if (TranslationHooksEnabled)
+            {
+                TranslationHooksEnabled = false;
+                try
+                {
+                    content.text = TextTranslator.TranslateText(content.text, __instance);
+                    content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                }
+                finally
+                {
+                    TranslationHooksEnabled = true;
+                }
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GUI), "DoToggle")]
+        public static void DoToggle(GUIContent content, object __instance)
+        {
+            if (TranslationHooksEnabled)
+            {
+                TranslationHooksEnabled = false;
+                try
+                {
+                    content.text = TextTranslator.TranslateText(content.text, __instance);
+                    content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                }
+                finally
+                {
+                    TranslationHooksEnabled = true;
+                }
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GUI), "DoWindow")]
+        public static void DoWindow(GUIContent title, object __instance)
+        {
+            if (TranslationHooksEnabled)
+            {
+                TranslationHooksEnabled = false;
+                try
+                {
+                    title.text = TextTranslator.TranslateText(title.text, __instance);
+                    title.tooltip = TextTranslator.TranslateText(title.tooltip, __instance);
+                }
+                finally
+                {
+                    TranslationHooksEnabled = true;
+                }
+            }
+        }
+
         #endregion
 
         #region Hooks, I think are not needed for KK
@@ -253,24 +330,24 @@ namespace DynamicTranslationLoader.Text
         //   }
         //}
         #endregion
-        
-	    #region Text break hooks
-	    [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "IsLatin")]
-	    public static bool UpdateText(ref bool __result, ref char s)
-	    {
-		    // Break only on space?
-		    __result = s != ' ';
-		    return false;
-	    }
-	    [HarmonyPostfix, HarmonyPatch(typeof(HyphenationJpn), "GetFormatedText")]
-	    public static void GetFormatedText(ref string __result)
-	    {
-		    // When the width of the text is greater than its container, a space is inserted.
-		    // This can throw off our formatting, so we remove all occurrences of it.
-            
-		    __result = __result.Replace("\u3000", "");
-		    __result = string.Join("\n", __result.Split('\n').Select(x => x.Trim()).ToArray());
-	    }
-	    #endregion
+
+        #region Text break hooks
+        [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "IsLatin")]
+        public static bool UpdateText(ref bool __result, ref char s)
+        {
+            // Break only on space?
+            __result = s != ' ';
+            return false;
+        }
+        [HarmonyPostfix, HarmonyPatch(typeof(HyphenationJpn), "GetFormatedText")]
+        public static void GetFormatedText(ref string __result)
+        {
+            // When the width of the text is greater than its container, a space is inserted.
+            // This can throw off our formatting, so we remove all occurrences of it.
+
+            __result = __result.Replace("\u3000", "");
+            __result = string.Join("\n", __result.Split('\n').Select(x => x.Trim()).ToArray());
+        }
+        #endregion
     }
 }
