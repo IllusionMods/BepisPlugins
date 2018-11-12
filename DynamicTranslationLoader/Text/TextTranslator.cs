@@ -18,9 +18,9 @@ namespace DynamicTranslationLoader.Text
 {
     public class TextTranslator
     {
-	    public static List<Archive> TLArchives = new List<Archive>();
-	    private static readonly Dictionary<string, CompiledLine> Translations = new Dictionary<string, CompiledLine>();
-	    private static readonly Dictionary<Regex, CompiledLine> regexTranslations = new Dictionary<Regex, CompiledLine>();
+        public static List<Archive> TLArchives = new List<Archive>();
+        private static readonly Dictionary<string, CompiledLine> Translations = new Dictionary<string, CompiledLine>();
+        private static readonly Dictionary<Regex, CompiledLine> regexTranslations = new Dictionary<Regex, CompiledLine>();
 
         private static readonly Dictionary<WeakReference, string> OriginalTranslations = new Dictionary<WeakReference, string>();
         private static readonly HashSet<string> Untranslated = new HashSet<string>();
@@ -28,69 +28,80 @@ namespace DynamicTranslationLoader.Text
         private static readonly string ScenarioDir = Path.Combine(Paths.PluginPath, @"translation\scenario");
         private static readonly string CommunicationDir = Path.Combine(Paths.PluginPath, @"translation\communication");
 
-	    private static readonly string CurrentExe = Paths.ProcessName;
+        private static readonly string CurrentExe = Paths.ProcessName;
 
         public static void LoadTextTranslations(string dirTranslation)
         {
-	        Logger.Log(LogLevel.Debug, "Loading all translations");
-	        //TODO: load .bin files here
-			
-	        Logger.Log(LogLevel.Debug, $"Loaded {TLArchives.Count} archives");
-	        TLArchives.Clear();
-	        var dirTranslationText = Path.Combine(dirTranslation, "Text");
-	        if (!Directory.Exists(dirTranslationText))
-		        Directory.CreateDirectory(dirTranslationText);
-	        try
-	        {
-		        TLArchives.Add(new MarkupCompiler().CompileArchive(dirTranslationText));
-		        Logger.Log(LogLevel.Debug, $"Loaded {TLArchives.Last().Sections.Sum(x => x.Lines.Count)} lines from text");
-	        }
-	        catch (Exception ex)
-	        {
-		        Logger.Log(LogLevel.Error | LogLevel.Message, "Unable to load translations from text!");
-		        Logger.Log(LogLevel.Error, ex);
-	        }
+            Logger.Log(LogLevel.Debug, "Loading all translations");
+            //TODO: load .bin files here
+
+            Logger.Log(LogLevel.Debug, $"Loaded {TLArchives.Count} archives");
+            TLArchives.Clear();
+            var dirTranslationText = Path.Combine(dirTranslation, "Text");
+            if (!Directory.Exists(dirTranslationText))
+                Directory.CreateDirectory(dirTranslationText);
+            try
+            {
+                TLArchives.Add(new MarkupCompiler().CompileArchive(dirTranslationText));
+                Logger.Log(LogLevel.Debug, $"Loaded {TLArchives.Last().Sections.Sum(x => x.Lines.Count)} lines from text");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error | LogLevel.Message, "Unable to load translations from text!");
+                Logger.Log(LogLevel.Error, ex);
+            }
 
         }
 
-	    private static bool TryGetRegex(string input, out CompiledLine line, out Match regexMatch)
-	    {
-	        foreach (var kv in regexTranslations)
-		    {
-		        Match match = kv.Key.Match(input);
-		        if (!match.Success)
-		            continue;
+        private static bool TryGetRegex(string input, out CompiledLine line, out Match regexMatch)
+        {
+            foreach (var kv in regexTranslations)
+            {
+                Match match = kv.Key.Match(input);
+                if (!match.Success)
+                    continue;
 
-		        line = kv.Value;
-		        regexMatch = match;
-		        return true;
-		    }
+                line = kv.Value;
+                regexMatch = match;
+                return true;
+            }
 
-		    line = null;
-		    regexMatch = null;
-		    return false;
-	    }
+            line = null;
+            regexMatch = null;
+            return false;
+        }
 
         public static string TranslateText(string input, object obj)
         {
             if (DynamicTranslator.IsPastingToClipboard.Value)
                 GUIUtility.systemCopyBuffer = input;
 
-	        if(string.IsNullOrEmpty(input)) 
-		        return input;
+            if (string.IsNullOrEmpty(input))
+                return input;
 
             // Consider changing this! You have a dictionary, but you iterate instead of making a lookup. Why do you not use the WeakKeyDictionary, you have instead? 
             if (OriginalTranslations.All(x => x.Key.Target != obj)
             ) //check if we don't have the object in the dictionary
                 OriginalTranslations.Add(new WeakReference(obj), input);
 
-	        if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
-	        {
-				return translation.TranslatedLine;
-	        }
+            if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
+            {
+                return translation.TranslatedLine;
+            }
 
             if (TryGetRegex(input, out translation, out Match match))
             {
+                if (translation.Flags.IsTranslationRegex)
+                {
+                    string FormattedText = translation.TranslatedLine;
+                    for (int i = 0;i< match.Groups.Count; i++)
+                    {
+                        if (FormattedText.Contains("{" + i + "}"))
+                            FormattedText = FormattedText.Replace("{" + i + "}", match.Groups[i].Value);
+                    }
+                    return FormattedText;
+                }
+
                 return translation.TranslatedLine;
             }
 
@@ -104,7 +115,7 @@ namespace DynamicTranslationLoader.Text
                 var immediatelyTranslated = DynamicTranslator.OnOnUnableToTranslateTextMeshPro(obj, input);
                 if (immediatelyTranslated != null) return immediatelyTranslated;
             }
-			
+
             if (!Untranslated.Contains(input))
                 Untranslated.Add(input);
 
@@ -159,43 +170,43 @@ namespace DynamicTranslationLoader.Text
             TranslateTextAll();
         }
 
-	    private static void LoadSceneTranslations(int sceneIndex)
-	    {
-		    Logger.Log(LogLevel.Debug, $"Loading translations for scene {sceneIndex}");
-		    Translations.Clear();
-		    regexTranslations.Clear();
-		    foreach (Archive arc in TLArchives)
-		    foreach (Section section in arc.Sections)
-		    {
-			    if (!section.Exe.Equals("all", StringComparison.OrdinalIgnoreCase) && !section.Exe.Equals(CurrentExe, StringComparison.OrdinalIgnoreCase))
-				    continue;
-			    foreach (var line in section.Lines)
-			    {
-				    if (line.Levels.Any(x => x == (byte)sceneIndex || x == 255))
-				    {
-					    if (line.Flags.IsOriginalRegex)
-						    regexTranslations[new Regex(line.OriginalLine)] = line;
-					    else
-						    Translations[line.OriginalLine] = line;
-				    }
-			    }
-		    }
+        private static void LoadSceneTranslations(int sceneIndex)
+        {
+            Logger.Log(LogLevel.Debug, $"Loading translations for scene {sceneIndex}");
+            Translations.Clear();
+            regexTranslations.Clear();
+            foreach (Archive arc in TLArchives)
+                foreach (Section section in arc.Sections)
+                {
+                    if (!section.Exe.Equals("all", StringComparison.OrdinalIgnoreCase) && !section.Exe.Equals(CurrentExe, StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    foreach (var line in section.Lines)
+                    {
+                        if (line.Levels.Any(x => x == (byte)sceneIndex || x == 255))
+                        {
+                            if (line.Flags.IsOriginalRegex)
+                                regexTranslations[new Regex(line.OriginalLine)] = line;
+                            else
+                                Translations[line.OriginalLine] = line;
+                        }
+                    }
+                }
 
-			
-		    Logger.Log(LogLevel.Debug, $"Filtered {Translations.Count} / {TLArchives.Sum(x => x.Sections.Sum(y => y.Lines.Count))} lines");
-	    }
+
+            Logger.Log(LogLevel.Debug, $"Filtered {Translations.Count} / {TLArchives.Sum(x => x.Sections.Sum(y => y.Lines.Count))} lines");
+        }
 
         public static void TranslateScene(Scene scene, LoadSceneMode loadMode)
         {
-			LoadSceneTranslations(scene.buildIndex);
+            LoadSceneTranslations(scene.buildIndex);
 
-	        Logger.Log(LogLevel.Debug, $"Translating scene {scene.buildIndex}");
-	        foreach (GameObject obj in scene.GetRootGameObjects())
-	        foreach (TextMeshProUGUI gameObject in obj.GetComponentsInChildren<TextMeshProUGUI>(true))
-	        {
-		        //gameObject.text = "Harsh is shit";
-		        gameObject.text = TranslateText(gameObject.text, gameObject);
-	        }
+            Logger.Log(LogLevel.Debug, $"Translating scene {scene.buildIndex}");
+            foreach (GameObject obj in scene.GetRootGameObjects())
+                foreach (TextMeshProUGUI gameObject in obj.GetComponentsInChildren<TextMeshProUGUI>(true))
+                {
+                    //gameObject.text = "Harsh is shit";
+                    gameObject.text = TranslateText(gameObject.text, gameObject);
+                }
         }
 
         internal static void DumpText()
@@ -212,10 +223,10 @@ namespace DynamicTranslationLoader.Text
 
         public static T ManualLoadAsset<T>(string bundle, string asset, string manifest) where T : Object
         {
-	        AssetBundleManager.LoadAssetBundleInternal(bundle, false, manifest);
-	        var assetBundle = AssetBundleManager.GetLoadedAssetBundle(bundle, out string error, manifest);
+            AssetBundleManager.LoadAssetBundleInternal(bundle, false, manifest);
+            var assetBundle = AssetBundleManager.GetLoadedAssetBundle(bundle, out string error, manifest);
 
-	        T output = assetBundle.m_AssetBundle.LoadAsset<T>(asset);
+            T output = assetBundle.m_AssetBundle.LoadAsset<T>(asset);
 
             return output;
         }
@@ -311,7 +322,7 @@ namespace DynamicTranslationLoader.Text
 
                         Array.Copy(data, 4, args, 0, args.Length);
 
-                        var param = new ScenarioData.Param(bool.Parse(data[3]), (Command) int.Parse(data[2]), args);
+                        var param = new ScenarioData.Param(bool.Parse(data[3]), (Command)int.Parse(data[2]), args);
 
                         param.SetHash(int.Parse(data[0]));
 
@@ -337,7 +348,7 @@ namespace DynamicTranslationLoader.Text
 
                     foreach (var line in SplitAndEscape(File.ReadAllText(communicationPath, Encoding.UTF8)))
                     {
-	                    var list = line.ToList();
+                        var list = line.ToList();
 
                         var param = new ExcelData.Param
                         {
