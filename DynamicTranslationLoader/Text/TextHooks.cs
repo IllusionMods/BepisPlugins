@@ -262,6 +262,47 @@ namespace DynamicTranslationLoader.Text
             }
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GUI), "DoButtonGrid")]
+        public static void DoButtonGrid(GUIContent[] contents, object __instance)
+        {
+            if (TranslationHooksEnabled)
+            {
+                TranslationHooksEnabled = false;
+                try
+                {
+                    foreach (GUIContent content in contents)
+                    {
+                        content.text = TextTranslator.TranslateText(content.text, __instance);
+                        content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                    }
+                }
+                finally
+                {
+                    TranslationHooksEnabled = true;
+                }
+            }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GUI), "DoTextField", new[] { typeof(Rect), typeof(int), typeof(GUIContent), typeof(bool), typeof(int), typeof(GUIStyle), typeof(string), typeof(char) })]
+        public static void DoTextField(GUIContent content, object __instance)
+        {
+            if (TranslationHooksEnabled)
+            {
+                TranslationHooksEnabled = false;
+                try
+                {
+                    content.text = TextTranslator.TranslateText(content.text, __instance);
+                    content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                }
+                finally
+                {
+                    TranslationHooksEnabled = true;
+                }
+            }
+        }
+
         #endregion
 
         #region Hooks, I think are not needed for KK
