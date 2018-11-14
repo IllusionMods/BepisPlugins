@@ -195,8 +195,8 @@ namespace DynamicTranslationLoader.Text
                 TranslationHooksEnabled = false;
                 try
                 {
-                    content.text = TextTranslator.TranslateText(content.text, __instance);
-                    content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                    content.text = TextTranslator.TranslateText(content.text);
+                    content.tooltip = TextTranslator.TranslateText(content.tooltip);
                 }
                 finally
                 {
@@ -207,15 +207,15 @@ namespace DynamicTranslationLoader.Text
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(GUI), "DoButton")]
-        public static void DoButton(GUIContent content, object __instance)
+        public static void DoButton(GUIContent content)
         {
             if (TranslationHooksEnabled)
             {
                 TranslationHooksEnabled = false;
                 try
                 {
-                    content.text = TextTranslator.TranslateText(content.text, __instance);
-                    content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                    content.text = TextTranslator.TranslateText(content.text);
+                    content.tooltip = TextTranslator.TranslateText(content.tooltip);
                 }
                 finally
                 {
@@ -226,15 +226,15 @@ namespace DynamicTranslationLoader.Text
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(GUI), "DoToggle")]
-        public static void DoToggle(GUIContent content, object __instance)
+        public static void DoToggle(GUIContent content)
         {
             if (TranslationHooksEnabled)
             {
                 TranslationHooksEnabled = false;
                 try
                 {
-                    content.text = TextTranslator.TranslateText(content.text, __instance);
-                    content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                    content.text = TextTranslator.TranslateText(content.text);
+                    content.tooltip = TextTranslator.TranslateText(content.tooltip);
                 }
                 finally
                 {
@@ -245,15 +245,15 @@ namespace DynamicTranslationLoader.Text
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(GUI), "DoWindow")]
-        public static void DoWindow(GUIContent title, object __instance)
+        public static void DoWindow(GUIContent title)
         {
             if (TranslationHooksEnabled)
             {
                 TranslationHooksEnabled = false;
                 try
                 {
-                    title.text = TextTranslator.TranslateText(title.text, __instance);
-                    title.tooltip = TextTranslator.TranslateText(title.tooltip, __instance);
+                    title.text = TextTranslator.TranslateText(title.text);
+                    title.tooltip = TextTranslator.TranslateText(title.tooltip);
                 }
                 finally
                 {
@@ -264,7 +264,7 @@ namespace DynamicTranslationLoader.Text
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(GUI), "DoButtonGrid")]
-        public static void DoButtonGrid(GUIContent[] contents, object __instance)
+        public static void DoButtonGrid(GUIContent[] contents)
         {
             if (TranslationHooksEnabled)
             {
@@ -273,8 +273,8 @@ namespace DynamicTranslationLoader.Text
                 {
                     foreach (GUIContent content in contents)
                     {
-                        content.text = TextTranslator.TranslateText(content.text, __instance);
-                        content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                        content.text = TextTranslator.TranslateText(content.text);
+                        content.tooltip = TextTranslator.TranslateText(content.tooltip);
                     }
                 }
                 finally
@@ -286,15 +286,15 @@ namespace DynamicTranslationLoader.Text
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(GUI), "DoTextField", new[] { typeof(Rect), typeof(int), typeof(GUIContent), typeof(bool), typeof(int), typeof(GUIStyle), typeof(string), typeof(char) })]
-        public static void DoTextField(GUIContent content, object __instance)
+        public static void DoTextField(GUIContent content)
         {
             if (TranslationHooksEnabled)
             {
                 TranslationHooksEnabled = false;
                 try
                 {
-                    content.text = TextTranslator.TranslateText(content.text, __instance);
-                    content.tooltip = TextTranslator.TranslateText(content.tooltip, __instance);
+                    content.text = TextTranslator.TranslateText(content.text);
+                    content.tooltip = TextTranslator.TranslateText(content.tooltip);
                 }
                 finally
                 {

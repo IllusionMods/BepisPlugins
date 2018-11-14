@@ -53,7 +53,7 @@ namespace DynamicTranslationLoader.Text
 
         }
 
-        private static bool TryGetRegex(string input, out CompiledLine line, out Match regexMatch)
+        private static bool TryGetRegex(string input, out string line)
         {
             foreach (var kv in regexTranslations)
             {
@@ -61,13 +61,18 @@ namespace DynamicTranslationLoader.Text
                 if (!match.Success)
                     continue;
 
-                line = kv.Value;
-                regexMatch = match;
+                line = kv.Value.TranslatedLine;
+
+                if (kv.Value.Flags.IsTranslationRegex)
+                {
+                    for (int i = 0; i < match.Groups.Count; i++)
+                        line = line.Replace("{" + i + "}", match.Groups[i].Value);
+                }
+
                 return true;
             }
 
             line = null;
-            regexMatch = null;
             return false;
         }
 
@@ -80,30 +85,14 @@ namespace DynamicTranslationLoader.Text
                 return input;
 
             // Consider changing this! You have a dictionary, but you iterate instead of making a lookup. Why do you not use the WeakKeyDictionary, you have instead? 
-            if (OriginalTranslations.All(x => x.Key.Target != obj)
-            ) //check if we don't have the object in the dictionary
+            if (OriginalTranslations.All(x => x.Key.Target != obj)) //check if we don't have the object in the dictionary
                 OriginalTranslations.Add(new WeakReference(obj), input);
 
             if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
-            {
                 return translation.TranslatedLine;
-            }
 
-            if (TryGetRegex(input, out translation, out Match match))
-            {
-                if (translation.Flags.IsTranslationRegex)
-                {
-                    string FormattedText = translation.TranslatedLine;
-                    for (int i = 0;i< match.Groups.Count; i++)
-                    {
-                        if (FormattedText.Contains("{" + i + "}"))
-                            FormattedText = FormattedText.Replace("{" + i + "}", match.Groups[i].Value);
-                    }
-                    return FormattedText;
-                }
-
-                return translation.TranslatedLine;
-            }
+            if (TryGetRegex(input, out string regexTranslation))
+                return regexTranslation;
 
             if (obj is UnityEngine.UI.Text)
             {
@@ -119,6 +108,20 @@ namespace DynamicTranslationLoader.Text
             if (!Untranslated.Contains(input))
                 Untranslated.Add(input);
 
+            return input;
+        }
+        /// <summary>
+        /// Alternate, simpler text translation. Typically used for Unity GUIs in plugins.
+        /// Will not paste to clipboard, maintain untranslated/original text lists, or allow autotranslator hooking.
+        /// </summary>
+        public static string TranslateText(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+            if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
+                return translation.TranslatedLine;
+            if (TryGetRegex(input, out string regexTranslation))
+                return regexTranslation;
             return input;
         }
 
