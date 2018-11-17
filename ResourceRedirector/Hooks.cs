@@ -76,14 +76,24 @@ namespace ResourceRedirector
 
         #region Asset Loading
         [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAsset), new[] { typeof(string), typeof(string), typeof(Type), typeof(string) })]
-        public static bool LoadAssetPreHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName, string assetName, Type type, string manifestAssetBundleName)
+        public static bool LoadAssetPreHook(ref AssetBundleLoadAssetOperation __result, ref string assetBundleName, ref string assetName, Type type, string manifestAssetBundleName)
         {
             __result = ResourceRedirector.HandleAsset(assetBundleName, assetName, type, manifestAssetBundleName, ref __result);
 
-            if (__result != null)
+            if (__result == null)
+            {
+                if (!File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}"))
+                {
+                    //An asset that does not exist is being requested from from an asset bundle that does not exist
+                    //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors
+                    Logger.Log(LogLevel.Warning, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
+                    assetBundleName = "chara/mt_ramp_00.unity3d";
+                    assetName = "dummy";
+                }
+                return true;
+            }
+            else
                 return false;
-
-            return true;
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), "LoadAssetAsync", new[] { typeof(string), typeof(string), typeof(Type), typeof(string) })]
@@ -91,10 +101,20 @@ namespace ResourceRedirector
         {
             __result = ResourceRedirector.HandleAsset(assetBundleName, assetName, type, manifestAssetBundleName, ref __result);
 
-            if (__result != null)
+            if (__result == null)
+            {
+                if (!File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}"))
+                {
+                    //An asset that does not exist is being requested from from an asset bundle that does not exist
+                    //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors
+                    Logger.Log(LogLevel.Warning, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
+                    assetBundleName = "chara/mt_ramp_00.unity3d";
+                    assetName = "dummy";
+                }
+                return true;
+            }
+            else
                 return false;
-
-            return true;
         }
         #endregion
     }
