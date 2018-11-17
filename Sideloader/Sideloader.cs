@@ -359,48 +359,12 @@ namespace Sideloader
                         return true;
                     }
                 }
-                else
-                {
-                    if (IsPngFolderOnly(assetBundleName))
-                    {
-                        //A .png that does not exist is being requested from from an asset bundle that does not exist
-                        //Return an empty image to prevent crashing
-                        Texture2D BlankImage = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                        BlankImage.SetPixel(0, 0, Color.white);
-                        BlankImage.Apply();
-
-                        result = new AssetBundleLoadAssetOperationSimulation(BlankImage);
-                        return true;
-                    }
-                }
             }
 
             if (BundleManager.TryGetObjectFromName(assetName, assetBundleName, type, out UnityEngine.Object obj))
             {
                 result = new AssetBundleLoadAssetOperationSimulation(obj);
                 return true;
-            }
-            else
-            {
-                if (!File.Exists(Application.dataPath + "/../abdata/" + assetBundleName))
-                {
-                    //Asset does not exist. Unless we return something here the game will attempt to read a file that doesn't exist on disk and crash
-                    if (type == typeof(Texture2D))
-                    {
-                        Logger.Log(LogLevel.Debug, $"Asset {assetName} does not exist in asset bundle {assetBundleName}, using blank image instead.");
-                        Texture2D BlankImage = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                        BlankImage.SetPixel(0, 0, Color.white);
-                        BlankImage.Apply();
-
-                        result = new AssetBundleLoadAssetOperationSimulation(BlankImage);
-                        return true;
-                    }
-                    else
-                    {
-                        //Bad things will happen. These should be properly handled if any such cases are found to exist.
-                        Logger.Log(LogLevel.Error, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
-                    }
-                }
             }
 
             result = null;
