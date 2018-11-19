@@ -303,7 +303,7 @@ namespace Sideloader
                         }
                         else
                         {
-                            Logger.Log(LogLevel.Info, $"[SIDELOADER] Cannot stream {entry.Name} ({archiveFilename}) unity3d file from disk");
+                            Logger.Log(LogLevel.Info, $"[SIDELOADER] Cannot stream {entry.Name} ({archiveFilename}) unity3d file from disk, loading to RAM instead");
                             var stream = arc.GetInputStream(entry);
 
                             byte[] buffer = new byte[entry.Size];
