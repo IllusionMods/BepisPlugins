@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ResourceRedirector
 {
@@ -71,6 +73,42 @@ namespace ResourceRedirector
                 }
 
             ListLoader.LoadAllLists(__instance);
+        }
+        #endregion
+
+        #region Studio List Loading 
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.AssetBundleCheck), nameof(Studio.AssetBundleCheck.GetAllFileName))]
+        public static bool GetAllFileName(string _assetBundleName, bool _WithExtension, ref string[] __result)
+        {
+            var list = ListLoader.ExternalStudioDataList.Where(x => x.AssetBundleName == _assetBundleName).Select(y => y.FileNameWithoutExtension).ToArray();
+            if (list.Count() > 0)
+            {
+                __result = list;
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.Info), "FindAllAssetName")]
+        public static bool FindAllAssetNamePrefix(string _bundlePath, string _regex, ref string[] __result)
+        {
+            var list = ListLoader.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath).Select(x => x.FileNameWithoutExtension).ToList();
+            if (list.Count() > 0)
+            {
+                __result = list.Where(x => Regex.Match(x, _regex, RegexOptions.IgnoreCase).Success).ToArray();
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
+        public static void GetAssetBundleNameListFromPath(string path, List<string> __result)
+        {
+            if (path == "studio/info/")
+            {
+                foreach (string assetBundleName in ListLoader.ExternalStudioDataList.Select(x => x.AssetBundleName).Distinct())
+                    __result.Add(assetBundleName);
+            }
         }
         #endregion
 

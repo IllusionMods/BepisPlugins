@@ -15,6 +15,7 @@ namespace ResourceRedirector
         public static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
 
         public static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
+        public static List<StudioListData> ExternalStudioDataList { get; private set; } = new List<StudioListData>();
 
         public static int CalculateGlobalID(int category, int ID)
         {
@@ -24,7 +25,7 @@ namespace ResourceRedirector
         internal static void LoadAllLists(ChaListControl instance)
         {
             InternalDataList = r_dictListInfo.GetValue<Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>>(instance);
-            
+
             foreach (ChaListData data in ExternalDataList)
                 LoadList(instance, data);
 
@@ -51,20 +52,20 @@ namespace ResourceRedirector
         private static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
         {
             foreach (KeyValuePair<int, List<string>> keyValuePair in chaListData.dictList)
-		    {
-			    ListInfoBase listInfoBase = new ListInfoBase();
+            {
+                ListInfoBase listInfoBase = new ListInfoBase();
 
-			    if (listInfoBase.Set(chaListData.categoryNo, chaListData.distributionNo, chaListData.lstKey, keyValuePair.Value))
-			    {
-				    if (!dictData.ContainsKey(listInfoBase.Id))
-				    {
-					    dictData[listInfoBase.Id] = listInfoBase;
-					    int infoInt = listInfoBase.GetInfoInt(ChaListDefine.KeyType.Possess);
-					    int item = CalculateGlobalID(listInfoBase.Category, listInfoBase.Id);
-				        instance.AddItemID(item, (byte)infoInt);
+                if (listInfoBase.Set(chaListData.categoryNo, chaListData.distributionNo, chaListData.lstKey, keyValuePair.Value))
+                {
+                    if (!dictData.ContainsKey(listInfoBase.Id))
+                    {
+                        dictData[listInfoBase.Id] = listInfoBase;
+                        int infoInt = listInfoBase.GetInfoInt(ChaListDefine.KeyType.Possess);
+                        int item = CalculateGlobalID(listInfoBase.Category, listInfoBase.Id);
+                        instance.AddItemID(item, (byte)infoInt);
                     }
-			    }
-		    }
+                }
+            }
         }
 
         #region Helpers
@@ -94,6 +95,46 @@ namespace ResourceRedirector
             }
 
             return chaListData;
+        }
+
+        public static StudioListData LoadStudioCSV(Stream stream, string fileName)
+        {
+            StudioListData data = new StudioListData(fileName);
+
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+            {
+                data.Header = reader.ReadLine().Trim().Split(',').ToList();
+                int columnCount = data.Header.Count;
+
+                while (!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine().Trim();
+
+                    if (!line.Contains(','))
+                        break;
+
+                    List<string> lineSplit = line.Split(',').ToList();
+                    if (lineSplit.Count == columnCount)
+                        data.Entries.Add(lineSplit);
+                }
+            }
+            return data;
+        }
+        public class StudioListData
+        {
+            public string FileName { get; private set; }
+            public string FileNameWithoutExtension { get; private set; }
+            public string AssetBundleName { get; private set; }
+            public List<string> Header;
+            public List<List<string>> Entries = new List<List<string>>();
+
+            public StudioListData(string fileName)
+            {
+                FileName = fileName;
+                FileNameWithoutExtension = Path.GetFileNameWithoutExtension(FileName);
+                AssetBundleName = FileName.Remove(FileName.LastIndexOf('/')).Remove(0, FileName.IndexOf('/') + 1) + ".unity3d";
+            }
+
         }
         #endregion
     }

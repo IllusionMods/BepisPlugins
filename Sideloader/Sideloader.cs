@@ -1,4 +1,6 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
+using Logger = BepInEx.Logger;
 using ICSharpCode.SharpZipLib.Zip;
 using ResourceRedirector;
 using System;
@@ -6,11 +8,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using BepInEx.Logging;
 using Shared;
 using Sideloader.AutoResolver;
 using UnityEngine;
-using Logger = BepInEx.Logger;
 
 namespace Sideloader
 {
@@ -21,16 +21,12 @@ namespace Sideloader
     {
         protected List<ZipFile> Archives = new List<ZipFile>();
 
-        protected List<ChaListData> lists = new List<ChaListData>();
-
         protected List<Manifest> LoadedManifests = new List<Manifest>();
 
         protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
         protected static List<string> PngFolderList = new List<string>();
         protected static List<string> PngFolderOnlyList = new List<string>();
 
-
-        public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
 
         public Sideloader()
         {
@@ -159,18 +155,6 @@ namespace Sideloader
             }
         }
 
-        protected void IndexList(Manifest manifest, ChaListData data)
-        {
-            if (LoadedData.TryGetValue(manifest, out lists))
-            {
-                lists.Add(data);
-            }
-            else
-            {
-                LoadedData.Add(manifest, new List<ChaListData>(new[] { data }));
-            }
-        }
-
         protected void LoadAllLists(ZipFile arc, Manifest manifest)
         {
             foreach (ZipEntry entry in arc)
@@ -180,23 +164,28 @@ namespace Sideloader
                     try
                     {
                         var stream = arc.GetInputStream(entry);
-
                         var chaListData = ListLoader.LoadCSV(stream);
 
                         SetPossessNew(chaListData);
                         UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData);
-                        IndexList(manifest, chaListData);
-
                         ListLoader.ExternalDataList.Add(chaListData);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
+                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
+                    }
+                }
+                if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        var stream = arc.GetInputStream(entry);
+                        var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
 
-                        if (LoadedData.TryGetValue(manifest, out lists))
-                        {
-                            lists.Add(chaListData);
-                        }
-                        else
-                        {
-                            LoadedData[manifest] = new List<ChaListData> { chaListData };
-                        }
+                        if (!studioListData.FileNameWithoutExtension.StartsWith("ItemCategory"))
+                            UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
+                        ListLoader.ExternalStudioDataList.Add(studioListData);
                     }
                     catch (Exception ex)
                     {
@@ -283,12 +272,14 @@ namespace Sideloader
         {
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase))
+                if (entry.Name.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase) || !entry.Name.Contains('.'))
                 {
                     string assetBundlePath = entry.Name;
 
                     if (assetBundlePath.Contains('/'))
                         assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
+                    if (assetBundlePath.IsNullOrEmpty() || assetBundlePath.EndsWith("/"))
+                        continue;
 
                     Func<AssetBundle> getBundleFunc = () =>
                     {
@@ -303,7 +294,7 @@ namespace Sideloader
                         }
                         else
                         {
-                            Logger.Log(LogLevel.Info, $"[SIDELOADER] Cannot stream {entry.Name} ({archiveFilename}) unity3d file from disk, loading to RAM instead");
+                            Logger.Log(LogLevel.Debug, $"[SIDELOADER] Cannot stream {entry.Name} ({archiveFilename}) unity3d file from disk, loading to RAM instead");
                             var stream = arc.GetInputStream(entry);
 
                             byte[] buffer = new byte[entry.Size];

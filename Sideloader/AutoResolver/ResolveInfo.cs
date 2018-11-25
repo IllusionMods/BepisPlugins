@@ -45,4 +45,35 @@ namespace Sideloader.AutoResolver
             return newResolveInfo;
         }
     }
+
+    [Serializable]
+    [MessagePackObject]
+    public class StudioResolveInfo
+    {
+        [Key("ModID")]
+        public string GUID { get; set; }
+        [Key("Slot")]
+        public int Slot { get; set; }
+        [Key("LocalSlot")]
+        public int LocalSlot { get; set; }
+        [Key("SceneDicKey")] //Used on scene load
+        public int DicKey { get; set; }
+        [Key("SceneObjectOrder")] //Used on scene import
+        public int ObjectOrder { get; set; }
+
+        public bool CanResolve(ResolveInfo other)
+        {
+            return GUID == other.GUID && Slot == other.Slot;
+        }
+
+        public static StudioResolveInfo Unserialize(byte[] data)
+        {
+            return MessagePackSerializer.Deserialize<StudioResolveInfo>(data);
+        }
+
+        public byte[] Serialize()
+        {
+            return MessagePackSerializer.Serialize(this);
+        }
+    }
 }

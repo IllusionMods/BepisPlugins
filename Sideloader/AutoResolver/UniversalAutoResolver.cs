@@ -11,6 +11,7 @@ namespace Sideloader.AutoResolver
         public const string UARExtID = "com.bepis.sideloader.universalautoresolver";
 
         public static List<ResolveInfo> LoadedResolutionInfo = new List<ResolveInfo>();
+        public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
         public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
         {
@@ -116,7 +117,6 @@ namespace Sideloader.AutoResolver
         }
 
         private static int CurrentSlotID = 100000000;
-
         public static void GenerateResolutionInfo(Manifest manifest, ChaListData data)
         {
             var category = (ChaListDefine.CategoryNo)data.categoryNo;
@@ -146,10 +146,34 @@ namespace Sideloader.AutoResolver
                     //                          $"LocalSlot: {newSlot} " +
                     //                          $"Property: {propertyKey.ToString()} " +
                     //                          $"CategoryNo: {category} " +
-                    //                          $"Total Count: {LoadedResolutionInfo.Count}");
+                    //                          $"Count: {LoadedResolutionInfo.Count}");
                 }
 
                 kv.Value[0] = newSlot.ToString();
+            }
+        }
+
+        private static int CurrentStudioSlotID = 100000000;
+        public static void GenerateStudioResolutionInfo(Manifest manifest, ResourceRedirector.ListLoader.StudioListData data)
+        {
+            foreach (var entry in data.Entries)
+            {
+                int newSlot = Interlocked.Increment(ref CurrentStudioSlotID);
+
+                LoadedStudioResolutionInfo.Add(new StudioResolveInfo
+                {
+                    GUID = manifest.GUID,
+                    Slot = int.Parse(entry[0]),
+                    LocalSlot = newSlot,
+                });
+
+                //Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
+                //                          $"GUID: {manifest.GUID} " +
+                //                          $"Slot: {int.Parse(entry[0])} " +
+                //                          $"LocalSlot: {newSlot} " +
+                //                          $"Count: {LoadedStudioResolutionInfo.Count}");
+
+                entry[0] = newSlot.ToString();
             }
         }
     }

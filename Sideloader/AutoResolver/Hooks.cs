@@ -9,6 +9,7 @@ using BepInEx;
 using BepInEx.Logging;
 using ChaCustom;
 using Illusion.Extensions;
+using Studio;
 
 namespace Sideloader.AutoResolver
 {
@@ -21,6 +22,10 @@ namespace Sideloader.AutoResolver
 
             ExtendedSave.CoordinateBeingLoaded += ExtendedCoordinateLoad;
             ExtendedSave.CoordinateBeingSaved += ExtendedCoordinateSave;
+
+            ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
+            ExtendedSave.SceneBeingImported += ExtendedSceneImport;
+            //ExtendedSave.SceneBeingSaved += ExtendedSceneSave;
 
             var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
             harmony.PatchAll(typeof(Hooks));
@@ -306,6 +311,333 @@ namespace Sideloader.AutoResolver
             }
 
             IterateCoordinatePrefixes(ResetStructResolveStructure, __instance, extInfo);
+        }
+
+        #endregion
+
+        #region Studio
+        private static void ExtendedSceneLoad(string path)
+        {
+            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+
+            if (extData != null && extData.data.ContainsKey("info"))
+            {
+                List<StudioResolveInfo> extInfo;
+                Dictionary<int, ObjectInfo> dicObjectInfo = FindAllObjectInfo(FindType.All);
+
+                var tmpExtInfo = (object[])extData.data["info"];
+                extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
+
+                //foreach (var x in dicObjectInfo)
+                //    Logger.Log(LogLevel.Info, $"dicObjectInfo:{x}");
+                //if (Singleton<Studio.Studio>.Instance.sceneInfo.dicChangeKey != null)
+                //    foreach (var x in Singleton<Studio.Studio>.Instance.sceneInfo.dicChangeKey)
+                //        Logger.Log(LogLevel.Info, $"dicChangeKey:{x}");
+                //foreach (StudioResolveInfo extResolve in extInfo)
+                //    Logger.Log(LogLevel.Info, $"External info: GUID:{extResolve.GUID} ID:{extResolve.Slot} dicKey:{extResolve.DicKey}");
+
+                //When a scene is loaded the dicKey remains unchanged. Read it from the StudioResolveInfo and match it to objects in the scene
+                foreach (StudioResolveInfo extResolve in extInfo)
+                {
+                    if (dicObjectInfo[extResolve.DicKey] is OIItemInfo item)
+                    {
+                        var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == item.no && x.GUID == extResolve.GUID);
+                        if (intResolve != null)
+                        {
+                            //found a match to a corrosponding internal mod
+                            Logger.Log(LogLevel.Info, $"[UAR] Resolving {extResolve.GUID} {item.no}->{intResolve.LocalSlot}");
+                            Traverse.Create(item).Property("no").SetValue(intResolve.LocalSlot);
+                        }
+                        else //we didn't find a match, check if we have the same GUID loaded
+                        {
+                            if (UniversalAutoResolver.LoadedStudioResolutionInfo.Any(x => x.GUID == extResolve.GUID))
+                                //we have the GUID loaded, so the user has an outdated mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{extResolve.GUID}]");
+                            else
+                                //did not find a match, we don't have the mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.GUID}]");
+                        }
+                    }
+                    if (dicObjectInfo[extResolve.DicKey] is OILightInfo light)
+                    {
+                        var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == light.no && x.GUID == extResolve.GUID);
+                        if (intResolve != null)
+                        {
+                            //found a match to a corrosponding internal mod
+                            Logger.Log(LogLevel.Info, $"[UAR] Resolving {extResolve.GUID} {light.no}->{intResolve.LocalSlot}");
+                            Traverse.Create(light).Property("no").SetValue(intResolve.LocalSlot);
+                        }
+                        else //we didn't find a match, check if we have the same GUID loaded
+                        {
+                            if (UniversalAutoResolver.LoadedStudioResolutionInfo.Any(x => x.GUID == extResolve.GUID))
+                                //we have the GUID loaded, so the user has an outdated mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{extResolve.GUID}]");
+                            else
+                                //did not find a match, we don't have the mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.GUID}]");
+                        }
+                    }
+                }
+            }
+        }
+        private static void ExtendedSceneImport(string path)
+        {
+            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+
+            if (extData != null && extData.data.ContainsKey("info"))
+            {
+                List<StudioResolveInfo> extInfo;
+                Dictionary<int, ObjectInfo> dicObjectInfo = FindAllObjectInfo(FindType.All);
+                Dictionary<int, ObjectInfo> dicObjectInfoImport = FindAllObjectInfo(FindType.Import);
+                Dictionary<int, int> dicChangeKey = new Dictionary<int, int>();
+
+                var tmpExtInfo = (object[])extData.data["info"];
+                extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
+
+                int Counter = 0;
+                int OldPosition = 0;
+
+                //foreach (var x in dicObjectInfoImport)
+                //    Logger.Log(LogLevel.Info, $"dicObjectInfoImport:{x}");
+                //foreach (var x in dicChangeKey)
+                //    Logger.Log(LogLevel.Info, $"dicChangeKey:{x}");
+                //foreach (StudioResolveInfo extResolve in extInfo)
+                //    Logger.Log(LogLevel.Info, $"External info: GUID:{extResolve.GUID} ID:{extResolve.Slot} dicKey:{extResolve.DicKey}");
+
+
+                //When a scene is imported, the dicKey is changed. Create a dictionary of old/new values.
+                foreach (var x in dicObjectInfo)
+                {
+                    //Logger.Log(LogLevel.Info, $"dicObjectInfo:{x} Pos:{Counter}");
+                    if (dicObjectInfoImport.ContainsKey(Counter))
+                    {
+                        //New item added by import
+                        dicChangeKey.Add(OldPosition, Counter);
+                        //Logger.Log(LogLevel.Warning, dicObjectInfoImport[Counter]);
+                        OldPosition++;
+                    }
+                    Counter++;
+                }
+
+
+                //Match objects from the StudioResolveInfo to objects in the scene using the old/new dicKey dictionary
+                foreach (StudioResolveInfo extResolve in extInfo)
+                {
+                    int NewDicKey = dicChangeKey[extResolve.ObjectOrder];
+                    //Logger.Log(LogLevel.Info, $"Original dicKey: {extResolve.DicKey} New dicKey:{NewDicKey}");
+                    if (dicObjectInfo[NewDicKey] is OIItemInfo item)
+                    {
+                        var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == item.no && x.GUID == extResolve.GUID);
+                        if (intResolve != null)
+                        {
+                            //found a match to a corrosponding internal mod
+                            Logger.Log(LogLevel.Info, $"[UAR] Resolving {extResolve.GUID} {item.no}->{intResolve.LocalSlot}");
+                            Traverse.Create(item).Property("no").SetValue(intResolve.LocalSlot);
+                        }
+                        else //we didn't find a match, check if we have the same GUID loaded
+                        {
+                            if (UniversalAutoResolver.LoadedStudioResolutionInfo.Any(x => x.GUID == extResolve.GUID))
+                                //we have the GUID loaded, so the user has an outdated mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{extResolve.GUID}]");
+                            else
+                                //did not find a match, we don't have the mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.GUID}]");
+                        }
+                    }
+                    if (dicObjectInfo[NewDicKey] is OILightInfo light)
+                    {
+                        var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == light.no && x.GUID == extResolve.GUID);
+                        if (intResolve != null)
+                        {
+                            //found a match to a corrosponding internal mod
+                            Logger.Log(LogLevel.Info, $"[UAR] Resolving {extResolve.GUID} {light.no}->{intResolve.LocalSlot}");
+                            Traverse.Create(light).Property("no").SetValue(intResolve.LocalSlot);
+                        }
+                        else //we didn't find a match, check if we have the same GUID loaded
+                        {
+                            if (UniversalAutoResolver.LoadedStudioResolutionInfo.Any(x => x.GUID == extResolve.GUID))
+                                //we have the GUID loaded, so the user has an outdated mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{extResolve.GUID}]");
+                            else
+                                //did not find a match, we don't have the mod
+                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.GUID}]");
+                        }
+                    }
+                }
+            }
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+        public static void SavePrefix()
+        {
+            Dictionary<int, ObjectInfo> dicObjectInfo = FindAllObjectInfo(FindType.All);
+            PluginData extData = new PluginData();
+            List<StudioResolveInfo> resolutionInfo = new List<StudioResolveInfo>();
+            int Counter = 0;
+
+            foreach (var kv in dicObjectInfo)
+            {
+                if (kv.Value is OIItemInfo item)
+                {
+                    if (item.no >= 100000000)
+                    {
+                        var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == item.no).FirstOrDefault();
+                        if (extResolve != null)
+                        {
+                            //Logger.Log(LogLevel.Warning, $"dicKey:{item.dicKey} Counter:{Counter}");
+                            StudioResolveInfo intResolve = new StudioResolveInfo();
+                            intResolve.GUID = extResolve.GUID;
+                            intResolve.Slot = extResolve.Slot;
+                            intResolve.LocalSlot = extResolve.LocalSlot;
+                            intResolve.DicKey = item.dicKey;
+                            intResolve.ObjectOrder = Counter;
+                            resolutionInfo.Add(intResolve);
+
+                            //set item ID back to default
+                            //Logger.Log(LogLevel.Info, $"Setting ID {item.no}->{extResolve.Slot}");
+                            Traverse.Create(item).Property("no").SetValue(extResolve.Slot);
+                        }
+                    }
+                }
+                else if (kv.Value is OILightInfo light)
+                {
+                    if (light.no >= 100000000)
+                    {
+                        var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == light.no).FirstOrDefault();
+                        if (extResolve != null)
+                        {
+                            StudioResolveInfo intResolve = new StudioResolveInfo();
+                            intResolve.GUID = extResolve.GUID;
+                            intResolve.Slot = extResolve.Slot;
+                            intResolve.LocalSlot = extResolve.LocalSlot;
+                            intResolve.DicKey = light.dicKey;
+                            intResolve.ObjectOrder = Counter;
+                            resolutionInfo.Add(intResolve);
+
+                            //set item ID back to default
+                            //Logger.Log(LogLevel.Info, $"Setting ID {light.no}->{extResolve.Slot}");
+                            Traverse.Create(light).Property("no").SetValue(extResolve.Slot);
+                        }
+                    }
+                }
+                Counter++;
+            }
+
+            if (!resolutionInfo.IsNullOrEmpty())
+            {
+                ExtendedSave.SetSceneExtendedDataById(UniversalAutoResolver.UARExtID, new PluginData
+                {
+                    data = new Dictionary<string, object>
+                    {
+                        ["info"] = resolutionInfo.Select(x => x.Serialize()).ToList()
+                    }
+                });
+            }
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+        public static void SavePostfix()
+        {
+            //Set item IDs back to the resolved ID
+            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+
+            if (extData != null && extData.data.ContainsKey("info"))
+            {
+                List<StudioResolveInfo> extInfo;
+                Dictionary<int, ObjectInfo> dicObjectInfo = FindAllObjectInfo(FindType.All);
+
+                var tmpExtInfo = (List<byte[]>)extData.data["info"];
+                extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize(x)).ToList();
+
+                //foreach (StudioResolveInfo extResolve in extInfo)
+                //    Logger.Log(LogLevel.Info, $"External info: GUID:{extResolve.GUID} ID:{extResolve.Slot} dicKey:{extResolve.DicKey}");
+
+                foreach (StudioResolveInfo extResolve in extInfo)
+                {
+                    if (dicObjectInfo[extResolve.DicKey] is OIItemInfo item)
+                    {
+                        var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == item.no && x.GUID == extResolve.GUID);
+                        //Logger.Log(LogLevel.Info, $"Setting ID {item.no}->{intResolve.LocalSlot}");
+                        Traverse.Create(item).Property("no").SetValue(intResolve.LocalSlot);
+                    }
+                    if (dicObjectInfo[extResolve.DicKey] is OILightInfo light)
+                    {
+                        var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == light.no && x.GUID == extResolve.GUID);
+                        //Logger.Log(LogLevel.Info, $"Setting ID {light.no}->{intResolve.LocalSlot}");
+                        Traverse.Create(light).Property("no").SetValue(intResolve.LocalSlot);
+                    }
+                }
+            }
+        }
+
+        private enum FindType { All, Import }
+        private static Dictionary<int, ObjectInfo> FindAllObjectInfo(FindType loadType)
+        {
+            Dictionary<int, ObjectInfo> dicObjectInfo = new Dictionary<int, ObjectInfo>();
+
+            //Get all objects in the scene
+            if (loadType == FindType.All)
+            {
+                foreach (var kv in Singleton<Studio.Studio>.Instance.sceneInfo.dicObject)
+                {
+                    dicObjectInfo.Add(kv.Key, kv.Value);
+                    FindObjectsRecursive(kv.Value, ref dicObjectInfo);
+                }
+            }
+            //Get all objects that were imported
+            else if (loadType == FindType.Import)
+            {
+                foreach (var kv in Singleton<Studio.Studio>.Instance.sceneInfo.dicImport)
+                {
+                    dicObjectInfo.Add(kv.Key, kv.Value);
+                    FindObjectsRecursive(kv.Value, ref dicObjectInfo);
+                }
+            }
+
+            return dicObjectInfo;
+        }
+        private static void FindObjectsRecursive(ObjectInfo objectInfo, ref Dictionary<int, ObjectInfo> dicObjectInfo)
+        {
+            if (objectInfo is OICharInfo)
+            {
+                var charInfo = (OICharInfo)objectInfo;
+                foreach (var kv in charInfo.child)
+                {
+                    foreach (ObjectInfo oi in kv.Value)
+                    {
+                        dicObjectInfo.Add(oi.dicKey, oi);
+                        FindObjectsRecursive(oi, ref dicObjectInfo);
+                    }
+                }
+            }
+            else if (objectInfo is OIItemInfo)
+            {
+                var charInfo = (OIItemInfo)objectInfo;
+                foreach (var oi in charInfo.child)
+                {
+                    dicObjectInfo.Add(oi.dicKey, oi);
+                    FindObjectsRecursive(oi, ref dicObjectInfo);
+                }
+            }
+            else if (objectInfo is OIFolderInfo)
+            {
+                var folderInfo = (OIFolderInfo)objectInfo;
+                foreach (var oi in folderInfo.child)
+                {
+                    dicObjectInfo.Add(oi.dicKey, oi);
+                    FindObjectsRecursive(oi, ref dicObjectInfo);
+                }
+            }
+            else if (objectInfo is OIRouteInfo)
+            {
+                var routeInfo = (OIRouteInfo)objectInfo;
+                foreach (var oi in routeInfo.child)
+                {
+                    dicObjectInfo.Add(oi.dicKey, oi);
+                    FindObjectsRecursive(oi, ref dicObjectInfo);
+                }
+            }
+            //other types don't have children
         }
 
         #endregion
