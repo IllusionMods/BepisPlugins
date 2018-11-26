@@ -80,7 +80,7 @@ namespace ResourceRedirector
         [HarmonyPrefix, HarmonyPatch(typeof(Studio.AssetBundleCheck), nameof(Studio.AssetBundleCheck.GetAllFileName))]
         public static bool GetAllFileName(string _assetBundleName, bool _WithExtension, ref string[] __result)
         {
-            var list = ListLoader.ExternalStudioDataList.Where(x => x.AssetBundleName == _assetBundleName).Select(y => y.FileNameWithoutExtension).ToArray();
+            var list = ListLoader.ExternalStudioDataList.Where(x => x.AssetBundleName == _assetBundleName).Select(y => y.FileNameWithoutExtension.ToLower()).ToArray();
             if (list.Count() > 0)
             {
                 __result = list;

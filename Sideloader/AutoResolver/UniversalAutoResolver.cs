@@ -137,22 +137,42 @@ namespace Sideloader.AutoResolver
         {
             foreach (var entry in data.Entries)
             {
-                int newSlot = Interlocked.Increment(ref CurrentStudioSlotID);
-
-                LoadedStudioResolutionInfo.Add(new StudioResolveInfo
+                if (data.FileNameWithoutExtension.StartsWith("ItemCategory_")
+                 || data.FileNameWithoutExtension.StartsWith("AnimeCategory_")
+                 || data.FileNameWithoutExtension.StartsWith("VoiceCategory_")
+                 || data.FileNameWithoutExtension.StartsWith("ItemGroup_")
+                 || data.FileNameWithoutExtension.StartsWith("AnimeGroup_")
+                 || data.FileNameWithoutExtension.StartsWith("VoiceGroup_"))
                 {
-                    GUID = manifest.GUID,
-                    Slot = int.Parse(entry[0]),
-                    LocalSlot = newSlot,
-                });
+                    //Add it to the resolution info as is, studio will automatically merge groups with the same IDs without causing exceptions.
+                    //The IDs are expected to stay the same anyway as ItemLists will contain a reference to them.
+                    //Because of this, all ID lookups should contain a Slot != LocalSlot check to prevent getting categories and groups.
+                    LoadedStudioResolutionInfo.Add(new StudioResolveInfo
+                    {
+                        GUID = manifest.GUID,
+                        Slot = int.Parse(entry[0]),
+                        LocalSlot = int.Parse(entry[0]),
+                    });
+                }
+                else
+                {
+                    int newSlot = Interlocked.Increment(ref CurrentStudioSlotID);
 
-                //Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
-                //                          $"GUID: {manifest.GUID} " +
-                //                          $"Slot: {int.Parse(entry[0])} " +
-                //                          $"LocalSlot: {newSlot} " +
-                //                          $"Count: {LoadedStudioResolutionInfo.Count}");
+                    LoadedStudioResolutionInfo.Add(new StudioResolveInfo
+                    {
+                        GUID = manifest.GUID,
+                        Slot = int.Parse(entry[0]),
+                        LocalSlot = newSlot,
+                    });
 
-                entry[0] = newSlot.ToString();
+                    //Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
+                    //                          $"GUID: {manifest.GUID} " +
+                    //                          $"Slot: {int.Parse(entry[0])} " +
+                    //                          $"LocalSlot: {newSlot} " +
+                    //                          $"Count: {LoadedStudioResolutionInfo.Count}");
+
+                    entry[0] = newSlot.ToString();
+                }
             }
         }
 
@@ -181,7 +201,7 @@ namespace Sideloader.AutoResolver
 
         internal static void ResolveStudioObject(StudioResolveInfo extResolve, OIItemInfo Item)
         {
-            var intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == Item.no && x.GUID == extResolve.GUID);
+            var intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no && x.GUID == extResolve.GUID);
             if (intResolve != null)
             {
                 Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
@@ -193,7 +213,7 @@ namespace Sideloader.AutoResolver
 
         internal static void ResolveStudioObject(StudioResolveInfo extResolve, OILightInfo Light)
         {
-            var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == Light.no && x.GUID == extResolve.GUID);
+            var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no && x.GUID == extResolve.GUID);
             if (intResolve != null)
             {
                 Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");

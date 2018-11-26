@@ -183,8 +183,7 @@ namespace Sideloader
                         var stream = arc.GetInputStream(entry);
                         var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
 
-                        if (!studioListData.FileNameWithoutExtension.StartsWith("ItemCategory"))
-                            UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
+                        UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
                         ListLoader.ExternalStudioDataList.Add(studioListData);
                     }
                     catch (Exception ex)
