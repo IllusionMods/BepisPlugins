@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using BepInEx.Logging;
+using Studio;
+using Harmony;
 
 namespace Sideloader.AutoResolver
 {
@@ -18,8 +20,7 @@ namespace Sideloader.AutoResolver
             void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
             {
                 //check if it's a vanilla item
-                if (!ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category]
-                    .ContainsKey(kv.Value.GetMethod(structure)))
+                if (!ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
                 {
                     //the property does not have external slot information
                     //check if we have a corrosponding item for backwards compatbility
@@ -39,12 +40,6 @@ namespace Sideloader.AutoResolver
                         //No match was found
                         Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
                     }
-                }
-                else
-                {
-                    //not resolving since we prioritize vanilla items over modded items
-                    //BepInLogger.Log($"[UAR] Not resolving item due to vanilla ID range");
-                    //log commented out because it causes too much spam
                 }
             }
 
@@ -71,9 +66,6 @@ namespace Sideloader.AutoResolver
                     if (extResolve != null)
                     {
                         //the property has external slot information 
-                        //var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.AppendPropertyPrefix(propertyPrefix).CanResolve(extResolve)
-                        //                                                       && x.CategoryNo == kv.Key.Category);
-
                         var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
                                                                                && x.Slot == extResolve.Slot
                                                                                && x.GUID == extResolve.GUID
@@ -83,28 +75,15 @@ namespace Sideloader.AutoResolver
                         {
                             //found a match to a corrosponding internal mod
                             Logger.Log(LogLevel.Debug, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
-
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }
                         else
                         {
-                            //we didn't find a match, check if we have the same GUID loaded
-
-                            if (LoadedResolutionInfo.Any(x => x.GUID == extResolve.GUID))
-                            {
-                                //we have the GUID loaded, so the user has an outdated mod
-                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{extResolve.GUID}]");
-                            }
-                            else
-                            {
-                                //did not find a match, we don't have the mod
-                                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{extResolve.GUID}]");
-                            }
-
+                            ShowGUIDError(extResolve.GUID);
                             kv.Value.SetMethod(structure, 999999); //set to an invalid ID
                         }
                     }
-                    else //if (UnityEngine.Event.current.alt)
+                    else
                     {
                         CompatibilityResolve(kv);
                     }
@@ -175,6 +154,53 @@ namespace Sideloader.AutoResolver
 
                 entry[0] = newSlot.ToString();
             }
+        }
+
+        public static void ShowGUIDError(string GUID)
+        {
+            if (LoadedResolutionInfo.Any(x => x.GUID == GUID) || LoadedStudioResolutionInfo.Any(x => x.GUID == GUID))
+                //we have the GUID loaded, so the user has an outdated mod
+                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{GUID}]");
+            else
+                //did not find a match, we don't have the mod
+                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{GUID}]");
+        }
+
+        internal static void ResolveStudioObjects(List<StudioResolveInfo> extInfo)
+        {
+            Dictionary<int, ObjectInfo> ObjectList = StudioObjectSearch.FindObjectInfo(StudioObjectSearch.SearchType.All);
+
+            foreach (StudioResolveInfo extResolve in extInfo)
+            {
+                if (ObjectList[extResolve.DicKey] is OIItemInfo Item)
+                    ResolveStudioObject(extResolve, Item);
+                else if (ObjectList[extResolve.DicKey] is OILightInfo Light)
+                    ResolveStudioObject(extResolve, Light);
+            }
+        }
+
+        internal static void ResolveStudioObject(StudioResolveInfo extResolve, OIItemInfo Item)
+        {
+            var intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == Item.no && x.GUID == extResolve.GUID);
+            if (intResolve != null)
+            {
+                Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
+                Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
+            }
+            else
+                ShowGUIDError(extResolve.GUID);
+        }
+
+        internal static void ResolveStudioObject(StudioResolveInfo extResolve, OILightInfo Light)
+        {
+            var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot == Light.no && x.GUID == extResolve.GUID);
+            if (intResolve != null)
+            {
+                Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
+                Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
+            }
+            else
+                ShowGUIDError(extResolve.GUID);
         }
     }
 }

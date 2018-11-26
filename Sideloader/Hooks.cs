@@ -45,62 +45,6 @@ namespace Sideloader
             }
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.ManifestAdd))]
-        public static void ManifestAdd(string manifestAssetBundleName)
-        {
-            //Load all sideloader ABMs after abdata. ManifestAdd prevents duplicates and order doesn't matter.
-            if (manifestAssetBundleName == "abdata")
-                foreach (var x in BundleManager.Bundles.Where(x => !x.Key.Contains(".") && !x.Key.Contains("/")))
-                    AssetBundleManager.ManifestAdd(x.Key);
-        }
-
-        [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAssetBundleInternal))]
-        public static bool LoadAssetBundleInternalPrefix(string assetBundleName, bool isAsync, string manifestAssetBundleName, bool __result)
-        {
-            //Don't load anything but ABMs here or they will get unloaded. ResourceRedirector LoadAsset hook will handle it everything else.
-            //It's probably fine if ABMs are unloaded since they are only used once. Probably.
-            if (assetBundleName.Contains(".") || manifestAssetBundleName.IsNullOrEmpty())
-                return true;
-
-            if (BundleManager.Bundles.TryGetValue(assetBundleName, out List<Lazy<AssetBundle>> lazyList))
-            {
-                var assetBundle = lazyList[0];
-
-                var m_ManifestBundlePack = Traverse.Create(Singleton<AssetBundleManager>.Instance).Field("m_ManifestBundlePack").GetValue<Dictionary<string, AssetBundleManager.BundlePack>>();
-                var bundlePack = m_ManifestBundlePack[manifestAssetBundleName];
-                var m_AllLoadedAssetBundleNames = Traverse.Create(Singleton<AssetBundleManager>.Instance).Field("m_AllLoadedAssetBundleNames").GetValue<HashSet<string>>();
-
-                LoadedAssetBundle loadedAssetBundle = null;
-                bundlePack.LoadedAssetBundles.TryGetValue(assetBundleName, out loadedAssetBundle);
-                if (loadedAssetBundle != null)
-                {
-                    loadedAssetBundle.m_ReferencedCount += 1u;
-                    __result = true;
-                    return false;
-                }
-                AssetBundleCreate assetBundleCreate = null;
-                bundlePack.CreateAssetBundles.TryGetValue(assetBundleName, out assetBundleCreate);
-                if (assetBundleCreate != null)
-                {
-                    assetBundleCreate.m_ReferencedCount += 1u;
-                    __result = true;
-                    return false;
-                }
-
-                if (!m_AllLoadedAssetBundleNames.Add(assetBundleName))
-                {
-                    __result = true;
-                    return false;
-                }
-
-                bundlePack.LoadedAssetBundles.Add(assetBundleName, new LoadedAssetBundle(assetBundle.Instance));
-                __result = false;
-                return false;
-            }
-
-            return true;
-        }
-
         [HarmonyPostfix, HarmonyPatch(typeof(Studio.Info), "LoadExcelData")]
         public static void LoadExcelDataPostfix(string _bundlePath, string _fileName, ref ExcelData __result)
         {

@@ -272,14 +272,12 @@ namespace Sideloader
         {
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase) || !entry.Name.Contains('.'))
+                if (entry.Name.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase))
                 {
                     string assetBundlePath = entry.Name;
 
                     if (assetBundlePath.Contains('/'))
                         assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
-                    if (assetBundlePath.IsNullOrEmpty() || assetBundlePath.EndsWith("/"))
-                        continue;
 
                     Func<AssetBundle> getBundleFunc = () =>
                     {
