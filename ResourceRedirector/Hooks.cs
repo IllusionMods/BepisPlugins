@@ -8,6 +8,8 @@ using System.IO;
 using UnityEngine;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Reflection.Emit;
+using System.Reflection;
 
 namespace ResourceRedirector
 {
@@ -155,5 +157,20 @@ namespace ResourceRedirector
                 return false;
         }
         #endregion
+
+        [HarmonyTranspiler, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAssetBundleInternal))]
+        public static IEnumerable<CodeInstruction> LoadAssetBundleInternalTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionsList = instructions.ToList();
+            MethodInfo LoadMethod = typeof(AssetBundle).GetMethod(nameof(AssetBundle.LoadFromFile), AccessTools.all, null, new[] { typeof(string) }, null);
+
+            int IndexLoadFromFile = instructionsList.FindIndex(instruction => instruction.opcode == OpCodes.Call && instruction.operand == LoadMethod);
+
+            //Switch out a LoadFromFile call
+            if (IndexLoadFromFile > 0)
+                instructionsList[IndexLoadFromFile].operand = typeof(ResourceRedirector).GetMethod(nameof(ResourceRedirector.HandleAssetBundle), AccessTools.all);
+
+            return instructions;
+        }
     }
 }

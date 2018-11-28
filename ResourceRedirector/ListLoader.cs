@@ -103,8 +103,16 @@ namespace ResourceRedirector
 
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
-                data.Header = reader.ReadLine().Trim().Split(',').ToList();
-                int columnCount = data.Header.Count;
+                List<string> Header = reader.ReadLine().Trim().Split(',').ToList();
+                int columnCount = Header.Count;
+                data.Headers.Add(Header);
+
+                //Some have two header rows
+                if (data.FileNameWithoutExtension.StartsWith("Map_") ||
+                    data.FileNameWithoutExtension.StartsWith("Anime_") ||
+                    data.FileNameWithoutExtension.StartsWith("HAnime_") ||
+                    data.FileNameWithoutExtension.StartsWith("Voice_"))
+                    data.Headers.Add(reader.ReadLine().Trim().Split(',').ToList());
 
                 while (!reader.EndOfStream)
                 {
@@ -114,8 +122,11 @@ namespace ResourceRedirector
                         break;
 
                     List<string> lineSplit = line.Split(',').ToList();
-                    if (lineSplit.Count == columnCount)
+                    if (lineSplit.Count == columnCount) 
                         data.Entries.Add(lineSplit);
+                    else
+                        //Only add lines that have the same number of columns or problems might happen.
+                        throw new System.Exception("Row column count does not match header column count.");
                 }
             }
             return data;
@@ -125,7 +136,7 @@ namespace ResourceRedirector
             public string FileName { get; private set; }
             public string FileNameWithoutExtension { get; private set; }
             public string AssetBundleName { get; private set; }
-            public List<string> Header;
+            public List<List<string>> Headers = new List<List<string>>();
             public List<List<string>> Entries = new List<List<string>>();
 
             public StudioListData(string fileName)

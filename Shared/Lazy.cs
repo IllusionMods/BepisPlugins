@@ -5,34 +5,33 @@ namespace Shared
     public class Lazy<T>
     {
         private T _object;
-        private bool _initialized;
-        private Func<T> _factory;
+        private bool Initialized { get; set; }
+        public Func<T> Factory { get; set; }
 
         private Lazy(Func<T> factory)
         {
-            _factory = factory;
+            Factory = factory;
         }
 
         public T Instance
         {
-            get {
+            get
+            {
                 Initialize();
                 return _object;
             }
         }
 
-        public bool Initialized => _initialized;
-
         public void Initialize()
         {
-            if (_initialized)
+            if (Initialized)
                 return;
 
-            _initialized = true;
-            _object = _factory();
+            Initialized = true;
+            _object = Factory();
         }
 
-        public static implicit operator T (Lazy<T> lazy)
+        public static implicit operator T(Lazy<T> lazy)
         {
             return lazy.Instance;
         }

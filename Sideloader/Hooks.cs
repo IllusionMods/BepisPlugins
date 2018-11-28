@@ -60,11 +60,14 @@ namespace Sideloader
 
                 foreach (var studioListData in studioList)
                 {
-                    if (!didHeader) //Write the header. I think it's pointless and will be skipped when the ExcelData is read, but it's expected to be there.
+                    if (!didHeader) //Write the headers. I think it's pointless and will be skipped when the ExcelData is read, but it's expected to be there.
                     {
-                        var param = new ExcelData.Param();
-                        param.list = studioListData.Header;
-                        __result.list.Add(param);
+                        foreach (var header in studioListData.Headers)
+                        {
+                            var headerParam = new ExcelData.Param();
+                            headerParam.list = header;
+                            __result.list.Add(headerParam);
+                        }
                         didHeader = true;
                     }
                     foreach (var entry in studioListData.Entries)

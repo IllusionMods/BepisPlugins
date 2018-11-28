@@ -44,6 +44,7 @@ namespace Sideloader
             Hooks.InstallHooks();
             AutoResolver.Hooks.InstallHooks();
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
+            ResourceRedirector.ResourceRedirector.AssetBundleResolvers.Add(AssetBundleRedirectHook);
 
             //check mods directory
             var modDirectory = Path.Combine(Paths.GameRootPath, "mods");
@@ -278,7 +279,7 @@ namespace Sideloader
                     if (assetBundlePath.Contains('/'))
                         assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
 
-                    Func<AssetBundle> getBundleFunc = () =>
+                    AssetBundle getBundleFunc()
                     {
                         AssetBundle bundle;
 
@@ -309,7 +310,7 @@ namespace Sideloader
                         }
 
                         return bundle;
-                    };
+                    }
 
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
@@ -353,6 +354,25 @@ namespace Sideloader
             {
                 result = new AssetBundleLoadAssetOperationSimulation(obj);
                 return true;
+            }
+
+            result = null;
+            return false;
+        }
+
+        protected bool AssetBundleRedirectHook(string assetBundleName, out AssetBundle result)
+        {
+            string bundle = assetBundleName.Remove(0, assetBundleName.IndexOf("/abdata/")).Replace("/abdata/", "");
+
+            if (BundleManager.Bundles.TryGetValue(bundle, out List<Lazy<AssetBundle>> lazyList))
+            {
+                //Only load asset bundles that do no exist on disk, otherwise we might be loading a partial file
+                if (!File.Exists(assetBundleName))
+                {
+                    //If more than one exist, only the first will be loaded.
+                    result = lazyList[0].Factory.Call();
+                    return true;
+                }
             }
 
             result = null;
