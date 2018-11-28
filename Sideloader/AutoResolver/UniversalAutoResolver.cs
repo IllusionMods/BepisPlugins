@@ -213,7 +213,7 @@ namespace Sideloader.AutoResolver
 
         internal static void ResolveStudioObject(StudioResolveInfo extResolve, OILightInfo Light)
         {
-            var intResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no && x.GUID == extResolve.GUID);
+            var intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no && x.GUID == extResolve.GUID);
             if (intResolve != null)
             {
                 Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
@@ -221,6 +221,25 @@ namespace Sideloader.AutoResolver
             }
             else
                 ShowGUIDError(extResolve.GUID);
+        }
+
+        internal static void ResolveStudioMap(ExtensibleSaveFormat.PluginData extData)
+        {
+            //Set map ID back to the resolved ID
+            if (extData != null && extData.data.ContainsKey("mapInfoID") && extData.data.ContainsKey("mapInfoGUID"))
+            {
+                string MapGUID = (string)extData.data["mapInfoGUID"];
+                int MapID = (int)extData.data["mapInfoID"];
+
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == MapID && x.GUID == MapGUID);
+                if (intResolve != null)
+                {
+                    Logger.Log(LogLevel.Info, $"[UAR] Resolving [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
+                    Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
+                }
+                else
+                    ShowGUIDError(MapGUID);
+            }
         }
     }
 }

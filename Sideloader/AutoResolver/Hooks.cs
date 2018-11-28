@@ -327,6 +327,8 @@ namespace Sideloader.AutoResolver
 
                 UniversalAutoResolver.ResolveStudioObjects(extInfo);
             }
+
+            UniversalAutoResolver.ResolveStudioMap(extData);
         }
 
         private static void ExtendedSceneImport(string path)
@@ -355,13 +357,16 @@ namespace Sideloader.AutoResolver
                     }
                 }
             }
+
+            //Maps are not imported
+            //UniversalAutoResolver.ResolveStudioMap(extData);
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
         public static void SavePrefix()
         {
-            PluginData extData = new PluginData();
-            List<StudioResolveInfo> resolutionInfo = new List<StudioResolveInfo>();
+            Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
+            List<StudioResolveInfo> ObjectResolutionInfo = new List<StudioResolveInfo>();
             Dictionary<int, ObjectInfo> ObjectList = FindObjectInfoAndOrder(SearchType.All, typeof(OIItemInfo), out Dictionary<int, int> ItemOrder);
             Dictionary<int, int> LightOrder = FindObjectInfoOrder(SearchType.All, typeof(OILightInfo));
 
@@ -378,7 +383,7 @@ namespace Sideloader.AutoResolver
                         intResolve.LocalSlot = extResolve.LocalSlot;
                         intResolve.DicKey = Item.dicKey;
                         intResolve.ObjectOrder = ItemOrder[Item.dicKey];
-                        resolutionInfo.Add(intResolve);
+                        ObjectResolutionInfo.Add(intResolve);
 
                         //set item ID back to default
                         //Logger.Log(LogLevel.Info, $"Setting [{item.dicKey}] ID:{item.no}->{extResolve.Slot}");
@@ -396,26 +401,38 @@ namespace Sideloader.AutoResolver
                         intResolve.LocalSlot = extResolve.LocalSlot;
                         intResolve.DicKey = Light.dicKey;
                         intResolve.ObjectOrder = ItemOrder[Light.dicKey];
-                        resolutionInfo.Add(intResolve);
+                        ObjectResolutionInfo.Add(intResolve);
 
-                        //set item ID back to default
+                        //Set item ID back to default
                         //Logger.Log(LogLevel.Info, $"Setting [{item.dicKey}] ID:{item.no}->{extResolve.Slot}");
                         Traverse.Create(Light).Property("no").SetValue(extResolve.Slot);
                     }
                 }
             }
 
-            //Set the extended data, if any
-            if (!resolutionInfo.IsNullOrEmpty())
+            //Add the extended data for items and lights, if any
+            if (!ObjectResolutionInfo.IsNullOrEmpty())
+                ExtendedData.Add("itemInfo", ObjectResolutionInfo.Select(x => x.Serialize()).ToList());
+
+            //Add the extended data for the map, if any
+            int mapID = Studio.Studio.Instance.sceneInfo.map;
+            if (mapID > 100000000)
             {
-                ExtendedSave.SetSceneExtendedDataById(UniversalAutoResolver.UARExtID, new PluginData
+                var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == mapID).FirstOrDefault();
+                if (extResolve != null)
                 {
-                    data = new Dictionary<string, object>
-                    {
-                        ["itemInfo"] = resolutionInfo.Select(x => x.Serialize()).ToList()
-                    }
-                });
+                    ExtendedData.Add("mapInfoID", extResolve.Slot);
+                    ExtendedData.Add("mapInfoGUID", extResolve.GUID);
+
+                    //Set map ID back to default
+                    //Logger.Log(LogLevel.Info, $"Setting Map ID:{mapID}->{extResolve.Slot}");
+                    Studio.Studio.Instance.sceneInfo.map = extResolve.Slot;
+                }
             }
+
+            //Set the extended data if any has been added
+            if (ExtendedData.Count != 0)
+                ExtendedSave.SetSceneExtendedDataById(UniversalAutoResolver.UARExtID, new PluginData { data = ExtendedData });
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
@@ -431,6 +448,8 @@ namespace Sideloader.AutoResolver
 
                 UniversalAutoResolver.ResolveStudioObjects(extInfo);
             }
+
+            UniversalAutoResolver.ResolveStudioMap(extData);
         }
         #endregion
 
