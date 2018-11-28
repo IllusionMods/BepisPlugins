@@ -370,7 +370,7 @@ namespace Sideloader
                 if (!File.Exists(assetBundleName))
                 {
                     //If more than one exist, only the first will be loaded.
-                    result = lazyList[0].Factory.Call();
+                    result = lazyList[0].Instance;
                     return true;
                 }
             }

@@ -5,8 +5,7 @@ namespace Shared
     public class Lazy<T>
     {
         private T _object;
-        private bool Initialized { get; set; }
-        public Func<T> Factory { get; set; }
+        private Func<T> Factory { get; set; }
 
         private Lazy(Func<T> factory)
         {
@@ -24,11 +23,8 @@ namespace Shared
 
         public void Initialize()
         {
-            if (Initialized)
-                return;
-
-            Initialized = true;
-            _object = Factory();
+            if (_object == null || _object.ToString() == "null")
+                _object = Factory();
         }
 
         public static implicit operator T(Lazy<T> lazy)
