@@ -107,12 +107,15 @@ namespace ResourceRedirector
                 int columnCount = Header.Count;
                 data.Headers.Add(Header);
 
-                //Some have two header rows
-                if (data.FileNameWithoutExtension.StartsWith("Map_") ||
-                    data.FileNameWithoutExtension.StartsWith("Anime_") ||
-                    data.FileNameWithoutExtension.StartsWith("HAnime_") ||
-                    data.FileNameWithoutExtension.StartsWith("Voice_"))
-                    data.Headers.Add(reader.ReadLine().Trim().Split(',').ToList());
+                List<string> Header2 = reader.ReadLine().Trim().Split(',').ToList();
+                if (Header2.Count != columnCount)
+                    throw new System.Exception("Row column count does not match header column count.");
+                if (int.TryParse(Header2[0], out int cell))
+                    //First cell of the row is a numeric ID, this is a data row
+                    data.Entries.Add(Header2);
+                else
+                    //This is a second header row, as used by maps, animations, and voices
+                    data.Headers.Add(Header2);
 
                 while (!reader.EndOfStream)
                 {
@@ -122,7 +125,7 @@ namespace ResourceRedirector
                         break;
 
                     List<string> lineSplit = line.Split(',').ToList();
-                    if (lineSplit.Count == columnCount) 
+                    if (lineSplit.Count == columnCount)
                         data.Entries.Add(lineSplit);
                     else
                         //Only add lines that have the same number of columns or problems might happen.
