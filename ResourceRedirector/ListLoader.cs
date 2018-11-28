@@ -78,9 +78,9 @@ namespace ResourceRedirector
                 chaListData.categoryNo = int.Parse(reader.ReadLine().Trim());
                 chaListData.distributionNo = int.Parse(reader.ReadLine().Trim());
                 chaListData.filePath = reader.ReadLine().Trim();
-
                 chaListData.lstKey = reader.ReadLine().Trim().Split(',').ToList();
 
+                int columnCount = chaListData.lstKey.Count;
                 int i = 0;
 
                 while (!reader.EndOfStream)
@@ -90,7 +90,11 @@ namespace ResourceRedirector
                     if (!line.Contains(','))
                         break;
 
-                    chaListData.dictList.Add(i++, line.Split(',').ToList());
+                    List<string> lineSplit = line.Split(',').ToList();
+                    if (lineSplit.Count == columnCount)
+                        chaListData.dictList.Add(i++, lineSplit);
+                    else
+                        throw new System.Exception("Row column count does not match header column count.");
                 }
             }
 
