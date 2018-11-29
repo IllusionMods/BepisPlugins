@@ -362,18 +362,30 @@ namespace Sideloader
 
         protected bool AssetBundleRedirectHook(string assetBundleName, out AssetBundle result)
         {
-            string bundle = assetBundleName.Remove(0, assetBundleName.IndexOf("/abdata/")).Replace("/abdata/", "");
-
-            if (BundleManager.Bundles.TryGetValue(bundle, out List<Lazy<AssetBundle>> lazyList))
+            //The only asset bundles that need to be loaded are studio maps
+            //Loading asset bundles unnecessarily can interfere with normal sideloader asset handling so avoid it whenever possible
+            if (Hooks.MapLoading)
             {
-                //Only load asset bundles that do no exist on disk, otherwise we might be loading a partial file
-                if (!File.Exists(assetBundleName))
+                string bundle = assetBundleName.Remove(0, assetBundleName.IndexOf("/abdata/")).Replace("/abdata/", "");
+                if (Hooks.MapABName == bundle)
                 {
-                    //If more than one exist, only the first will be loaded.
-                    result = lazyList[0].Instance;
-                    return true;
+                    //Only load asset bundles that do not exist on disk to avoid loading partial files
+                    if (!File.Exists(assetBundleName))
+                    {
+                        if (BundleManager.Bundles.TryGetValue(bundle, out List<Lazy<AssetBundle>> lazyList))
+                        {
+                            Hooks.MapLoading = false;
+                            Hooks.MapABName = "";
+
+                            //If more than one exist, only the first will be loaded.
+                            result = lazyList[0].Instance;
+                            return true;
+                        }
+                    }
                 }
             }
+            Hooks.MapLoading = false;
+            Hooks.MapABName = "";
 
             result = null;
             return false;
