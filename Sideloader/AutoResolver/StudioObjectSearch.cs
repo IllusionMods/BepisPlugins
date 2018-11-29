@@ -128,6 +128,9 @@ namespace Sideloader.AutoResolver
                     break;
                 default:
                     //other types don't have children
+                    //Note: If any other types are added in future updates and they can have chilren they need to be added here.
+                    //Do a version check (Singleton<Studio.Studio>.Instance.sceneInfo.dataVersion) and figure out which types existed at the time the scene was made.
+                    //Then only find objects that could have existed in that version so that the object order will still match on import.
                     break;
             }
         }
