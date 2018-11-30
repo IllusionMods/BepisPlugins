@@ -1,15 +1,15 @@
-﻿using BepInEx;
-using BepInEx.Logging;
-using ChaCustom;
+﻿using System;
+using System.Reflection;
 using ExtensibleSaveFormat;
 using Harmony;
-using Illusion.Extensions;
-using Studio;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using BepInEx;
+using BepInEx.Logging;
+using ChaCustom;
+using Illusion.Extensions;
+using Studio;
 using static Sideloader.AutoResolver.StudioObjectSearch;
 
 namespace Sideloader.AutoResolver
@@ -27,7 +27,7 @@ namespace Sideloader.AutoResolver
             ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
             ExtendedSave.SceneBeingImported += ExtendedSceneImport;
 
-            HarmonyInstance harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
+            var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
             harmony.PatchAll(typeof(Hooks));
             harmony.Patch(typeof(Studio.MPCharCtrl).GetNestedType("CostumeInfo", BindingFlags.NonPublic).GetMethod("InitFileList", BindingFlags.Instance | BindingFlags.NonPublic),
                 new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPreHook), BindingFlags.Static | BindingFlags.Public)),
@@ -47,7 +47,7 @@ namespace Sideloader.AutoResolver
 
             for (int i = 0; i < file.coordinate.Length; i++)
             {
-                ChaFileCoordinate coordinate = file.coordinate[i];
+                var coordinate = file.coordinate[i];
                 string prefix = $"outfit{i}.";
 
                 action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, prefix);
@@ -68,7 +68,7 @@ namespace Sideloader.AutoResolver
 
             Logger.Log(LogLevel.Debug, $"Loading card [{file.charaFileName}]");
 
-            PluginData extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
+            var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
             List<ResolveInfo> extInfo;
 
             if (extData == null || !extData.data.ContainsKey("info"))
@@ -78,7 +78,7 @@ namespace Sideloader.AutoResolver
             }
             else
             {
-                object[] tmpExtInfo = (object[])extData.data["info"];
+                var tmpExtInfo = (object[])extData.data["info"];
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
                 Logger.Log(LogLevel.Debug, "Sideloader marker found");
@@ -96,7 +96,7 @@ namespace Sideloader.AutoResolver
 
             void IterateStruct(Dictionary<CategoryProperty, StructValue<int>> dict, object obj, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
             {
-                foreach (KeyValuePair<CategoryProperty, StructValue<int>> kv in dict)
+                foreach (var kv in dict)
                 {
                     int slot = kv.Value.GetMethod(obj);
 
@@ -121,13 +121,13 @@ namespace Sideloader.AutoResolver
                         }
                     }
 
-                    ResolveInfo info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
+                    var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
                                                                                               x.LocalSlot == slot);
 
                     if (info == null)
                         continue;
 
-                    ResolveInfo newInfo = info.DeepCopy();
+                    var newInfo = info.DeepCopy();
                     newInfo.Property = $"{propertyPrefix}{newInfo.Property}";
 
                     kv.Value.SetMethod(obj, newInfo.Slot);
@@ -152,10 +152,10 @@ namespace Sideloader.AutoResolver
         {
             Logger.Log(LogLevel.Debug, $"Reloading card [{__instance.charaFileName}]");
 
-            PluginData extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
+            var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
-            List<byte[]> tmpExtInfo = (List<byte[]>)extData.data["info"];
-            List<ResolveInfo> extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
+            var tmpExtInfo = (List<byte[]>)extData.data["info"];
+            var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
 
             Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
             foreach (ResolveInfo info in extInfo)
@@ -163,9 +163,9 @@ namespace Sideloader.AutoResolver
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
             {
-                foreach (KeyValuePair<CategoryProperty, StructValue<int>> kv in propertyDict)
+                foreach (var kv in propertyDict)
                 {
-                    ResolveInfo extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
+                    var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
 
                     if (extResolve != null)
                     {
@@ -202,7 +202,7 @@ namespace Sideloader.AutoResolver
 
             Logger.Log(LogLevel.Debug, $"Loading coordinate [{file.coordinateName}]");
 
-            PluginData extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
+            var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
             List<ResolveInfo> extInfo;
 
             if (extData == null || !extData.data.ContainsKey("info"))
@@ -212,7 +212,7 @@ namespace Sideloader.AutoResolver
             }
             else
             {
-                object[] tmpExtInfo = (object[])extData.data["info"];
+                var tmpExtInfo = (object[])extData.data["info"];
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
                 Logger.Log(LogLevel.Debug, "Sideloader marker found");
@@ -230,7 +230,7 @@ namespace Sideloader.AutoResolver
 
             void IterateStruct(Dictionary<CategoryProperty, StructValue<int>> dict, object obj, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
             {
-                foreach (KeyValuePair<CategoryProperty, StructValue<int>> kv in dict)
+                foreach (var kv in dict)
                 {
                     int slot = kv.Value.GetMethod(obj);
 
@@ -255,13 +255,13 @@ namespace Sideloader.AutoResolver
                         }
                     }
 
-                    ResolveInfo info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
+                    var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
                                                                                               x.LocalSlot == slot);
 
                     if (info == null)
                         continue;
 
-                    ResolveInfo newInfo = info.DeepCopy();
+                    var newInfo = info.DeepCopy();
                     newInfo.Property = $"{propertyPrefix}{newInfo.Property}";
 
                     kv.Value.SetMethod(obj, newInfo.Slot);
@@ -286,10 +286,10 @@ namespace Sideloader.AutoResolver
         {
             Logger.Log(LogLevel.Debug, $"Reloading coordinate [{path}]");
 
-            PluginData extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
+            var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
-            List<byte[]> tmpExtInfo = (List<byte[]>)extData.data["info"];
-            IEnumerable<ResolveInfo> extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize);
+            var tmpExtInfo = (List<byte[]>)extData.data["info"];
+            var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize);
 
             Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count()}");
             foreach (ResolveInfo info in extInfo)
@@ -297,9 +297,9 @@ namespace Sideloader.AutoResolver
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
             {
-                foreach (KeyValuePair<CategoryProperty, StructValue<int>> kv in propertyDict)
+                foreach (var kv in propertyDict)
                 {
-                    ResolveInfo extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
+                    var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
 
                     if (extResolve != null)
                     {
@@ -318,52 +318,44 @@ namespace Sideloader.AutoResolver
         #region Studio
         private static void ExtendedSceneLoad(string path)
         {
-            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
 
-            UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Load);
-            UniversalAutoResolver.ResolveStudioMap(ExtendedData);
+            if (extData != null && extData.data.ContainsKey("itemInfo"))
+            {
+                var tmpExtInfo = (object[])extData.data["itemInfo"];
+                List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
+
+                UniversalAutoResolver.ResolveStudioObjects(extInfo);
+            }
+
+            UniversalAutoResolver.ResolveStudioMap(extData);
         }
 
         private static void ExtendedSceneImport(string path)
         {
-            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
-            Dictionary<int, ObjectInfo> ObjectList = FindObjectInfo(SearchType.All);
+            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
 
-            if (ExtendedData != null && ExtendedData.data.ContainsKey("itemInfo"))
+            if (extData != null && extData.data.ContainsKey("itemInfo"))
             {
-                object[] tmpExtInfo = (object[])ExtendedData.data["itemInfo"];
+                var tmpExtInfo = (object[])extData.data["itemInfo"];
                 List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
+                Dictionary<int, ObjectInfo> ObjectList = FindObjectInfo(SearchType.All);
                 Dictionary<int, int> ItemImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OIItemInfo));
                 Dictionary<int, int> LightImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OILightInfo));
 
-                //Match objects from the StudioResolveInfo to objects in the scene based on the item order that was generated and saved to the scene data
+                //Match objects from the StudioResolveInfo to objects in the scene based on the item order that was generated and saved to the card
                 foreach (StudioResolveInfo extResolve in extInfo)
                 {
                     int NewDicKey = ItemImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
                     if (ObjectList[NewDicKey] is OIItemInfo Item)
-                    {
                         UniversalAutoResolver.ResolveStudioObject(extResolve, Item);
-                        ObjectList.Remove(NewDicKey);
-                    }
                     else
                     {
                         NewDicKey = LightImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
                         if (ObjectList[extResolve.DicKey] is OILightInfo Light)
-                        {
                             UniversalAutoResolver.ResolveStudioObject(extResolve, Light);
-                            ObjectList.Remove(NewDicKey);
-                        }
                     }
                 }
-            }
-
-            //Resolve every item without extended data in case of hard mods
-            foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
-            {
-                if (OI is OIItemInfo Item)
-                    UniversalAutoResolver.ResolveStudioObject(Item);
-                else if (OI is OILightInfo Light)
-                    UniversalAutoResolver.ResolveStudioObject(Light);
             }
 
             //Maps are not imported
@@ -382,17 +374,15 @@ namespace Sideloader.AutoResolver
             {
                 if (oi is OIItemInfo Item && Item.no >= 100000000)
                 {
-                    StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Item.no).FirstOrDefault();
+                    var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Item.no).FirstOrDefault();
                     if (extResolve != null)
                     {
-                        StudioResolveInfo intResolve = new StudioResolveInfo
-                        {
-                            GUID = extResolve.GUID,
-                            Slot = extResolve.Slot,
-                            LocalSlot = extResolve.LocalSlot,
-                            DicKey = Item.dicKey,
-                            ObjectOrder = ItemOrder[Item.dicKey]
-                        };
+                        StudioResolveInfo intResolve = new StudioResolveInfo();
+                        intResolve.GUID = extResolve.GUID;
+                        intResolve.Slot = extResolve.Slot;
+                        intResolve.LocalSlot = extResolve.LocalSlot;
+                        intResolve.DicKey = Item.dicKey;
+                        intResolve.ObjectOrder = ItemOrder[Item.dicKey];
                         ObjectResolutionInfo.Add(intResolve);
 
                         //set item ID back to default
@@ -402,17 +392,15 @@ namespace Sideloader.AutoResolver
                 }
                 else if (oi is OILightInfo Light && Light.no >= 100000000)
                 {
-                    StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Light.no).FirstOrDefault();
+                    var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Light.no).FirstOrDefault();
                     if (extResolve != null)
                     {
-                        StudioResolveInfo intResolve = new StudioResolveInfo
-                        {
-                            GUID = extResolve.GUID,
-                            Slot = extResolve.Slot,
-                            LocalSlot = extResolve.LocalSlot,
-                            DicKey = Light.dicKey,
-                            ObjectOrder = ItemOrder[Light.dicKey]
-                        };
+                        StudioResolveInfo intResolve = new StudioResolveInfo();
+                        intResolve.GUID = extResolve.GUID;
+                        intResolve.Slot = extResolve.Slot;
+                        intResolve.LocalSlot = extResolve.LocalSlot;
+                        intResolve.DicKey = Light.dicKey;
+                        intResolve.ObjectOrder = ItemOrder[Light.dicKey];
                         ObjectResolutionInfo.Add(intResolve);
 
                         //Set item ID back to default
@@ -430,9 +418,10 @@ namespace Sideloader.AutoResolver
             int mapID = Studio.Studio.Instance.sceneInfo.map;
             if (mapID > 100000000)
             {
-                StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == mapID).FirstOrDefault();
+                var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == mapID).FirstOrDefault();
                 if (extResolve != null)
                 {
+                    ExtendedData.Add("mapInfoID", extResolve.Slot);
                     ExtendedData.Add("mapInfoGUID", extResolve.GUID);
 
                     //Set map ID back to default
@@ -450,10 +439,17 @@ namespace Sideloader.AutoResolver
         public static void SavePostfix()
         {
             //Set item IDs back to the resolved ID
-            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
 
-            UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Save);
-            UniversalAutoResolver.ResolveStudioMap(ExtendedData);
+            if (extData != null && extData.data.ContainsKey("itemInfo"))
+            {
+                var tmpExtInfo = (List<byte[]>)extData.data["itemInfo"];
+                List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize(x)).ToList();
+
+                UniversalAutoResolver.ResolveStudioObjects(extInfo);
+            }
+
+            UniversalAutoResolver.ResolveStudioMap(extData);
         }
         #endregion
 

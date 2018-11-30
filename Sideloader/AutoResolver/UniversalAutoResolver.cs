@@ -1,10 +1,10 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
-using Harmony;
-using Studio;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using BepInEx.Logging;
+using Studio;
+using Harmony;
 
 namespace Sideloader.AutoResolver
 {
@@ -24,9 +24,9 @@ namespace Sideloader.AutoResolver
                 {
                     //the property does not have external slot information
                     //check if we have a corrosponding item for backwards compatbility
-                    ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
-                                                                                   && x.Slot == kv.Value.GetMethod(structure)
-                                                                                   && x.CategoryNo == kv.Key.Category);
+                    var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
+                                                                           && x.Slot == kv.Value.GetMethod(structure)
+                                                                           && x.CategoryNo == kv.Key.Category);
 
                     if (intResolve != null)
                     {
@@ -43,7 +43,7 @@ namespace Sideloader.AutoResolver
                 }
             }
 
-            foreach (KeyValuePair<CategoryProperty, StructValue<int>> kv in propertyDict)
+            foreach (var kv in propertyDict)
             {
                 string property = $"{propertyPrefix}{kv.Key}";
 
@@ -61,15 +61,15 @@ namespace Sideloader.AutoResolver
 
                 if (extInfo != null)
                 {
-                    ResolveInfo extResolve = extInfo.FirstOrDefault(x => x.Property == property);
+                    var extResolve = extInfo.FirstOrDefault(x => x.Property == property);
 
                     if (extResolve != null)
                     {
                         //the property has external slot information 
-                        ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
-                                                                                 && x.Slot == extResolve.Slot
-                                                                                 && x.GUID == extResolve.GUID
-                                                                                 && x.CategoryNo == kv.Key.Category);
+                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
+                                                                               && x.Slot == extResolve.Slot
+                                                                               && x.GUID == extResolve.GUID
+                                                                               && x.CategoryNo == kv.Key.Category);
 
                         if (intResolve != null)
                         {
@@ -98,17 +98,17 @@ namespace Sideloader.AutoResolver
         private static int CurrentSlotID = 100000000;
         public static void GenerateResolutionInfo(Manifest manifest, ChaListData data)
         {
-            ChaListDefine.CategoryNo category = (ChaListDefine.CategoryNo)data.categoryNo;
+            var category = (ChaListDefine.CategoryNo)data.categoryNo;
 
-            List<CategoryProperty> propertyKeys = StructReference.CollatedStructValues.Keys.Where(x => x.Category == category).ToList();
+            var propertyKeys = StructReference.CollatedStructValues.Keys.Where(x => x.Category == category).ToList();
 
             //Logger.Log(LogLevel.Debug, StructReference.CollatedStructValues.Count.ToString());
 
-            foreach (KeyValuePair<int, List<string>> kv in data.dictList)
+            foreach (var kv in data.dictList)
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                foreach (CategoryProperty propertyKey in propertyKeys)
+                foreach (var propertyKey in propertyKeys)
                 {
                     LoadedResolutionInfo.Add(new ResolveInfo
                     {
@@ -135,7 +135,7 @@ namespace Sideloader.AutoResolver
         private static int CurrentStudioSlotID = 100000000;
         public static void GenerateStudioResolutionInfo(Manifest manifest, ResourceRedirector.ListLoader.StudioListData data)
         {
-            foreach (List<string> entry in data.Entries)
+            foreach (var entry in data.Entries)
             {
                 if (data.FileNameWithoutExtension.StartsWith("ItemCategory_")
                  || data.FileNameWithoutExtension.StartsWith("AnimeCategory_")
@@ -186,148 +186,59 @@ namespace Sideloader.AutoResolver
                 Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{GUID}]");
         }
 
-        public enum ResolveType { Save, Load }
-        internal static void ResolveStudioObjects(ExtensibleSaveFormat.PluginData extendedData, ResolveType resolveType)
+        internal static void ResolveStudioObjects(List<StudioResolveInfo> extInfo)
         {
             Dictionary<int, ObjectInfo> ObjectList = StudioObjectSearch.FindObjectInfo(StudioObjectSearch.SearchType.All);
 
-            //Resolve every item with extended data
-            if (extendedData != null && extendedData.data.ContainsKey("itemInfo"))
+            foreach (StudioResolveInfo extResolve in extInfo)
             {
-                List<StudioResolveInfo> extInfo;
-
-                if (resolveType == ResolveType.Save)
-                    extInfo = ((List<byte[]>)extendedData.data["itemInfo"]).Select(x => StudioResolveInfo.Unserialize(x)).ToList();
-                else
-                    extInfo = ((object[])extendedData.data["itemInfo"]).Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
-
-                foreach (StudioResolveInfo extResolve in extInfo)
-                {
-                    ResolveStudioObject(extResolve, ObjectList[extResolve.DicKey], resolveType);
-                    ObjectList.Remove(extResolve.DicKey);
-                }
-            }
-
-            //Resolve every item without extended data in case of hard mods
-            if (resolveType == ResolveType.Load)
-            {
-                foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
-                {
-                    if (OI is OIItemInfo Item)
-                        ResolveStudioObject(Item);
-                    else if (OI is OILightInfo Light)
-                        ResolveStudioObject(Light);
-                }
+                if (ObjectList[extResolve.DicKey] is OIItemInfo Item)
+                    ResolveStudioObject(extResolve, Item);
+                else if (ObjectList[extResolve.DicKey] is OILightInfo Light)
+                    ResolveStudioObject(extResolve, Light);
             }
         }
 
-        internal static void ResolveStudioObject(StudioResolveInfo extResolve, ObjectInfo OI, ResolveType resolveType = ResolveType.Load)
+        internal static void ResolveStudioObject(StudioResolveInfo extResolve, OIItemInfo Item)
         {
-            if (OI is OIItemInfo Item)
+            var intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no && x.GUID == extResolve.GUID);
+            if (intResolve != null)
             {
-                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no && x.GUID == extResolve.GUID);
-                if (intResolve != null)
-                {
-                    if (resolveType == ResolveType.Load)
-                        Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
-                    Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
-                }
-                else if (resolveType == ResolveType.Load)
-                    ShowGUIDError(extResolve.GUID);
+                Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
+                Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
             }
-            else if (OI is OILightInfo Light)
-            {
-                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no && x.GUID == extResolve.GUID);
-                if (intResolve != null)
-                {
-                    if (resolveType == ResolveType.Load)
-                        Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
-                    Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
-                }
-                else if (resolveType == ResolveType.Load)
-                    ShowGUIDError(extResolve.GUID);
-            }
+            else
+                ShowGUIDError(extResolve.GUID);
         }
 
-        internal static void ResolveStudioObject(ObjectInfo OI)
+        internal static void ResolveStudioObject(StudioResolveInfo extResolve, OILightInfo Light)
         {
-            if (OI is OIItemInfo Item)
+            var intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no && x.GUID == extResolve.GUID);
+            if (intResolve != null)
             {
-                if (!ResourceRedirector.ListLoader.InternalStudioItemList.Contains(Item.no))
-                {
-                    //Item does not exist in the item list, probably a missing hard mod. See if we have a sideloader mod with the same ID
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no);
-                    if (intResolve != null)
-                    {
-                        //Found a match
-                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
-                        Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
-                    }
-                    else
-                    {
-                        //No match was found
-                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Item) failed, no match found for ID {Item.no}");
-                    }
-                }
+                Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
+                Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
             }
-            else if (OI is OILightInfo Light)
-            {
-                if (!Singleton<Studio.Info>.Instance.dicLightLoadInfo.TryGetValue(Light.no, out Info.LightLoadInfo lightLoadInfo))
-                {
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no);
-                    if (intResolve != null)
-                    {
-                        //Found a match
-                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
-                        Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
-                    }
-                    else
-                    {
-                        //No match was found
-                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Light) failed, no match found for ID {Light.no}");
-                    }
-                }
-            }
+            else
+                ShowGUIDError(extResolve.GUID);
         }
 
         internal static void ResolveStudioMap(ExtensibleSaveFormat.PluginData extData)
         {
-            //Set map ID to the resolved ID
-            int MapID = Singleton<Studio.Studio>.Instance.sceneInfo.map;
-
-            if (MapID == -1) //Loaded scene has no map
-                return;
-
-            if (extData != null && extData.data.ContainsKey("mapInfoGUID"))
+            //Set map ID back to the resolved ID
+            if (extData != null && extData.data.ContainsKey("mapInfoID") && extData.data.ContainsKey("mapInfoGUID"))
             {
                 string MapGUID = (string)extData.data["mapInfoGUID"];
+                int MapID = (int)extData.data["mapInfoID"];
 
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == MapID && x.GUID == MapGUID);
                 if (intResolve != null)
                 {
-                    Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
+                    Logger.Log(LogLevel.Info, $"[UAR] Resolving [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
                     Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                 }
                 else
                     ShowGUIDError(MapGUID);
-            }
-            else
-            {
-                if (!Singleton<Studio.Info>.Instance.dicMapLoadInfo.TryGetValue(MapID, out Info.MapLoadInfo mapInfo))
-                {
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == MapID);
-                    if (intResolve != null)
-                    {
-                        //Found a match
-                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
-                        Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
-                    }
-                    else
-                    {
-                        //No match was found
-                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Map) failed, no match found for ID {MapID}");
-                    }
-                }
             }
         }
     }

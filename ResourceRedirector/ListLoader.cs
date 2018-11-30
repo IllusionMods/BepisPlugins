@@ -13,7 +13,6 @@ namespace ResourceRedirector
         private static FieldInfo r_dictListInfo = typeof(ChaListControl).GetField("dictListInfo", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
-        private static HashSet<int> _internalStudioItemList = null;
 
         public static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
         public static List<StudioListData> ExternalStudioDataList { get; private set; } = new List<StudioListData>();
@@ -40,16 +39,17 @@ namespace ResourceRedirector
 
         public static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
         {
-            Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> dictListInfo = r_dictListInfo.GetValue<Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>>(instance);
+            var dictListInfo = r_dictListInfo.GetValue<Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>>(instance);
+            Dictionary<int, ListInfoBase> dictData;
 
 
-            if (dictListInfo.TryGetValue(category, out Dictionary<int, ListInfoBase> dictData))
+            if (dictListInfo.TryGetValue(category, out dictData))
             {
-                LoadListInternal(instance, dictData, data);
+                loadListInternal(instance, dictData, data);
             }
         }
 
-        private static void LoadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
+        private static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
         {
             foreach (KeyValuePair<int, List<string>> keyValuePair in chaListData.dictList)
             {
@@ -65,23 +65,6 @@ namespace ResourceRedirector
                         instance.AddItemID(item, (byte)infoInt);
                     }
                 }
-            }
-        }
-
-        public static HashSet<int> InternalStudioItemList
-        {
-            get
-            {
-                //Generate a list of all the studio item IDs regardless of group/category
-                if (_internalStudioItemList == null)
-                {
-                    _internalStudioItemList = new HashSet<int>();
-                    foreach (KeyValuePair<int, Dictionary<int, Dictionary<int, Studio.Info.ItemLoadInfo>>> x in Singleton<Studio.Info>.Instance.dicItemLoadInfo)
-                        foreach (KeyValuePair<int, Dictionary<int, Studio.Info.ItemLoadInfo>> y in x.Value)
-                            foreach (KeyValuePair<int, Studio.Info.ItemLoadInfo> z in y.Value)
-                                _internalStudioItemList.Add(z.Key);
-                }
-                return _internalStudioItemList;
             }
         }
 
