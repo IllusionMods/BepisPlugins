@@ -1,10 +1,10 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
+using Harmony;
+using Studio;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using BepInEx.Logging;
-using Studio;
-using Harmony;
 
 namespace Sideloader.AutoResolver
 {
@@ -186,59 +186,149 @@ namespace Sideloader.AutoResolver
                 Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{GUID}]");
         }
 
-        internal static void ResolveStudioObjects(List<StudioResolveInfo> extInfo)
+        public enum ResolveType { Save, Load }
+        internal static void ResolveStudioObjects(ExtensibleSaveFormat.PluginData extendedData, ResolveType resolveType)
         {
             Dictionary<int, ObjectInfo> ObjectList = StudioObjectSearch.FindObjectInfo(StudioObjectSearch.SearchType.All);
 
-            foreach (StudioResolveInfo extResolve in extInfo)
+            //Resolve every item with extended data
+            if (extendedData != null && extendedData.data.ContainsKey("itemInfo"))
             {
-                if (ObjectList[extResolve.DicKey] is OIItemInfo Item)
-                    ResolveStudioObject(extResolve, Item);
-                else if (ObjectList[extResolve.DicKey] is OILightInfo Light)
-                    ResolveStudioObject(extResolve, Light);
+                List<StudioResolveInfo> extInfo;
+
+                if (resolveType == ResolveType.Save)
+                    extInfo = ((List<byte[]>)extendedData.data["itemInfo"]).Select(x => StudioResolveInfo.Unserialize(x)).ToList();
+                else
+                    extInfo = ((object[])extendedData.data["itemInfo"]).Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
+
+                foreach (StudioResolveInfo extResolve in extInfo)
+                {
+                    ResolveStudioObject(extResolve, ObjectList[extResolve.DicKey], resolveType);
+                    ObjectList.Remove(extResolve.DicKey);
+                }
+            }
+
+            //Resolve every item without extended data in case of hard mods
+            if (resolveType == ResolveType.Load)
+            {
+                foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
+                {
+                    if (OI is OIItemInfo Item)
+                        ResolveStudioObject(Item);
+                    else if (OI is OILightInfo Light)
+                        ResolveStudioObject(Light);
+                }
             }
         }
 
-        internal static void ResolveStudioObject(StudioResolveInfo extResolve, OIItemInfo Item)
+        internal static void ResolveStudioObject(StudioResolveInfo extResolve, ObjectInfo OI, ResolveType resolveType = ResolveType.Load)
         {
-            var intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no && x.GUID == extResolve.GUID);
-            if (intResolve != null)
+            if (OI is OIItemInfo Item)
             {
-                Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
-                Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no && x.GUID == extResolve.GUID);
+                if (intResolve != null)
+                {
+                    if (resolveType == ResolveType.Load)
+                        Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
+                    Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
+                }
+                else if (resolveType == ResolveType.Load)
+                    ShowGUIDError(extResolve.GUID);
             }
-            else
-                ShowGUIDError(extResolve.GUID);
+            else if (OI is OILightInfo Light)
+            {
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no && x.GUID == extResolve.GUID);
+                if (intResolve != null)
+                {
+                    if (resolveType == ResolveType.Load)
+                        Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
+                    Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
+                }
+                else if (resolveType == ResolveType.Load)
+                    ShowGUIDError(extResolve.GUID);
+            }
         }
 
-        internal static void ResolveStudioObject(StudioResolveInfo extResolve, OILightInfo Light)
+        internal static void ResolveStudioObject(ObjectInfo OI)
         {
-            var intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no && x.GUID == extResolve.GUID);
-            if (intResolve != null)
+            if (OI is OIItemInfo Item)
             {
-                Logger.Log(LogLevel.Info, $"[UAR] Resolving [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
-                Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
+                if (!ResourceRedirector.ListLoader.InternalStudioItemList.Contains(Item.no))
+                {
+                    //Item does not exist in the item list, probably a missing hard mod. See if we have a sideloader mod with the same ID
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no);
+                    if (intResolve != null)
+                    {
+                        //Found a match
+                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
+                        Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
+                    }
+                    else
+                    {
+                        //No match was found
+                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Item) failed, no match found for ID {Item.no}");
+                    }
+                }
             }
-            else
-                ShowGUIDError(extResolve.GUID);
+            else if (OI is OILightInfo Light)
+            {
+                if (!Singleton<Studio.Info>.Instance.dicLightLoadInfo.TryGetValue(Light.no, out Info.LightLoadInfo lightLoadInfo))
+                {
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no);
+                    if (intResolve != null)
+                    {
+                        //Found a match
+                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
+                        Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
+                    }
+                    else
+                    {
+                        //No match was found
+                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Light) failed, no match found for ID {Light.no}");
+                    }
+                }
+            }
         }
 
-        internal static void ResolveStudioMap(ExtensibleSaveFormat.PluginData extData)
+        internal static void ResolveStudioMap(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
         {
-            //Set map ID back to the resolved ID
-            if (extData != null && extData.data.ContainsKey("mapInfoID") && extData.data.ContainsKey("mapInfoGUID"))
+            //Set map ID to the resolved ID
+            int MapID = Singleton<Studio.Studio>.Instance.sceneInfo.map;
+
+            if (MapID == -1) //Loaded scene has no map
+                return;
+
+            if (extData != null && extData.data.ContainsKey("mapInfoGUID"))
             {
                 string MapGUID = (string)extData.data["mapInfoGUID"];
-                int MapID = (int)extData.data["mapInfoID"];
 
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == MapID && x.GUID == MapGUID);
                 if (intResolve != null)
                 {
-                    Logger.Log(LogLevel.Info, $"[UAR] Resolving [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
+                    if (resolveType == ResolveType.Load)
+                        Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
                     Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                 }
                 else
                     ShowGUIDError(MapGUID);
+            }
+            else if (resolveType == ResolveType.Load)
+            {
+                if (!Singleton<Studio.Info>.Instance.dicMapLoadInfo.TryGetValue(MapID, out Info.MapLoadInfo mapInfo))
+                {
+                    //Map ID saved to the scene doesn't exist in the map list, try compatibility resolving
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == MapID);
+                    if (intResolve != null)
+                    {
+                        //Found a matching sideloader mod
+                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
+                        Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
+                    }
+                    else
+                    {
+                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Map) failed, no match found for ID {MapID}");
+                    }
+                }
             }
         }
     }

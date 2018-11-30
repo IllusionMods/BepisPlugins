@@ -13,6 +13,7 @@ namespace ResourceRedirector
         private static FieldInfo r_dictListInfo = typeof(ChaListControl).GetField("dictListInfo", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
+        private static HashSet<int> _internalStudioItemList = null;
 
         public static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
         public static List<StudioListData> ExternalStudioDataList { get; private set; } = new List<StudioListData>();
@@ -40,10 +41,8 @@ namespace ResourceRedirector
         public static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
         {
             var dictListInfo = r_dictListInfo.GetValue<Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>>(instance);
-            Dictionary<int, ListInfoBase> dictData;
 
-
-            if (dictListInfo.TryGetValue(category, out dictData))
+            if (dictListInfo.TryGetValue(category, out Dictionary<int, ListInfoBase> dictData))
             {
                 loadListInternal(instance, dictData, data);
             }
@@ -67,6 +66,24 @@ namespace ResourceRedirector
                 }
             }
         }
+
+        public static HashSet<int> InternalStudioItemList
+        {
+            get
+            {
+                //Generate a list of all the studio item IDs regardless of group/category
+                if (_internalStudioItemList == null)
+                {
+                    _internalStudioItemList = new HashSet<int>();
+                    foreach (var x in Singleton<Studio.Info>.Instance.dicItemLoadInfo)
+                        foreach (var y in x.Value)
+                            foreach (var z in y.Value)
+                                _internalStudioItemList.Add(z.Key);
+                }
+                return _internalStudioItemList;
+            }
+        }
+
 
         #region Helpers
         public static ChaListData LoadCSV(Stream stream)

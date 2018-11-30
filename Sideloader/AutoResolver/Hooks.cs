@@ -1,15 +1,15 @@
-﻿using System;
-using System.Reflection;
+﻿using BepInEx;
+using BepInEx.Logging;
+using ChaCustom;
 using ExtensibleSaveFormat;
 using Harmony;
+using Illusion.Extensions;
+using Studio;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BepInEx;
-using BepInEx.Logging;
-using ChaCustom;
-using Illusion.Extensions;
-using Studio;
+using System.Reflection;
 using static Sideloader.AutoResolver.StudioObjectSearch;
 
 namespace Sideloader.AutoResolver
@@ -318,44 +318,52 @@ namespace Sideloader.AutoResolver
         #region Studio
         private static void ExtendedSceneLoad(string path)
         {
-            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
 
-            if (extData != null && extData.data.ContainsKey("itemInfo"))
-            {
-                var tmpExtInfo = (object[])extData.data["itemInfo"];
-                List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
-
-                UniversalAutoResolver.ResolveStudioObjects(extInfo);
-            }
-
-            UniversalAutoResolver.ResolveStudioMap(extData);
+            UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Load);
+            UniversalAutoResolver.ResolveStudioMap(ExtendedData, UniversalAutoResolver.ResolveType.Load);
         }
 
         private static void ExtendedSceneImport(string path)
         {
-            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+            Dictionary<int, ObjectInfo> ObjectList = FindObjectInfo(SearchType.All);
 
-            if (extData != null && extData.data.ContainsKey("itemInfo"))
+            if (ExtendedData != null && ExtendedData.data.ContainsKey("itemInfo"))
             {
-                var tmpExtInfo = (object[])extData.data["itemInfo"];
+                object[] tmpExtInfo = (object[])ExtendedData.data["itemInfo"];
                 List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
-                Dictionary<int, ObjectInfo> ObjectList = FindObjectInfo(SearchType.All);
                 Dictionary<int, int> ItemImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OIItemInfo));
                 Dictionary<int, int> LightImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OILightInfo));
 
-                //Match objects from the StudioResolveInfo to objects in the scene based on the item order that was generated and saved to the card
+                //Match objects from the StudioResolveInfo to objects in the scene based on the item order that was generated and saved to the scene data
                 foreach (StudioResolveInfo extResolve in extInfo)
                 {
                     int NewDicKey = ItemImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
                     if (ObjectList[NewDicKey] is OIItemInfo Item)
+                    {
                         UniversalAutoResolver.ResolveStudioObject(extResolve, Item);
+                        ObjectList.Remove(NewDicKey);
+                    }
                     else
                     {
                         NewDicKey = LightImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
                         if (ObjectList[extResolve.DicKey] is OILightInfo Light)
+                        {
                             UniversalAutoResolver.ResolveStudioObject(extResolve, Light);
+                            ObjectList.Remove(NewDicKey);
+                        }
                     }
                 }
+            }
+
+            //Resolve every item without extended data in case of hard mods
+            foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
+            {
+                if (OI is OIItemInfo Item)
+                    UniversalAutoResolver.ResolveStudioObject(Item);
+                else if (OI is OILightInfo Light)
+                    UniversalAutoResolver.ResolveStudioObject(Light);
             }
 
             //Maps are not imported
@@ -374,15 +382,17 @@ namespace Sideloader.AutoResolver
             {
                 if (oi is OIItemInfo Item && Item.no >= 100000000)
                 {
-                    var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Item.no).FirstOrDefault();
+                    StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Item.no).FirstOrDefault();
                     if (extResolve != null)
                     {
-                        StudioResolveInfo intResolve = new StudioResolveInfo();
-                        intResolve.GUID = extResolve.GUID;
-                        intResolve.Slot = extResolve.Slot;
-                        intResolve.LocalSlot = extResolve.LocalSlot;
-                        intResolve.DicKey = Item.dicKey;
-                        intResolve.ObjectOrder = ItemOrder[Item.dicKey];
+                        StudioResolveInfo intResolve = new StudioResolveInfo
+                        {
+                            GUID = extResolve.GUID,
+                            Slot = extResolve.Slot,
+                            LocalSlot = extResolve.LocalSlot,
+                            DicKey = Item.dicKey,
+                            ObjectOrder = ItemOrder[Item.dicKey]
+                        };
                         ObjectResolutionInfo.Add(intResolve);
 
                         //set item ID back to default
@@ -392,15 +402,17 @@ namespace Sideloader.AutoResolver
                 }
                 else if (oi is OILightInfo Light && Light.no >= 100000000)
                 {
-                    var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Light.no).FirstOrDefault();
+                    StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Light.no).FirstOrDefault();
                     if (extResolve != null)
                     {
-                        StudioResolveInfo intResolve = new StudioResolveInfo();
-                        intResolve.GUID = extResolve.GUID;
-                        intResolve.Slot = extResolve.Slot;
-                        intResolve.LocalSlot = extResolve.LocalSlot;
-                        intResolve.DicKey = Light.dicKey;
-                        intResolve.ObjectOrder = ItemOrder[Light.dicKey];
+                        StudioResolveInfo intResolve = new StudioResolveInfo
+                        {
+                            GUID = extResolve.GUID,
+                            Slot = extResolve.Slot,
+                            LocalSlot = extResolve.LocalSlot,
+                            DicKey = Light.dicKey,
+                            ObjectOrder = ItemOrder[Light.dicKey]
+                        };
                         ObjectResolutionInfo.Add(intResolve);
 
                         //Set item ID back to default
@@ -418,10 +430,9 @@ namespace Sideloader.AutoResolver
             int mapID = Studio.Studio.Instance.sceneInfo.map;
             if (mapID > 100000000)
             {
-                var extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == mapID).FirstOrDefault();
+                StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == mapID).FirstOrDefault();
                 if (extResolve != null)
                 {
-                    ExtendedData.Add("mapInfoID", extResolve.Slot);
                     ExtendedData.Add("mapInfoGUID", extResolve.GUID);
 
                     //Set map ID back to default
@@ -439,17 +450,10 @@ namespace Sideloader.AutoResolver
         public static void SavePostfix()
         {
             //Set item IDs back to the resolved ID
-            PluginData extData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
 
-            if (extData != null && extData.data.ContainsKey("itemInfo"))
-            {
-                var tmpExtInfo = (List<byte[]>)extData.data["itemInfo"];
-                List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize(x)).ToList();
-
-                UniversalAutoResolver.ResolveStudioObjects(extInfo);
-            }
-
-            UniversalAutoResolver.ResolveStudioMap(extData);
+            UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Save);
+            UniversalAutoResolver.ResolveStudioMap(ExtendedData, UniversalAutoResolver.ResolveType.Save);
         }
         #endregion
 
