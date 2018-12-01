@@ -7,12 +7,13 @@ namespace alphaShot
 {
     public class AlphaShot2 : MonoBehaviour
     {
-        private Material matBlackout = null;
-        private Material matMask = null;
-        private int col = Shader.PropertyToID("_TargetColour");
+        private Material matBlackout;
+        private Material matMask;
+        private int col;
 
         void Awake()
         {
+            col = Shader.PropertyToID("_TargetColour")
             var abd = Screencap.Properties.Resources.blackout;
             var ab = AssetBundle.LoadFromMemory(abd);
             matBlackout = new Material(ab.LoadAsset<Shader>("assets/blackout.shader"));
