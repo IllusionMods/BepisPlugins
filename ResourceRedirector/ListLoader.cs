@@ -97,7 +97,6 @@ namespace ResourceRedirector
                 chaListData.filePath = reader.ReadLine().Trim();
                 chaListData.lstKey = reader.ReadLine().Trim().Split(',').ToList();
 
-                int columnCount = chaListData.lstKey.Count;
                 int i = 0;
 
                 while (!reader.EndOfStream)
@@ -107,11 +106,7 @@ namespace ResourceRedirector
                     if (!line.Contains(','))
                         break;
 
-                    List<string> lineSplit = line.Split(',').ToList();
-                    if (lineSplit.Count == columnCount)
-                        chaListData.dictList.Add(i++, lineSplit);
-                    else
-                        throw new System.Exception("Row column count does not match header column count.");
+                    chaListData.dictList.Add(i++, line.Split(',').ToList());
                 }
             }
 
@@ -125,12 +120,9 @@ namespace ResourceRedirector
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
                 List<string> Header = reader.ReadLine().Trim().Split(',').ToList();
-                int columnCount = Header.Count;
                 data.Headers.Add(Header);
-
                 List<string> Header2 = reader.ReadLine().Trim().Split(',').ToList();
-                if (Header2.Count != columnCount)
-                    throw new System.Exception("Row column count does not match header column count.");
+
                 if (int.TryParse(Header2[0], out int cell))
                     //First cell of the row is a numeric ID, this is a data row
                     data.Entries.Add(Header2);
@@ -145,12 +137,7 @@ namespace ResourceRedirector
                     if (!line.Contains(','))
                         break;
 
-                    List<string> lineSplit = line.Split(',').ToList();
-                    if (lineSplit.Count == columnCount)
-                        data.Entries.Add(lineSplit);
-                    else
-                        //Only add lines that have the same number of columns or problems might happen.
-                        throw new System.Exception("Row column count does not match header column count.");
+                    data.Entries.Add(line.Split(',').ToList());
                 }
             }
             return data;
