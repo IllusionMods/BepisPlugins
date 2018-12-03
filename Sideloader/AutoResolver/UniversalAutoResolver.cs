@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using Harmony;
+using ResourceRedirector;
 using Studio;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace Sideloader.AutoResolver
             void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
             {
                 //check if it's a vanilla item
-                if (!ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+                if (!ListLoader.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
                 {
                     //the property does not have external slot information
                     //check if we have a corrosponding item for backwards compatbility
@@ -133,28 +134,55 @@ namespace Sideloader.AutoResolver
         }
 
         private static int CurrentStudioSlotID = 100000000;
-        public static void GenerateStudioResolutionInfo(Manifest manifest, ResourceRedirector.ListLoader.StudioListData data)
+        public static void GenerateStudioResolutionInfo(Manifest manifest, ListLoader.StudioListData data)
         {
-            foreach (var entry in data.Entries)
+            string StudioListType;
+            if (data.FileNameWithoutExtension.Contains('_'))
+                StudioListType = data.FileNameWithoutExtension.Split('_')[0].ToLower();
+            else
+                return; //Not a studio list
+
+            if (StudioListType == "itembonelist")
             {
-                if (data.FileNameWithoutExtension.StartsWith("ItemCategory_")
-                 || data.FileNameWithoutExtension.StartsWith("AnimeCategory_")
-                 || data.FileNameWithoutExtension.StartsWith("VoiceCategory_")
-                 || data.FileNameWithoutExtension.StartsWith("ItemGroup_")
-                 || data.FileNameWithoutExtension.StartsWith("AnimeGroup_")
-                 || data.FileNameWithoutExtension.StartsWith("VoiceGroup_"))
+                foreach (List<string> entry in data.Entries)
+                {
+                    int slot = int.Parse(entry[0]);
+                    int newSlot;
+
+                    //See if the item this bone info cooresponds to has been resolved and set the ID to the same resolved ID
+                    var item = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.GUID == manifest.GUID && x.Slot == slot);
+                    newSlot = item == null ? slot : item.LocalSlot;
+
+                    LoadedStudioResolutionInfo.Add(new StudioResolveInfo
+                    {
+                        GUID = manifest.GUID,
+                        Slot = slot,
+                        LocalSlot = newSlot,
+                        ResolveItem = false
+                    });
+
+                    entry[0] = newSlot.ToString();
+                }
+            }
+            else if (CategoryAndGroupList.Contains(StudioListType))
+            {
+                foreach (List<string> entry in data.Entries)
                 {
                     //Add it to the resolution info as is, studio will automatically merge groups with the same IDs without causing exceptions.
                     //The IDs are expected to stay the same anyway as ItemLists will contain a reference to them.
-                    //Because of this, all ID lookups should contain a Slot != LocalSlot check to prevent getting categories and groups.
+                    //Because of this, all ID lookups should check if the thing is a ResolveItem.
                     LoadedStudioResolutionInfo.Add(new StudioResolveInfo
                     {
                         GUID = manifest.GUID,
                         Slot = int.Parse(entry[0]),
                         LocalSlot = int.Parse(entry[0]),
+                        ResolveItem = false
                     });
                 }
-                else
+            }
+            else
+            {
+                foreach (List<string> entry in data.Entries)
                 {
                     int newSlot = Interlocked.Increment(ref CurrentStudioSlotID);
 
@@ -163,6 +191,7 @@ namespace Sideloader.AutoResolver
                         GUID = manifest.GUID,
                         Slot = int.Parse(entry[0]),
                         LocalSlot = newSlot,
+                        ResolveItem = true
                     });
 
                     //Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
@@ -225,7 +254,7 @@ namespace Sideloader.AutoResolver
         {
             if (OI is OIItemInfo Item)
             {
-                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no && x.GUID == extResolve.GUID);
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Item.no && x.GUID == extResolve.GUID);
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load)
@@ -237,7 +266,7 @@ namespace Sideloader.AutoResolver
             }
             else if (OI is OILightInfo Light)
             {
-                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no && x.GUID == extResolve.GUID);
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Light.no && x.GUID == extResolve.GUID);
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load)
@@ -253,10 +282,10 @@ namespace Sideloader.AutoResolver
         {
             if (OI is OIItemInfo Item)
             {
-                if (!ResourceRedirector.ListLoader.InternalStudioItemList.Contains(Item.no))
+                if (!ListLoader.InternalStudioItemList.Contains(Item.no))
                 {
                     //Item does not exist in the item list, probably a missing hard mod. See if we have a sideloader mod with the same ID
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Item.no);
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Item.no);
                     if (intResolve != null)
                     {
                         //Found a match
@@ -272,9 +301,9 @@ namespace Sideloader.AutoResolver
             }
             else if (OI is OILightInfo Light)
             {
-                if (!Singleton<Studio.Info>.Instance.dicLightLoadInfo.TryGetValue(Light.no, out Info.LightLoadInfo lightLoadInfo))
+                if (!Singleton<Info>.Instance.dicLightLoadInfo.TryGetValue(Light.no, out Info.LightLoadInfo lightLoadInfo))
                 {
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == Light.no);
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Light.no);
                     if (intResolve != null)
                     {
                         //Found a match
@@ -302,7 +331,7 @@ namespace Sideloader.AutoResolver
             {
                 string MapGUID = (string)extData.data["mapInfoGUID"];
 
-                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == MapID && x.GUID == MapGUID);
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID && x.GUID == MapGUID);
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load)
@@ -314,10 +343,10 @@ namespace Sideloader.AutoResolver
             }
             else if (resolveType == ResolveType.Load)
             {
-                if (!Singleton<Studio.Info>.Instance.dicMapLoadInfo.TryGetValue(MapID, out Info.MapLoadInfo mapInfo))
+                if (!Singleton<Info>.Instance.dicMapLoadInfo.TryGetValue(MapID, out Info.MapLoadInfo mapInfo))
                 {
                     //Map ID saved to the scene doesn't exist in the map list, try compatibility resolving
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.Slot != x.LocalSlot && x.Slot == MapID);
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID);
                     if (intResolve != null)
                     {
                         //Found a matching sideloader mod
@@ -331,5 +360,15 @@ namespace Sideloader.AutoResolver
                 }
             }
         }
+
+        private static readonly HashSet<string> CategoryAndGroupList = new HashSet<string>()
+        {
+            "itemcategory",
+            "animecategory",
+            "voicecategory",
+            "itemgroup",
+            "animegroup",
+            "voicegroup"
+        };
     }
 }

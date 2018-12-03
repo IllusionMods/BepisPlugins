@@ -1,16 +1,16 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
-using Logger = BepInEx.Logger;
 using ICSharpCode.SharpZipLib.Zip;
 using ResourceRedirector;
+using Shared;
+using Sideloader.AutoResolver;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Shared;
-using Sideloader.AutoResolver;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace Sideloader
 {
@@ -24,8 +24,8 @@ namespace Sideloader
         protected List<Manifest> LoadedManifests = new List<Manifest>();
 
         protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
-        protected static List<string> PngFolderList = new List<string>();
-        protected static List<string> PngFolderOnlyList = new List<string>();
+        protected static HashSet<string> PngFolderList = new HashSet<string>();
+        protected static HashSet<string> PngFolderOnlyList = new HashSet<string>();
 
 
         public Sideloader()
@@ -62,9 +62,7 @@ namespace Sideloader
         {
             string GetRelativeArchiveDir(string archiveDir)
             {
-                if (archiveDir.Length < modDirectory.Length)
-                    return archiveDir;
-                return archiveDir.Substring(modDirectory.Length).Trim(' ', '/', '\\');
+                return archiveDir.Length < modDirectory.Length ? archiveDir : archiveDir.Substring(modDirectory.Length).Trim(' ', '/', '\\');
             }
 
             Logger.Log(LogLevel.Info, "[SIDELOADER] Scanning the \"mods\" directory...");
@@ -158,6 +156,8 @@ namespace Sideloader
 
         protected void LoadAllLists(ZipFile arc, Manifest manifest)
         {
+            List<ZipEntry> BoneList = new List<ZipEntry>();
+
             foreach (ZipEntry entry in arc)
             {
                 if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
@@ -179,19 +179,42 @@ namespace Sideloader
                 }
                 if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
-                    try
+                    if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
+                        BoneList.Add(entry);
+                    else
                     {
-                        var stream = arc.GetInputStream(entry);
-                        var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
+                        try
+                        {
+                            var stream = arc.GetInputStream(entry);
+                            var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
 
-                        UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
-                        ListLoader.ExternalStudioDataList.Add(studioListData);
+                            UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
+                            ListLoader.ExternalStudioDataList.Add(studioListData);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
+                            Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
-                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
-                    }
+                }
+            }
+
+            //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
+            foreach (ZipEntry entry in BoneList)
+            {
+                try
+                {
+                    var stream = arc.GetInputStream(entry);
+                    var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
+
+                    UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
+                    ListLoader.ExternalStudioDataList.Add(studioListData);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
+                    Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
                 }
             }
         }
@@ -251,19 +274,14 @@ namespace Sideloader
         {
             var extStart = assetBundleName.LastIndexOf('.');
             var trimmedName = extStart >= 0 ? assetBundleName.Remove(extStart) : assetBundleName;
-            if (PngFolderOnlyList.Contains(trimmedName))
-                return true;
-            return false;
+            return PngFolderOnlyList.Contains(trimmedName);
         }
         /// <summary>
         /// Check whether the .png file comes from a sideloader mod
         /// </summary>
         public static bool IsPng(string pngFile)
         {
-            if (PngList.ContainsKey(pngFile))
-                return true;
-            else
-                return false;
+            return PngList.ContainsKey(pngFile);
         }
 
         private static MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", BindingFlags.NonPublic | BindingFlags.Instance);
