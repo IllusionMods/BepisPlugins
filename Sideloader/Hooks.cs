@@ -1,13 +1,10 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
-using Logger = BepInEx.Logger;
 using Harmony;
-using System.Collections.Generic;
-using System.Reflection;
 using System;
 using System.Linq;
-using Shared;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace Sideloader
 {
@@ -53,6 +50,8 @@ namespace Sideloader
             if (studioList.Count() > 0)
             {
                 bool didHeader = false;
+                int HeaderRows = studioList[0].Headers.Count;
+
                 if (__result == null) //Create a new ExcelData
                     __result = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
                 else //Adding to an existing ExcelData
@@ -76,6 +75,19 @@ namespace Sideloader
                         param.list = entry;
                         __result.list.Add(param);
                     }
+                }
+
+                //Once the game code hits a blank row it skips everything after, all blank rows must be removed for sideloader data to display.
+                for (int i = 0; i < __result.list.Count;)
+                {
+                    if (i <= HeaderRows - 1)
+                        i += 1; //Skip header rows
+                    else if (__result.list[i].list.Count == 0)
+                        __result.list.RemoveAt(i); //Null data row
+                    else if (!int.TryParse(__result.list[i].list[0], out int x))
+                        __result.list.RemoveAt(i); //Remove anything that isn't a number, most likely a blank row
+                    else
+                        i += 1;
                 }
             }
         }

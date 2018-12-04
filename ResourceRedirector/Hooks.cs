@@ -1,15 +1,15 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
-using Logger = BepInEx.Logger;
 using Harmony;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using UnityEngine;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Reflection.Emit;
 using System.Reflection;
+using System.Reflection.Emit;
+using System.Text.RegularExpressions;
+using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace ResourceRedirector
 {
@@ -109,7 +109,8 @@ namespace ResourceRedirector
             if (path == "studio/info/")
             {
                 foreach (string assetBundleName in ListLoader.ExternalStudioDataList.Select(x => x.AssetBundleName).Distinct())
-                    __result.Add(assetBundleName);
+                    if (!__result.Contains(assetBundleName))
+                        __result.Add(assetBundleName);
             }
         }
         #endregion
