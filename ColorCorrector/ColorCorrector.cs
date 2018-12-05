@@ -16,6 +16,7 @@ namespace ColorCorrector
 
         [DisplayName("Strength of the bloom filter")]
         [Category("Post processing settings")]
+        [Description("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.")]
         [AcceptableValueRange(0f, 1f)]
         private ConfigWrapper<float> BloomStrength { get; set; }
         #endregion
@@ -37,7 +38,7 @@ namespace ColorCorrector
             {
                 amplifyComponent = Camera.main.gameObject.GetComponent<AmplifyColorEffect>();
                 bloomComponent = Camera.main.gameObject.GetComponent<BloomAndFlares>();
-                
+
                 SetEffects(SaturationEnabled.Value, BloomStrength.Value);
             }
         }
@@ -48,7 +49,7 @@ namespace ColorCorrector
             if (amplifyComponent != null)
                 amplifyComponent.enabled = satEnabled;
 
-            if (bloomComponent != null)
+            if (bloomComponent != null && !Singleton<Studio.Studio>.IsInstance())
                 bloomComponent.bloomIntensity = bloomPower;
         }
 
