@@ -5,6 +5,7 @@ using Illusion.Game;
 using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -128,7 +129,7 @@ namespace Screencap
 
         #region UI
         private readonly int uiWindowHash = GUID.GetHashCode();
-        private Rect uiRect = new Rect(20, 20, 160, 200);
+        private Rect uiRect = new Rect(20, 20, 160, 223);
         private bool uiShow = false;
 
         protected void OnGUI()
@@ -164,7 +165,7 @@ namespace Screencap
             bool screenSize = GUI.Button(new Rect(10, 65, 140, 20), "Set to screen size");
 
 
-            GUI.Label(new Rect(0, 90, 160, 20), "Downscaling rate", new GUIStyle
+            GUI.Label(new Rect(0, 90, 160, 20), "Screen upsampling rate", new GUIStyle
             {
                 alignment = TextAnchor.MiddleCenter,
                 normal = new GUIStyleState
@@ -186,7 +187,7 @@ namespace Screencap
             });
 
 
-            GUI.Label(new Rect(0, 130, 160, 20), "Card downscaling rate", new GUIStyle
+            GUI.Label(new Rect(0, 130, 160, 20), "Card upsampling rate", new GUIStyle
             {
                 alignment = TextAnchor.MiddleCenter,
                 normal = new GUIStyleState
@@ -209,6 +210,8 @@ namespace Screencap
 
             bool capturealpha = GUI.Toggle(new Rect(10, 173, 120, 20), CaptureAlpha.Value, "Capture alpha");
 
+            if (GUI.Button(new Rect(10, 196, 140, 20), "Open screenshot dir"))
+                Process.Start(screenshotDir);
 
             if (GUI.changed)
             {
