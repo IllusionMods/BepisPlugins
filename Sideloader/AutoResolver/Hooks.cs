@@ -1,14 +1,16 @@
-﻿using System;
-using System.Reflection;
+﻿using BepInEx;
+using BepInEx.Logging;
+using ChaCustom;
 using ExtensibleSaveFormat;
 using Harmony;
+using Illusion.Extensions;
+using Studio;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BepInEx;
-using BepInEx.Logging;
-using ChaCustom;
-using Illusion.Extensions;
+using System.Reflection;
+using static Sideloader.AutoResolver.StudioObjectSearch;
 
 namespace Sideloader.AutoResolver
 {
@@ -21,6 +23,9 @@ namespace Sideloader.AutoResolver
 
             ExtendedSave.CoordinateBeingLoaded += ExtendedCoordinateLoad;
             ExtendedSave.CoordinateBeingSaved += ExtendedCoordinateSave;
+
+            ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
+            ExtendedSave.SceneBeingImported += ExtendedSceneImport;
 
             var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
             harmony.PatchAll(typeof(Hooks));
@@ -308,6 +313,148 @@ namespace Sideloader.AutoResolver
             IterateCoordinatePrefixes(ResetStructResolveStructure, __instance, extInfo);
         }
 
+        #endregion
+
+        #region Studio
+        private static void ExtendedSceneLoad(string path)
+        {
+            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+
+            UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Load);
+            UniversalAutoResolver.ResolveStudioMap(ExtendedData, UniversalAutoResolver.ResolveType.Load);
+        }
+
+        private static void ExtendedSceneImport(string path)
+        {
+            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+            Dictionary<int, ObjectInfo> ObjectList = FindObjectInfo(SearchType.All);
+
+            if (ExtendedData != null && ExtendedData.data.ContainsKey("itemInfo"))
+            {
+                object[] tmpExtInfo = (object[])ExtendedData.data["itemInfo"];
+                List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Unserialize((byte[])x)).ToList();
+                Dictionary<int, int> ItemImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OIItemInfo));
+                Dictionary<int, int> LightImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OILightInfo));
+
+                //Match objects from the StudioResolveInfo to objects in the scene based on the item order that was generated and saved to the scene data
+                foreach (StudioResolveInfo extResolve in extInfo)
+                {
+                    int NewDicKey = ItemImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
+                    if (ObjectList[NewDicKey] is OIItemInfo Item)
+                    {
+                        UniversalAutoResolver.ResolveStudioObject(extResolve, Item);
+                        ObjectList.Remove(NewDicKey);
+                    }
+                    else
+                    {
+                        NewDicKey = LightImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
+                        if (ObjectList[extResolve.DicKey] is OILightInfo Light)
+                        {
+                            UniversalAutoResolver.ResolveStudioObject(extResolve, Light);
+                            ObjectList.Remove(NewDicKey);
+                        }
+                    }
+                }
+            }
+
+            //Resolve every item without extended data in case of hard mods
+            foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
+            {
+                if (OI is OIItemInfo Item)
+                    UniversalAutoResolver.ResolveStudioObject(Item);
+                else if (OI is OILightInfo Light)
+                    UniversalAutoResolver.ResolveStudioObject(Light);
+            }
+
+            //Maps are not imported
+            //UniversalAutoResolver.ResolveStudioMap(extData);
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+        public static void SavePrefix()
+        {
+            Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
+            List<StudioResolveInfo> ObjectResolutionInfo = new List<StudioResolveInfo>();
+            Dictionary<int, ObjectInfo> ObjectList = FindObjectInfoAndOrder(SearchType.All, typeof(OIItemInfo), out Dictionary<int, int> ItemOrder);
+            Dictionary<int, int> LightOrder = FindObjectInfoOrder(SearchType.All, typeof(OILightInfo));
+
+            foreach (ObjectInfo oi in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
+            {
+                if (oi is OIItemInfo Item && Item.no >= 100000000)
+                {
+                    StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Item.no).FirstOrDefault();
+                    if (extResolve != null)
+                    {
+                        StudioResolveInfo intResolve = new StudioResolveInfo
+                        {
+                            GUID = extResolve.GUID,
+                            Slot = extResolve.Slot,
+                            LocalSlot = extResolve.LocalSlot,
+                            DicKey = Item.dicKey,
+                            ObjectOrder = ItemOrder[Item.dicKey]
+                        };
+                        ObjectResolutionInfo.Add(intResolve);
+
+                        //set item ID back to default
+                        //Logger.Log(LogLevel.Info, $"Setting [{item.dicKey}] ID:{item.no}->{extResolve.Slot}");
+                        Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
+                    }
+                }
+                else if (oi is OILightInfo Light && Light.no >= 100000000)
+                {
+                    StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Light.no).FirstOrDefault();
+                    if (extResolve != null)
+                    {
+                        StudioResolveInfo intResolve = new StudioResolveInfo
+                        {
+                            GUID = extResolve.GUID,
+                            Slot = extResolve.Slot,
+                            LocalSlot = extResolve.LocalSlot,
+                            DicKey = Light.dicKey,
+                            ObjectOrder = ItemOrder[Light.dicKey]
+                        };
+                        ObjectResolutionInfo.Add(intResolve);
+
+                        //Set item ID back to default
+                        //Logger.Log(LogLevel.Info, $"Setting [{item.dicKey}] ID:{item.no}->{extResolve.Slot}");
+                        Traverse.Create(Light).Property("no").SetValue(extResolve.Slot);
+                    }
+                }
+            }
+
+            //Add the extended data for items and lights, if any
+            if (!ObjectResolutionInfo.IsNullOrEmpty())
+                ExtendedData.Add("itemInfo", ObjectResolutionInfo.Select(x => x.Serialize()).ToList());
+
+            //Add the extended data for the map, if any
+            int mapID = Studio.Studio.Instance.sceneInfo.map;
+            if (mapID > 100000000)
+            {
+                StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == mapID).FirstOrDefault();
+                if (extResolve != null)
+                {
+                    ExtendedData.Add("mapInfoGUID", extResolve.GUID);
+
+                    //Set map ID back to default
+                    //Logger.Log(LogLevel.Info, $"Setting Map ID:{mapID}->{extResolve.Slot}");
+                    Studio.Studio.Instance.sceneInfo.map = extResolve.Slot;
+                }
+            }
+
+            //Set the extended data if any has been added
+            if (ExtendedData.Count != 0)
+                ExtendedSave.SetSceneExtendedDataById(UniversalAutoResolver.UARExtID, new PluginData { data = ExtendedData });
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+        public static void SavePostfix()
+        {
+            //Set item IDs back to the resolved ID
+            PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UniversalAutoResolver.UARExtID);
+
+            UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Save);
+            UniversalAutoResolver.ResolveStudioMap(ExtendedData, UniversalAutoResolver.ResolveType.Save);
+        }
         #endregion
 
         #region Resolving Override Hooks

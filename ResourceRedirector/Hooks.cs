@@ -1,11 +1,15 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
-using Logger = BepInEx.Logger;
 using Harmony;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace ResourceRedirector
 {
@@ -74,6 +78,43 @@ namespace ResourceRedirector
         }
         #endregion
 
+        #region Studio List Loading 
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.AssetBundleCheck), nameof(Studio.AssetBundleCheck.GetAllFileName))]
+        public static bool GetAllFileName(string _assetBundleName, bool _WithExtension, ref string[] __result)
+        {
+            var list = ListLoader.ExternalStudioDataList.Where(x => x.AssetBundleName == _assetBundleName).Select(y => y.FileNameWithoutExtension.ToLower()).ToArray();
+            if (list.Count() > 0)
+            {
+                __result = list;
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.Info), "FindAllAssetName")]
+        public static bool FindAllAssetNamePrefix(string _bundlePath, string _regex, ref string[] __result)
+        {
+            var list = ListLoader.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath).Select(x => x.FileNameWithoutExtension).ToList();
+            if (list.Count() > 0)
+            {
+                __result = list.Where(x => Regex.Match(x, _regex, RegexOptions.IgnoreCase).Success).ToArray();
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
+        public static void GetAssetBundleNameListFromPath(string path, List<string> __result)
+        {
+            if (path == "studio/info/")
+            {
+                foreach (string assetBundleName in ListLoader.ExternalStudioDataList.Select(x => x.AssetBundleName).Distinct())
+                    if (!__result.Contains(assetBundleName))
+                        __result.Add(assetBundleName);
+            }
+        }
+        #endregion
+
         #region Asset Loading
         [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAsset), new[] { typeof(string), typeof(string), typeof(Type), typeof(string) })]
         public static bool LoadAssetPreHook(ref AssetBundleLoadAssetOperation __result, ref string assetBundleName, ref string assetName, Type type, string manifestAssetBundleName)
@@ -117,5 +158,20 @@ namespace ResourceRedirector
                 return false;
         }
         #endregion
+
+        [HarmonyTranspiler, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAssetBundleInternal))]
+        public static IEnumerable<CodeInstruction> LoadAssetBundleInternalTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionsList = instructions.ToList();
+            MethodInfo LoadMethod = typeof(AssetBundle).GetMethod(nameof(AssetBundle.LoadFromFile), AccessTools.all, null, new[] { typeof(string) }, null);
+
+            int IndexLoadFromFile = instructionsList.FindIndex(instruction => instruction.opcode == OpCodes.Call && instruction.operand == LoadMethod);
+
+            //Switch out a LoadFromFile call
+            if (IndexLoadFromFile > 0)
+                instructionsList[IndexLoadFromFile].operand = typeof(ResourceRedirector).GetMethod(nameof(ResourceRedirector.HandleAssetBundle), AccessTools.all);
+
+            return instructions;
+        }
     }
 }

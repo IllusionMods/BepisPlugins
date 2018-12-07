@@ -463,8 +463,6 @@ namespace Sideloader.AutoResolver
         #endregion
 
         #region ChaFileAccessory.PartsInfo
-        private static int AccessoryLimit = 200;
-
         private static Dictionary<CategoryProperty, StructValue<int>> _chaFileAccessoryPartsInfoGenerator()
         {
             string prefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";

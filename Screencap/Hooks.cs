@@ -1,4 +1,5 @@
-﻿using ChaCustom;
+﻿using alphaShot;
+using ChaCustom;
 using Harmony;
 using UnityEngine;
 
@@ -66,14 +67,7 @@ namespace Screencap
             var nh = t2d.height / CardRenderRate;
 
             //Downsample texture
-            var pixels = ScaleUnityTexture.ScaleLanczos(t2d.GetPixels32(), t2d.width, nw, nh);
-            Object.Destroy(t2d);
-
-            //Load pixel data into a new texture, encode to PNG and overwrite original result.
-            var np = new Texture2D(nw, nh);
-            np.SetPixels32(pixels);
-            encoded = np.EncodeToPNG();
-            Object.Destroy(np);
+            encoded = ScreenshotManager.Instance.currentAlphaShot.Lanczos(t2d, nw, nh);
         }
     }
 }

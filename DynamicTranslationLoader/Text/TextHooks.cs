@@ -134,7 +134,9 @@ namespace DynamicTranslationLoader.Text
                 }
             }
         }
+        #endregion
 
+        #region GUI Text Hooks
         [HarmonyPrefix, HarmonyPatch(typeof(TMP_Text), "SetText", new[] { typeof(string), typeof(bool) })]
         public static void SetTextHook1(ref string text, object __instance)
         {
@@ -195,8 +197,8 @@ namespace DynamicTranslationLoader.Text
                 TranslationHooksEnabled = false;
                 try
                 {
-                    content.text = TextTranslator.TranslateText(content.text);
-                    content.tooltip = TextTranslator.TranslateText(content.tooltip);
+                    content.text = TextTranslator.TranslateTextAlternate(content.text);
+                    content.tooltip = TextTranslator.TranslateTextAlternate(content.tooltip);
                 }
                 finally
                 {
@@ -214,8 +216,8 @@ namespace DynamicTranslationLoader.Text
                 TranslationHooksEnabled = false;
                 try
                 {
-                    content.text = TextTranslator.TranslateText(content.text);
-                    content.tooltip = TextTranslator.TranslateText(content.tooltip);
+                    content.text = TextTranslator.TranslateTextAlternate(content.text);
+                    content.tooltip = TextTranslator.TranslateTextAlternate(content.tooltip);
                 }
                 finally
                 {
@@ -233,8 +235,8 @@ namespace DynamicTranslationLoader.Text
                 TranslationHooksEnabled = false;
                 try
                 {
-                    content.text = TextTranslator.TranslateText(content.text);
-                    content.tooltip = TextTranslator.TranslateText(content.tooltip);
+                    content.text = TextTranslator.TranslateTextAlternate(content.text);
+                    content.tooltip = TextTranslator.TranslateTextAlternate(content.tooltip);
                 }
                 finally
                 {
@@ -252,8 +254,8 @@ namespace DynamicTranslationLoader.Text
                 TranslationHooksEnabled = false;
                 try
                 {
-                    title.text = TextTranslator.TranslateText(title.text);
-                    title.tooltip = TextTranslator.TranslateText(title.tooltip);
+                    title.text = TextTranslator.TranslateTextAlternate(title.text);
+                    title.tooltip = TextTranslator.TranslateTextAlternate(title.tooltip);
                 }
                 finally
                 {
@@ -273,8 +275,8 @@ namespace DynamicTranslationLoader.Text
                 {
                     foreach (GUIContent content in contents)
                     {
-                        content.text = TextTranslator.TranslateText(content.text);
-                        content.tooltip = TextTranslator.TranslateText(content.tooltip);
+                        content.text = TextTranslator.TranslateTextAlternate(content.text);
+                        content.tooltip = TextTranslator.TranslateTextAlternate(content.tooltip);
                     }
                 }
                 finally
@@ -293,8 +295,8 @@ namespace DynamicTranslationLoader.Text
                 TranslationHooksEnabled = false;
                 try
                 {
-                    content.text = TextTranslator.TranslateText(content.text);
-                    content.tooltip = TextTranslator.TranslateText(content.tooltip);
+                    content.text = TextTranslator.TranslateTextAlternate(content.text);
+                    content.tooltip = TextTranslator.TranslateTextAlternate(content.tooltip);
                 }
                 finally
                 {
@@ -302,7 +304,6 @@ namespace DynamicTranslationLoader.Text
                 }
             }
         }
-
         #endregion
 
         #region Hooks, I think are not needed for KK

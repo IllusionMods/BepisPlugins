@@ -60,15 +60,7 @@ namespace DynamicTranslationLoader.Text
                 Match match = kv.Key.Match(input);
                 if (!match.Success)
                     continue;
-
-                line = kv.Value.TranslatedLine;
-
-                if (kv.Value.Flags.IsTranslationRegex)
-                {
-                    for (int i = 0; i < match.Groups.Count; i++)
-                        line = line.Replace("{" + i + "}", match.Groups[i].Value);
-                }
-
+                line = kv.Key.Replace(input, kv.Value.TranslatedLine);
                 return true;
             }
 
@@ -113,15 +105,16 @@ namespace DynamicTranslationLoader.Text
         /// <summary>
         /// Alternate, simpler text translation. Typically used for Unity GUIs in plugins.
         /// Will not paste to clipboard, maintain untranslated/original text lists, or allow autotranslator hooking.
+        /// Regex translations only on key press because of how badly they impact performance.
         /// </summary>
-        public static string TranslateText(string input)
+        public static string TranslateTextAlternate(string input)
         {
             if (string.IsNullOrEmpty(input))
                 return input;
             if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
                 return translation.TranslatedLine;
-            if (TryGetRegex(input, out string regexTranslation))
-                return regexTranslation;
+            if (Input.GetKey(KeyCode.KeypadPeriod) && TryGetRegex(input, out string regexTranslation))
+                    return regexTranslation;
             return input;
         }
 

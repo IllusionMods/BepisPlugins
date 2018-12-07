@@ -1,14 +1,14 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
 using ICSharpCode.SharpZipLib.Zip;
 using ResourceRedirector;
+using Shared;
+using Sideloader.AutoResolver;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using BepInEx.Logging;
-using Shared;
-using Sideloader.AutoResolver;
 using UnityEngine;
 using Logger = BepInEx.Logger;
 
@@ -21,16 +21,12 @@ namespace Sideloader
     {
         protected List<ZipFile> Archives = new List<ZipFile>();
 
-        protected List<ChaListData> lists = new List<ChaListData>();
-
         protected List<Manifest> LoadedManifests = new List<Manifest>();
 
         protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
-        protected static List<string> PngFolderList = new List<string>();
-        protected static List<string> PngFolderOnlyList = new List<string>();
+        protected static HashSet<string> PngFolderList = new HashSet<string>();
+        protected static HashSet<string> PngFolderOnlyList = new HashSet<string>();
 
-
-        public static Dictionary<Manifest, List<ChaListData>> LoadedData { get; } = new Dictionary<Manifest, List<ChaListData>>();
 
         public Sideloader()
         {
@@ -48,6 +44,7 @@ namespace Sideloader
             Hooks.InstallHooks();
             AutoResolver.Hooks.InstallHooks();
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
+            ResourceRedirector.ResourceRedirector.AssetBundleResolvers.Add(AssetBundleRedirectHook);
 
             //check mods directory
             var modDirectory = Path.Combine(Paths.GameRootPath, "mods");
@@ -65,9 +62,7 @@ namespace Sideloader
         {
             string GetRelativeArchiveDir(string archiveDir)
             {
-                if (archiveDir.Length < modDirectory.Length)
-                    return archiveDir;
-                return archiveDir.Substring(modDirectory.Length).Trim(' ', '/', '\\');
+                return archiveDir.Length < modDirectory.Length ? archiveDir : archiveDir.Substring(modDirectory.Length).Trim(' ', '/', '\\');
             }
 
             Logger.Log(LogLevel.Info, "[SIDELOADER] Scanning the \"mods\" directory...");
@@ -159,20 +154,10 @@ namespace Sideloader
             }
         }
 
-        protected void IndexList(Manifest manifest, ChaListData data)
-        {
-            if (LoadedData.TryGetValue(manifest, out lists))
-            {
-                lists.Add(data);
-            }
-            else
-            {
-                LoadedData.Add(manifest, new List<ChaListData>(new[] { data }));
-            }
-        }
-
         protected void LoadAllLists(ZipFile arc, Manifest manifest)
         {
+            List<ZipEntry> BoneList = new List<ZipEntry>();
+
             foreach (ZipEntry entry in arc)
             {
                 if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
@@ -180,29 +165,56 @@ namespace Sideloader
                     try
                     {
                         var stream = arc.GetInputStream(entry);
-
                         var chaListData = ListLoader.LoadCSV(stream);
 
                         SetPossessNew(chaListData);
                         UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData);
-                        IndexList(manifest, chaListData);
-
                         ListLoader.ExternalDataList.Add(chaListData);
-
-                        if (LoadedData.TryGetValue(manifest, out lists))
-                        {
-                            lists.Add(chaListData);
-                        }
-                        else
-                        {
-                            LoadedData[manifest] = new List<ChaListData> { chaListData };
-                        }
                     }
                     catch (Exception ex)
                     {
                         Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
                         Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
                     }
+                }
+                if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
+                        BoneList.Add(entry);
+                    else
+                    {
+                        try
+                        {
+                            var stream = arc.GetInputStream(entry);
+                            var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
+
+                            UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
+                            ListLoader.ExternalStudioDataList.Add(studioListData);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
+                            Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
+                        }
+                    }
+                }
+            }
+
+            //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
+            foreach (ZipEntry entry in BoneList)
+            {
+                try
+                {
+                    var stream = arc.GetInputStream(entry);
+                    var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
+
+                    UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
+                    ListLoader.ExternalStudioDataList.Add(studioListData);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
+                    Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
                 }
             }
         }
@@ -262,19 +274,14 @@ namespace Sideloader
         {
             var extStart = assetBundleName.LastIndexOf('.');
             var trimmedName = extStart >= 0 ? assetBundleName.Remove(extStart) : assetBundleName;
-            if (PngFolderOnlyList.Contains(trimmedName))
-                return true;
-            return false;
+            return PngFolderOnlyList.Contains(trimmedName);
         }
         /// <summary>
         /// Check whether the .png file comes from a sideloader mod
         /// </summary>
         public static bool IsPng(string pngFile)
         {
-            if (PngList.ContainsKey(pngFile))
-                return true;
-            else
-                return false;
+            return PngList.ContainsKey(pngFile);
         }
 
         private static MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -290,7 +297,7 @@ namespace Sideloader
                     if (assetBundlePath.Contains('/'))
                         assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
 
-                    Func<AssetBundle> getBundleFunc = () =>
+                    AssetBundle getBundleFunc()
                     {
                         AssetBundle bundle;
 
@@ -303,7 +310,7 @@ namespace Sideloader
                         }
                         else
                         {
-                            Logger.Log(LogLevel.Info, $"[SIDELOADER] Cannot stream {entry.Name} ({archiveFilename}) unity3d file from disk, loading to RAM instead");
+                            Logger.Log(LogLevel.Debug, $"[SIDELOADER] Cannot stream {entry.Name} ({archiveFilename}) unity3d file from disk, loading to RAM instead");
                             var stream = arc.GetInputStream(entry);
 
                             byte[] buffer = new byte[entry.Size];
@@ -321,7 +328,7 @@ namespace Sideloader
                         }
 
                         return bundle;
-                    };
+                    }
 
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
@@ -366,6 +373,37 @@ namespace Sideloader
                 result = new AssetBundleLoadAssetOperationSimulation(obj);
                 return true;
             }
+
+            result = null;
+            return false;
+        }
+
+        protected bool AssetBundleRedirectHook(string assetBundleName, out AssetBundle result)
+        {
+            //The only asset bundles that need to be loaded are studio maps
+            //Loading asset bundles unnecessarily can interfere with normal sideloader asset handling so avoid it whenever possible
+            if (Hooks.MapLoading)
+            {
+                string bundle = assetBundleName.Remove(0, assetBundleName.IndexOf("/abdata/")).Replace("/abdata/", "");
+                if (Hooks.MapABName == bundle)
+                {
+                    //Only load asset bundles that do not exist on disk to avoid loading partial files
+                    if (!File.Exists(assetBundleName))
+                    {
+                        if (BundleManager.Bundles.TryGetValue(bundle, out List<Lazy<AssetBundle>> lazyList))
+                        {
+                            Hooks.MapLoading = false;
+                            Hooks.MapABName = "";
+
+                            //If more than one exist, only the first will be loaded.
+                            result = lazyList[0].Instance;
+                            return true;
+                        }
+                    }
+                }
+            }
+            Hooks.MapLoading = false;
+            Hooks.MapABName = "";
 
             result = null;
             return false;

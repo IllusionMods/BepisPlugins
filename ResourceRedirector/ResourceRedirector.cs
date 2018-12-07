@@ -18,8 +18,10 @@ namespace ResourceRedirector
 
 
         public delegate bool AssetHandler(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result);
+        public delegate bool AssetBundleHandler(string assetBundleName, out AssetBundle result);
 
         public static List<AssetHandler> AssetResolvers = new List<AssetHandler>();
+        public static List<AssetBundleHandler> AssetBundleResolvers = new List<AssetBundleHandler>();
 
         public static Dictionary<string, AssetBundle> EmulatedAssetBundles = new Dictionary<string, AssetBundle>();
 
@@ -32,7 +34,7 @@ namespace ResourceRedirector
             EmulationEnabled = Directory.Exists(EmulatedDir);
         }
 
-        
+
         public static AssetBundleLoadAssetOperation HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, ref AssetBundleLoadAssetOperation __result)
         {
             foreach (var handler in AssetResolvers)
@@ -102,6 +104,25 @@ namespace ResourceRedirector
 
             //otherwise return normal asset
             return __result;
+        }
+
+        public static AssetBundle HandleAssetBundle(string assetBundleName)
+        {
+            foreach (var handler in AssetBundleResolvers)
+            {
+                try
+                {
+                    if (handler.Invoke(assetBundleName, out AssetBundle result))
+                        return result;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, ex.ToString());
+                }
+            }
+
+            //otherwise load the asset bundle
+            return AssetBundle.LoadFromFile(assetBundleName);
         }
     }
 }
