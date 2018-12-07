@@ -14,10 +14,12 @@ namespace Screencap
     [BepInPlugin(GUID: GUID, Name: "Screenshot Manager", Version: "2.3")]
     public class ScreenshotManager : BaseUnityPlugin
     {
+        public static ScreenshotManager Instance { get; private set; }
+
         internal const string GUID = "com.bepis.bepinex.screenshotmanager";
 
         private string screenshotDir = Path.Combine(Paths.GameRootPath, "UserData\\cap\\");
-        private AlphaShot2 currentAlphaShot;
+        internal AlphaShot2 currentAlphaShot;
 
         #region Config properties
 
@@ -63,6 +65,12 @@ namespace Screencap
 
         protected void Awake()
         {
+            if (Instance)
+            {
+                GameObject.DestroyImmediate(this);
+                return;
+            }
+            Instance = this;
             CK_Capture = new SavedKeyboardShortcut("Take UI screenshot", this, new KeyboardShortcut(KeyCode.F9));
             CK_CaptureAlpha = new SavedKeyboardShortcut("Take rendered screenshot", this, new KeyboardShortcut(KeyCode.F11));
             CK_Gui = new SavedKeyboardShortcut("Open settings window", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift));

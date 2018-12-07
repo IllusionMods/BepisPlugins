@@ -7,19 +7,44 @@ namespace alphaShot
 {
     public class AlphaShot2 : MonoBehaviour
     {
+        private Material matScale;
         private Material matBlackout;
         private Material matMask;
-        private int col;
+        private int sp_texsize;
+
+        private bool InStudio = false;
 
         void Awake()
         {
-            col = Shader.PropertyToID("_TargetColour");
+            sp_texsize = Shader.PropertyToID("_texture_size");
             var abd = Screencap.Properties.Resources.blackout;
             var ab = AssetBundle.LoadFromMemory(abd);
             matBlackout = new Material(ab.LoadAsset<Shader>("assets/blackout.shader"));
-            matBlackout.SetColor(col, Color.black);
+            matBlackout.SetColor("_TargetColour", Color.black);
             matMask = new Material(ab.LoadAsset<Shader>("assets/alphamask.shader"));
+            matScale = new Material(ab.LoadAsset<Shader>("assets/ddt-jinc2.shader"));
             ab.Unload(false);
+
+            InStudio = SceneManager.GetActiveScene().name == "Studio";
+        }
+
+        public byte[] Lanczos(Texture input, int ResolutionX, int ResolutionY)
+        {
+            matScale.SetFloat("_texture_size", Mathf.Max(input.width, input.height));
+            var rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            GL.Clear(false, true, new Color(0, 0, 0, 0));
+            Graphics.Blit(input, rt, matScale);
+            GameObject.DestroyImmediate(input);
+            var t2d = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
+            t2d.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0, false);
+            t2d.Apply();
+            RenderTexture.active = prev;
+            RenderTexture.ReleaseTemporary(rt);
+            var ret = t2d.EncodeToPNG();
+            GameObject.DestroyImmediate(t2d);
+            return ret;
         }
 
         public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
@@ -28,8 +53,7 @@ namespace alphaShot
             int newWidth = ResolutionX * DownscalingRate;
             int newHeight = ResolutionY * DownscalingRate;
 
-            var currentScene = SceneManager.GetActiveScene().name;
-            if (Transparent && (currentScene == "CustomScene" || currentScene == "Studio"))
+            if (Transparent && (InStudio || SceneManager.GetActiveScene().name == "CustomScene"))
                 fullSizeCapture = CaptureAlpha(newWidth, newHeight);
             else
                 fullSizeCapture = CaptureOpaque(newWidth, newHeight);
@@ -37,12 +61,7 @@ namespace alphaShot
             byte[] ret = null;
             if (DownscalingRate > 1)
             {
-                var pixels = ScaleUnityTexture.ScaleLanczos(fullSizeCapture.GetPixels32(), fullSizeCapture.width, ResolutionX, ResolutionY);
-                GameObject.Destroy(fullSizeCapture);
-                var texture2D4 = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
-                texture2D4.SetPixels32(pixels);
-                ret = texture2D4.EncodeToPNG();
-                GameObject.Destroy(texture2D4);
+                ret = Lanczos(fullSizeCapture, ResolutionX, ResolutionY);
             }
             else
             {
@@ -68,6 +87,7 @@ namespace alphaShot
             renderCam.rect = rect;
             RenderTexture.active = rt;
             ss.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0);
+            ss.Apply();
             renderCam.targetTexture = tt;
             RenderTexture.active = rta;
             RenderTexture.ReleaseTemporary(rt);
@@ -109,6 +129,7 @@ namespace alphaShot
             GameObject.Destroy(texture2D2);
             var texture2D3 = new Texture2D(rt.width, rt.height, TextureFormat.ARGB32, false);
             texture2D3.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0, false);
+            texture2D3.Apply();
             RenderTexture.active = prev;
             RenderTexture.ReleaseTemporary(rt);
 
