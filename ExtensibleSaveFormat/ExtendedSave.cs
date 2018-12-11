@@ -1,6 +1,8 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepisPlugins;
 using System.Collections.Generic;
+using BepInEx.Logging;
 
 namespace ExtensibleSaveFormat
 {
@@ -42,37 +44,128 @@ namespace ExtensibleSaveFormat
 
         internal static void cardWriteEvent(ChaFile file)
         {
-            CardBeingSaved?.Invoke(file);
+            if (CardBeingSaved == null) return;
+
+            foreach (var entry in CardBeingSaved.GetInvocationList())
+            {
+                var handler = (CardEventHandler)entry;
+                try
+                {
+                    handler.Invoke(file);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CardBeingSaved)} - {ex}");
+                }
+            }
         }
 
 	    internal static void cardReadEvent(ChaFile file)
 	    {
-		    CardBeingLoaded?.Invoke(file);
-	    }
+	        if (CardBeingLoaded == null) return;
+
+	        foreach (var entry in CardBeingLoaded.GetInvocationList())
+	        {
+	            var handler = (CardEventHandler)entry;
+	            try
+	            {
+	                handler.Invoke(file);
+	            }
+	            catch (Exception ex)
+	            {
+	                Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CardBeingLoaded)} - {ex}");
+	            }
+	        }
+        }
 
 	    internal static void coordinateWriteEvent(ChaFileCoordinate file)
 	    {
-		    CoordinateBeingSaved?.Invoke(file);
-	    }
+	        if (CoordinateBeingSaved == null) return;
+
+	        foreach (var entry in CoordinateBeingSaved.GetInvocationList())
+	        {
+	            var handler = (CoordinateEventHandler)entry;
+	            try
+	            {
+	                handler.Invoke(file);
+	            }
+	            catch (Exception ex)
+	            {
+	                Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CoordinateBeingSaved)} - {ex}");
+	            }
+	        }
+        }
 
 	    internal static void coordinateReadEvent(ChaFileCoordinate file)
 	    {
-		    CoordinateBeingLoaded?.Invoke(file);
-	    }
+	        if (CoordinateBeingLoaded == null) return;
+
+	        foreach (var entry in CoordinateBeingLoaded.GetInvocationList())
+	        {
+	            var handler = (CoordinateEventHandler)entry;
+	            try
+	            {
+	                handler.Invoke(file);
+	            }
+	            catch (Exception ex)
+	            {
+	                Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CoordinateBeingLoaded)} - {ex}");
+	            }
+	        }
+        }
 
         internal static void sceneWriteEvent(string path)
         {
-            SceneBeingSaved?.Invoke(path);
+            if (SceneBeingSaved == null) return;
+
+            foreach (var entry in SceneBeingSaved.GetInvocationList())
+            {
+                var handler = (SceneEventHandler)entry;
+                try
+                {
+                    handler.Invoke(path);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingSaved)} - {ex}");
+                }
+            }
         }
 
         internal static void sceneReadEvent(string path)
         {
-            SceneBeingLoaded?.Invoke(path);
+            if (SceneBeingLoaded == null) return;
+
+            foreach (var entry in SceneBeingLoaded.GetInvocationList())
+            {
+                var handler = (SceneEventHandler)entry;
+                try
+                {
+                    handler.Invoke(path);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingLoaded)} - {ex}");
+                }
+            }
         }
 
         internal static void sceneImportEvent(string path)
         {
-            SceneBeingImported?.Invoke(path);
+            if (SceneBeingImported == null) return;
+
+            foreach (var entry in SceneBeingImported.GetInvocationList())
+            {
+                var handler = (SceneEventHandler)entry;
+                try
+                {
+                    handler.Invoke(path);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingImported)} - {ex}");
+                }
+            }
         }
 
         #endregion
@@ -86,8 +179,7 @@ namespace ExtensibleSaveFormat
 	    {
 		    return internalCoordinateDictionary.Get(file);
 	    }
-
-
+        
         public static PluginData GetExtendedDataById(ChaFile file, string id)
         {
             if (file == null || id == null)
