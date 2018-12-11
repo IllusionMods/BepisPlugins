@@ -441,8 +441,11 @@ namespace Sideloader.AutoResolver
                 }
             }
 
-            //Set the extended data if any has been added
-            if (ExtendedData.Count != 0)
+            if (ExtendedData.Count == 0)
+                //Set extended data to null to remove any that may once have existed, for example in the case of deleted objects
+                ExtendedSave.SetSceneExtendedDataById(UniversalAutoResolver.UARExtID, null);
+            else
+                //Set the extended data if any has been added
                 ExtendedSave.SetSceneExtendedDataById(UniversalAutoResolver.UARExtID, new PluginData { data = ExtendedData });
         }
 
