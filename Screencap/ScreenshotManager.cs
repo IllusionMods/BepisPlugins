@@ -131,6 +131,10 @@ namespace Screencap
                 Utils.Sound.Play(SystemSE.photo);
                 BepInEx.Logger.Log(LogLevel.Message, $"Character screenshot saved to {filename}");
             }
+            else
+            {
+                BepInEx.Logger.Log(LogLevel.Message, $"Can't render a screenshot here, try UI screenshot instead");
+            }
 
             //GC.Collect();
         }
