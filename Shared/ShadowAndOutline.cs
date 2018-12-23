@@ -1,9 +1,8 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace MessageCenter
+namespace BepisPlugins
 {
-    public static class ShadowAndOutline
+    internal static class ShadowAndOutline
     {
         public static void DrawOutline(Rect rect, string text, GUIStyle style, Color outColor, Color inColor, float size)
         {

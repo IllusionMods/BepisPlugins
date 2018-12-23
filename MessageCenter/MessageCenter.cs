@@ -7,7 +7,7 @@ using BepInEx;
 using BepInEx.Logging;
 using UnityEngine;
 
-namespace MessageCenter
+namespace BepisPlugins
 {
     [BepInPlugin(GUID, "Message Center", Version)]
     public class MessageCenter : BaseUnityPlugin

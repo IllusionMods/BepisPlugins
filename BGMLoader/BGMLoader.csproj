@@ -63,6 +63,7 @@
     <Compile Include="AudioLoader.cs" />
     <Compile Include="BGMLoader.cs" />
     <Compile Include="Hooks.cs" />
+    <Compile Include="Lazy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,6 @@
 using BepInEx.Logging;
 using ICSharpCode.SharpZipLib.Zip;
 using ResourceRedirector;
-using Shared;
 using Sideloader.AutoResolver;
 using System;
 using System.Collections.Generic;

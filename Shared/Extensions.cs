@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
 
-namespace Shared
+namespace BepisPlugins
 {
-    public static class Extensions
+    internal static class Extensions
     {
         //stolen from https://stackoverflow.com/a/45756981
 
