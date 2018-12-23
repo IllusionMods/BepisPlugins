@@ -37,7 +37,7 @@ namespace DynamicTranslationLoader
             IsDumpingEnabled = new ConfigWrapper<bool>("dumping", this);
             IsPastingToClipboard = new ConfigWrapper<bool>("paste-to-clipboard", this);
             DumpingAllToGlobal = new ConfigWrapper<bool>("dump-to-global", this);
-            ReloadTranslations = new SavedKeyboardShortcut("Reload translations", this, new KeyboardShortcut(KeyCode.F10));
+            ReloadTranslations = new SavedKeyboardShortcut("Reload translations", this, new KeyboardShortcut(KeyCode.F10, KeyCode.LeftControl));
             DumpUntranslatedText = new SavedKeyboardShortcut("Dump untranslated text", this, new KeyboardShortcut(KeyCode.F10, KeyCode.LeftShift));
         }
 
