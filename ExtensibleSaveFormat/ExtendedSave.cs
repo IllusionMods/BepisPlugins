@@ -10,7 +10,7 @@ namespace ExtensibleSaveFormat
     public class ExtendedSave : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.extendedsave";
-        public const string Version = "1.5";
+        public const string Version = Metadata.PluginsVersion;
 
         void Awake()
         {

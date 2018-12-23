@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using BepisPlugins;
 using BepInEx;
 using BepInEx.Logging;
 using Illusion.Game;
@@ -11,7 +12,7 @@ namespace BGMLoader
     public class BGMLoader : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bgmloader";
-        public const string Version = "1.0";
+        public const string Version = Metadata.PluginsVersion;
 
         public BGMLoader()
 	    {

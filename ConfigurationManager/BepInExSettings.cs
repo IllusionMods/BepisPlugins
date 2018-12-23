@@ -1,11 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using BepisPlugins;
 using BepInEx;
 using BepInEx.Logging;
 
 namespace ConfigurationManager
 {
-    [BepInPlugin("com.bepis.bepinex.commonsettings", "BepInEx settings", "1.0")]
+    [BepInPlugin("com.bepis.bepinex.commonsettings", "BepInEx settings", Metadata.PluginsVersion)]
     [Advanced(true)]
     public class BepInExSettings : BaseUnityPlugin
     {

@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using BepisPlugins;
 using BepInEx.Logging;
 using DynamicTranslationLoader.Image;
 using DynamicTranslationLoader.Text;
@@ -15,7 +16,7 @@ namespace DynamicTranslationLoader
     public class DynamicTranslator : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.dynamictranslator";
-        public const string Version = "3.0";
+        public const string Version = Metadata.PluginsVersion;
 
         public static event Func<object, string, string> OnUnableToTranslateUGUI;
         public static event Func<object, string, string> OnUnableToTranslateTextMeshPro;

@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using System.ComponentModel;
+using BepisPlugins;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
@@ -10,7 +11,7 @@ namespace ColorCorrector
     public class ColorCorrector : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.colorcorrector";
-        public const string Version = "1.2";
+        public const string Version = Metadata.PluginsVersion;
 
         #region Config properties
         [DisplayName("!Enable saturation filter")]

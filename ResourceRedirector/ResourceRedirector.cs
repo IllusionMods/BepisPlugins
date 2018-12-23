@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using BepisPlugins;
 using BepInEx.Logging;
 using UnityEngine;
 using Logger = BepInEx.Logger;
@@ -12,7 +13,7 @@ namespace ResourceRedirector
     public class ResourceRedirector : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.resourceredirector";
-        public const string Version = "1.3";
+        public const string Version = Metadata.PluginsVersion;
 
         public static string EmulatedDir => Path.Combine(Paths.GameRootPath, "abdata-emulated");
         public static bool EmulationEnabled;

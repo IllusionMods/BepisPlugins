@@ -7,6 +7,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using BepisPlugins;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,7 +17,7 @@ namespace Screencap
     public class ScreenshotManager : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.screenshotmanager";
-        public const string Version = "2.3";
+        public const string Version = Metadata.PluginsVersion;
 
         public static ScreenshotManager Instance { get; private set; }
 

@@ -84,6 +84,7 @@
     <None Include="shader_source\blackout.shader" />
     <None Include="shader_source\ddt-jinc2.shader" />
   </ItemGroup>
+  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

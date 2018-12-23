@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using BepisPlugins;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -16,7 +17,7 @@ namespace SliderUnlocker
     public class SliderUnlocker : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.sliderunlocker";
-        public const string Version = "1.5";
+        public const string Version = Metadata.PluginsVersion;
 
         protected void Awake()
         {

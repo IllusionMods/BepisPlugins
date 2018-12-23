@@ -2,6 +2,7 @@
 using BepInEx;
 using UnityEngine;
 using System.Linq;
+using BepisPlugins;
 using ConfigurationManager;
 using Logger = BepInEx.Logger;
 
@@ -11,7 +12,7 @@ namespace DeveloperConsole
     public class DeveloperConsole : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.developerconsole";
-        public const string Version = "1.0.1";
+        public const string Version = Metadata.PluginsVersion;
 
         private bool showingUI = false;
         private string TotalLog = "";

@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using BepisPlugins;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using IllusionPlugin;
@@ -15,7 +16,7 @@ namespace IPALoader
 	public class IPALoader : BaseUnityPlugin
 	{
 	    public const string GUID = "com.bepis.bepinex.ipapluginloader";
-	    public const string Version = "1.2";
+	    public const string Version = Metadata.PluginsVersion;
 
         public static GameObject IPAManagerObject { get; private set; }
 

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using BepisPlugins;
 using BepInEx;
 using ConfigurationManager.Utilities;
 using Manager;
@@ -20,7 +21,7 @@ namespace ConfigurationManager
     public class ConfigurationManager : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.configurationmanager";
-        public const string Version = "1.0";
+        public const string Version = Metadata.PluginsVersion;
 
         private static readonly GUIContent KeyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
             "The first key is the main key, while the rest are modifiers." +

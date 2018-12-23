@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using BepisPlugins;
 using BepInEx;
 using BepInEx.Logging;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace MessageCenter
     public class MessageCenter : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.messagecenter";
-        public const string Version = "1.2";
+        public const string Version = Metadata.PluginsVersion;
 
         private readonly List<LogEntry> _shownLogLines = new List<LogEntry>();
 

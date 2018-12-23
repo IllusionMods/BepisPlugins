@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using BepisPlugins;
 using UnityEngine;
 using Logger = BepInEx.Logger;
 
@@ -20,7 +21,7 @@ namespace Sideloader
     public class Sideloader : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.sideloader";
-        public const string Version = "1.4";
+        public const string Version = Metadata.PluginsVersion;
 
         protected List<ZipFile> Archives = new List<ZipFile>();
 
