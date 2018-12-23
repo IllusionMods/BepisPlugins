@@ -140,15 +140,22 @@ namespace DynamicTranslationLoader.Text
 
                 aliveCount++;
 
-                switch (kv.Key.Target)
+                try
                 {
-                    case TMP_Text tmtext:
-                        tmtext.text = kv.Value;
-                        break;
+                    switch (kv.Key.Target)
+                    {
+                        case TMP_Text tmtext:
+                            tmtext.text = kv.Value;
+                            break;
 
-                    case UnityEngine.UI.Text tmtext:
-                        tmtext.text = kv.Value;
-                        break;
+                        case UnityEngine.UI.Text tmtext:
+                            tmtext.text = kv.Value;
+                            break;
+                    }
+                }
+                catch
+                {
+                    // Bloody APIs crashing up my house
                 }
             }
 
