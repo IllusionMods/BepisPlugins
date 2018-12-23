@@ -12,12 +12,13 @@ using UnityEngine.SceneManagement;
 
 namespace Screencap
 {
-    [BepInPlugin(GUID: GUID, Name: "Screenshot Manager", Version: "2.3")]
+    [BepInPlugin(GUID: GUID, Name: "Screenshot Manager", Version: Version)]
     public class ScreenshotManager : BaseUnityPlugin
     {
-        public static ScreenshotManager Instance { get; private set; }
+        public const string GUID = "com.bepis.bepinex.screenshotmanager";
+        public const string Version = "2.3";
 
-        internal const string GUID = "com.bepis.bepinex.screenshotmanager";
+        public static ScreenshotManager Instance { get; private set; }
 
         private string screenshotDir = Path.Combine(Paths.GameRootPath, "UserData\\cap\\");
         internal AlphaShot2 currentAlphaShot;

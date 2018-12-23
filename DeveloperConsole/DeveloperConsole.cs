@@ -7,9 +7,12 @@ using Logger = BepInEx.Logger;
 
 namespace DeveloperConsole
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.developerconsole", Name: "Developer Console", Version: "1.0.1")]
+    [BepInPlugin(GUID: GUID, Name: "Developer Console", Version: Version)]
     public class DeveloperConsole : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.developerconsole";
+        public const string Version = "1.0.1";
+
         private bool showingUI = false;
         private string TotalLog = "";
         private Rect UI = new Rect(20, 20, 400, 400);

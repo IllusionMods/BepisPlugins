@@ -10,13 +10,16 @@ using Logger = BepInEx.Logger;
 
 namespace IPALoader
 {
-	[BepInPlugin(GUID: "com.bepis.bepinex.ipapluginloader", Name: "IPA Plugin Loader", Version: "1.2")]
+	[BepInPlugin(GUID: GUID, Name: "IPA Plugin Loader", Version: Version)]
     [System.ComponentModel.Browsable(false)]
 	public class IPALoader : BaseUnityPlugin
 	{
-		public static GameObject IPAManagerObject { get; private set; }
+	    public const string GUID = "com.bepis.bepinex.ipapluginloader";
+	    public const string Version = "1.2";
 
-		internal static IPlugin pluginToLoad;
+        public static GameObject IPAManagerObject { get; private set; }
+
+        internal static IPlugin pluginToLoad;
 
 		public string IPAPluginDir => Path.Combine(Paths.PluginPath, "IPA");
 

@@ -1,22 +1,23 @@
 ﻿using BepInEx;
 using ChaCustom;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace SliderUnlocker
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.sliderunlocker", Name: "Slider Unlocker", Version: "1.5")]
+    [BepInPlugin(GUID: GUID, Name: "Slider Unlocker", Version: Version)]
     public class SliderUnlocker : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.sliderunlocker";
+        public const string Version = "1.5";
+
         protected void Awake()
         {
             Hooks.InstallHooks();

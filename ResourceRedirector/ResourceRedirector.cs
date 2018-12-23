@@ -8,15 +8,15 @@ using Logger = BepInEx.Logger;
 
 namespace ResourceRedirector
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.resourceredirector", Name: "Asset Emulator", Version: "1.3")]
+    [BepInPlugin(GUID: GUID, Name: "Asset Emulator", Version: Version)]
     public class ResourceRedirector : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.resourceredirector";
+        public const string Version = "1.3";
+
         public static string EmulatedDir => Path.Combine(Paths.GameRootPath, "abdata-emulated");
-
         public static bool EmulationEnabled;
-
-
-
+        
         public delegate bool AssetHandler(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result);
         public delegate bool AssetBundleHandler(string assetBundleName, out AssetBundle result);
 
@@ -24,17 +24,14 @@ namespace ResourceRedirector
         public static List<AssetBundleHandler> AssetBundleResolvers = new List<AssetBundleHandler>();
 
         public static Dictionary<string, AssetBundle> EmulatedAssetBundles = new Dictionary<string, AssetBundle>();
-
-
-
+        
         public ResourceRedirector()
         {
             Hooks.InstallHooks();
 
             EmulationEnabled = Directory.Exists(EmulatedDir);
         }
-
-
+        
         public static AssetBundleLoadAssetOperation HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, ref AssetBundleLoadAssetOperation __result)
         {
             foreach (var handler in AssetResolvers)

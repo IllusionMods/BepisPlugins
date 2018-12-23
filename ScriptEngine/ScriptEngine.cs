@@ -9,9 +9,12 @@ using Logger = BepInEx.Logger;
 
 namespace ScriptEngine
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.scriptengine", Name: "Script Engine", Version: "2.0")]
+    [BepInPlugin(GUID: GUID, Name: "Script Engine", Version: Version)]
     public class ScriptEngine : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.scriptengine";
+        public const string Version = "2.0";
+
         public string ScriptDirectory => Path.Combine(Paths.PluginPath, "scripts");
 
         private GameObject scriptManager = new GameObject();

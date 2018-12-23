@@ -6,9 +6,12 @@ using BepInEx.Logging;
 
 namespace ExtensibleSaveFormat
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.extendedsave", Name: "Extended Save", Version: "1.5")]
+    [BepInPlugin(GUID: GUID, Name: "Extended Save", Version: Version)]
     public class ExtendedSave : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.extendedsave";
+        public const string Version = "1.5";
+
         void Awake()
         {
             Hooks.InstallHooks();

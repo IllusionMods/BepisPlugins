@@ -8,9 +8,12 @@ using UnityEngine;
 
 namespace MessageCenter
 {
-    [BepInPlugin("com.bepis.messagecenter", "Message Center", "1.2")]
+    [BepInPlugin(GUID, "Message Center", Version)]
     public class MessageCenter : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.messagecenter";
+        public const string Version = "1.2";
+
         private readonly List<LogEntry> _shownLogLines = new List<LogEntry>();
 
         private float _showCounter;

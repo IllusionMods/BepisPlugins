@@ -11,9 +11,12 @@ using Logger = BepInEx.Logger;
 
 namespace DynamicTranslationLoader
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.dynamictranslator", Name: "Dynamic Translator", Version: "3.0")]
+    [BepInPlugin(GUID: GUID, Name: "Dynamic Translator", Version: Version)]
     public class DynamicTranslator : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.dynamictranslator";
+        public const string Version = "3.0";
+
         public static event Func<object, string, string> OnUnableToTranslateUGUI;
         public static event Func<object, string, string> OnUnableToTranslateTextMeshPro;
 

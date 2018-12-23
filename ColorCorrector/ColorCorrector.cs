@@ -6,9 +6,12 @@ using UnityStandardAssets.ImageEffects;
 
 namespace ColorCorrector
 {
-    [BepInPlugin(GUID: "com.bepis.bepinex.colorcorrector", Name: "Color Filter Remover", Version: "1.2")]
+    [BepInPlugin(GUID: GUID, Name: "Color Filter Remover", Version: Version)]
     public class ColorCorrector : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.colorcorrector";
+        public const string Version = "1.2";
+
         #region Config properties
         [DisplayName("!Enable saturation filter")]
         [Category("Post processing settings")]

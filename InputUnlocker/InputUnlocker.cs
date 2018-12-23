@@ -4,9 +4,12 @@ using UnityEngine.UI;
 
 namespace InputUnlocker
 {
-    [BepInPlugin("com.bepis.bepinex.inputunlocker", "Input Length Unlocker", "1.0.1")]
+    [BepInPlugin(GUID, "Input Length Unlocker", Version)]
     internal class InputUnlocker : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.inputunlocker";
+        public const string Version = "1.0.1";
+
         protected void Awake()
         {
             foreach (var inputFieldObject in FindObjectsOfType<InputField>())

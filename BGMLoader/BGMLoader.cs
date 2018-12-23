@@ -7,10 +7,13 @@ using Logger = BepInEx.Logger;
 
 namespace BGMLoader
 {
-	[BepInPlugin("com.bepis.bgmloader", "BGM Loader", "1.0")]
+	[BepInPlugin(GUID, "BGM Loader", Version)]
     public class BGMLoader : BaseUnityPlugin
     {
-	    public BGMLoader()
+        public const string GUID = "com.bepis.bgmloader";
+        public const string Version = "1.0";
+
+        public BGMLoader()
 	    {
 	        Hooks.InstallHooks();
 

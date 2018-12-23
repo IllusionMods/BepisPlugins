@@ -14,11 +14,14 @@ using Logger = BepInEx.Logger;
 
 namespace Sideloader
 {
-    [BepInDependency("com.bepis.bepinex.resourceredirector")]
-    [BepInDependency("com.bepis.bepinex.extendedsave")]
-    [BepInPlugin(GUID: "com.bepis.bepinex.sideloader", Name: "Mod Sideloader", Version: "1.4")]
+    [BepInDependency(ResourceRedirector.ResourceRedirector.GUID)]
+    [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
+    [BepInPlugin(GUID: GUID, Name: "Mod Sideloader", Version: Version)]
     public class Sideloader : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.sideloader";
+        public const string Version = "1.4";
+
         protected List<ZipFile> Archives = new List<ZipFile>();
 
         protected List<Manifest> LoadedManifests = new List<Manifest>();

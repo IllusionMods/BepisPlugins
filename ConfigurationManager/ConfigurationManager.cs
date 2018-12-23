@@ -15,10 +15,13 @@ using Logger = BepInEx.Logger;
 
 namespace ConfigurationManager
 {
-    [BepInPlugin("com.bepis.bepinex.configurationmanager", "Configuration Manager", "1.0")]
+    [BepInPlugin(GUID, "Configuration Manager", Version)]
     [Browsable(false)]
     public class ConfigurationManager : BaseUnityPlugin
     {
+        public const string GUID = "com.bepis.bepinex.configurationmanager";
+        public const string Version = "1.0";
+
         private static readonly GUIContent KeyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
             "The first key is the main key, while the rest are modifiers." +
             "\nThe shortcut will only fire when you press \n" +
