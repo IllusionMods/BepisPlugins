@@ -14,16 +14,23 @@ namespace DeveloperConsole
         private string TotalLog = "";
         private Rect UI = new Rect(20, 20, 400, 400);
         private Vector2 scrollPosition = Vector2.zero;
-        private readonly KeyboardShortcut shortcut = new KeyboardShortcut(KeyCode.F12);
+
+        [DisplayName("Show developer console")]
+        public SavedKeyboardShortcut ShowKey { get; }
+
+        [DisplayName("Size of the log buffer in characters")]
+        [AcceptableValueRange(4000, 16300, false)]
+        [Advanced(true)]
+        public ConfigWrapper<int> LogDepth { get; }
+
+        public DeveloperConsole()
+        {
+            LogDepth = new ConfigWrapper<int>("LogDepth", this, 16300);
+            ShowKey = new SavedKeyboardShortcut("ShowKey", this, new KeyboardShortcut(KeyCode.F12));
+        }
 
         protected void Awake()
         {
-            if (BepInExSettings.ShowConsole)
-            {
-                enabled = false;
-                return;
-            }
-
             Logger.EntryLogged += (level, log) =>
             {
                 string current = $"{TotalLog}\r\n{log}";
@@ -51,7 +58,7 @@ namespace DeveloperConsole
 
         protected void Update()
         {
-            if (shortcut.IsDown())
+            if (ShowKey.IsDown())
             {
                 showingUI = !showingUI;
             }
@@ -88,16 +95,6 @@ namespace DeveloperConsole
             GUILayout.EndVertical();
 
             GUI.DragWindow();
-        }
-
-        [DisplayName("Size of the log buffer in characters")]
-        [AcceptableValueRange(4000, 16300, false)]
-        [Advanced(true)]
-        public ConfigWrapper<int> LogDepth { get; }
-
-        public DeveloperConsole()
-        {
-            LogDepth = new ConfigWrapper<int>("LogDepth", this, 16300);
         }
     }
 }
