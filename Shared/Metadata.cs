@@ -7,5 +7,6 @@
         /// Use ReleaseVersion.HotfixVersion format
         /// </summary>
         public const string PluginsVersion = "7";
+        public const string CompanyName = "BepisPlugins";
     }
 }
