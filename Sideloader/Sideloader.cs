@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using BepisPlugins;
+using Shared;
 using UnityEngine;
 using Logger = BepInEx.Logger;
 

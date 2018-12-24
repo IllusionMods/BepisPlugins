@@ -76,6 +76,7 @@
     <Compile Include="AutoResolver\StudioObjectSearch.cs" />
     <Compile Include="AutoResolver\UniversalAutoResolver.cs" />
     <Compile Include="BundleManager.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="Lazy.cs" />
     <Compile Include="Manifest.cs" />
