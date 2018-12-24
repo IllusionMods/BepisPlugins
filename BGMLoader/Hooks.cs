@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace BGMLoader
 {
-    static class Hooks
+    internal static class Hooks
     {
         public static void InstallHooks()
         {
@@ -18,27 +18,28 @@ namespace BGMLoader
         [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleManager), "LoadAllAsset", new[] { typeof(string), typeof(Type), typeof(string) })]
         public static void LoadAllAssetPostHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName, Type type, string manifestAssetBundleName = null)
         {
-            //BepInLogger.Log($"{assetBundleName} : {type.FullName} : {manifestAssetBundleName ?? ""}");
-
-            if (assetBundleName == "sound/data/systemse/brandcall/00.unity3d" ||
-                assetBundleName == "sound/data/systemse/titlecall/00.unity3d")
+            if (assetBundleName != null)
             {
-                string dir = $"{Paths.PluginPath}\\introclips";
+                if (assetBundleName.StartsWith("sound/data/systemse/brandcall/") ||
+                    assetBundleName.StartsWith("sound/data/systemse/titlecall/"))
+                {
+                    string dir = $"{Paths.PluginPath}\\introclips";
 
-                if (!Directory.Exists(dir))
-                    Directory.CreateDirectory(dir);
+                    if (!Directory.Exists(dir))
+                        Directory.CreateDirectory(dir);
 
-                var files = Directory.GetFiles(dir, "*.wav");
+                    var files = Directory.GetFiles(dir, "*.wav");
 
-                if (files.Length == 0)
-                    return;
+                    if (files.Length == 0)
+                        return;
 
-                List<UnityEngine.Object> loadedClips = new List<UnityEngine.Object>();
+                    List<UnityEngine.Object> loadedClips = new List<UnityEngine.Object>();
 
-                foreach (string path in files)
-                    loadedClips.Add(ResourceRedirector.AssetLoader.LoadAudioClip(path, AudioType.WAV));
+                    foreach (string path in files)
+                        loadedClips.Add(ResourceRedirector.AssetLoader.LoadAudioClip(path, AudioType.WAV));
 
-                __result = new AssetBundleLoadAssetOperationSimulation(loadedClips.ToArray());
+                    __result = new AssetBundleLoadAssetOperationSimulation(loadedClips.ToArray());
+                }
             }
         }
     }
