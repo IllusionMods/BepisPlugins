@@ -2,14 +2,13 @@
 using BepInEx.Logging;
 using ICSharpCode.SharpZipLib.Zip;
 using ResourceRedirector;
+using Shared;
 using Sideloader.AutoResolver;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using BepisPlugins;
-using Shared;
 using UnityEngine;
 using Logger = BepInEx.Logger;
 
@@ -21,7 +20,7 @@ namespace Sideloader
     public class Sideloader : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.sideloader";
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = BepisPlugins.Metadata.PluginsVersion;
 
         protected List<ZipFile> Archives = new List<ZipFile>();
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BepisPlugins
+namespace Shared
 {
     public class Lazy<T>
     {
