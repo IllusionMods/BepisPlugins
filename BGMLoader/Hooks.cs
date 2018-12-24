@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using BepInEx;
 using Harmony;
@@ -26,19 +25,21 @@ namespace BGMLoader
                     string dir = $"{Paths.PluginPath}\\introclips";
 
                     if (!Directory.Exists(dir))
+                    {
                         Directory.CreateDirectory(dir);
+                        return;
+                    }
 
                     var files = Directory.GetFiles(dir, "*.wav");
 
                     if (files.Length == 0)
                         return;
 
-                    List<UnityEngine.Object> loadedClips = new List<UnityEngine.Object>();
+                    var path = files[UnityEngine.Random.Range(0, files.Length - 1)];
 
-                    foreach (string path in files)
-                        loadedClips.Add(ResourceRedirector.AssetLoader.LoadAudioClip(path, AudioType.WAV));
-
-                    __result = new AssetBundleLoadAssetOperationSimulation(loadedClips.ToArray());
+                    var audioClip = ResourceRedirector.AssetLoader.LoadAudioClip(path, AudioType.WAV);
+                    
+                    __result = new AssetBundleLoadAssetOperationSimulation(audioClip);
                 }
             }
         }
