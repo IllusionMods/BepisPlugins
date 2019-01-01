@@ -80,7 +80,7 @@ namespace DynamicTranslationLoader.Text
             if (OriginalTranslations.All(x => x.Key.Target != obj)) //check if we don't have the object in the dictionary
                 OriginalTranslations.Add(new WeakReference(obj), input);
 
-            if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
+            if (TranslationExists(input.Trim(), out CompiledLine translation))
                 return translation.TranslatedLine;
 
             if (TryGetRegex(input, out string regexTranslation))
@@ -102,6 +102,12 @@ namespace DynamicTranslationLoader.Text
 
             return input;
         }
+
+        public static bool TranslationExists(string input, out CompiledLine translation)
+        {
+            return Translations.TryGetValue(input, out translation);
+        }
+
         /// <summary>
         /// Alternate, simpler text translation. Typically used for Unity GUIs in plugins.
         /// Will not paste to clipboard, maintain untranslated/original text lists, or allow autotranslator hooking.
@@ -111,7 +117,7 @@ namespace DynamicTranslationLoader.Text
         {
             if (string.IsNullOrEmpty(input))
                 return input;
-            if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
+            if (TranslationExists(input.Trim(), out CompiledLine translation))
                 return translation.TranslatedLine;
             if (Input.GetKey(KeyCode.KeypadPeriod) && TryGetRegex(input, out string regexTranslation))
                     return regexTranslation;

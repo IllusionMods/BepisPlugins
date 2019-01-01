@@ -5,6 +5,8 @@ using Harmony;
 using TMPro;
 using Logger = BepInEx.Logger;
 using UnityEngine;
+using System.Collections.Generic;
+using TARC.Compiler;
 
 namespace DynamicTranslationLoader.Text
 {
@@ -374,6 +376,42 @@ namespace DynamicTranslationLoader.Text
         #endregion
 
         #region Text break hooks
+
+        //Replicate vanilla linebreak handling in the event that an untranslated ADV line is found.
+        private static readonly char[] HYP_LATIN = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>=/().,".ToCharArray();
+        private static readonly char[] HYP_BACK = "(（[｛〔〈《「『【〘〖〝‘“｟«".ToCharArray();
+        private static readonly char[] HYP_FRONT = ",)]｝、。）〕〉》」』】〙〗〟’”｠»ァィゥェォッャュョヮヵヶっぁぃぅぇぉっゃゅょゎ‐゠–〜ー?!！？‼⁇⁈⁉・:;。.".ToCharArray();
+
+        private static bool IsLatin(char s) => HYP_LATIN.Contains(s);
+        private static bool CHECK_HYP_BACK(char s) => HYP_BACK.Contains(s);
+        private static bool CHECK_HYP_FRONT(char s) => HYP_BACK.Contains(s);
+
+        [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "GetWordList")]
+        public static bool GetWordList(string tmpText, ref List<string> __result)
+        {
+            if (!TextTranslator.TranslationExists(tmpText, out CompiledLine cl))
+            {
+                List<string> list = new List<string>();
+                StringBuilder stringBuilder = new StringBuilder();
+                char c = '\0';
+                for (int i = 0; i < tmpText.Length; i++)
+                {
+                    char c2 = tmpText[i];
+                    char s = (i >= tmpText.Length - 1) ? c : tmpText[i + 1];
+                    char s2 = (i <= 0) ? c : tmpText[i - 1];
+                    stringBuilder.Append(c2);
+                    if ((IsLatin(c2) && IsLatin(s2) && IsLatin(c2) && !IsLatin(s2)) || (!IsLatin(c2) && CHECK_HYP_BACK(s2)) || (!IsLatin(s) && !CHECK_HYP_FRONT(s) && !CHECK_HYP_BACK(c2)) || i == tmpText.Length - 1)
+                    {
+                        list.Add(stringBuilder.ToString());
+                        stringBuilder = new StringBuilder();
+                    }
+                }
+                __result = list;
+                return false;
+            }
+            return true;
+        }
+
         [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "IsLatin")]
         public static bool UpdateText(ref bool __result, ref char s)
         {
