@@ -1,11 +1,11 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
+using BepisPlugins;
+using DynamicTranslationLoader.Image;
+using DynamicTranslationLoader.Text;
 using System;
 using System.ComponentModel;
 using System.IO;
-using BepisPlugins;
-using BepInEx.Logging;
-using DynamicTranslationLoader.Image;
-using DynamicTranslationLoader.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Logger = BepInEx.Logger;
@@ -20,6 +20,8 @@ namespace DynamicTranslationLoader
 
         public static event Func<object, string, string> OnUnableToTranslateUGUI;
         public static event Func<object, string, string> OnUnableToTranslateTextMeshPro;
+
+        public static string dirTranslation = Path.Combine(Paths.PluginPath, "translation");
 
         // Settings
         public static SavedKeyboardShortcut ReloadTranslations { get; set; }
@@ -47,14 +49,14 @@ namespace DynamicTranslationLoader
 
         public void Awake()
         {
-            var dirTranslation = Path.Combine(Paths.PluginPath, "translation");
             SetupTextTl(dirTranslation);
             SetupImageTl(dirTranslation);
         }
-        
+
         public void Update()
         {
-            if (Event.current == null) return;
+            if (Event.current == null)
+                return;
             if (ReloadTranslations.IsDown())
             {
                 TextTranslator.RetranslateText();
@@ -67,15 +69,15 @@ namespace DynamicTranslationLoader
             }
         }
 
-	    public void OnEnable()
-	    {
-		    SceneManager.sceneLoaded += TextTranslator.TranslateScene;
-	    }
-		
-	    public void OnDisable()
-	    {
-		    SceneManager.sceneLoaded -= TextTranslator.TranslateScene;
-	    }
+        public void OnEnable()
+        {
+            SceneManager.sceneLoaded += TextTranslator.TranslateScene;
+        }
+
+        public void OnDisable()
+        {
+            SceneManager.sceneLoaded -= TextTranslator.TranslateScene;
+        }
 
         private static void SetupTextTl(string dirTranslation)
         {
@@ -91,7 +93,7 @@ namespace DynamicTranslationLoader
         private static void SetupImageTl(string dirTranslation)
         {
             ImageTranslator.LoadImageTranslations(dirTranslation);
-            
+
             ImageHooks.InstallHooks();
         }
 
