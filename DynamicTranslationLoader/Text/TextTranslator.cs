@@ -463,5 +463,27 @@ namespace DynamicTranslationLoader.Text
             result = null;
             return false;
         }
+
+        public static string TranslateListText(string assetBundleFolder, string assetName, ref string listText)
+        {
+            string TextFilePath = Path.Combine(DynamicTranslator.dirTranslation, assetBundleFolder).Replace('/', '\\');
+
+            foreach (string txtPath in Directory.GetFiles(TextFilePath, "*.txt", SearchOption.AllDirectories).Where(x => x.Contains(assetName)))
+            {
+                string TranslationPath = TextFilePath.Remove(TextFilePath.LastIndexOf('\\'));
+                string[] Rows = listText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                for (int i = 0; i < Rows.Count(); i++)
+                {
+                    string[] Cells = Rows[i].Split('\t');
+                    for (int j = 0; j < Cells.Count(); j++)
+                    {
+                        Cells[j] = TranslateTextFromFolder(Cells[j], TranslationPath);
+                    }
+                    Rows[i] = string.Join("\t", Cells);
+                }
+                listText = string.Join(Environment.NewLine, Rows);
+            }
+            return listText;
+        }
     }
 }

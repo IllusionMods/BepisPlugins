@@ -1,12 +1,12 @@
-﻿using System.Linq;
-using System.Text;
-using BepInEx.Logging;
+﻿using BepInEx.Logging;
 using Harmony;
-using TMPro;
-using Logger = BepInEx.Logger;
-using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using TARC.Compiler;
+using TMPro;
+using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace DynamicTranslationLoader.Text
 {
@@ -429,5 +429,12 @@ namespace DynamicTranslationLoader.Text
             __result = string.Join("\n", __result.Split('\n').Select(x => x.Trim()).ToArray());
         }
         #endregion
+
+        [HarmonyPostfix, HarmonyPatch(typeof(GlobalMethod), nameof(GlobalMethod.LoadAllListText))]
+        public static void LoadAllListText(string _assetbundleFolder, string _strLoadFile, ref string __result)
+        {
+            if (!_strLoadFile.IsNullOrEmpty() && !__result.IsNullOrEmpty())
+                __result= TextTranslator.TranslateListText(_assetbundleFolder, _strLoadFile,ref __result);
+        }
     }
 }
