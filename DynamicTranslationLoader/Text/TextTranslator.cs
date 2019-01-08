@@ -464,16 +464,15 @@ namespace DynamicTranslationLoader.Text
             return false;
         }
 
-        public static string TranslateListText(string assetBundleFolder, string assetName, ref string listText)
+        public static string TranslateListText(string assetBundleName, string assetName, string textAssetContents)
         {
-            string TextFilePath = Path.Combine(DynamicTranslator.dirTranslation, assetBundleFolder).Replace('/', '\\');
+            string TranslationPath = Path.Combine(DynamicTranslator.dirTranslation, Path.Combine(assetBundleName, assetName)).Replace('/', '\\').Replace(".unity3d", "");
 
-            if (Directory.Exists(TextFilePath))
+            if (Directory.Exists(TranslationPath))
             {
-                foreach (string txtPath in Directory.GetFiles(TextFilePath, "*.txt", SearchOption.AllDirectories).Where(x => x.Contains(assetName)))
+                foreach (string txtPath in Directory.GetFiles(TranslationPath, "*.txt", SearchOption.AllDirectories).Where(x => x.Contains(assetName)))
                 {
-                    string TranslationPath = TextFilePath.Remove(TextFilePath.LastIndexOf('\\'));
-                    string[] Rows = listText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                    string[] Rows = textAssetContents.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
                     for (int i = 0; i < Rows.Count(); i++)
                     {
                         string[] Cells = Rows[i].Split('\t');
@@ -483,10 +482,11 @@ namespace DynamicTranslationLoader.Text
                         }
                         Rows[i] = string.Join("\t", Cells);
                     }
-                    listText = string.Join(Environment.NewLine, Rows);
+                    textAssetContents = string.Join(Environment.NewLine, Rows);
                 }
             }
-            return listText;
+
+            return textAssetContents;
         }
     }
 }

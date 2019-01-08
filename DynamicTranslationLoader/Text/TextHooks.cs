@@ -1,7 +1,9 @@
 ﻿using BepInEx.Logging;
 using Harmony;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using TARC.Compiler;
 using TMPro;
@@ -430,11 +432,57 @@ namespace DynamicTranslationLoader.Text
         }
         #endregion
 
-        [HarmonyPostfix, HarmonyPatch(typeof(GlobalMethod), nameof(GlobalMethod.LoadAllListText))]
-        public static void LoadAllListText(string _assetbundleFolder, string _strLoadFile, ref string __result)
+        [HarmonyTranspiler, HarmonyPatch(typeof(GlobalMethod), nameof(GlobalMethod.LoadAllListText))]
+        public static IEnumerable<CodeInstruction> LoadAllListTextTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (!_strLoadFile.IsNullOrEmpty() && !__result.IsNullOrEmpty())
-                __result= TextTranslator.TranslateListText(_assetbundleFolder, _strLoadFile,ref __result);
+            List<CodeInstruction> newInstructionSet = new List<CodeInstruction>(instructions);
+
+            int InstructionIndex = newInstructionSet.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && instruction.operand == typeof(TextAsset).GetMethod("get_text"));
+
+            //Find the Ldloc_0 OpCode
+            int StartIndex = 0;
+            for (int i = 0; i < InstructionIndex; i++)
+            {
+                if (newInstructionSet[InstructionIndex - i].opcode == OpCodes.Ldloc_0)
+                {
+                    StartIndex = InstructionIndex - i;
+                    break;
+                }
+            }
+            // +1 because we don't want to remove it
+            StartIndex++;
+
+            //Find the Pop OpCode
+            int EndIndex = 0;
+            for (int i = 0; i < InstructionIndex; i++)
+            {
+                if (newInstructionSet[InstructionIndex + i].opcode == OpCodes.Pop)
+                {
+                    EndIndex = InstructionIndex + i;
+                    break;
+                }
+            }
+
+            //Remove everything between the Ldloc_0 and Pop opcodes
+            newInstructionSet.RemoveRange(StartIndex, EndIndex - StartIndex);
+
+            //Add new instructions which contain a call to the TranslateListText function
+            var textAssetOperand = newInstructionSet.Where(x => x.operand != null && x.operand.ToString().StartsWith("UnityEngine.TextAsset (")).Select(x => x.operand).FirstOrDefault();
+            List<CodeInstruction> newInstructionSetAdd = new List<CodeInstruction>
+            {
+                new CodeInstruction(OpCodes.Ldloc_1),
+                new CodeInstruction(OpCodes.Ldloc_2),
+                new CodeInstruction(OpCodes.Callvirt, typeof(List<string>).GetMethod("get_Item")),
+                new CodeInstruction(OpCodes.Ldarg_1),
+                new CodeInstruction(OpCodes.Ldloc_S, textAssetOperand),
+                new CodeInstruction(OpCodes.Callvirt, typeof(TextAsset).GetMethod("get_text")),
+                new CodeInstruction(OpCodes.Call, typeof(TextTranslator).GetMethod(nameof(TextTranslator.TranslateListText))),
+                new CodeInstruction(OpCodes.Callvirt, typeof(StringBuilder).GetMethod(nameof(StringBuilder.Append), AccessTools.all, null, new Type[] { typeof(string) }, null))
+            };
+
+            newInstructionSet.InsertRange(StartIndex, newInstructionSetAdd);
+
+            return newInstructionSet;
         }
     }
 }
