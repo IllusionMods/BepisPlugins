@@ -383,15 +383,23 @@ namespace DynamicTranslationLoader.Text
         private static readonly char[] HYP_LATIN = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>=/().,".ToCharArray();
         private static readonly char[] HYP_BACK = "(（[｛〔〈《「『【〘〖〝‘“｟«".ToCharArray();
         private static readonly char[] HYP_FRONT = ",)]｝、。）〕〉》」』】〙〗〟’”｠»ァィゥェォッャュョヮヵヶっぁぃぅぇぉっゃゅょゎ‐゠–〜ー?!！？‼⁇⁈⁉・:;。.".ToCharArray();
+        private static HashSet<char> JPChars = new HashSet<char>("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわんアイウエカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン");
 
         private static bool IsLatin(char s) => HYP_LATIN.Contains(s);
         private static bool CHECK_HYP_BACK(char s) => HYP_BACK.Contains(s);
         private static bool CHECK_HYP_FRONT(char s) => HYP_BACK.Contains(s);
+        public static bool IsJapanese (string text)
+        {
+            for (int i = 0; i < text.Length; i++)
+                if (JPChars.Contains(text[i]))
+                    return true;
+            return false;
+        }
 
         [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "GetWordList")]
         public static bool GetWordList(string tmpText, ref List<string> __result)
         {
-            if (!TextTranslator.TranslationExists(tmpText, out CompiledLine cl))
+            if (IsJapanese(tmpText))
             {
                 List<string> list = new List<string>();
                 StringBuilder stringBuilder = new StringBuilder();
