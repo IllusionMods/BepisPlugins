@@ -378,9 +378,14 @@ namespace DynamicTranslationLoader.Text
         #endregion
 
         #region Text break hooks
-
+        private static readonly char[] HYP_LATIN = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>=/().,".ToCharArray();
+        private static readonly char[] HYP_BACK = "(（[｛〔〈《「『【〘〖〝‘“｟«".ToCharArray();
+        private static readonly char[] HYP_FRONT = ",)]｝、。）〕〉》」』】〙〗〟’”｠»ァィゥェォッャュョヮヵヶっぁぃぅぇぉっゃゅょゎ‐゠–〜ー?!！？‼⁇⁈⁉・:;。.".ToCharArray();
         private static HashSet<char> JPChars = new HashSet<char>("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわんアイウエカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン");
 
+        private static bool IsLatin(char s) => HYP_LATIN.Contains(s);
+        private static bool CHECK_HYP_BACK(char s) => HYP_BACK.Contains(s);
+        private static bool CHECK_HYP_FRONT(char s) => HYP_BACK.Contains(s);
         public static bool IsJapanese(string text)
         {
             for (int i = 0; i < text.Length; i++)
@@ -389,6 +394,32 @@ namespace DynamicTranslationLoader.Text
             return false;
         }
 
+        //Replicate vanilla linebreak handling in the event that an untranslated ADV line is found.
+        [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "GetWordList")]
+        public static bool GetWordList(string tmpText, ref List<string> __result)
+        {
+            if (IsJapanese(tmpText))
+            {
+                List<string> list = new List<string>();
+                StringBuilder stringBuilder = new StringBuilder();
+                char c = '\0';
+                for (int i = 0; i < tmpText.Length; i++)
+                {
+                    char c2 = tmpText[i];
+                    char s = (i >= tmpText.Length - 1) ? c : tmpText[i + 1];
+                    char s2 = (i <= 0) ? c : tmpText[i - 1];
+                    stringBuilder.Append(c2);
+                    if ((IsLatin(c2) && IsLatin(s2) && IsLatin(c2) && !IsLatin(s2)) || (!IsLatin(c2) && CHECK_HYP_BACK(s2)) || (!IsLatin(s) && !CHECK_HYP_FRONT(s) && !CHECK_HYP_BACK(c2)) || i == tmpText.Length - 1)
+                    {
+                        list.Add(stringBuilder.ToString());
+                        stringBuilder = new StringBuilder();
+                    }
+                }
+                __result = list;
+                return false;
+            }
+            return true;
+        }
 
         [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "IsLatin")]
         public static bool UpdateText(ref bool __result, ref char s)
@@ -397,10 +428,18 @@ namespace DynamicTranslationLoader.Text
             __result = s != ' ';
             return false;
         }
+
         [HarmonyPostfix, HarmonyPatch(typeof(HyphenationJpn), "GetFormatedText")]
         public static void GetFormatedText(ref string __result, HyphenationJpn __instance)
         {
-            if (!IsJapanese(__result))
+            if (IsJapanese(__result))
+            {
+                // When the width of the text is greater than its container, a space is inserted.
+                // This can throw off our formatting, so we remove all occurrences of it.
+                __result = __result.Replace("\u3000", "");
+                __result = string.Join("\n", __result.Split('\n').Select(x => x.Trim()).ToArray());
+            }
+            else
             {
                 //Split lines and remove and spaces at the start/end of lines
                 var lines = __result.Split('\n').Select(x => x.Trim()).ToArray();
