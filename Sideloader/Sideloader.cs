@@ -29,7 +29,15 @@ namespace Sideloader
         protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
         protected static HashSet<string> PngFolderList = new HashSet<string>();
         protected static HashSet<string> PngFolderOnlyList = new HashSet<string>();
-
+        
+        /// <summary>
+        /// Check if a mod with specified GUID has been loaded
+        /// </summary>
+        public bool IsModLoaded(string guid)
+        {
+            if (guid == null) return false;
+            return LoadedManifests.Any(x => x.GUID == guid);
+        }
 
         public Sideloader()
         {
