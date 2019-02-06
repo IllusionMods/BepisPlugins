@@ -1,10 +1,14 @@
-﻿using System.Linq;
-using System.Text;
-using BepInEx.Logging;
+﻿using BepInEx.Logging;
 using Harmony;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
+using System.Text;
+using TARC.Compiler;
 using TMPro;
-using Logger = BepInEx.Logger;
 using UnityEngine;
+using Logger = BepInEx.Logger;
 
 namespace DynamicTranslationLoader.Text
 {
@@ -374,22 +378,159 @@ namespace DynamicTranslationLoader.Text
         #endregion
 
         #region Text break hooks
+        private static readonly char[] HYP_LATIN = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>=/().,".ToCharArray();
+        private static readonly char[] HYP_BACK = "(（[｛〔〈《「『【〘〖〝‘“｟«".ToCharArray();
+        private static readonly char[] HYP_FRONT = ",)]｝、。）〕〉》」』】〙〗〟’”｠»ァィゥェォッャュョヮヵヶっぁぃぅぇぉっゃゅょゎ‐゠–〜ー?!！？‼⁇⁈⁉・:;。.".ToCharArray();
+        private static HashSet<char> JPChars = new HashSet<char>("あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわんアイウエカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン");
+
+        private static bool IsLatin(char s) => HYP_LATIN.Contains(s);
+        private static bool CHECK_HYP_BACK(char s) => HYP_BACK.Contains(s);
+        private static bool CHECK_HYP_FRONT(char s) => HYP_BACK.Contains(s);
+        public static bool IsJapanese(string text)
+        {
+            for (int i = 0; i < text.Length; i++)
+                if (JPChars.Contains(text[i]))
+                    return true;
+            return false;
+        }
+
+        //Replicate vanilla linebreak handling in the event that an untranslated ADV line is found.
+        [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "GetWordList")]
+        public static bool GetWordList(string tmpText, ref List<string> __result)
+        {
+            if (IsJapanese(tmpText))
+            {
+                List<string> list = new List<string>();
+                StringBuilder stringBuilder = new StringBuilder();
+                char c = '\0';
+                for (int i = 0; i < tmpText.Length; i++)
+                {
+                    char c2 = tmpText[i];
+                    char s = (i >= tmpText.Length - 1) ? c : tmpText[i + 1];
+                    char s2 = (i <= 0) ? c : tmpText[i - 1];
+                    stringBuilder.Append(c2);
+                    if ((IsLatin(c2) && IsLatin(s2) && IsLatin(c2) && !IsLatin(s2)) || (!IsLatin(c2) && CHECK_HYP_BACK(s2)) || (!IsLatin(s) && !CHECK_HYP_FRONT(s) && !CHECK_HYP_BACK(c2)) || i == tmpText.Length - 1)
+                    {
+                        list.Add(stringBuilder.ToString());
+                        stringBuilder = new StringBuilder();
+                    }
+                }
+                __result = list;
+                return false;
+            }
+            return true;
+        }
+
         [HarmonyPrefix, HarmonyPatch(typeof(HyphenationJpn), "IsLatin")]
         public static bool UpdateText(ref bool __result, ref char s)
         {
-            // Break only on space?
+            // Break only on space
             __result = s != ' ';
             return false;
         }
-        [HarmonyPostfix, HarmonyPatch(typeof(HyphenationJpn), "GetFormatedText")]
-        public static void GetFormatedText(ref string __result)
-        {
-            // When the width of the text is greater than its container, a space is inserted.
-            // This can throw off our formatting, so we remove all occurrences of it.
 
-            __result = __result.Replace("\u3000", "");
-            __result = string.Join("\n", __result.Split('\n').Select(x => x.Trim()).ToArray());
+        [HarmonyPostfix, HarmonyPatch(typeof(HyphenationJpn), "GetFormatedText")]
+        public static void GetFormatedText(ref string __result, HyphenationJpn __instance)
+        {
+            if (IsJapanese(__result))
+            {
+                // When the width of the text is greater than its container, a space is inserted.
+                // This can throw off our formatting, so we remove all occurrences of it.
+                __result = __result.Replace("\u3000", "");
+                __result = string.Join("\n", __result.Split('\n').Select(x => x.Trim()).ToArray());
+            }
+            else
+            {
+                //Split lines and remove and spaces at the start/end of lines
+                var lines = __result.Split('\n').Select(x => x.Trim()).ToArray();
+
+                if (lines.Count() > 3)
+                {
+                    //Text longer than 3 lines will not show up
+                    //Divide the text in to 3 roughly equal length lines
+                    __result = string.Join(" ", lines);
+                    int LengthPerLine = __result.Count() / 3;
+                    for (int i = LengthPerLine; i < __result.Count(); i++)
+                    {
+                        if (__result[i] == ' ')
+                        {
+                            StringBuilder sb = new StringBuilder(__result);
+                            sb[i] = '\n';
+                            __result = sb.ToString();
+                            break;
+                        }
+                    }
+
+                    for (int i = LengthPerLine * 2; i < __result.Count(); i++)
+                    {
+                        if (__result[i] == ' ')
+                        {
+                            StringBuilder sb = new StringBuilder(__result);
+                            sb[i] = '\n';
+                            __result = sb.ToString();
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    __result = string.Join("\n", lines);
+                }
+            }
         }
         #endregion
+
+        [HarmonyTranspiler, HarmonyPatch(typeof(GlobalMethod), nameof(GlobalMethod.LoadAllListText))]
+        public static IEnumerable<CodeInstruction> LoadAllListTextTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> newInstructionSet = new List<CodeInstruction>(instructions);
+
+            int InstructionIndex = newInstructionSet.FindIndex(instruction => instruction.opcode == OpCodes.Callvirt && instruction.operand == typeof(TextAsset).GetMethod("get_text"));
+
+            //Find the Ldloc_0 OpCode
+            int StartIndex = 0;
+            for (int i = 0; i < InstructionIndex; i++)
+            {
+                if (newInstructionSet[InstructionIndex - i].opcode == OpCodes.Ldloc_0)
+                {
+                    StartIndex = InstructionIndex - i;
+                    break;
+                }
+            }
+            // +1 because we don't want to remove it
+            StartIndex++;
+
+            //Find the Pop OpCode
+            int EndIndex = 0;
+            for (int i = 0; i < InstructionIndex; i++)
+            {
+                if (newInstructionSet[InstructionIndex + i].opcode == OpCodes.Pop)
+                {
+                    EndIndex = InstructionIndex + i;
+                    break;
+                }
+            }
+
+            //Remove everything between the Ldloc_0 and Pop opcodes
+            newInstructionSet.RemoveRange(StartIndex, EndIndex - StartIndex);
+
+            //Add new instructions which contain a call to the TranslateListText function
+            var textAssetOperand = newInstructionSet.Where(x => x.operand != null && x.operand.ToString().StartsWith("UnityEngine.TextAsset (")).Select(x => x.operand).FirstOrDefault();
+            List<CodeInstruction> newInstructionSetAdd = new List<CodeInstruction>
+            {
+                new CodeInstruction(OpCodes.Ldloc_1),
+                new CodeInstruction(OpCodes.Ldloc_2),
+                new CodeInstruction(OpCodes.Callvirt, typeof(List<string>).GetMethod("get_Item")),
+                new CodeInstruction(OpCodes.Ldarg_1),
+                new CodeInstruction(OpCodes.Ldloc_S, textAssetOperand),
+                new CodeInstruction(OpCodes.Callvirt, typeof(TextAsset).GetMethod("get_text")),
+                new CodeInstruction(OpCodes.Call, typeof(TextTranslator).GetMethod(nameof(TextTranslator.TranslateListText))),
+                new CodeInstruction(OpCodes.Callvirt, typeof(StringBuilder).GetMethod(nameof(StringBuilder.Append), AccessTools.all, null, new Type[] { typeof(string) }, null))
+            };
+
+            newInstructionSet.InsertRange(StartIndex, newInstructionSetAdd);
+
+            return newInstructionSet;
+        }
     }
 }

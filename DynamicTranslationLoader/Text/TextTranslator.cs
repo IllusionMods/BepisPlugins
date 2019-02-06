@@ -1,12 +1,12 @@
-﻿using System;
+﻿using ADV;
+using BepInEx;
+using BepInEx.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using ADV;
-using BepInEx;
-using BepInEx.Logging;
 using TARC.Compiler;
 using TMPro;
 using UnityEngine;
@@ -22,11 +22,12 @@ namespace DynamicTranslationLoader.Text
         private static readonly Dictionary<string, CompiledLine> Translations = new Dictionary<string, CompiledLine>();
         private static readonly Dictionary<Regex, CompiledLine> regexTranslations = new Dictionary<Regex, CompiledLine>();
 
+        private static string CurrentFolder;
+        private static readonly Dictionary<string, CompiledLine> FolderTranslations = new Dictionary<string, CompiledLine>();
+        private static readonly Dictionary<Regex, CompiledLine> regexFolderTranslations = new Dictionary<Regex, CompiledLine>();
+
         private static readonly Dictionary<WeakReference, string> OriginalTranslations = new Dictionary<WeakReference, string>();
         private static readonly HashSet<string> Untranslated = new HashSet<string>();
-
-        private static readonly string ScenarioDir = Path.Combine(Paths.PluginPath, @"translation\scenario");
-        private static readonly string CommunicationDir = Path.Combine(Paths.PluginPath, @"translation\communication");
 
         private static readonly string CurrentExe = Paths.ProcessName;
 
@@ -50,12 +51,11 @@ namespace DynamicTranslationLoader.Text
                 Logger.Log(LogLevel.Error | LogLevel.Message, "Unable to load translations from text!");
                 Logger.Log(LogLevel.Error, ex);
             }
-
         }
 
-        private static bool TryGetRegex(string input, out string line)
+        private static bool TryGetRegex(string input, out string line, bool FolderTranslation = false)
         {
-            foreach (var kv in regexTranslations)
+            foreach (var kv in FolderTranslation ? regexFolderTranslations : regexTranslations)
             {
                 Match match = kv.Key.Match(input);
                 if (!match.Success)
@@ -89,12 +89,14 @@ namespace DynamicTranslationLoader.Text
             if (obj is UnityEngine.UI.Text)
             {
                 var immediatelyTranslated = DynamicTranslator.OnOnUnableToTranslateUgui(obj, input);
-                if (immediatelyTranslated != null) return immediatelyTranslated;
+                if (immediatelyTranslated != null)
+                    return immediatelyTranslated;
             }
             else if (obj is TMP_Text)
             {
                 var immediatelyTranslated = DynamicTranslator.OnOnUnableToTranslateTextMeshPro(obj, input);
-                if (immediatelyTranslated != null) return immediatelyTranslated;
+                if (immediatelyTranslated != null)
+                    return immediatelyTranslated;
             }
 
             if (!Untranslated.Contains(input))
@@ -102,6 +104,7 @@ namespace DynamicTranslationLoader.Text
 
             return input;
         }
+
         /// <summary>
         /// Alternate, simpler text translation. Typically used for Unity GUIs in plugins.
         /// Will not paste to clipboard, maintain untranslated/original text lists, or allow autotranslator hooking.
@@ -114,9 +117,41 @@ namespace DynamicTranslationLoader.Text
             if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
                 return translation.TranslatedLine;
             if (Input.GetKey(KeyCode.KeypadPeriod) && TryGetRegex(input, out string regexTranslation))
-                    return regexTranslation;
+                return regexTranslation;
             return input;
         }
+        /// <summary>
+        /// Translate the input string from any .txt translation files in the specified folder
+        /// </summary>
+        /// <param name="input">String to translate</param>
+        /// <param name="folder">Folder that contains the translation .txt files</param>
+        /// <returns></returns>
+        public static string TranslateTextFromFolder(string input, string folder)
+        {
+            if (CurrentFolder != folder)
+            {
+                LoadTranslationsFromFolder(folder);
+                CurrentFolder = folder;
+            }
+
+            if (DynamicTranslator.IsPastingToClipboard.Value)
+                GUIUtility.systemCopyBuffer = input;
+
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            if (FolderTranslations.TryGetValue(input.Trim(), out CompiledLine translation))
+                return translation.TranslatedLine;
+
+            if (TryGetRegex(input, out string regexTranslation))
+                return regexTranslation;
+
+            if (!Untranslated.Contains(input))
+                Untranslated.Add(input);
+
+            return input;
+        }
+
 
         public static void TranslateTextAll()
         {
@@ -136,7 +171,8 @@ namespace DynamicTranslationLoader.Text
 
             foreach (var kv in OriginalTranslations)
             {
-                if (!kv.Key.IsAlive) continue;
+                if (!kv.Key.IsAlive)
+                    continue;
 
                 aliveCount++;
 
@@ -195,8 +231,40 @@ namespace DynamicTranslationLoader.Text
                     }
                 }
 
-
             Logger.Log(LogLevel.Debug, $"Filtered {Translations.Count} / {TLArchives.Sum(x => x.Sections.Sum(y => y.Lines.Count))} lines");
+        }
+
+        private static void LoadTranslationsFromFolder(string FolderPath)
+        {
+            Logger.Log(LogLevel.Debug, $"Loading translations from {FolderPath}");
+            FolderTranslations.Clear();
+            regexFolderTranslations.Clear();
+
+            if (Directory.Exists(FolderPath))
+            {
+                try
+                {
+                    var arc = new MarkupCompiler().CompileArchive(FolderPath);
+
+                    foreach (Section section in arc.Sections)
+                    {
+                        foreach (var line in section.Lines)
+                        {
+                            if (line.Flags.IsOriginalRegex)
+                                regexFolderTranslations[new Regex(line.OriginalLine)] = line;
+                            else
+                                FolderTranslations[line.OriginalLine] = line;
+                        }
+                    }
+
+                    Logger.Log(LogLevel.Debug, $"Loaded {FolderTranslations.Count} lines from text");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error | LogLevel.Message, "Unable to load translations from text!");
+                    Logger.Log(LogLevel.Error, ex);
+                }
+            }
         }
 
         public static void TranslateScene(Scene scene, LoadSceneMode loadMode)
@@ -301,35 +369,49 @@ namespace DynamicTranslationLoader.Text
                 yield return row;
         }
 
-        public static bool RedirectHook(string assetBundleName, string assetName, Type type,
-            string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
+        public static bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
         {
+            string TranslationPath = Path.Combine(DynamicTranslator.dirTranslation, Path.Combine(assetBundleName, assetName)).Replace('/', '\\').Replace(".unity3d", "");
+
             if (type == typeof(ScenarioData))
             {
-                var scenarioPath = Path.Combine(ScenarioDir, Path.Combine(assetBundleName, $"{assetName}.csv"))
-                    .Replace('/', '\\')
-                    .Replace(".unity3d", "")
-                    .Replace(@"adv\scenario\", "");
-
-                if (File.Exists(scenarioPath))
+                if (Directory.Exists(TranslationPath) || File.Exists(TranslationPath + ".csv"))
                 {
                     var rawData = ManualLoadAsset<ScenarioData>(assetBundleName, assetName, manifestAssetBundleName);
 
-                    rawData.list.Clear();
-
-                    foreach (var line in SplitAndEscape(File.ReadAllText(scenarioPath, Encoding.UTF8)))
+                    //Clear the data and load the new data from the .csv, if there is one.
+                    if (File.Exists(TranslationPath + ".csv"))
                     {
-                        var data = line.ToArray();
+                        rawData.list.Clear();
 
-                        var args = new string[data.Length - 4];
+                        foreach (var line in SplitAndEscape(File.ReadAllText(TranslationPath + ".csv", Encoding.UTF8)))
+                        {
+                            var data = line.ToArray();
+                            var args = new string[data.Length - 4];
 
-                        Array.Copy(data, 4, args, 0, args.Length);
+                            Array.Copy(data, 4, args, 0, args.Length);
 
-                        var param = new ScenarioData.Param(bool.Parse(data[3]), (Command)int.Parse(data[2]), args);
+                            var param = new ScenarioData.Param(bool.Parse(data[3]), (Command)int.Parse(data[2]), args);
 
-                        param.SetHash(int.Parse(data[0]));
+                            param.SetHash(int.Parse(data[0]));
 
-                        rawData.list.Add(param);
+                            rawData.list.Add(param);
+                        }
+                    }
+
+                    //Read any .txt translations and substitute translated text
+                    if (Directory.Exists(TranslationPath))
+                    {
+                        foreach (var param in rawData.list)
+                        {
+                            if (param.Command == Command.Text)
+                            {
+                                for (int i = 0; i < param.Args.Count(); i++)
+                                {
+                                    param.Args[i] = TranslateTextFromFolder(param.Args[i], TranslationPath);
+                                }
+                            }
+                        }
                     }
 
                     result = new AssetBundleLoadAssetOperationSimulation(rawData);
@@ -338,27 +420,35 @@ namespace DynamicTranslationLoader.Text
             }
             else if (type == typeof(ExcelData))
             {
-                var communicationPath = Path.Combine(CommunicationDir,
-                        Path.Combine(assetBundleName.Replace("communication/", ""), $"{assetName}.csv"))
-                    .Replace('/', '\\')
-                    .Replace(".unity3d", "");
-
-                if (File.Exists(communicationPath))
+                if (Directory.Exists(TranslationPath) || File.Exists(TranslationPath + ".csv"))
                 {
                     var rawData = ManualLoadAsset<ExcelData>(assetBundleName, assetName, manifestAssetBundleName);
 
-                    rawData.list.Clear();
-
-                    foreach (var line in SplitAndEscape(File.ReadAllText(communicationPath, Encoding.UTF8)))
+                    //Clear the data and load the new data from the .csv, if there is one.
+                    if (File.Exists(TranslationPath + ".csv"))
                     {
-                        var list = line.ToList();
+                        rawData.list.Clear();
 
-                        var param = new ExcelData.Param
+                        foreach (var line in SplitAndEscape(File.ReadAllText(TranslationPath + ".csv", Encoding.UTF8)))
                         {
-                            list = list
-                        };
+                            var list = line.ToList();
+                            var param = new ExcelData.Param();
+                            param.list = list;
 
-                        rawData.list.Add(param);
+                            rawData.list.Add(param);
+                        }
+                    }
+
+                    //Read any .txt translations and substitute translated text
+                    if (Directory.Exists(TranslationPath))
+                    {
+                        foreach (var param in rawData.list)
+                        {
+                            for (int i = 0; i < param.list.Count; i++)
+                            {
+                                param.list[i] = TranslateTextFromFolder(param.list[i], TranslationPath);
+                            }
+                        }
                     }
 
                     result = new AssetBundleLoadAssetOperationSimulation(rawData);
@@ -368,6 +458,31 @@ namespace DynamicTranslationLoader.Text
 
             result = null;
             return false;
+        }
+
+        public static string TranslateListText(string assetBundleName, string assetName, string textAssetContents)
+        {
+            string TranslationPath = Path.Combine(DynamicTranslator.dirTranslation, Path.Combine(assetBundleName, assetName)).Replace('/', '\\').Replace(".unity3d", "");
+
+            if (Directory.Exists(TranslationPath))
+            {
+                foreach (string txtPath in Directory.GetFiles(TranslationPath, "*.txt", SearchOption.AllDirectories).Where(x => x.Contains(assetName)))
+                {
+                    string[] Rows = textAssetContents.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+                    for (int i = 0; i < Rows.Count(); i++)
+                    {
+                        string[] Cells = Rows[i].Split('\t');
+                        for (int j = 0; j < Cells.Count(); j++)
+                        {
+                            Cells[j] = TranslateTextFromFolder(Cells[j], TranslationPath);
+                        }
+                        Rows[i] = string.Join("\t", Cells);
+                    }
+                    textAssetContents = string.Join(Environment.NewLine, Rows);
+                }
+            }
+
+            return textAssetContents;
         }
     }
 }
