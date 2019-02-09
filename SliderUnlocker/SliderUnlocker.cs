@@ -7,22 +7,41 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using BepisPlugins;
-using BepInEx.Logging;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace SliderUnlocker
 {
-    [BepInPlugin(GUID: GUID, Name: "Slider Unlocker", Version: Version)]
+    [BepInPlugin(GUID, "Slider Unlocker", Version)]
     public class SliderUnlocker : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.sliderunlocker";
-        public const string Version = Metadata.PluginsVersion;
+        internal const string Version = Metadata.PluginsVersion;
+
+        private readonly List<Target> _targets = new List<Target>();
 
         protected void Awake()
         {
             Hooks.InstallHooks();
+
+            foreach (var type in typeof(CvsAccessory).Assembly.GetTypes())
+            {
+                if (type.Name.StartsWith("Cvs", StringComparison.OrdinalIgnoreCase) &&
+                    type != typeof(CvsDrawCtrl) &&
+                    type != typeof(CvsColor))
+                {
+                    var fields = type.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                    var inputFields = fields.Where(x => typeof(TMP_InputField).IsAssignableFrom(x.FieldType)).ToList();
+                    if (inputFields.Count == 0) continue;
+
+                    var sliders = fields.Where(x => typeof(Slider).IsAssignableFrom(x.FieldType)).ToList();
+                    if (sliders.Count == 0) continue;
+
+                    _targets.Add(new Target(type, inputFields, sliders));
+                }
+            }
         }
 
         private void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
@@ -30,55 +49,45 @@ namespace SliderUnlocker
             SetAllSliders(scene, Minimum.Value / 100f, Maximum.Value / 100f);
         }
 
-        public void SetAllSliders(Scene scene, float minimum, float maximum)
+        private void SetAllSliders(Scene scene, float minimum, float maximum)
         {
-            List<object> cvsInstances = new List<object>();
-
-            Assembly illusion = typeof(CvsAccessory).Assembly;
-
+            var possibleDigitCountIncludingMinus = Math.Max(
+                Minimum.Value.ToString(CultureInfo.InvariantCulture).Length, 
+                Maximum.Value.ToString(CultureInfo.InvariantCulture).Length);
+            
             var sceneObjects = scene.GetRootGameObjects();
 
-            foreach (Type type in illusion.GetTypes())
+            foreach (var target in _targets)
             {
-                if (type.Name.ToUpper().StartsWith("CVS") &&
-                    type != typeof(CvsDrawCtrl) &&
-                    type != typeof(CvsColor))
+                var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type));
+
+                foreach (var cvs in cvsInstances)
                 {
-                    foreach (var obj in sceneObjects)
-                    {
-                        cvsInstances.AddRange(obj.GetComponentsInChildren(type));
-                    }
-                }
-            }
-
-            foreach (object cvs in cvsInstances)
-            {
-                if (cvs == null)
-                    continue;
-
-                var fields = cvs.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-                foreach (var x in fields)
-                {
-                    var slider = x.GetValue(cvs) as Slider;
-                    if (slider != null)
-                    {
-                        // Has issues
-                        if (x.Name == "sldWaistLowW")
-                            continue;
-
-                        slider.minValue = minimum;
-                        slider.maxValue = maximum;
-                    }
-                }
-
-                var possibleDigitCountIncludingMinus = Math.Max(Minimum.Value.ToString(CultureInfo.InvariantCulture).Length, Maximum.Value.ToString(CultureInfo.InvariantCulture).Length);
-                foreach (TMP_InputField inputField in fields.Where(x => typeof(TMP_InputField).IsAssignableFrom(x.FieldType)).Select(x => x.GetValue(cvs)))
-                {
-                    if (inputField == null)
+                    if (cvs == null)
                         continue;
+                    
+                    foreach (var x in target.Sliders)
+                    {
+                        var slider = (Slider) x.GetValue(cvs);
+                        if (slider != null)
+                        {
+                            // Has issues
+                            if (x.Name == "sldWaistLowW")
+                                continue;
 
-                    inputField.characterLimit = possibleDigitCountIncludingMinus;
+                            slider.minValue = minimum;
+                            slider.maxValue = maximum;
+                        }
+                    }
+
+                    foreach (var x in target.Fields)
+                    {
+                        var inputField = (TMP_InputField) x.GetValue(cvs);
+                        if (inputField != null)
+                        {
+                            inputField.characterLimit = possibleDigitCountIncludingMinus;
+                        }
+                    }
                 }
             }
         }
@@ -113,5 +122,18 @@ namespace SliderUnlocker
             Maximum = new ConfigWrapper<int>("wideslider-maximum", this, 200);
         }
         #endregion
+
+        private sealed class Target
+        {
+            public Target(Type type, List<FieldInfo> fields, List<FieldInfo> sliders)
+            {
+                Type = type;
+                Fields = fields;
+                Sliders = sliders;
+            }
+            public readonly Type Type;
+            public readonly List<FieldInfo> Fields;
+            public readonly List<FieldInfo> Sliders;
+        }
     }
 }
