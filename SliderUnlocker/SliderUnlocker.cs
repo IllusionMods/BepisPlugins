@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using BepisPlugins;
+using BepInEx.Logging;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -57,13 +58,18 @@ namespace SliderUnlocker
 
                 var fields = cvs.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-                foreach (Slider slider in fields.Where(x => typeof(Slider).IsAssignableFrom(x.FieldType)).Select(x => x.GetValue(cvs)))
+                foreach (var x in fields)
                 {
-                    if (slider == null)
-                        continue;
+                    var slider = x.GetValue(cvs) as Slider;
+                    if (slider != null)
+                    {
+                        // Has issues
+                        if (x.Name == "sldWaistLowW")
+                            continue;
 
-                    slider.minValue = minimum;
-                    slider.maxValue = maximum;
+                        slider.minValue = minimum;
+                        slider.maxValue = maximum;
+                    }
                 }
 
                 var possibleDigitCountIncludingMinus = Math.Max(Minimum.Value.ToString(CultureInfo.InvariantCulture).Length, Maximum.Value.ToString(CultureInfo.InvariantCulture).Length);
