@@ -223,7 +223,7 @@ namespace ConfigurationManager
 
         private void CalculateWindowRect()
         {
-            var size = new Vector2(Mathf.Min(Screen.width - 100, 600), Screen.height - 100);
+            var size = new Vector2(Mathf.Min(Screen.width - 100, 650), Screen.height - 100);
             var offset = new Vector2((Screen.width - size.x) / 2, (Screen.height - size.y) / 2);
             _settingWindowRect = new Rect(offset, size);
             
