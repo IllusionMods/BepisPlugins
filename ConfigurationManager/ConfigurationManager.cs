@@ -9,7 +9,6 @@ using System.Reflection;
 using BepisPlugins;
 using BepInEx;
 using ConfigurationManager.Utilities;
-using Manager;
 using BepInEx.Logging;
 using UnityEngine;
 using Logger = BepInEx.Logger;
@@ -36,25 +35,24 @@ namespace ConfigurationManager
             "OnGUI"
         };
 
+        public event EventHandler<ValueChangedEventArgs<bool>> DisplayingWindowChanged;
+        public Action KeyPressedOverride;
+
         private readonly Type _baseSettingType = typeof(ConfigWrapper<>);
         private Dictionary<Type, Action<PropSettingEntry>> _settingDrawHandlers;
 
-        private bool _displayingButton, _displayingWindow;
+        private bool _displayingWindow;
 
         private readonly SettingFieldDrawer _fieldDrawer = new SettingFieldDrawer();
         private string _modsWithoutSettings;
 
         private List<PropSettingEntry> _settings;
 
-        private Rect _settingWindowRect, _buttonRect, _screenRect;
+        private Rect _settingWindowRect, _screenRect;
         private Vector2 _settingWindowScrollPos;
 
         public static Texture2D TooltipBg;
         public static Texture2D WindowBackground;
-        public static Texture2D ButtonBackground;
-
-        private static bool _isStudio;
-        private bool noCtrlConditionDone = false;
 
         private readonly ConfigWrapper<bool> _showAdvanced;
         private readonly ConfigWrapper<bool> _showKeybinds;
@@ -65,29 +63,6 @@ namespace ConfigurationManager
             _showAdvanced = new ConfigWrapper<bool>("showAdvanced", this, false);
             _showKeybinds = new ConfigWrapper<bool>("showKeybinds", this, true);
             _showSettings = new ConfigWrapper<bool>("showSettings", this, true);
-        }
-
-        public bool DisplayingButton
-        {
-            get => _displayingButton;
-            set
-            {
-                if (_displayingButton == value) return;
-
-                _displayingButton = value;
-
-                if (_displayingButton)
-                {
-                    CalculateWindowRect();
-
-                    if (_displayingWindow)
-                        Utils.SetGameCanvasInputsEnabled(false);
-                }
-                else
-                {
-                    Utils.SetGameCanvasInputsEnabled(true);
-                }
-            }
         }
 
         public bool DisplayingWindow
@@ -105,13 +80,8 @@ namespace ConfigurationManager
                     BuildSettingList();
                 }
 
-                Utils.SetGameCanvasInputsEnabled(!_displayingWindow);
+                DisplayingWindowChanged?.Invoke(this, new ValueChangedEventArgs<bool>(value));
             }
-        }
-
-        private static bool IsConfigOpened()
-        {
-            return Scene.Instance.AddSceneName == "Config";
         }
 
         private void BuildSettingList()
@@ -256,26 +226,13 @@ namespace ConfigurationManager
             var size = new Vector2(Mathf.Min(Screen.width - 100, 600), Screen.height - 100);
             var offset = new Vector2((Screen.width - size.x) / 2, (Screen.height - size.y) / 2);
             _settingWindowRect = new Rect(offset, size);
-
-            var buttonOffsetH = Screen.width * 0.12f;
-            var buttonWidth = 215f;
-            _buttonRect = new Rect(Screen.width - buttonOffsetH - buttonWidth, Screen.height * 0.033f, buttonWidth,
-                Screen.height * 0.04f);
-
+            
             _screenRect = new Rect(0, 0, Screen.width, Screen.height);
         }
 
         protected void OnGUI()
         {
-            if (DisplayingButton)
-            {
-                GUI.Box(_buttonRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = ButtonBackground } });
-                if (GUI.Button(_buttonRect, new GUIContent("Plugin / mod settings",
-                    "Change settings of installed BepInEx plugins.")))
-                    DisplayingWindow = !DisplayingWindow;
-            }
-
-            if (DisplayingWindow && (DisplayingButton || _isStudio))
+            if (DisplayingWindow)
             {
                 if (GUI.Button(_screenRect, string.Empty, GUI.skin.box) &&
                     !_settingWindowRect.Contains(Input.mousePosition))
@@ -284,10 +241,6 @@ namespace ConfigurationManager
                 GUI.Box(_settingWindowRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = WindowBackground } });
 
                 GUILayout.Window(-68, _settingWindowRect, SettingsWindow, "Plugin / mod settings");
-            }
-            else if (DisplayingButton)
-            {
-                DrawTooltip(_screenRect);
             }
         }
 
@@ -450,8 +403,6 @@ namespace ConfigurationManager
                 {typeof(KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut}
             };
 
-            _isStudio = Application.productName == "CharaStudio";
-
             var background = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             background.SetPixel(0, 0, Color.black);
             background.Apply();
@@ -461,27 +412,16 @@ namespace ConfigurationManager
             windowBackground.SetPixel(0, 0, new Color(0.5f, 0.5f, 0.5f, 1));
             windowBackground.Apply();
             WindowBackground = windowBackground;
-
-            var buttonBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-            buttonBackground.SetPixel(0, 0, new Color(0.7f, 0.7f, 0.7f, 0.85f));
-            buttonBackground.Apply();
-            ButtonBackground = buttonBackground;
         }
 
         protected void Update()
         {
-            DisplayingButton = IsConfigOpened();
-
-            if (_isStudio && Input.GetKeyUp(KeyCode.F1) && !Scene.Instance.IsNowLoadingFade && Singleton<StudioScene>.Instance)
+            if (Input.GetKeyUp(KeyCode.F1))
             {
-                DisplayingWindow = !DisplayingWindow;
-
-                if(!noCtrlConditionDone)
-                {
-                    var oldCondition = Studio.Studio.Instance.cameraCtrl.noCtrlCondition;
-                    Studio.Studio.Instance.cameraCtrl.noCtrlCondition = () => DisplayingWindow || oldCondition();
-                    noCtrlConditionDone = true;
-                }
+                if (KeyPressedOverride != null)
+                    KeyPressedOverride();
+                else
+                    DisplayingWindow = !DisplayingWindow;
             }
         }
     }

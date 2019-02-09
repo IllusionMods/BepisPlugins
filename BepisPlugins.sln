@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BGMLoader", "BGMLoader\BGML
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageCenter", "MessageCenter\MessageCenter.csproj", "{404612B2-190B-4ADF-BA30-0C7959F99E96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationManagerKK", "ConfigurationManagerKK\ConfigurationManagerKK.csproj", "{8589072C-44CB-4F6E-92E7-D73A42C31D69}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
@@ -46,6 +48,7 @@ Global
 		Shared\Shared.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		Shared\Shared.projitems*{6fe9de86-f466-49fd-bcca-add512c8dce8}*SharedItemsImports = 4
+		Shared\Shared.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
 		Shared\Shared.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		Shared\Shared.projitems*{d56dd83d-7471-463f-b4ff-8910a335833c}*SharedItemsImports = 4
@@ -109,6 +112,10 @@ Global
 		{404612B2-190B-4ADF-BA30-0C7959F99E96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{404612B2-190B-4ADF-BA30-0C7959F99E96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{404612B2-190B-4ADF-BA30-0C7959F99E96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8589072C-44CB-4F6E-92E7-D73A42C31D69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8589072C-44CB-4F6E-92E7-D73A42C31D69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8589072C-44CB-4F6E-92E7-D73A42C31D69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8589072C-44CB-4F6E-92E7-D73A42C31D69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

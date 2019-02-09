@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
-using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace ConfigurationManager.Utilities
@@ -54,12 +53,6 @@ namespace ConfigurationManager.Utilities
                 toCheck = toCheck.BaseType;
             }
             return false;
-        }
-
-        public static void SetGameCanvasInputsEnabled(bool mouseInputEnabled)
-        {
-            foreach (var c in Object.FindObjectsOfType<GraphicRaycaster>())
-                c.enabled = mouseInputEnabled;
         }
 
         public static BaseUnityPlugin[] FindPlugins()
