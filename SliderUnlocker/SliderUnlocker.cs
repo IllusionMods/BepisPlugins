@@ -49,6 +49,11 @@ namespace SliderUnlocker
             SetAllSliders(scene, Minimum.Value / 100f, Maximum.Value / 100f);
         }
 
+        /// <summary>
+        /// Sliders that don't work or have issues outside of the 0-100 limit
+        /// </summary>
+        private static readonly string[] SliderBlacklist = { "sldWaistLowW" , "sldHairLength", "sldPitchPow" };
+
         private void SetAllSliders(Scene scene, float minimum, float maximum)
         {
             var possibleDigitCountIncludingMinus = Math.Max(
@@ -71,10 +76,9 @@ namespace SliderUnlocker
                         var slider = (Slider) x.GetValue(cvs);
                         if (slider != null)
                         {
-                            // Has issues
-                            if (x.Name == "sldWaistLowW")
+                            if (SliderBlacklist.Contains(x.Name))
                                 continue;
-
+                            
                             slider.minValue = minimum;
                             slider.maxValue = maximum;
                         }
