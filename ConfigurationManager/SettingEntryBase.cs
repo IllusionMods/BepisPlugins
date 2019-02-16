@@ -55,6 +55,10 @@ namespace ConfigurationManager
 
         public BaseUnityPlugin PluginInstance { get; private set; }
 
+        /// <summary>
+        ///     Instance of the <see cref="ConfigWrapper{T}"/> that holds this setting. 
+        ///     Null if setting is not in a ConfigWrapper.
+        /// </summary>
         public object Wrapper { get; internal set; }
 
         public bool? IsAdvanced { get; internal set; }
