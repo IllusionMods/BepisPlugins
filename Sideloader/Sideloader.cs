@@ -29,7 +29,7 @@ namespace Sideloader
         protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
         protected static HashSet<string> PngFolderList = new HashSet<string>();
         protected static HashSet<string> PngFolderOnlyList = new HashSet<string>();
-        
+
         /// <summary>
         /// Check if a mod with specified GUID has been loaded
         /// </summary>
@@ -107,8 +107,9 @@ namespace Sideloader
             foreach (var modGroup in archives.GroupBy(x => x.Value.GUID))
             {
                 // Order by version if available, else use modified dates (less reliable)
+                // If versions match, prefer mods inside folders or with more descriptive names so modpacks are preferred
                 var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.Value.Version))
-                    ? modGroup.OrderByDescending(x => x.Value.Version, new ManifestVersionComparer())
+                    ? modGroup.OrderByDescending(x => x.Value.Version, new ManifestVersionComparer()).ThenByDescending(x => x.Key.Name.Length)
                     : modGroup.OrderByDescending(x => File.GetLastWriteTime(x.Key.Name));
 
                 var orderedMods = orderedModsQuery.ToList();
