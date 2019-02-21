@@ -76,10 +76,24 @@ public ConfigWrapper<int> ResolutionX { get; }
 1. You have to reference the ConfigurationManager project or .dll in your plugin. 
 2. Add AcceptableValueListAttribute or alternatively use an enum type. Make sure values you enter are the same type as your setting!
 ```c#
+// Values that user can set are specified by an attribute. 1, 5, 10 and 15 will appear in the setting's dropdown.
+// All values need to be of the same type as the setting itself (in this case int).
 [AcceptableValueListAttribute(new object[] { 1, 5, 10, 15 })]
 public ConfigWrapper<int> ResolutionX { get; }
 
-// No need to specify AcceptableValueListAttribute, all enum values will be shown automatically.
+// If you don't know what settings will be available until the game is running, you can specify a method name.
+// Every time the setting manager is shown this method will be called to get a list of acceptable values.
+[AcceptableValueListAttribute(nameof(CustomValueListGenerator))]
+public ConfigWrapper<int> ScreenMode { get; }
+
+// The method used to get acceptable values has to be an instance method, and it has to return object[].
+private object[] CustomValueListGenerator()
+{
+    return new object[] { 6, 9 });
+}
+
+// If you use an enum you don't need to specify AcceptableValueListAttribute.
+// All enum values are shown automatically. If you want to hide some values, you will have to use the attribute.
 public ConfigWrapper<SomeEnumType> TextAlignment { get; }
 ```
 Note: You can add System.ComponentModel.DescriptionAttribute to your enum's items to override their displayed names. For example:
