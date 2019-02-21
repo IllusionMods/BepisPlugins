@@ -24,7 +24,7 @@ namespace Sideloader
 
         protected List<ZipFile> Archives = new List<ZipFile>();
 
-        protected List<Manifest> LoadedManifests = new List<Manifest>();
+        public static readonly List<Manifest> LoadedManifests = new List<Manifest>();
 
         protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
         protected static HashSet<string> PngFolderList = new HashSet<string>();

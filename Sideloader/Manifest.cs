@@ -1,10 +1,10 @@
-﻿using System;
-using System.IO;
-using System.Xml.Linq;
-using System.Xml;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Logging;
 using ICSharpCode.SharpZipLib.Zip;
+using System;
+using System.IO;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Sideloader
 {
@@ -12,7 +12,7 @@ namespace Sideloader
     {
         protected readonly int SchemaVer = 1;
 
-        protected XDocument manifestDocument;
+        public readonly XDocument manifestDocument;
 
         public string GUID => manifestDocument.Root?.Element("guid")?.Value;
         public string Name => manifestDocument.Root?.Element("name")?.Value;
