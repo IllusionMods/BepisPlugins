@@ -1,4 +1,4 @@
-## Plugin / mod configuration manager for Koikatu
+## Plugin / mod configuration manager for BepInEx
 An easy way to let user configure how a plugin behaves without the need to make your own GUI. The user can change any of the settings you expose, even keyboard shortcuts. The configuration manager can be accessed from in-game settings screen. To access the manager in studio press F1.
 
 ## How to make my mod compatible?
