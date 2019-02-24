@@ -116,10 +116,11 @@ namespace DynamicTranslationLoader.Image
         {
             if (t2D == null) return;
 
+            var t2dName = t2D.name;
             if (TryGetOverrideTexture(t2D.name, s, out var tex) && !IsSwappedTexture(t2D))
             {
                 t2D.LoadImage(tex);
-                t2D.name = "*" + t2D.name;
+                t2D.name = "*" + t2dName;
             }
         }
 
@@ -158,12 +159,12 @@ namespace DynamicTranslationLoader.Image
                 if (IsSwappedTexture(mainTexture)) return;
                 if (string.IsNullOrEmpty(mainTexture.name)) return;
 
-                if (TryGetOverrideTexture(img.mainTexture.name, s, out var newTexture))
+                if (TryGetOverrideTexture(mainTexture.name, s, out var newTexture))
                 {
                     var t2D = new Texture2D(2, 2);
                     t2D.LoadImage(newTexture);
                     img.sprite = Sprite.Create(t2D, img.sprite.rect, img.sprite.pivot);
-                    mainTexture.name = "*" + img.mainTexture.name;
+                    mainTexture.name = "*" + mainTexture.name;
                 }
             }
             else
@@ -171,10 +172,10 @@ namespace DynamicTranslationLoader.Image
                 //Atlas
                 if (IsSwappedTexture(img.sprite.texture)) return;
                 var name = GetAtlasTextureName(img);
-                if (TryGetOverrideTexture(img.mainTexture.name, s, out var newTex))
+                if (TryGetOverrideTexture(mainTexture.name, s, out var newTex))
                 {
                     img.sprite.texture.LoadImage(newTex);
-                    img.sprite.texture.name = "*" + img.mainTexture.name;
+                    img.sprite.texture.name = "*" + mainTexture.name;
                 }
                 else if (TryGetOverrideTexture(name, s, out newTex))
                 {
@@ -310,8 +311,6 @@ namespace DynamicTranslationLoader.Image
             {
                 var name = GetAtlasTextureName(spr);
                 if (!TryGetOverrideTexture(name, s, out var tex)) return;
-
-                Console.WriteLine(name);
 
                 var t2D = new Texture2D(2, 2);
                 t2D.LoadImage(tex);

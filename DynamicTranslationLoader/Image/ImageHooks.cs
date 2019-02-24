@@ -66,6 +66,30 @@ namespace DynamicTranslationLoader.Image
             ImageTranslator.TranslateImage(image, path, scene);
         }
 
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaCustom.CustomSelectListCtrl), "Create")]
+        public static void CustomSelectListCtrlHook(ChaCustom.CustomSelectListCtrl __instance)
+        {
+            var objContent = (GameObject)AccessTools.Field(typeof(ChaCustom.CustomSelectListCtrl), "objContent").GetValue(__instance);
+            foreach(Transform t in objContent.transform)
+            {
+                var go = t.gameObject;
+                var csic = go.GetComponent<ChaCustom.CustomSelectInfoComponent>();
+                if (!csic) continue;
+                var image = csic.img;
+                if (image == null) return;
+                var path = GameObjectUtils.AbsoluteTransform(go);
+                var scene = go.scene.name;
+
+                var mt = csic?.img?.mainTexture;
+                if (mt)
+                {
+                    if (mt.name.StartsWith("*"))
+                        mt.name = mt.name.Substring(1);
+                }
+                ImageTranslator.TranslateImage(csic.img, path, scene);
+            }
+        }
+
         [HarmonyPostfix, HarmonyPatch(typeof(ActionChangeUI), "Set", new[] { typeof(int) })]
         public static void ActionChangeUISetHook(ref ActionChangeUI __instance)
         {
