@@ -209,10 +209,10 @@ namespace Sideloader.AutoResolver
         {
             if (LoadedResolutionInfo.Any(x => x.GUID == GUID) || LoadedStudioResolutionInfo.Any(x => x.GUID == GUID))
                 //we have the GUID loaded, so the user has an outdated mod
-                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Outdated mod detected! [{GUID}]");
+                Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{GUID}]");
             else
                 //did not find a match, we don't have the mod
-                Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] WARNING! Missing mod detected! [{GUID}]");
+                Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Missing mod detected! [{GUID}]");
         }
 
         public enum ResolveType { Save, Load }
