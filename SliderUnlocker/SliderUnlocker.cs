@@ -4,6 +4,7 @@ using ChaCustom;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using TMPro;
@@ -18,10 +19,33 @@ namespace SliderUnlocker
     {
         public const string GUID = "com.bepis.bepinex.sliderunlocker";
         internal const string Version = Metadata.PluginsVersion;
-        internal static float SliderMax = 5;
-        internal static float SliderMin = -5;
+        /// <summary> Maximum value sliders can possibly extend </summary>
+        internal static float SliderAbsoluteMax => Math.Max(SliderMax, 5f);
+        /// <summary> Minimum value sliders can possibly extend </summary>
+        internal static float SliderAbsoluteMin => Math.Min(SliderMin, -5f);
+        /// <summary> Maximum value of sliders when not dynamically unlocked </summary>
+        internal static float SliderMax => (Maximum.Value < 100 ? 100 : Maximum.Value) / 100;
+        /// <summary> Minimum value of sliders when not dynamically unlocked </summary>
+        internal static float SliderMin => (Minimum.Value > 0 ? 0 : Minimum.Value) / 100;
 
         private static readonly List<Target> _targets = new List<Target>();
+
+        #region Settings
+        [DisplayName("Minimum slider value")]
+        [Description("Changes will take effect next time the editor is loaded or a character is loaded.")]
+        [AcceptableValueRange(-500, 0, false)]
+        public static ConfigWrapper<int> Minimum { get; private set; }
+        [DisplayName("Maximum slider value")]
+        [Description("Changes will take effect next time the editor is loaded or a character is loaded.")]
+        [AcceptableValueRange(100, 500, false)]
+        public static ConfigWrapper<int> Maximum { get; private set; }
+        #endregion
+
+        public SliderUnlocker()
+        {
+            Minimum = new ConfigWrapper<int>("wideslider-minimum", this, -100);
+            Maximum = new ConfigWrapper<int>("wideslider-maximum", this, 200);
+        }
 
         protected void Awake()
         {
@@ -43,7 +67,9 @@ namespace SliderUnlocker
                     if (sliders.Count == 0)
                         continue;
 
-                    _targets.Add(new Target(type, inputFields, sliders));
+                    var buttons = fields.Where(x => typeof(Button).IsAssignableFrom(x.FieldType)).ToList();
+
+                    _targets.Add(new Target(type, inputFields, sliders, buttons));
                 }
             }
         }
@@ -58,7 +84,7 @@ namespace SliderUnlocker
         {
             var sceneObjects = SceneManager.GetActiveScene().GetRootGameObjects();
 
-            //Set all sliders to maximum values
+            //Set all sliders to maximum values so when the character is loaded they can be set correctly
             foreach (var target in _targets)
             {
                 var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type));
@@ -76,8 +102,8 @@ namespace SliderUnlocker
                             if (SliderBlacklist.Contains(x.Name))
                                 continue;
 
-                            slider.maxValue = SliderMax;
-                            slider.minValue = SliderMin;
+                            slider.maxValue = SliderAbsoluteMax;
+                            slider.minValue = SliderAbsoluteMin;
                         }
                     }
                 }
@@ -86,7 +112,7 @@ namespace SliderUnlocker
             //Wait for next frame so the character is loaded and values set
             yield return null;
 
-            //Set all slider min/max to the unlocked state
+            //Set all slider min/max back to the default unlocked state
             foreach (var target in _targets)
             {
                 var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type));
@@ -124,6 +150,21 @@ namespace SliderUnlocker
                     if (cvs == null)
                         continue;
 
+                    foreach (var x in target.Sliders)
+                    {
+                        var slider = (Slider)x.GetValue(cvs);
+                        if (slider != null)
+                        {
+                            if (SliderBlacklist.Contains(x.Name))
+                                continue;
+
+                            //Set all sliders to the default unlock state
+                            slider.maxValue = SliderMax;
+                            slider.minValue = SliderMin;
+                        }
+                    }
+
+                    bool buttonClicked = false;
                     foreach (var x in target.Fields)
                     {
                         var inputField = (TMP_InputField)x.GetValue(cvs);
@@ -140,9 +181,43 @@ namespace SliderUnlocker
                             if (slider == null)
                                 continue;
 
+                            //After reset button click reset the slider unlock state
+                            inputField.onValueChanged.AddListener(delegate
+                            { InputFieldOnValueChanged(slider, inputField); });
+                            void InputFieldOnValueChanged(Slider _slider, TMP_InputField _inputField)
+                            {
+                                if (buttonClicked)
+                                {
+                                    buttonClicked = false;
+                                    UnlockSliderFromInput(_slider, _inputField);
+                                }
+                            }
+
+                            //When the user types a value, unlock the sliders to accomodate
                             inputField.onEndEdit.AddListener(delegate
-                            { InputFieldOnEndEdit(inputField, slider); });
-                            void InputFieldOnEndEdit(TMP_InputField _inputField, Slider _slider) => UnlockSlider(_slider, _inputField);
+                            { InputFieldOnEndEdit(slider, inputField); });
+                            void InputFieldOnEndEdit(Slider _slider, TMP_InputField _inputField) => UnlockSliderFromInput(_slider, _inputField);
+                        }
+                    }
+
+                    foreach (var x in target.Buttons)
+                    {
+                        var button = (Button)x.GetValue(cvs);
+                        if (button != null)
+                        {
+                            //Find the slider that matches this button
+                            FieldInfo sliderFieldInfo = target.Sliders.Where(y => y.Name.Substring(3) == x.Name.Substring(3)).FirstOrDefault();
+                            if (sliderFieldInfo == null || SliderBlacklist.Contains(sliderFieldInfo.Name))
+                                continue;
+
+                            Slider slider = (Slider)sliderFieldInfo?.GetValue(cvs);
+                            if (slider == null)
+                                continue;
+
+                            //When the button is clicked set a flag used by InputFieldOnValueChanged
+                            button.onClick.AddListener(delegate
+                            { ButtonOnClick(); });
+                            void ButtonOnClick() => buttonClicked = true;
                         }
                     }
                 }
@@ -151,18 +226,19 @@ namespace SliderUnlocker
         /// <summary>
         /// Make sure the entered value is within range
         /// </summary>
-        private static void UnlockSlider(Slider _slider, TMP_InputField _inputField)
+        private static void UnlockSliderFromInput(Slider _slider, TMP_InputField _inputField)
         {
             float value = float.TryParse(_inputField.text, out float num) ? num / 100 : 0;
-            if (value > SliderMax)
+
+            if (value > SliderAbsoluteMax)
             {
-                _inputField.text = (SliderMax * 100).ToString();
-                value = SliderMax;
+                _inputField.text = (SliderAbsoluteMax * 100).ToString();
+                value = SliderAbsoluteMax;
             }
-            else if (value < SliderMin)
+            else if (value < SliderAbsoluteMin)
             {
-                _inputField.text = (SliderMin * 100).ToString();
-                value = SliderMin;
+                _inputField.text = (SliderAbsoluteMin * 100).ToString();
+                value = SliderAbsoluteMin;
             }
             UnlockSlider(_slider, value);
         }
@@ -173,20 +249,20 @@ namespace SliderUnlocker
         {
             int valueRoundedUp = (int)Math.Ceiling(Math.Abs(value));
 
-            if (value == 0f)
+            if (value > SliderMax)
             {
-                _slider.minValue = 0;
-                _slider.maxValue = 1;
+                _slider.minValue = SliderMin;
+                _slider.maxValue = valueRoundedUp;
             }
-            else if (value < 0)
+            else if (value < SliderMin)
             {
                 _slider.minValue = -valueRoundedUp;
-                _slider.maxValue = 1;
+                _slider.maxValue = SliderMax;
             }
             else
             {
-                _slider.minValue = 0;
-                _slider.maxValue = valueRoundedUp;
+                _slider.minValue = SliderMin;
+                _slider.maxValue = SliderMax;
             }
         }
 
@@ -197,15 +273,17 @@ namespace SliderUnlocker
 
         private sealed class Target
         {
-            public Target(Type type, List<FieldInfo> fields, List<FieldInfo> sliders)
+            public Target(Type type, List<FieldInfo> fields, List<FieldInfo> sliders, List<FieldInfo> buttons)
             {
                 Type = type;
                 Fields = fields;
                 Sliders = sliders;
+                Buttons = buttons;
             }
             public readonly Type Type;
             public readonly List<FieldInfo> Fields;
             public readonly List<FieldInfo> Sliders;
+            public readonly List<FieldInfo> Buttons;
         }
     }
 }

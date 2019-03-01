@@ -150,6 +150,6 @@ namespace SliderUnlocker
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.Reload))]
-        public static void Reload(ChaControl __instance, bool noChangeBody) => __instance.StartCoroutine(SliderUnlocker.ResetAllSliders());
+        public static void Reload(ChaControl __instance) => __instance.StartCoroutine(SliderUnlocker.ResetAllSliders());
     }
 }
