@@ -99,9 +99,6 @@ namespace SliderUnlocker
                         var slider = (Slider)x.GetValue(cvs);
                         if (slider != null)
                         {
-                            if (SliderBlacklist.Contains(x.Name))
-                                continue;
-
                             slider.maxValue = SliderAbsoluteMax;
                             slider.minValue = SliderAbsoluteMin;
                         }
@@ -127,10 +124,7 @@ namespace SliderUnlocker
                         var slider = (Slider)x.GetValue(cvs);
                         if (slider != null)
                         {
-                            if (SliderBlacklist.Contains(x.Name))
-                                continue;
-
-                            UnlockSlider(slider, slider.value);
+                            UnlockSlider(slider, slider.value, SliderBlacklist.Contains(x.Name));
                         }
                     }
                 }
@@ -174,7 +168,7 @@ namespace SliderUnlocker
 
                             //Find the slider that matches this input field
                             FieldInfo sliderFieldInfo = target.Sliders.Where(y => y.Name.Substring(3) == x.Name.Substring(3)).FirstOrDefault();
-                            if (sliderFieldInfo == null || SliderBlacklist.Contains(sliderFieldInfo.Name))
+                            if (sliderFieldInfo == null)
                                 continue;
 
                             Slider slider = (Slider)sliderFieldInfo?.GetValue(cvs);
@@ -183,20 +177,20 @@ namespace SliderUnlocker
 
                             //After reset button click reset the slider unlock state
                             inputField.onValueChanged.AddListener(delegate
-                            { InputFieldOnValueChanged(slider, inputField); });
-                            void InputFieldOnValueChanged(Slider _slider, TMP_InputField _inputField)
+                            { InputFieldOnValueChanged(slider, inputField, SliderBlacklist.Contains(sliderFieldInfo.Name)); });
+                            void InputFieldOnValueChanged(Slider _slider, TMP_InputField _inputField, bool defaultRange)
                             {
                                 if (buttonClicked)
                                 {
                                     buttonClicked = false;
-                                    UnlockSliderFromInput(_slider, _inputField);
+                                    UnlockSliderFromInput(_slider, _inputField, defaultRange);
                                 }
                             }
 
                             //When the user types a value, unlock the sliders to accomodate
                             inputField.onEndEdit.AddListener(delegate
-                            { InputFieldOnEndEdit(slider, inputField); });
-                            void InputFieldOnEndEdit(Slider _slider, TMP_InputField _inputField) => UnlockSliderFromInput(_slider, _inputField);
+                            { InputFieldOnEndEdit(slider, inputField, SliderBlacklist.Contains(sliderFieldInfo.Name)); });
+                            void InputFieldOnEndEdit(Slider _slider, TMP_InputField _inputField, bool defaultRange) => UnlockSliderFromInput(_slider, _inputField, defaultRange);
                         }
                     }
 
@@ -207,7 +201,7 @@ namespace SliderUnlocker
                         {
                             //Find the slider that matches this button
                             FieldInfo sliderFieldInfo = target.Sliders.Where(y => y.Name.Substring(3) == x.Name.Substring(3)).FirstOrDefault();
-                            if (sliderFieldInfo == null || SliderBlacklist.Contains(sliderFieldInfo.Name))
+                            if (sliderFieldInfo == null)
                                 continue;
 
                             Slider slider = (Slider)sliderFieldInfo?.GetValue(cvs);
@@ -226,7 +220,7 @@ namespace SliderUnlocker
         /// <summary>
         /// Make sure the entered value is within range
         /// </summary>
-        private static void UnlockSliderFromInput(Slider _slider, TMP_InputField _inputField)
+        private static void UnlockSliderFromInput(Slider _slider, TMP_InputField _inputField, bool defaultRange)
         {
             float value = float.TryParse(_inputField.text, out float num) ? num / 100 : 0;
 
@@ -240,29 +234,31 @@ namespace SliderUnlocker
                 _inputField.text = (SliderAbsoluteMin * 100).ToString();
                 value = SliderAbsoluteMin;
             }
-            UnlockSlider(_slider, value);
+            UnlockSlider(_slider, value, defaultRange);
         }
         /// <summary>
         /// Unlock or lock the slider depending on the entered value
         /// </summary>
-        private static void UnlockSlider(Slider _slider, float value)
+        private static void UnlockSlider(Slider _slider, float value, bool defaultRange)
         {
             int valueRoundedUp = (int)Math.Ceiling(Math.Abs(value));
+            float max = defaultRange ? 1 : SliderMax;
+            float min = defaultRange ? 0 : SliderMin;
 
-            if (value > SliderMax)
+            if (value > max)
             {
-                _slider.minValue = SliderMin;
+                _slider.minValue = min;
                 _slider.maxValue = valueRoundedUp;
             }
-            else if (value < SliderMin)
+            else if (value < min)
             {
                 _slider.minValue = -valueRoundedUp;
-                _slider.maxValue = SliderMax;
+                _slider.maxValue = max;
             }
             else
             {
-                _slider.minValue = SliderMin;
-                _slider.maxValue = SliderMax;
+                _slider.minValue = min;
+                _slider.maxValue = max;
             }
         }
 
