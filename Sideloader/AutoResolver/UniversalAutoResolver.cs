@@ -20,7 +20,7 @@ namespace Sideloader.AutoResolver
         {
             void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
             {
-                //check if it's a vanilla item
+                //Only attempt compatibility resolve if the ID does not belong to a vanilla item or hard mod
                 if (!ListLoader.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
                 {
                     //the property does not have external slot information
@@ -80,8 +80,29 @@ namespace Sideloader.AutoResolver
                         }
                         else
                         {
-                            ShowGUIDError(extResolve.GUID);
-                            kv.Value.SetMethod(structure, 999999); //set to an invalid ID
+                            if (ListLoader.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+                            {
+                                string mainAB = ListLoader.InternalDataList[kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
+                                mainAB = mainAB.Replace("chara/", "").Replace(".unity3d", "").Replace(kv.Key.Category.ToString() + "_", "");
+
+                                if (int.TryParse(mainAB, out int x))
+                                {
+                                    //ID found but it conflicts with a vanilla item. Change the ID to avoid conflicts.
+                                    ShowGUIDError(extResolve.GUID);
+                                    kv.Value.SetMethod(structure, 999999);
+                                }
+                                else
+                                {
+                                    //ID found and it does not conflict with a vanilla item, likely the user has a hard mod version of the mod installed
+                                    Logger.Log(LogLevel.Debug, $"[UAR] Missing mod detected [{extResolve.GUID}] but matching ID found");
+                                }
+                            }
+                            else
+                            {
+                                //ID not found. Change the ID to avoid potential future conflicts.
+                                ShowGUIDError(extResolve.GUID);
+                                kv.Value.SetMethod(structure, 999999);
+                            }
                         }
                     }
                     else
