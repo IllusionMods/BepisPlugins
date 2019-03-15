@@ -108,6 +108,7 @@ namespace SliderUnlocker
 
             //Wait for next frame so the character is loaded and values set
             yield return null;
+            sceneObjects = SceneManager.GetActiveScene().GetRootGameObjects();
 
             //Set all slider min/max back to the default unlocked state
             foreach (var target in _targets)
