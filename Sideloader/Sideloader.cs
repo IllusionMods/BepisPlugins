@@ -6,6 +6,7 @@ using Shared;
 using Sideloader.AutoResolver;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -30,12 +31,17 @@ namespace Sideloader
         protected static HashSet<string> PngFolderList = new HashSet<string>();
         protected static HashSet<string> PngFolderOnlyList = new HashSet<string>();
 
+        [DisplayName("Show missing mod warnings")]
+        [Category("Settings")]
+        [Description("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log.")]
+        public static ConfigWrapper<bool> MissingModWarning { get; private set; }
         /// <summary>
         /// Check if a mod with specified GUID has been loaded
         /// </summary>
         public bool IsModLoaded(string guid)
         {
-            if (guid == null) return false;
+            if (guid == null)
+                return false;
             return LoadedManifests.Any(x => x.GUID == guid);
         }
 
@@ -56,6 +62,8 @@ namespace Sideloader
             AutoResolver.Hooks.InstallHooks();
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
             ResourceRedirector.ResourceRedirector.AssetBundleResolvers.Add(AssetBundleRedirectHook);
+
+            MissingModWarning = new ConfigWrapper<bool>(nameof(MissingModWarning), this, true);
 
             //check mods directory
             var modDirectory = Path.Combine(Paths.GameRootPath, "mods");

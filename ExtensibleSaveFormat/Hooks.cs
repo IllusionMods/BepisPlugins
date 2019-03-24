@@ -1,4 +1,5 @@
-﻿using Harmony;
+﻿using ChaCustom;
+using Harmony;
 using MessagePack;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,9 @@ namespace ExtensibleSaveFormat
         {
             var harmony = HarmonyInstance.Create("com.bepis.bepinex.extensiblesaveformat");
             harmony.PatchAll(typeof(Hooks));
+            harmony.Patch(typeof(Studio.MPCharCtrl).GetNestedType("CostumeInfo", BindingFlags.NonPublic).GetMethod("InitFileList", BindingFlags.Instance | BindingFlags.NonPublic),
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPreHook), BindingFlags.Static | BindingFlags.Public)),
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPostHook), BindingFlags.Static | BindingFlags.Public)));
         }
 
 
@@ -642,6 +646,34 @@ namespace ExtensibleSaveFormat
                    instruction.operand.GetType().GetProperty("DeclaringType", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).GetGetMethod().Invoke(instruction.operand, null).ToString() == name;
         }
 
+        #endregion
+
+        #region Extended Data Override Hooks
+        //Prevent loading extended data when loading the list of characters in Chara Maker since it is irrelevant here
+        [HarmonyPrefix, HarmonyPatch(typeof(CustomCharaFile), "Initialize")]
+        public static void CustomScenePreHook() => ExtendedSave.LoadEventsEnabled = false;
+        [HarmonyPostfix, HarmonyPatch(typeof(CustomCharaFile), "Initialize")]
+        public static void CustomScenePostHook() => ExtendedSave.LoadEventsEnabled = true;
+        //Prevent loading extended data when loading the list of coordinates in Chara Maker since it is irrelevant here
+        [HarmonyPrefix, HarmonyPatch(typeof(CustomCoordinateFile), "Initialize")]
+        public static void CustomCoordinatePreHook() => ExtendedSave.LoadEventsEnabled = false;
+
+        [HarmonyPostfix, HarmonyPatch(typeof(CustomCoordinateFile), "Initialize")]
+        public static void CustomCoordinatePostHook() => ExtendedSave.LoadEventsEnabled = true;
+        //Prevent loading extended data when loading the list of characters in Studio since it is irrelevant here
+        [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
+        public static void StudioFemaleListPreHook() => ExtendedSave.LoadEventsEnabled = false;
+
+        [HarmonyPostfix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
+        public static void StudioFemaleListPostHook() => ExtendedSave.LoadEventsEnabled = true;
+        [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitMaleList")]
+        public static void StudioMaleListPreHook() => ExtendedSave.LoadEventsEnabled = false;
+        [HarmonyPostfix, HarmonyPatch(typeof(CharaList), "InitMaleList")]
+        public static void StudioMaleListPostHook() => ExtendedSave.LoadEventsEnabled = true;
+
+        //Prevent loading extended data when loading the list of coordinates in Studio since it is irrelevant here
+        public static void StudioCoordinateListPreHook() => ExtendedSave.LoadEventsEnabled = false;
+        public static void StudioCoordinateListPostHook() => ExtendedSave.LoadEventsEnabled = true;
         #endregion
     }
 }
