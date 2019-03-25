@@ -279,7 +279,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load)
-                        Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
+                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
                     Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
                 }
                 else if (resolveType == ResolveType.Load)
@@ -291,7 +291,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load)
-                        Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
+                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
                     Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
                 }
                 else if (resolveType == ResolveType.Load)
@@ -310,7 +310,7 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //Found a match
-                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
+                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
                         Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
                     }
                     else
@@ -328,7 +328,7 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //Found a match
-                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
+                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
                         Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
                     }
                     else
@@ -356,7 +356,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load)
-                        Logger.Log(LogLevel.Info, $"[UAR] Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
+                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
                     Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                 }
                 else
@@ -371,7 +371,7 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //Found a matching sideloader mod
-                        Logger.Log(LogLevel.Info, $"[UAR] Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
+                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
                         Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                     }
                     else
