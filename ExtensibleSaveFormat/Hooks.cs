@@ -93,7 +93,7 @@ namespace ExtensibleSaveFormat
                     new CodeInstruction(OpCodes.Ldarg_0), //push the ChaFile instance
                     new CodeInstruction(OpCodes.Ldloc_S, blockHeaderLocalBuilder), //push the BlockHeader instance
                     new CodeInstruction(OpCodes.Ldarg_1, blockHeaderLocalBuilder), //push the binaryreader instance
-                        new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(ChaFileLoadFileHook))), //call our hook
+                    new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(ChaFileLoadFileHook))), //call our hook
                 });
 
             return newInstructionSet;
@@ -279,8 +279,6 @@ namespace ExtensibleSaveFormat
                 {
                     byte[] bytes = br.ReadBytes(length);
                     ExtendedSave.internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
-
-                    ExtendedSave.sceneReadEvent(path);
                 }
             }
             catch (EndOfStreamException)
@@ -291,9 +289,10 @@ namespace ExtensibleSaveFormat
             {
                 /* Invalid/unexpected deserialized data */
             }
+
+            ExtendedSave.sceneReadEvent(path);
         }
-
-
+        
         [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Import", new[] { typeof(string) })]
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -460,7 +459,7 @@ namespace ExtensibleSaveFormat
             br.ReadBytes(16);
 
             ExtendedSave.internalSceneDictionary.Clear();
-            ;
+
             try
             {
                 string marker = br.ReadString();
@@ -472,8 +471,6 @@ namespace ExtensibleSaveFormat
                 {
                     byte[] bytes = br.ReadBytes(length);
                     ExtendedSave.internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
-
-                    ExtendedSave.sceneImportEvent(path);
                 }
             }
             catch (EndOfStreamException)
@@ -484,6 +481,8 @@ namespace ExtensibleSaveFormat
             {
                 /* Invalid/unexpected deserialized data */
             }
+
+            ExtendedSave.sceneImportEvent(path);
         }
 
         #endregion
