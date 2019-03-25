@@ -123,7 +123,7 @@ namespace ResourceRedirector
 
             if (__result == null)
             {
-                if (!File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}"))
+                if (!ResourceRedirector.AssetBundleExists(assetBundleName))
                 {
                     //An asset that does not exist is being requested from from an asset bundle that does not exist
                     //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors
@@ -138,13 +138,13 @@ namespace ResourceRedirector
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), "LoadAssetAsync", new[] { typeof(string), typeof(string), typeof(Type), typeof(string) })]
-        public static bool LoadAssetAsyncPreHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName, string assetName, Type type, string manifestAssetBundleName)
+        public static bool LoadAssetAsyncPreHook(ref AssetBundleLoadAssetOperation __result, ref string assetBundleName, ref string assetName, Type type, string manifestAssetBundleName)
         {
             __result = ResourceRedirector.HandleAsset(assetBundleName, assetName, type, manifestAssetBundleName, ref __result);
 
             if (__result == null)
             {
-                if (!File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}"))
+                if (!ResourceRedirector.AssetBundleExists(assetBundleName))
                 {
                     //An asset that does not exist is being requested from from an asset bundle that does not exist
                     //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors

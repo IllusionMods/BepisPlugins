@@ -1,9 +1,9 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
+using BepisPlugins;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using BepisPlugins;
-using BepInEx.Logging;
 using UnityEngine;
 using Logger = BepInEx.Logger;
 
@@ -17,7 +17,7 @@ namespace ResourceRedirector
 
         public static string EmulatedDir => Path.Combine(Paths.GameRootPath, "abdata-emulated");
         public static bool EmulationEnabled;
-        
+
         public delegate bool AssetHandler(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result);
         public delegate bool AssetBundleHandler(string assetBundleName, out AssetBundle result);
 
@@ -25,14 +25,14 @@ namespace ResourceRedirector
         public static List<AssetBundleHandler> AssetBundleResolvers = new List<AssetBundleHandler>();
 
         public static Dictionary<string, AssetBundle> EmulatedAssetBundles = new Dictionary<string, AssetBundle>();
-        
+
         public ResourceRedirector()
         {
             Hooks.InstallHooks();
 
             EmulationEnabled = Directory.Exists(EmulatedDir);
         }
-        
+
         public static AssetBundleLoadAssetOperation HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, ref AssetBundleLoadAssetOperation __result)
         {
             foreach (var handler in AssetResolvers)
@@ -122,5 +122,9 @@ namespace ResourceRedirector
             //otherwise load the asset bundle
             return AssetBundle.LoadFromFile(assetBundleName);
         }
+        /// <summary>
+        /// Check if the asset bundle file exists on disk. Moved to a separate method so other plugins can hook and override if necessary.
+        /// </summary>
+        public static bool AssetBundleExists(string assetBundleName) => File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}");
     }
 }
