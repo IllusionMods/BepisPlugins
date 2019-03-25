@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using BepisPlugins;
 using BepInEx;
 using BepInEx.Logging;
 using UnityEngine;
@@ -62,27 +61,30 @@ namespace BepisPlugins
             }
         }
 
-        private void OnGUI()
+        private void Update()
         {
             if (_showCounter > 0)
-            {
                 _showCounter -= Time.deltaTime;
+        }
 
-                var textColor = Color.white;
-                var outlineColor = Color.black;
+        private void OnGUI()
+        {
+            if (_showCounter <= 0) return;
 
-                if (_showCounter <= 1)
-                {
-                    textColor.a = _showCounter;
-                    outlineColor.a = _showCounter;
-                }
+            var textColor = Color.white;
+            var outlineColor = Color.black;
 
-                ShadowAndOutline.DrawOutline(new Rect(40, 20, 600, 160), _shownLogText, new GUIStyle
-                {
-                    alignment = TextAnchor.UpperLeft,
-                    fontSize = 20
-                }, outlineColor, textColor, 3f);
+            if (_showCounter <= 1)
+            {
+                textColor.a = _showCounter;
+                outlineColor.a = _showCounter;
             }
+
+            ShadowAndOutline.DrawOutline(new Rect(40, 20, Screen.width - 80, 160), _shownLogText, new GUIStyle
+            {
+                alignment = TextAnchor.UpperLeft,
+                fontSize = 20
+            }, outlineColor, textColor, 3f);
         }
 
         private sealed class LogEntry
