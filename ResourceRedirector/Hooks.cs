@@ -127,7 +127,7 @@ namespace ResourceRedirector
                 {
                     //An asset that does not exist is being requested from from an asset bundle that does not exist
                     //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors
-                    Logger.Log(LogLevel.Warning, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
+                    Logger.Log(LogLevel.Debug, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
                     assetBundleName = "chara/mt_ramp_00.unity3d";
                     assetName = "dummy";
                 }
@@ -148,7 +148,7 @@ namespace ResourceRedirector
                 {
                     //An asset that does not exist is being requested from from an asset bundle that does not exist
                     //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors
-                    Logger.Log(LogLevel.Warning, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
+                    Logger.Log(LogLevel.Debug, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
                     assetBundleName = "chara/mt_ramp_00.unity3d";
                     assetName = "dummy";
                 }
