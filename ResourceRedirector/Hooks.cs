@@ -123,7 +123,8 @@ namespace ResourceRedirector
 
             if (__result == null)
             {
-                if (!File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}"))
+                if (!File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}")&&
+                    !ResourceRedirector.ModLoaderSupporter.AssetBubdleFileExist(assetBundleName))
                 {
                     //An asset that does not exist is being requested from from an asset bundle that does not exist
                     //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors
@@ -144,7 +145,8 @@ namespace ResourceRedirector
 
             if (__result == null)
             {
-                if (!File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}"))
+                if (!File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}") &&
+                    !ResourceRedirector.ModLoaderSupporter.AssetBubdleFileExist(assetBundleName))
                 {
                     //An asset that does not exist is being requested from from an asset bundle that does not exist
                     //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors

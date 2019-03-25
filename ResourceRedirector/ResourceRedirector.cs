@@ -25,6 +25,8 @@ namespace ResourceRedirector
         public static List<AssetBundleHandler> AssetBundleResolvers = new List<AssetBundleHandler>();
 
         public static Dictionary<string, AssetBundle> EmulatedAssetBundles = new Dictionary<string, AssetBundle>();
+
+        public static ModLoaderSupport ModLoaderSupporter = new ModLoaderSupport();
         
         public ResourceRedirector()
         {
