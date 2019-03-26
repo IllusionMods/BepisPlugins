@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using UnityEngine.UI;
 using static Sideloader.AutoResolver.StudioObjectSearch;
 
 namespace Sideloader.AutoResolver
@@ -28,6 +28,11 @@ namespace Sideloader.AutoResolver
 
             var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
             harmony.PatchAll(typeof(Hooks));
+
+            harmony.Patch(typeof(SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(Hooks.OnValueChangedLutPrefix), AccessTools.all)), null);
+            harmony.Patch(typeof(SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(Hooks.UpdateInfoPostfix), AccessTools.all)));
         }
 
         #region ChaFile
@@ -310,6 +315,7 @@ namespace Sideloader.AutoResolver
 
             UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Load);
             UniversalAutoResolver.ResolveStudioMap(ExtendedData, UniversalAutoResolver.ResolveType.Load);
+            UniversalAutoResolver.ResolveStudioFilter(ExtendedData, UniversalAutoResolver.ResolveType.Load);
         }
 
         private static void ExtendedSceneImport(string path)
@@ -354,7 +360,7 @@ namespace Sideloader.AutoResolver
                     UniversalAutoResolver.ResolveStudioObject(Light);
             }
 
-            //Maps are not imported
+            //Maps and filters are not imported
             //UniversalAutoResolver.ResolveStudioMap(extData);
         }
 
@@ -429,6 +435,21 @@ namespace Sideloader.AutoResolver
                 }
             }
 
+            //Add the extended data for the filter, if any
+            int filterID = Studio.Studio.Instance.sceneInfo.aceNo;
+            if (filterID > 100000000)
+            {
+                StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == filterID).FirstOrDefault();
+                if (extResolve != null)
+                {
+                    ExtendedData.Add("filterInfoGUID", extResolve.GUID);
+
+                    //Set filter ID back to default
+                    //Logger.Log(LogLevel.Info, $"Setting Filter ID:{mapID}->{extResolve.Slot}");
+                    Studio.Studio.Instance.sceneInfo.aceNo = extResolve.Slot;
+                }
+            }
+
             if (ExtendedData.Count == 0)
                 //Set extended data to null to remove any that may once have existed, for example in the case of deleted objects
                 ExtendedSave.SetSceneExtendedDataById(UniversalAutoResolver.UARExtID, null);
@@ -445,6 +466,41 @@ namespace Sideloader.AutoResolver
 
             UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Save);
             UniversalAutoResolver.ResolveStudioMap(ExtendedData, UniversalAutoResolver.ResolveType.Save);
+            UniversalAutoResolver.ResolveStudioFilter(ExtendedData, UniversalAutoResolver.ResolveType.Save);
+        }
+        /// <summary>
+        /// Translate the value (selected index) to the actual ID of the filter. This allows us to save the ID to the scene.
+        /// Without this, the index is saved which will be different depending on installed mods and make it impossible to save and load correctly.
+        /// </summary>
+        public static void OnValueChangedLutPrefix(ref int _value)
+        {
+            int counter = 0;
+            foreach (var x in Info.Instance.dicFilterLoadInfo)
+            {
+                if (counter == _value)
+                {
+                    _value = x.Key;
+                    break;
+                }
+                counter++;
+            }
+        }
+        /// <summary>
+        /// Called after a scene load. Find the index of the currrent filter ID and set the dropdown.
+        /// </summary>
+        public static void UpdateInfoPostfix(object __instance)
+        {
+            int counter = 0;
+            foreach (var x in Info.Instance.dicFilterLoadInfo)
+            {
+                if (x.Key == Studio.Studio.Instance.sceneInfo.aceNo)
+                {
+                    Dropdown dropdownLut = (Dropdown)Traverse.Create(__instance).Field("dropdownLut").GetValue();
+                    dropdownLut.value = counter;
+                    break;
+                }
+                counter++;
+            }
         }
         #endregion
     }
