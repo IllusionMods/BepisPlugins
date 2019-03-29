@@ -60,7 +60,7 @@ namespace Screencap
         public static ConfigWrapper<bool> CaptureAlpha { get; private set; }
 
         #endregion
-        
+
         private string GetUniqueFilename()
         {
             return Path.GetFullPath(Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png"));
@@ -143,115 +143,134 @@ namespace Screencap
 
         #region UI
         private readonly int uiWindowHash = GUID.GetHashCode();
-        private Rect uiRect = new Rect(20, 20, 160, 223);
+        private Rect uiRect = new Rect(20, Screen.height / 2 - 150, 160, 223);
         private bool uiShow = false;
 
         protected void OnGUI()
         {
             if (uiShow)
-                uiRect = GUI.Window(uiWindowHash, uiRect, WindowFunction, "Rendering settings");
+                uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "Screenshot settings");
         }
 
         private void WindowFunction(int windowID)
         {
-            GUI.Label(new Rect(0, 20, 160, 20), "Output resolution", new GUIStyle
+            GUILayout.BeginVertical(GUI.skin.box);
             {
-                alignment = TextAnchor.MiddleCenter,
-                normal = new GUIStyleState
+                GUILayout.Label("Output resolution (W/H)", new GUIStyle
                 {
-                    textColor = Color.white
-                }
-            });
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = new GUIStyleState
+                    {
+                        textColor = Color.white
+                    }
+                });
 
-            GUI.Label(new Rect(0, 40, 160, 20), "x", new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                normal = new GUIStyleState
+                GUILayout.BeginHorizontal();
                 {
-                    textColor = Color.white
+                    string resX = GUILayout.TextField(ResolutionX.Value.ToString());
+
+                    GUILayout.Label("x", new GUIStyle
+                    {
+                        alignment = TextAnchor.LowerCenter,
+                        normal = new GUIStyleState
+                        {
+                            textColor = Color.white
+                        }
+                    }, GUILayout.ExpandWidth(false));
+
+                    string resY = GUILayout.TextField(ResolutionY.Value.ToString());
+
+                    if (GUI.changed)
+                    {
+                        if (int.TryParse(resX, out int x))
+                            ResolutionX.Value = Mathf.Clamp(x, 2, 4096);
+
+                        if (int.TryParse(resY, out int y))
+                            ResolutionY.Value = Mathf.Clamp(y, 2, 4096);
+                    }
                 }
-            });
+                GUILayout.EndHorizontal();
 
-            string resX = GUI.TextField(new Rect(10, 40, 60, 20), ResolutionX.Value.ToString());
+                GUILayout.Space(2);
 
-            string resY = GUI.TextField(new Rect(90, 40, 60, 20), ResolutionY.Value.ToString());
-
-            bool screenSize = GUI.Button(new Rect(10, 65, 140, 20), "Set to screen size");
-
-
-            GUI.Label(new Rect(0, 90, 160, 20), "Screen upsampling rate", new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white
-                }
-            });
-
-
-            int downscale = (int)Math.Round(GUI.HorizontalSlider(new Rect(10, 113, 120, 20), DownscalingRate.Value, 1, 4));
-
-            GUI.Label(new Rect(0, 110, 150, 20), $"{downscale}x", new GUIStyle
-            {
-                alignment = TextAnchor.UpperRight,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white
-                }
-            });
-
-
-            GUI.Label(new Rect(0, 130, 160, 20), "Card upsampling rate", new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white
-                }
-            });
-
-
-            int carddownscale = (int)Math.Round(GUI.HorizontalSlider(new Rect(10, 153, 120, 20), CardDownscalingRate.Value, 1, 4));
-
-            GUI.Label(new Rect(0, 150, 150, 20), $"{carddownscale}x", new GUIStyle
-            {
-                alignment = TextAnchor.UpperRight,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white
-                }
-            });
-
-            bool capturealpha = GUI.Toggle(new Rect(10, 173, 120, 20), CaptureAlpha.Value, "Capture alpha");
-
-            if (GUI.Button(new Rect(10, 196, 140, 20), "Open screenshot dir"))
-                Process.Start(screenshotDir);
-
-            if (GUI.changed)
-            {
-                BepInEx.Config.SaveOnConfigSet = false;
-
-                if (int.TryParse(resX, out int x))
-                    ResolutionX.Value = Mathf.Clamp(x, 2, 4096);
-
-                if (int.TryParse(resY, out int y))
-                    ResolutionY.Value = Mathf.Clamp(y, 2, 4096);
-
-                if (screenSize)
+                if (GUILayout.Button("Set to screen size"))
                 {
                     ResolutionX.Value = Screen.width;
                     ResolutionY.Value = Screen.height;
                 }
 
-                DownscalingRate.Value = downscale;
-
-                CardDownscalingRate.Value = carddownscale;
-
-                CaptureAlpha.Value = capturealpha;
-
-                BepInEx.Config.SaveOnConfigSet = true;
-                BepInEx.Config.SaveConfig();
+                if (GUILayout.Button("Rotate 90 degrees"))
+                {
+                    var curerntX = ResolutionX.Value;
+                    ResolutionX.Value = ResolutionY.Value;
+                    ResolutionY.Value = curerntX;
+                }
             }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Screen upsampling rate", new GUIStyle
+                {
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = new GUIStyleState
+                    {
+                        textColor = Color.white
+                    }
+                });
+
+                GUILayout.BeginHorizontal();
+                {
+                    int downscale = (int)Math.Round(GUILayout.HorizontalSlider(DownscalingRate.Value, 1, 4));
+
+                    GUILayout.Label($"{downscale}x", new GUIStyle
+                    {
+                        alignment = TextAnchor.UpperRight,
+                        normal = new GUIStyleState
+                        {
+                            textColor = Color.white
+                        }
+                    }, GUILayout.ExpandWidth(false));
+                    DownscalingRate.Value = downscale;
+                }
+                GUILayout.EndHorizontal();
+
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Card upsampling rate", new GUIStyle
+                {
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = new GUIStyleState
+                    {
+                        textColor = Color.white
+                    }
+                });
+                
+                GUILayout.BeginHorizontal();
+                {
+                    int carddownscale = (int)Math.Round(GUILayout.HorizontalSlider(CardDownscalingRate.Value, 1, 4));
+
+                    GUILayout.Label($"{carddownscale}x", new GUIStyle
+                    {
+                        alignment = TextAnchor.UpperRight,
+                        normal = new GUIStyleState
+                        {
+                            textColor = Color.white
+                        }
+                    }, GUILayout.ExpandWidth(false));
+                    CardDownscalingRate.Value = carddownscale;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            CaptureAlpha.Value = GUILayout.Toggle(CaptureAlpha.Value, "Transparent background");
+
+            if (GUILayout.Button("Open screenshot dir"))
+                Process.Start(screenshotDir);
 
             GUI.DragWindow();
         }
