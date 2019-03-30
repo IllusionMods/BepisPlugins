@@ -88,7 +88,7 @@ namespace SliderUnlocker
             //Set all sliders to maximum values so when the character is loaded they can be set correctly
             foreach (var target in _targets)
             {
-                var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type));
+                var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type, true));
 
                 foreach (var cvs in cvsInstances)
                 {
@@ -114,7 +114,7 @@ namespace SliderUnlocker
             //Set all slider min/max back to the default unlocked state
             foreach (var target in _targets)
             {
-                var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type));
+                var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type, true));
 
                 foreach (var cvs in cvsInstances)
                 {
@@ -139,7 +139,7 @@ namespace SliderUnlocker
 
             foreach (var target in _targets)
             {
-                var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type));
+                var cvsInstances = sceneObjects.SelectMany(x => x.GetComponentsInChildren(target.Type, true));
 
                 foreach (var cvs in cvsInstances)
                 {
