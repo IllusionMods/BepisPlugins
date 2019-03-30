@@ -116,15 +116,21 @@ namespace ConfigurationManager
             }
 
             if (range.ShowAsPercentage)
+            {
                 DrawCenteredLabel(
                     Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%",
                     GUILayout.Width(50));
+            }
             else
             {
                 var strVal = value.ToString();
                 var strResult = GUILayout.TextField(strVal, GUILayout.Width(50));
                 if (strResult != strVal)
-                    setting.Set(Convert.ChangeType(strResult, setting.SettingType));
+                {
+                    var resultVal = (float) Convert.ToDouble(strResult);
+                    var clampedResultVal = Mathf.Clamp(resultVal, leftValue, rightValue);
+                    setting.Set(Convert.ChangeType(clampedResultVal, setting.SettingType));
+                }
             }
         }
 
