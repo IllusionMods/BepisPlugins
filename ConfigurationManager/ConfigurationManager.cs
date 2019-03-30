@@ -226,7 +226,7 @@ namespace ConfigurationManager
             var size = new Vector2(Mathf.Min(Screen.width - 100, 650), Screen.height - 100);
             var offset = new Vector2((Screen.width - size.x) / 2, (Screen.height - size.y) / 2);
             _settingWindowRect = new Rect(offset, size);
-            
+
             _screenRect = new Rect(0, 0, Screen.width, Screen.height);
         }
 
@@ -360,7 +360,24 @@ namespace ConfigurationManager
                 else if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
                     _fieldDrawer.DrawRangeField(setting, range);
                 else if (setting.AcceptableValues is AcceptableValueListAttribute list)
-                    _fieldDrawer.DrawComboboxField(setting, list.GetAcceptableValues(setting.PluginInstance), _settingWindowRect.yMax);
+                {
+                    try
+                    {
+                        var acceptableValues = list.GetAcceptableValues(setting.PluginInstance);
+                        if (acceptableValues == null || acceptableValues.Length == 0)
+                            throw new ArgumentException("AcceptableValueListAttribute returned a null or empty list of acceptable values. You need to supply at least 1 option.");
+
+                        if (!setting.SettingType.IsInstanceOfType(acceptableValues.FirstOrDefault(x => x != null)))
+                            throw new ArgumentException("AcceptableValueListAttribute returned a list with items of type other than the settng type itself.");
+
+                        _fieldDrawer.DrawComboboxField(setting, acceptableValues, _settingWindowRect.yMax);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(LogLevel.Error, "[ConfigManager] Failed to get acceptable values - " + ex);
+                        GUILayout.Label("Failed to get dropdown values");
+                    }
+                }
                 else if (setting.SettingType.IsEnum)
                     _fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType), _settingWindowRect.yMax);
                 else
