@@ -18,6 +18,7 @@ namespace SliderUnlocker
     {
         public const string GUID = "com.bepis.bepinex.sliderunlocker";
         internal const string Version = Metadata.PluginsVersion;
+
         /// <summary> Maximum value sliders can possibly extend </summary>
         internal static float SliderAbsoluteMax => Math.Max(SliderMax, 5f);
         /// <summary> Minimum value sliders can possibly extend </summary>
@@ -73,7 +74,8 @@ namespace SliderUnlocker
             }
         }
 
-        private void LevelFinishedLoading(Scene scene, LoadSceneMode mode) => SetAllSliders(scene);
+        private static void LevelFinishedLoading(Scene scene, LoadSceneMode mode) => SetAllSliders(scene);
+
         /// <summary>
         /// Sliders that don't work or have issues outside of the 0-100 limit
         /// </summary>
@@ -131,7 +133,7 @@ namespace SliderUnlocker
             }
         }
 
-        private void SetAllSliders(Scene scene)
+        private static void SetAllSliders(Scene scene)
         {
             var sceneObjects = scene.GetRootGameObjects();
 
@@ -144,85 +146,86 @@ namespace SliderUnlocker
                     if (cvs == null)
                         continue;
 
-                    foreach (var x in target.Sliders)
-                    {
-                        var slider = (Slider)x.GetValue(cvs);
-                        if (slider != null)
-                        {
-                            if (SliderBlacklist.Contains(x.Name))
-                                continue;
+                    ResetAllRangesToDefault(target, cvs);
 
-                            //Set all sliders to the default unlock state
-                            slider.maxValue = SliderMax;
-                            slider.minValue = SliderMin;
-                        }
-                    }
-
-                    bool buttonClicked = false;
+                    var buttonClicked = false;
                     foreach (var x in target.Fields)
                     {
                         var inputField = (TMP_InputField)x.GetValue(cvs);
-                        if (inputField != null)
-                        {
-                            inputField.characterLimit = 4;
+                        if (inputField == null)
+                            continue;
 
-                            //Find the slider that matches this input field
-                            FieldInfo sliderFieldInfo = target.Sliders.Where(y => y.Name.Substring(3) == x.Name.Substring(3)).FirstOrDefault();
-                            if (sliderFieldInfo == null)
-                                continue;
+                        inputField.characterLimit = 4;
 
-                            Slider slider = (Slider)sliderFieldInfo?.GetValue(cvs);
-                            if (slider == null)
-                                continue;
+                        //Find the slider that matches this input field
+                        var sliderFieldInfo = target.Sliders.FirstOrDefault(y => y.Name.Substring(3) == x.Name.Substring(3));
+                        if (sliderFieldInfo == null)
+                            continue;
 
-                            //After reset button click reset the slider unlock state
-                            inputField.onValueChanged.AddListener(delegate
-                            { InputFieldOnValueChanged(slider, inputField, SliderBlacklist.Contains(sliderFieldInfo.Name)); });
-                            void InputFieldOnValueChanged(Slider _slider, TMP_InputField _inputField, bool defaultRange)
+                        var slider = (Slider)sliderFieldInfo.GetValue(cvs);
+                        if (slider == null)
+                            continue;
+
+                        //After reset button click reset the slider unlock state
+                        inputField.onValueChanged.AddListener(
+                            _ =>
                             {
                                 if (buttonClicked)
                                 {
                                     buttonClicked = false;
-                                    UnlockSliderFromInput(_slider, _inputField, defaultRange);
+                                    UnlockSliderFromInput(slider, inputField, SliderBlacklist.Contains(sliderFieldInfo.Name));
                                 }
-                            }
+                            });
 
-                            //When the user types a value, unlock the sliders to accomodate
-                            inputField.onEndEdit.AddListener(delegate
-                            { InputFieldOnEndEdit(slider, inputField, SliderBlacklist.Contains(sliderFieldInfo.Name)); });
-                            void InputFieldOnEndEdit(Slider _slider, TMP_InputField _inputField, bool defaultRange) => UnlockSliderFromInput(_slider, _inputField, defaultRange);
-                        }
+                        //When the user types a value, unlock the sliders to accomodate
+                        inputField.onEndEdit.AddListener(_ => UnlockSliderFromInput(slider, inputField, SliderBlacklist.Contains(sliderFieldInfo.Name)));
                     }
 
                     foreach (var x in target.Buttons)
                     {
                         var button = (Button)x.GetValue(cvs);
-                        if (button != null)
-                        {
-                            //Find the slider that matches this button
-                            FieldInfo sliderFieldInfo = target.Sliders.Where(y => y.Name.Substring(3) == x.Name.Substring(3)).FirstOrDefault();
-                            if (sliderFieldInfo == null)
-                                continue;
+                        if (button == null)
+                            continue;
 
-                            Slider slider = (Slider)sliderFieldInfo?.GetValue(cvs);
-                            if (slider == null)
-                                continue;
+                        //Find the slider that matches this button
+                        var sliderFieldInfo = target.Sliders.FirstOrDefault(y => y.Name.Substring(3) == x.Name.Substring(3));
+                        if (sliderFieldInfo == null)
+                            continue;
 
-                            //When the button is clicked set a flag used by InputFieldOnValueChanged
-                            button.onClick.AddListener(delegate
-                            { ButtonOnClick(); });
-                            void ButtonOnClick() => buttonClicked = true;
-                        }
+                        var slider = (Slider)sliderFieldInfo.GetValue(cvs);
+                        if (slider == null)
+                            continue;
+
+                        //When the button is clicked set a flag used by InputFieldOnValueChanged
+                        button.onClick.AddListener(() => buttonClicked = true);
                     }
                 }
             }
         }
+
+        private static void ResetAllRangesToDefault(Target target, UnityEngine.Component cvs)
+        {
+            foreach (var x in target.Sliders)
+            {
+                var slider = (Slider)x.GetValue(cvs);
+                if (slider != null)
+                {
+                    if (SliderBlacklist.Contains(x.Name))
+                        continue;
+
+                    //Set all sliders to the default unlock state
+                    slider.maxValue = SliderMax;
+                    slider.minValue = SliderMin;
+                }
+            }
+        }
+
         /// <summary>
         /// Make sure the entered value is within range
         /// </summary>
         private static void UnlockSliderFromInput(Slider _slider, TMP_InputField _inputField, bool defaultRange)
         {
-            float value = float.TryParse(_inputField.text, out float num) ? num / 100 : 0;
+            var value = float.TryParse(_inputField.text, out var num) ? num / 100 : 0;
 
             if (value > SliderAbsoluteMax)
             {
@@ -236,14 +239,15 @@ namespace SliderUnlocker
             }
             UnlockSlider(_slider, value, defaultRange);
         }
+
         /// <summary>
         /// Unlock or lock the slider depending on the entered value
         /// </summary>
         private static void UnlockSlider(Slider _slider, float value, bool defaultRange)
         {
-            int valueRoundedUp = (int)Math.Ceiling(Math.Abs(value));
-            float max = defaultRange ? 1 : SliderMax;
-            float min = defaultRange ? 0 : SliderMin;
+            var valueRoundedUp = (int)Math.Ceiling(Math.Abs(value));
+            var max = defaultRange ? 1 : SliderMax;
+            var min = defaultRange ? 0 : SliderMin;
 
             if (value > max)
             {
