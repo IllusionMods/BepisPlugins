@@ -8,7 +8,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using TMPro;
-using UniRx;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -24,9 +23,9 @@ namespace SliderUnlocker
         /// <summary> Minimum value sliders can possibly extend </summary>
         internal static float SliderAbsoluteMin => Math.Min(SliderMin, -5f);
         /// <summary> Maximum value of sliders when not dynamically unlocked </summary>
-        internal static float SliderMax => (Maximum.Value < 100 ? 100 : Maximum.Value) / 100;
+        internal static float SliderMax => (Maximum.Value < 100 ? 100 : Maximum.Value) / 100f;
         /// <summary> Minimum value of sliders when not dynamically unlocked </summary>
-        internal static float SliderMin => (Minimum.Value > 0 ? 0 : Minimum.Value) / 100;
+        internal static float SliderMin => (Minimum.Value > 0 ? 0 : Minimum.Value) / 100f;
 
         private static readonly List<Target> _targets = new List<Target>();
 
