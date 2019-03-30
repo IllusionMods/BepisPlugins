@@ -382,6 +382,46 @@ namespace Sideloader.AutoResolver
             }
         }
 
+        internal static void ResolveStudioFilter(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
+        {
+            //Set filter ID to the resolved ID
+            int filterID = Studio.Studio.Instance.sceneInfo.aceNo;
+
+            if (extData != null && extData.data.ContainsKey("filterInfoGUID"))
+            {
+                string filterGUID = (string)extData.data["filterInfoGUID"];
+
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == filterID && x.GUID == filterGUID);
+                if (intResolve != null)
+                {
+                    if (resolveType == ResolveType.Load)
+                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Filter) [{filterGUID}] {filterID}->{intResolve.LocalSlot}");
+                    Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
+                }
+                else
+                    ShowGUIDError(filterGUID);
+            }
+            else if (resolveType == ResolveType.Load)
+            {
+                if (!Info.Instance.dicFilterLoadInfo.TryGetValue(filterID, out Info.LoadCommonInfo filterInfo))
+                {
+                    //Filter ID saved to the scene doesn't exist in the filter list, try compatibility resolving
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == filterID);
+                    if (intResolve != null)
+                    {
+                        //Found a matching sideloader mod
+                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Filter) {filterID}->{intResolve.LocalSlot}");
+                        Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
+                    }
+                    else
+                    {
+                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Filter) failed, no match found for ID {filterID}");
+                    }
+                }
+            }
+        }
+
+
         private static readonly HashSet<string> CategoryAndGroupList = new HashSet<string>()
         {
             "itemcategory",
