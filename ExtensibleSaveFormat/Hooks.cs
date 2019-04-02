@@ -140,12 +140,14 @@ namespace ExtensibleSaveFormat
                 {
                     /* Incomplete/non-existant data */
                 }
-                catch (InvalidOperationException)
+                catch (SystemException)
                 {
                     /* Invalid/unexpected deserialized data */
                 }
             }
-            if (cardReadEventCalled == false) //If the event wasn't called at this point, it means the card doesn't contain any data, but we still need to call the even for consistency.
+
+            //If the event wasn't called at this point, it means the card doesn't contain any data, but we still need to call the even for consistency.
+            if (cardReadEventCalled == false)
             {
                 ExtendedSave.internalCharaDictionary.Set(__instance, new Dictionary<string, PluginData>());
                 ExtendedSave.cardReadEvent(__instance);
