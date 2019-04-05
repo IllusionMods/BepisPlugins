@@ -77,10 +77,9 @@ namespace Sideloader.AutoResolver
                 var tmpExtInfo = (object[])extData.data["info"];
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
-                Logger.Log(LogLevel.Debug, "Sideloader marker found");
-                Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
-                foreach (ResolveInfo info in extInfo)
-                    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
+                //foreach (ResolveInfo info in extInfo)
+                //    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
             }
 
             IterateCardPrefixes(UniversalAutoResolver.ResolveStructure, file, extInfo);
@@ -153,8 +152,8 @@ namespace Sideloader.AutoResolver
             var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
 
             Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
-            foreach (ResolveInfo info in extInfo)
-                Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+            //foreach (ResolveInfo info in extInfo)
+            //    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
             {
@@ -166,7 +165,7 @@ namespace Sideloader.AutoResolver
                     {
                         kv.Value.SetMethod(structure, extResolve.LocalSlot);
 
-                        Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
+                        //Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
                     }
                 }
             }
@@ -207,10 +206,9 @@ namespace Sideloader.AutoResolver
                 var tmpExtInfo = (object[])extData.data["info"];
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
-                Logger.Log(LogLevel.Debug, "Sideloader marker found");
-                Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
-                foreach (ResolveInfo info in extInfo)
-                    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
+                //foreach (ResolveInfo info in extInfo)
+                //    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
             }
 
             IterateCoordinatePrefixes(UniversalAutoResolver.ResolveStructure, file, extInfo);
@@ -283,8 +281,8 @@ namespace Sideloader.AutoResolver
             var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
 
             Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
-            foreach (ResolveInfo info in extInfo)
-                Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+            //foreach (ResolveInfo info in extInfo)
+            //    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
             {
@@ -296,7 +294,7 @@ namespace Sideloader.AutoResolver
                     {
                         kv.Value.SetMethod(structure, extResolve.LocalSlot);
 
-                        Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
+                        //Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
                     }
                 }
             }
