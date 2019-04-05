@@ -13,10 +13,37 @@ namespace Sideloader.AutoResolver
     {
         public const string UARExtID = "com.bepis.sideloader.universalautoresolver";
 
-        public static List<ResolveInfo> LoadedResolutionInfo = new List<ResolveInfo>();
+        private static ILookup<int, ResolveInfo> _resolveInfoLookupSlot;
+        private static ILookup<int, ResolveInfo> _resolveInfoLookupLocalSlot;
+
+        public static void SetResolveInfos(ICollection<ResolveInfo> results)
+        {
+            _resolveInfoLookupSlot = results.ToLookup(info => info.Slot);
+            _resolveInfoLookupLocalSlot = results.ToLookup(info => info.LocalSlot);
+        }
+
+        public static IEnumerable<ResolveInfo> LoadedResolutionInfo => _resolveInfoLookupSlot?.SelectMany(x => x) ?? Enumerable.Empty<ResolveInfo>();
+
+        public static ResolveInfo TryGetResolutionInfo(string property, int localSlot)
+        {
+            return _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.Property == property);
+        }
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo)
+        {
+            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
+        }
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, string guid)
+        {
+            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.GUID == guid);
+        }
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo, string guid)
+        {
+            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo && x.GUID == guid);
+        }
+
         public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
-        public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
+        public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ICollection<ResolveInfo> extInfo, string propertyPrefix = "")
         {
             void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
             {
@@ -25,9 +52,7 @@ namespace Sideloader.AutoResolver
                 {
                     //the property does not have external slot information
                     //check if we have a corrosponding item for backwards compatbility
-                    var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
-                                                                           && x.Slot == kv.Value.GetMethod(structure)
-                                                                           && x.CategoryNo == kv.Key.Category);
+                    var intResolve = TryGetResolutionInfo(kv.Value.GetMethod(structure), kv.Key.ToString(), kv.Key.Category);
 
                     if (intResolve != null)
                     {
@@ -67,10 +92,7 @@ namespace Sideloader.AutoResolver
                     if (extResolve != null)
                     {
                         //the property has external slot information 
-                        var intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString()
-                                                                               && x.Slot == extResolve.Slot
-                                                                               && x.GUID == extResolve.GUID
-                                                                               && x.CategoryNo == kv.Key.Category);
+                        var intResolve = TryGetResolutionInfo(extResolve.Slot, kv.Key.ToString(), kv.Key.Category, extResolve.GUID);
 
                         if (intResolve != null)
                         {
@@ -118,7 +140,7 @@ namespace Sideloader.AutoResolver
         }
 
         private static int CurrentSlotID = 100000000;
-        public static void GenerateResolutionInfo(Manifest manifest, ChaListData data)
+        public static void GenerateResolutionInfo(Manifest manifest, ChaListData data, List<ResolveInfo> results)
         {
             var category = (ChaListDefine.CategoryNo)data.categoryNo;
 
@@ -130,17 +152,8 @@ namespace Sideloader.AutoResolver
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                foreach (var propertyKey in propertyKeys)
+                results.AddRange(propertyKeys.Select(propertyKey =>
                 {
-                    LoadedResolutionInfo.Add(new ResolveInfo
-                    {
-                        GUID = manifest.GUID,
-                        Slot = int.Parse(kv.Value[0]),
-                        LocalSlot = newSlot,
-                        Property = propertyKey.ToString(),
-                        CategoryNo = category
-                    });
-
                     //Logger.Log(LogLevel.Info, $"ResolveInfo - " +
                     //                          $"GUID: {manifest.GUID} " +
                     //                          $"Slot: {int.Parse(kv.Value[0])} " +
@@ -148,7 +161,16 @@ namespace Sideloader.AutoResolver
                     //                          $"Property: {propertyKey.ToString()} " +
                     //                          $"CategoryNo: {category} " +
                     //                          $"Count: {LoadedResolutionInfo.Count}");
-                }
+
+                    return new ResolveInfo
+                    {
+                        GUID = manifest.GUID,
+                        Slot = int.Parse(kv.Value[0]),
+                        LocalSlot = newSlot,
+                        Property = propertyKey.ToString(),
+                        CategoryNo = category
+                    };
+                }));
 
                 kv.Value[0] = newSlot.ToString();
             }
@@ -226,14 +248,14 @@ namespace Sideloader.AutoResolver
             }
         }
 
-        public static void ShowGUIDError(string GUID)
+        public static void ShowGUIDError(string guid)
         {
-            if (LoadedResolutionInfo.Any(x => x.GUID == GUID) || LoadedStudioResolutionInfo.Any(x => x.GUID == GUID))
+            if (LoadedResolutionInfo.Any(x => x.GUID == guid) || LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
-                Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{GUID}]");
+                Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{guid}]");
             else
                 //did not find a match, we don't have the mod
-                Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Missing mod detected! [{GUID}]");
+                Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Missing mod detected! [{guid}]");
         }
 
         public enum ResolveType { Save, Load }

@@ -30,14 +30,14 @@ namespace Sideloader.AutoResolver
             harmony.PatchAll(typeof(Hooks));
 
             harmony.Patch(typeof(SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
-                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(Hooks.OnValueChangedLutPrefix), AccessTools.all)), null);
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnValueChangedLutPrefix), AccessTools.all)), null);
             harmony.Patch(typeof(SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
-                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(Hooks.UpdateInfoPostfix), AccessTools.all)));
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(UpdateInfoPostfix), AccessTools.all)));
         }
 
         #region ChaFile
 
-        private static void IterateCardPrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, IEnumerable<ResolveInfo>, string> action, ChaFile file, IEnumerable<ResolveInfo> extInfo)
+        private static void IterateCardPrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFile file, ICollection<ResolveInfo> extInfo)
         {
             action(StructReference.ChaFileFaceProperties, file.custom.face, extInfo, "");
             action(StructReference.ChaFileBodyProperties, file.custom.body, extInfo, "");
@@ -117,8 +117,7 @@ namespace Sideloader.AutoResolver
                         }
                     }
 
-                    var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
-                                                                                              x.LocalSlot == slot);
+                    var info = UniversalAutoResolver.TryGetResolutionInfo(kv.Key.ToString(), slot);
 
                     if (info == null)
                         continue;
@@ -179,7 +178,7 @@ namespace Sideloader.AutoResolver
 
         #region ChaFileCoordinate
 
-        private static void IterateCoordinatePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, IEnumerable<ResolveInfo>, string> action, ChaFileCoordinate coordinate, IEnumerable<ResolveInfo> extInfo)
+        private static void IterateCoordinatePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFileCoordinate coordinate, ICollection<ResolveInfo> extInfo)
         {
             action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, "");
 
@@ -248,8 +247,7 @@ namespace Sideloader.AutoResolver
                         }
                     }
 
-                    var info = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == kv.Key.ToString() &&
-                                                                                              x.LocalSlot == slot);
+                    var info = UniversalAutoResolver.TryGetResolutionInfo(kv.Key.ToString(), slot);
 
                     if (info == null)
                         continue;
@@ -282,9 +280,9 @@ namespace Sideloader.AutoResolver
             var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
             var tmpExtInfo = (List<byte[]>)extData.data["info"];
-            var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize);
+            var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
 
-            Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count()}");
+            Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
             foreach (ResolveInfo info in extInfo)
                 Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
 

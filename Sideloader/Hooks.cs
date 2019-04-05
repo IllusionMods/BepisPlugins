@@ -47,7 +47,7 @@ namespace Sideloader
         {
             var studioList = ResourceRedirector.ListLoader.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath && x.FileNameWithoutExtension == _fileName).ToList();
 
-            if (studioList.Count() > 0)
+            if (studioList.Count > 0)
             {
                 bool didHeader = false;
                 int HeaderRows = studioList[0].Headers.Count;

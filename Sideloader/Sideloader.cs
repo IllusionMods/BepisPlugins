@@ -156,6 +156,9 @@ namespace Sideloader
                     Logger.Log(LogLevel.Debug, $"[SIDELOADER] Error details: {ex}");
                 }
             }
+
+            UniversalAutoResolver.SetResolveInfos(_gatheredResolutionInfos);
+
             BuildPngOnlyFolderList();
         }
 
@@ -174,10 +177,11 @@ namespace Sideloader
             }
         }
 
+        private readonly List<ResolveInfo> _gatheredResolutionInfos = new List<ResolveInfo>();
+
         protected void LoadAllLists(ZipFile arc, Manifest manifest)
         {
             List<ZipEntry> BoneList = new List<ZipEntry>();
-
             foreach (ZipEntry entry in arc)
             {
                 if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
@@ -188,7 +192,7 @@ namespace Sideloader
                         var chaListData = ListLoader.LoadCSV(stream);
 
                         SetPossessNew(chaListData);
-                        UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData);
+                        UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
                         ListLoader.ExternalDataList.Add(chaListData);
                     }
                     catch (Exception ex)
@@ -197,7 +201,7 @@ namespace Sideloader
                         Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
                     }
                 }
-                if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
                         BoneList.Add(entry);
