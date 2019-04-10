@@ -38,7 +38,6 @@ namespace ConfigurationManager
         public event EventHandler<ValueChangedEventArgs<bool>> DisplayingWindowChanged;
         public Action KeyPressedOverride;
 
-        private readonly Type _baseSettingType = typeof(ConfigWrapper<>);
         private Dictionary<Type, Action<PropSettingEntry>> _settingDrawHandlers;
 
         private bool _displayingWindow;
@@ -57,6 +56,7 @@ namespace ConfigurationManager
         private readonly ConfigWrapper<bool> _showAdvanced;
         private readonly ConfigWrapper<bool> _showKeybinds;
         private readonly ConfigWrapper<bool> _showSettings;
+        private bool _showDebug;
 
         public ConfigurationManager()
         {
@@ -86,9 +86,25 @@ namespace ConfigurationManager
 
         private void BuildSettingList()
         {
-            var results = Enumerable.Empty<PropSettingEntry>();
-            var skippedList = new List<string>();
+            CollectSettings(out var results, out var modsWithoutSettings, _showDebug);
 
+            if (!_showAdvanced.Value)
+                results = results.Where(x => x.IsAdvanced != true);
+            if (!_showKeybinds.Value)
+                results = results.Where(x => x.SettingType != typeof(KeyboardShortcut));
+            if (!_showSettings.Value)
+                results = results.Where(x => x.IsAdvanced == true || x.SettingType == typeof(KeyboardShortcut));
+
+            _settings = results.ToList();
+
+            _modsWithoutSettings = string.Join(", ", modsWithoutSettings.Select(x => x.TrimStart('!')).OrderBy(x => x).ToArray());
+        }
+
+        private static void CollectSettings(out IEnumerable<PropSettingEntry> results, out List<string> modsWithoutSettings, bool showDebug)
+        {
+            var baseSettingType = typeof(ConfigWrapper<>);
+            results = Enumerable.Empty<PropSettingEntry>();
+            modsWithoutSettings = new List<string>();
             foreach (var plugin in Utils.FindPlugins())
             {
                 var type = plugin.GetType();
@@ -97,14 +113,14 @@ namespace ConfigurationManager
                 if (pluginInfo == null)
                 {
                     Logger.Log(LogLevel.Error, $"Plugin {type.FullName} is missing the BepInPlugin attribute!");
-                    skippedList.Add(type.FullName);
+                    modsWithoutSettings.Add(type.FullName);
                     continue;
                 }
 
                 if (type.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>()
                     .Any(x => !x.Browsable))
                 {
-                    skippedList.Add(pluginInfo.Name);
+                    modsWithoutSettings.Add(pluginInfo.Name);
                     continue;
                 }
 
@@ -122,7 +138,7 @@ namespace ConfigurationManager
                     .Select(f => new FieldToPropertyInfoWrapper(f));
 
                 var settingEntries = settingProps.Concat(settingFields.Cast<PropertyInfo>())
-                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
 
                 detected.AddRange(settingEntries.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo, plugin)).Where(x => x != null));
 
@@ -138,7 +154,7 @@ namespace ConfigurationManager
                     .Select(f => new FieldToPropertyInfoWrapper(f));
 
                 var settingStaticEntries = settingStaticProps.Concat(settingStaticFields.Cast<PropertyInfo>())
-                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
 
                 detected.AddRange(settingStaticEntries.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo, plugin)).Where(x => x != null));
 
@@ -153,11 +169,11 @@ namespace ConfigurationManager
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
                     .Where(IsPropSafeToShow)
                     .FilterBrowsable(true, true)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
 
                 var normalPropsWithBrowsable = type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
                     .FilterBrowsable(true, false)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
 
                 var normalProps = normalPropsSafeToShow.Concat(normalPropsWithBrowsable).Distinct();
 
@@ -169,18 +185,23 @@ namespace ConfigurationManager
                     .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
                     .Where(IsPropSafeToShow)
                     .FilterBrowsable(true, true)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
 
                 var normalStaticPropsWithBrowsable = type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
                     .FilterBrowsable(true, false)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_baseSettingType));
+                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
 
                 var normalStaticProps = normalStaticPropsSafeToShow.Concat(normalStaticPropsWithBrowsable).Distinct();
 
                 detected.AddRange(normalStaticProps.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo, plugin)).Where(x => x != null));
 
+                detected.RemoveAll(x => x.Browsable == false);
+
+                if(!detected.Any())
+                    modsWithoutSettings.Add(pluginInfo.Name);
+
                 // Allow to enable/disable plugin if it uses any update methods ------
-                if (type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => UpdateMethodNames.Contains(x.Name)))
+                if (showDebug && type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => UpdateMethodNames.Contains(x.Name)))
                 {
                     var enabledSetting =
                         PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo, plugin);
@@ -191,8 +212,6 @@ namespace ConfigurationManager
                     detected.Add(enabledSetting);
                 }
 
-                detected.RemoveAll(x => x.Browsable == false);
-
                 if (detected.Any())
                 {
                     var isAdvancedPlugin = type.GetCustomAttributes(typeof(AdvancedAttribute), false).Cast<AdvancedAttribute>()
@@ -202,23 +221,7 @@ namespace ConfigurationManager
 
                     results = results.Concat(detected);
                 }
-                else
-                {
-                    skippedList.Add(pluginInfo.Name);
-                }
             }
-
-            if (!_showAdvanced.Value)
-                results = results.Where(x => x.IsAdvanced != true);
-            if (!_showKeybinds.Value)
-                results = results.Where(x => x.SettingType != typeof(KeyboardShortcut));
-            if (!_showSettings.Value)
-                results = results.Where(x => x.IsAdvanced == true || x.SettingType == typeof(KeyboardShortcut));
-
-            _settings = results.ToList();
-
-            _modsWithoutSettings =
-                string.Join(", ", skippedList.Select(x => x.TrimStart('!')).OrderBy(x => x).ToArray());
         }
 
         private void CalculateWindowRect()
@@ -296,24 +299,32 @@ namespace ConfigurationManager
         {
             GUILayout.BeginHorizontal(GUI.skin.box);
             {
-                var newVal = GUILayout.Toggle(_showSettings.Value, "Show settings");
+                GUILayout.Label("Show:", GUILayout.ExpandWidth(false));
+                var newVal = GUILayout.Toggle(_showSettings.Value, "Normal settings");
                 if (_showSettings.Value != newVal)
                 {
                     _showSettings.Value = newVal;
                     BuildSettingList();
                 }
 
-                newVal = GUILayout.Toggle(_showKeybinds.Value, "Show keyboard shortcuts");
+                newVal = GUILayout.Toggle(_showKeybinds.Value, "Keyboard shortcuts");
                 if (_showKeybinds.Value != newVal)
                 {
                     _showKeybinds.Value = newVal;
                     BuildSettingList();
                 }
 
-                newVal = GUILayout.Toggle(_showAdvanced.Value, "Show advanced settings");
+                newVal = GUILayout.Toggle(_showAdvanced.Value, "Advanced settings");
                 if (_showAdvanced.Value != newVal)
                 {
                     _showAdvanced.Value = newVal;
+                    BuildSettingList();
+                }
+
+                newVal = GUILayout.Toggle(_showDebug, "Debug settings");
+                if (_showDebug != newVal)
+                {
+                    _showDebug = newVal;
                     BuildSettingList();
                 }
             }
