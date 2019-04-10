@@ -49,6 +49,7 @@
     <Compile Include="Interface\AcceptableValueRangeAttribute.cs" />
     <Compile Include="Interface\AdvancedAttribute.cs" />
     <Compile Include="Interface\CustomSettingDrawAttribute.cs" />
+    <Compile Include="SettingSearcher.cs" />
     <Compile Include="Utilities\ComboBox.cs" />
     <Compile Include="ConfigurationManager.cs" />
     <Compile Include="Interface\KeyboardShortcut.cs" />
