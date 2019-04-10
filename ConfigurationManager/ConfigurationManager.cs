@@ -96,15 +96,20 @@ namespace ConfigurationManager
         private void BuildFilteredSettingList()
         {
             IEnumerable<PropSettingEntry> results = _allSettings;
-            if (!_showAdvanced.Value)
-                results = results.Where(x => x.IsAdvanced != true);
-            if (!_showKeybinds.Value)
-                results = results.Where(x => x.SettingType != typeof(KeyboardShortcut));
-            if (!_showSettings.Value)
-                results = results.Where(x => x.IsAdvanced == true || x.SettingType == typeof(KeyboardShortcut));
 
             if (!string.IsNullOrEmpty(_searchString))
+            {
                 results = results.Where(x => ContainsSearchString(x, _searchString));
+            }
+            else
+            {
+                if (!_showAdvanced.Value)
+                    results = results.Where(x => x.IsAdvanced != true);
+                if (!_showKeybinds.Value)
+                    results = results.Where(x => x.SettingType != typeof(KeyboardShortcut));
+                if (!_showSettings.Value)
+                    results = results.Where(x => x.IsAdvanced == true || x.SettingType == typeof(KeyboardShortcut));
+            }
 
             _filteredSetings = results.GroupBy(x => x.PluginInfo).OrderBy(x => x.Key.Name).ToList();
         }
@@ -205,6 +210,8 @@ namespace ConfigurationManager
             {
                 GUILayout.Label("Show: ", GUILayout.ExpandWidth(false));
 
+                GUI.enabled = SearchString == string.Empty;
+
                 var newVal = GUILayout.Toggle(_showSettings.Value, "Normal settings");
                 if (_showSettings.Value != newVal)
                 {
@@ -225,6 +232,8 @@ namespace ConfigurationManager
                     _showAdvanced.Value = newVal;
                     BuildFilteredSettingList();
                 }
+
+                GUI.enabled = true;
 
                 newVal = GUILayout.Toggle(_showDebug, "Debug stuff");
                 if (_showDebug != newVal)
