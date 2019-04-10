@@ -235,7 +235,7 @@ namespace ConfigurationManager
 
                 GUI.enabled = true;
 
-                newVal = GUILayout.Toggle(_showDebug, "Debug stuff");
+                newVal = GUILayout.Toggle(_showDebug, "Debug mode");
                 if (_showDebug != newVal)
                 {
                     _showDebug = newVal;
@@ -285,7 +285,10 @@ namespace ConfigurationManager
         {
             GUILayout.BeginVertical(GUI.skin.box);
             {
-                _fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}");
+                if (_showDebug)
+                    _fieldDrawer.DrawCenteredLabel(new GUIContent($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}", "GUID: " + plugin.Key.GUID));
+                else
+                    _fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}");
 
                 foreach (var category in plugin.Select(x => new
                 {
