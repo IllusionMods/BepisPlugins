@@ -51,6 +51,8 @@ namespace SliderUnlocker
         {
             Hooks.InstallHooks();
 
+            VoicePitchUnlocker.Init();
+
             foreach (var type in typeof(CvsAccessory).Assembly.GetTypes())
             {
                 if (type.Name.StartsWith("Cvs", StringComparison.OrdinalIgnoreCase) &&
@@ -79,7 +81,7 @@ namespace SliderUnlocker
         /// <summary>
         /// Sliders that don't work or have issues outside of the 0-100 limit
         /// </summary>
-        private static readonly string[] SliderBlacklist = { "sldWaistLowW", "sldHairLength", "sldPitchPow" };
+        private static readonly string[] SliderBlacklist = { "sldWaistLowW", "sldHairLength" };
 
         internal static IEnumerator ResetAllSliders()
         {

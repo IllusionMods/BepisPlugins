@@ -68,6 +68,7 @@
     <Compile Include="SliderMath.cs" />
     <Compile Include="SliderUnlocker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VoicePitchUnlocker.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConfigurationManager\ConfigurationManager.csproj">
