@@ -190,7 +190,8 @@ namespace ConfigurationManager
             {
                 if (CurrentKeyboardShortcutToSet == setting)
                 {
-                    GUILayout.TextArea("Press any key combination", GUILayout.ExpandWidth(true));
+                    GUILayout.Label("Press any key combination", GUILayout.ExpandWidth(true));
+                    GUIUtility.keyboardControl = -1;
 
                     foreach (var key in KeysToCheck)
                         if (Input.GetKeyUp(key))
