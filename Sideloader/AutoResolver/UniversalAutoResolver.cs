@@ -97,7 +97,8 @@ namespace Sideloader.AutoResolver
                         if (intResolve != null)
                         {
                             //found a match to a corrosponding internal mod
-                            //Logger.Log(LogLevel.Debug, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
+                            if (Sideloader.DebugLogging.Value)
+                                Logger.Log(LogLevel.Debug, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }
                         else
@@ -146,7 +147,8 @@ namespace Sideloader.AutoResolver
 
             var propertyKeys = StructReference.CollatedStructValues.Keys.Where(x => x.Category == category).ToList();
 
-            //Logger.Log(LogLevel.Debug, StructReference.CollatedStructValues.Count.ToString());
+            if (Sideloader.DebugLogging.Value)
+                Logger.Log(LogLevel.Debug, StructReference.CollatedStructValues.Count.ToString());
 
             foreach (var kv in data.dictList)
             {
@@ -154,13 +156,16 @@ namespace Sideloader.AutoResolver
 
                 results.AddRange(propertyKeys.Select(propertyKey =>
                 {
-                    //Logger.Log(LogLevel.Info, $"ResolveInfo - " +
-                    //                          $"GUID: {manifest.GUID} " +
-                    //                          $"Slot: {int.Parse(kv.Value[0])} " +
-                    //                          $"LocalSlot: {newSlot} " +
-                    //                          $"Property: {propertyKey.ToString()} " +
-                    //                          $"CategoryNo: {category} " +
-                    //                          $"Count: {LoadedResolutionInfo.Count}");
+                    if (Sideloader.DebugLogging.Value)
+                    {
+                        Logger.Log(LogLevel.Info, $"ResolveInfo - " +
+                                                  $"GUID: {manifest.GUID} " +
+                                                  $"Slot: {int.Parse(kv.Value[0])} " +
+                                                  $"LocalSlot: {newSlot} " +
+                                                  $"Property: {propertyKey.ToString()} " +
+                                                  $"CategoryNo: {category} " +
+                                                  $"Count: {LoadedResolutionInfo.Count()}");
+                    }
 
                     return new ResolveInfo
                     {
@@ -237,11 +242,14 @@ namespace Sideloader.AutoResolver
                         ResolveItem = true
                     });
 
-                    //Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
-                    //                          $"GUID: {manifest.GUID} " +
-                    //                          $"Slot: {int.Parse(entry[0])} " +
-                    //                          $"LocalSlot: {newSlot} " +
-                    //                          $"Count: {LoadedStudioResolutionInfo.Count}");
+                    if (Sideloader.DebugLogging.Value)
+                    {
+                        Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
+                                              $"GUID: {manifest.GUID} " +
+                                              $"Slot: {int.Parse(entry[0])} " +
+                                              $"LocalSlot: {newSlot} " +
+                                              $"Count: {LoadedStudioResolutionInfo.Count}");
+                    }
 
                     entry[0] = newSlot.ToString();
                 }

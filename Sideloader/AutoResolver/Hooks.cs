@@ -78,8 +78,12 @@ namespace Sideloader.AutoResolver
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
                 Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
-                //foreach (ResolveInfo info in extInfo)
-                //    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+
+                if (Sideloader.DebugLogging.Value)
+                {
+                    foreach (ResolveInfo info in extInfo)
+                        Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                }
             }
 
             IterateCardPrefixes(UniversalAutoResolver.ResolveStructure, file, extInfo);
@@ -152,8 +156,12 @@ namespace Sideloader.AutoResolver
             var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
 
             Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
-            //foreach (ResolveInfo info in extInfo)
-            //    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+
+            if (Sideloader.DebugLogging.Value)
+            {
+                foreach (ResolveInfo info in extInfo)
+                    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+            }
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
             {
@@ -165,7 +173,8 @@ namespace Sideloader.AutoResolver
                     {
                         kv.Value.SetMethod(structure, extResolve.LocalSlot);
 
-                        //Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
                     }
                 }
             }
@@ -207,8 +216,12 @@ namespace Sideloader.AutoResolver
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
                 Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
-                //foreach (ResolveInfo info in extInfo)
-                //    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+
+                if (Sideloader.DebugLogging.Value)
+                {
+                    foreach (ResolveInfo info in extInfo)
+                        Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                }
             }
 
             IterateCoordinatePrefixes(UniversalAutoResolver.ResolveStructure, file, extInfo);
@@ -281,8 +294,12 @@ namespace Sideloader.AutoResolver
             var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
 
             Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
-            //foreach (ResolveInfo info in extInfo)
-            //    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+
+            if (Sideloader.DebugLogging.Value)
+            {
+                foreach (ResolveInfo info in extInfo)
+                    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+            }
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
             {
@@ -294,7 +311,8 @@ namespace Sideloader.AutoResolver
                     {
                         kv.Value.SetMethod(structure, extResolve.LocalSlot);
 
-                        //Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
                     }
                 }
             }
@@ -386,7 +404,8 @@ namespace Sideloader.AutoResolver
                         ObjectResolutionInfo.Add(intResolve);
 
                         //set item ID back to default
-                        //Logger.Log(LogLevel.Info, $"Setting [{item.dicKey}] ID:{item.no}->{extResolve.Slot}");
+                if (Sideloader.DebugLogging.Value)
+                        Logger.Log(LogLevel.Info, $"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
                         Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
                     }
                 }
@@ -406,7 +425,8 @@ namespace Sideloader.AutoResolver
                         ObjectResolutionInfo.Add(intResolve);
 
                         //Set item ID back to default
-                        //Logger.Log(LogLevel.Info, $"Setting [{item.dicKey}] ID:{item.no}->{extResolve.Slot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Info, $"Setting [{Light.dicKey}] ID:{Light.no}->{extResolve.Slot}");
                         Traverse.Create(Light).Property("no").SetValue(extResolve.Slot);
                     }
                 }
@@ -426,7 +446,8 @@ namespace Sideloader.AutoResolver
                     ExtendedData.Add("mapInfoGUID", extResolve.GUID);
 
                     //Set map ID back to default
-                    //Logger.Log(LogLevel.Info, $"Setting Map ID:{mapID}->{extResolve.Slot}");
+                    if (Sideloader.DebugLogging.Value)
+                        Logger.Log(LogLevel.Info, $"Setting Map ID:{mapID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.map = extResolve.Slot;
                 }
             }
@@ -441,7 +462,8 @@ namespace Sideloader.AutoResolver
                     ExtendedData.Add("filterInfoGUID", extResolve.GUID);
 
                     //Set filter ID back to default
-                    //Logger.Log(LogLevel.Info, $"Setting Filter ID:{mapID}->{extResolve.Slot}");
+                    if (Sideloader.DebugLogging.Value)
+                        Logger.Log(LogLevel.Info, $"Setting Filter ID:{mapID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.aceNo = extResolve.Slot;
                 }
             }

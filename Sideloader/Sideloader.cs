@@ -35,6 +35,13 @@ namespace Sideloader
         [Category("Settings")]
         [Description("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log.")]
         public static ConfigWrapper<bool> MissingModWarning { get; private set; }
+
+        [DisplayName("Debug logging")]
+        [Category("Settings")]
+        [Description("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\n\n" +
+                     "Warning: Will increase load and save times noticeably and will result in very large log sizes.")]
+        public static ConfigWrapper<bool> DebugLogging { get; private set; }
+
         /// <summary>
         /// Check if a mod with specified GUID has been loaded
         /// </summary>
@@ -63,7 +70,8 @@ namespace Sideloader
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
             ResourceRedirector.ResourceRedirector.AssetBundleResolvers.Add(AssetBundleRedirectHook);
 
-            MissingModWarning = new ConfigWrapper<bool>(nameof(MissingModWarning), this, true);
+            MissingModWarning = new ConfigWrapper<bool>("MissingModWarning", this, true);
+            DebugLogging = new ConfigWrapper<bool>("DebugLogging", this, false);
 
             //check mods directory
             var modDirectory = Path.Combine(Paths.GameRootPath, "mods");
@@ -329,7 +337,9 @@ namespace Sideloader
                         {
                             long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
 
-                            Logger.Log(LogLevel.Debug, $"[SIDELOADER] Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
+                            if (DebugLogging.Value)
+                                Logger.Log(LogLevel.Debug, $"[SIDELOADER] Streaming {entry.Name} ({archiveFilename}) unity3d file from disk, offset {index}");
+
                             bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
                         }
                         else
