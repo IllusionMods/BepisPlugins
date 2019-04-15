@@ -1,13 +1,13 @@
 ﻿using alphaShot;
 using BepInEx;
 using BepInEx.Logging;
+using BepisPlugins;
 using Illusion.Game;
 using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using BepisPlugins;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -21,7 +21,7 @@ namespace Screencap
 
         public static ScreenshotManager Instance { get; private set; }
 
-        private string screenshotDir = Path.Combine(Paths.GameRootPath, "UserData\\cap\\");
+        private readonly string screenshotDir = Path.Combine(Paths.GameRootPath, "UserData\\cap\\");
         internal AlphaShot2 currentAlphaShot;
 
         #region Config properties
@@ -36,15 +36,13 @@ namespace Screencap
         [DisplayName("Horizontal (Width in px)")]
         [AcceptableValueRange(2, 4096, false)]
         public static ConfigWrapper<int> ResolutionX { get; private set; }
-
         [Category("Rendered screenshot output resolution")]
         [DisplayName("Vertical (Height in px)")]
         [AcceptableValueRange(2, 4096, false)]
         public static ConfigWrapper<int> ResolutionY { get; private set; }
-
         [DisplayName("Rendered screenshot upsampling ratio")]
         [Description("Capture screenshots in a higher resolution and then downscale them to desired size. " +
-                     "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
+             "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
         public static ConfigWrapper<int> DownscalingRate { get; private set; }
 
@@ -58,6 +56,10 @@ namespace Screencap
         [Description("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the " +
                      "background (e.g. the map). Works well in character creator and studio.")]
         public static ConfigWrapper<bool> CaptureAlpha { get; private set; }
+        [DisplayName("Show screenshot message")]
+        [Category("Settings")]
+        [Description("Whether screenshot messages will be displayed on screen. Messages will still be written to the log.")]
+        public static ConfigWrapper<bool> ScreenshotMessage { get; private set; }
 
         #endregion
 
@@ -83,6 +85,7 @@ namespace Screencap
             DownscalingRate = new ConfigWrapper<int>("downscalerate", this, 2);
             CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 3);
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
+            ScreenshotMessage = new ConfigWrapper<bool>("screenshotmessage", this, true);
 
             SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
             InstallSceenshotHandler();
@@ -118,7 +121,7 @@ namespace Screencap
         {
             yield return new WaitForEndOfFrame();
             Utils.Sound.Play(SystemSE.photo);
-            BepInEx.Logger.Log(LogLevel.Message, $"UI screenshot saved to {filename}");
+            BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"UI screenshot saved to {filename}");
         }
 
         private IEnumerator TakeCharScreenshot()
@@ -131,7 +134,7 @@ namespace Screencap
                 File.WriteAllBytes(filename, currentAlphaShot.Capture(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value));
 
                 Utils.Sound.Play(SystemSE.photo);
-                BepInEx.Logger.Log(LogLevel.Message, $"Character screenshot saved to {filename}");
+                BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"Character screenshot saved to {filename}");
             }
             else
             {
@@ -248,7 +251,7 @@ namespace Screencap
                         textColor = Color.white
                     }
                 });
-                
+
                 GUILayout.BeginHorizontal();
                 {
                     int carddownscale = (int)Math.Round(GUILayout.HorizontalSlider(CardDownscalingRate.Value, 1, 4));
