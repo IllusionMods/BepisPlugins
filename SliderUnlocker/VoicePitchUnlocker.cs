@@ -24,9 +24,10 @@ namespace SliderUnlocker
             var hi = HarmonyInstance.Create(nameof(VoicePitchUnlocker));
             hi.PatchAll(typeof(VoicePitchUnlocker));
 
-            var mi = AccessTools.Method(AccessTools.TypeByName("ChaCustom.CvsChara+<SetInputText>c__Iterator0"), "MoveNext");
-            var tpl = new HarmonyMethod(typeof(VoicePitchUnlocker), nameof(voicePitchTpl));
-            hi.Patch(mi, null, null, tpl);
+            var iteratorType = typeof(CvsChara).GetNestedType("<SetInputText>c__Iterator0", AccessTools.all);
+            var iteratorMethod = AccessTools.Method(iteratorType, "MoveNext");
+            var transpiler = new HarmonyMethod(typeof(VoicePitchUnlocker), nameof(voicePitchTpl));
+            hi.Patch(iteratorMethod, null, null, transpiler);
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFileParameter), "get_voicePitch")]
