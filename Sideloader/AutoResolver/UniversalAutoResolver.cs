@@ -147,16 +147,13 @@ namespace Sideloader.AutoResolver
 
             var propertyKeys = StructReference.CollatedStructValues.Keys.Where(x => x.Category == category).ToList();
 
-            if (Sideloader.DebugLogging.Value)
-                Logger.Log(LogLevel.Debug, StructReference.CollatedStructValues.Count.ToString());
-
             foreach (var kv in data.dictList)
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
                 results.AddRange(propertyKeys.Select(propertyKey =>
                 {
-                    if (Sideloader.DebugLogging.Value)
+                    if (Sideloader.DebugResolveInfoLogging.Value)
                     {
                         Logger.Log(LogLevel.Info, $"ResolveInfo - " +
                                                   $"GUID: {manifest.GUID} " +
@@ -242,7 +239,7 @@ namespace Sideloader.AutoResolver
                         ResolveItem = true
                     });
 
-                    if (Sideloader.DebugLogging.Value)
+                    if (Sideloader.DebugResolveInfoLogging.Value)
                     {
                         Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
                                               $"GUID: {manifest.GUID} " +

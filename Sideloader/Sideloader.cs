@@ -40,7 +40,14 @@ namespace Sideloader
         [Category("Settings")]
         [Description("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\n\n" +
                      "Warning: Will increase load and save times noticeably and will result in very large log sizes.")]
+
         public static ConfigWrapper<bool> DebugLogging { get; private set; }
+
+        [DisplayName("Debug resolve info logging")]
+        [Category("Settings")]
+        [Description("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\n\n" +
+             "Warning: Will increase game start up time and will result in very large log sizes.")]
+        public static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
 
         /// <summary>
         /// Check if a mod with specified GUID has been loaded
@@ -72,6 +79,7 @@ namespace Sideloader
 
             MissingModWarning = new ConfigWrapper<bool>("MissingModWarning", this, true);
             DebugLogging = new ConfigWrapper<bool>("DebugLogging", this, false);
+            DebugResolveInfoLogging = new ConfigWrapper<bool>("DebugResolveInfoLogging", this, false);
 
             //check mods directory
             var modDirectory = Path.Combine(Paths.GameRootPath, "mods");
