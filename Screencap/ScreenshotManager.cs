@@ -132,7 +132,7 @@ namespace Screencap
             {
                 uiShow = !uiShow;
                 ResolutionXBuffer = ResolutionX.Value.ToString();
-                ResolutionYBuffer = ResolutionX.Value.ToString();
+                ResolutionYBuffer = ResolutionY.Value.ToString();
             }
             else if (CK_CaptureAlpha.IsDown()) StartCoroutine(TakeCharScreenshot());
             else if (CK_Capture.IsDown()) TakeScreenshot();
