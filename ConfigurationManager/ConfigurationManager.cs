@@ -186,11 +186,11 @@ namespace ConfigurationManager
 
         private void SettingsWindow(int id)
         {
-            _settingWindowScrollPos = GUILayout.BeginScrollView(_settingWindowScrollPos);
+            DrawWindowHeader();
+
+            _settingWindowScrollPos = GUILayout.BeginScrollView(_settingWindowScrollPos, false, true);
             GUILayout.BeginVertical();
             {
-                DrawWindowHeader();
-
                 foreach (var plugin in _filteredSetings)
                     DrawSinglePlugin(plugin);
 
