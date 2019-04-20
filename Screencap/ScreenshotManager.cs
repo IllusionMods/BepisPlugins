@@ -30,6 +30,9 @@ namespace Screencap
                      "Not affected by settings for rendered screenshots.")]
         public static SavedKeyboardShortcut CK_Capture { get; private set; }
         public static SavedKeyboardShortcut CK_CaptureAlpha { get; private set; }
+        [Description("Captures a 360 screenshot around current camera. The created image is in equirectangular " +
+                     "format and can be viewed by most 360 image viewers (e.g. Google Cardboard).")]
+        public static SavedKeyboardShortcut CK_Capture360 { get; private set; }
         public static SavedKeyboardShortcut CK_Gui { get; private set; }
 
         [Category("Rendered screenshot output resolution")]
@@ -41,6 +44,12 @@ namespace Screencap
         [DisplayName("Vertical (Height in px)")]
         [AcceptableValueRange(2, 4096, false)]
         public static ConfigWrapper<int> ResolutionY { get; private set; }
+
+        [DisplayName("360 screenshot resolution")]
+        [Description("Horizontal resolution of 360 screenshots. Decrease if you have issues.\n\n" +
+                     "WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to take, 8192 will need much more.")]
+        [AcceptableValueList(new object[] { 1024, 2048, 4096, 8192 })]
+        public static ConfigWrapper<int> Resolution360 { get; private set; }
 
         [DisplayName("Rendered screenshot upsampling ratio")]
         [Description("Capture screenshots in a higher resolution and then downscale them to desired size. " +
@@ -76,10 +85,12 @@ namespace Screencap
             Instance = this;
             CK_Capture = new SavedKeyboardShortcut("Take UI screenshot", this, new KeyboardShortcut(KeyCode.F9));
             CK_CaptureAlpha = new SavedKeyboardShortcut("Take rendered screenshot", this, new KeyboardShortcut(KeyCode.F11));
+            CK_Capture360 = new SavedKeyboardShortcut("Take 360 screenshot", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl));
             CK_Gui = new SavedKeyboardShortcut("Open settings window", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift));
 
             ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
             ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
+            Resolution360 = new ConfigWrapper<int>("resolution-360", this, 4096);
             DownscalingRate = new ConfigWrapper<int>("downscalerate", this, 2);
             CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 3);
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
@@ -91,6 +102,8 @@ namespace Screencap
                 Directory.CreateDirectory(screenshotDir);
 
             Hooks.InstallHooks();
+
+            I360Render.Init();
         }
 
         private void InstallSceenshotHandler()
@@ -104,6 +117,7 @@ namespace Screencap
             if (CK_Gui.IsDown()) uiShow = !uiShow;
             else if (CK_CaptureAlpha.IsDown()) StartCoroutine(TakeCharScreenshot());
             else if (CK_Capture.IsDown()) TakeScreenshot();
+            else if (CK_Capture360.IsDown()) StartCoroutine(Take360Screenshot());
         }
 
         private void TakeScreenshot()
@@ -135,10 +149,27 @@ namespace Screencap
             }
             else
             {
-                BepInEx.Logger.Log(LogLevel.Message, $"Can't render a screenshot here, try UI screenshot instead");
+                BepInEx.Logger.Log(LogLevel.Message, "Can't render a screenshot here, try UI screenshot instead");
             }
+        }
 
-            //GC.Collect();
+        private IEnumerator Take360Screenshot()
+        {
+            yield return new WaitForEndOfFrame();
+
+            try
+            {
+                var filename = GetUniqueFilename();
+                File.WriteAllBytes(filename, I360Render.Capture(Resolution360.Value, false));
+
+                Utils.Sound.Play(SystemSE.photo);
+                BepInEx.Logger.Log(LogLevel.Message, $"360 screenshot saved to {filename}");
+            }
+            catch (Exception e)
+            {
+                BepInEx.Logger.Log(LogLevel.Message | LogLevel.Error, "Failed to take a 360 screenshot - " + e.Message);
+                BepInEx.Logger.Log(LogLevel.Error, e.StackTrace);
+            }
         }
 
         #region UI
@@ -248,7 +279,7 @@ namespace Screencap
                         textColor = Color.white
                     }
                 });
-                
+
                 GUILayout.BeginHorizontal();
                 {
                     int carddownscale = (int)Math.Round(GUILayout.HorizontalSlider(CardDownscalingRate.Value, 1, 4));
@@ -268,7 +299,7 @@ namespace Screencap
             GUILayout.EndVertical();
 
             CaptureAlpha.Value = GUILayout.Toggle(CaptureAlpha.Value, "Transparent background");
-
+            
             if (GUILayout.Button("Open screenshot dir"))
                 Process.Start(screenshotDir);
 

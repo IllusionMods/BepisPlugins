@@ -69,5 +69,15 @@ namespace Screencap.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] EquirectangularConverter {
+            get {
+                object obj = ResourceManager.GetObject("EquirectangularConverter", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

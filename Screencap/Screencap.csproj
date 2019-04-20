@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Hooks.cs" />
+    <Compile Include="Renderers\I360Render.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -80,9 +81,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\blackout.unity3d" />
+    <None Include="Resources\EquirectangularConverter.unity3d" />
     <None Include="shader_source\alphaMask.shader" />
     <None Include="shader_source\blackout.shader" />
     <None Include="shader_source\ddt-jinc2.shader" />
+    <None Include="shader_source\EquirectangularConverter.shader" />
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
