@@ -84,7 +84,6 @@
     <None Include="Resources\EquirectangularConverter.unity3d" />
     <None Include="shader_source\alphaMask.shader" />
     <None Include="shader_source\blackout.shader" />
-    <None Include="shader_source\ddt-jinc2.shader" />
     <None Include="shader_source\EquirectangularConverter.shader" />
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
