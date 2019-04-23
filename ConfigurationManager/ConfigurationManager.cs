@@ -297,7 +297,9 @@ namespace ConfigurationManager
                             ? KeyboardShortcutsCategoryName
                             : new GUIContent(x.Category)
                 })
-                    .GroupBy(a => a.category.text).OrderBy(x => x.Key))
+                    .GroupBy(a => a.category.text)
+                    .OrderBy(x=> string.Equals(x.Key, KeyboardShortcutsCategoryName.text, StringComparison.Ordinal))
+                    .ThenBy(x => x.Key))
                 {
                     if (!string.IsNullOrEmpty(category.Key))
                         _fieldDrawer.DrawCenteredLabel(category.First().category);
