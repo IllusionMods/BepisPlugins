@@ -10,19 +10,17 @@ namespace alphaShot
         private Material matScale;
         private Material matBlackout;
         private Material matMask;
-        private int sp_texsize;
 
         private bool InStudio = false;
 
         void Awake()
         {
-            sp_texsize = Shader.PropertyToID("_texture_size");
             var abd = Screencap.Properties.Resources.blackout;
             var ab = AssetBundle.LoadFromMemory(abd);
-            matBlackout = new Material(ab.LoadAsset<Shader>("assets/blackout.shader"));
+            matBlackout = new Material(ab.LoadAsset<Shader>("assets/shaders/blackout.shader"));
             matBlackout.SetColor("_TargetColour", Color.black);
-            matMask = new Material(ab.LoadAsset<Shader>("assets/alphamask.shader"));
-            matScale = new Material(ab.LoadAsset<Shader>("assets/ddt-jinc2.shader"));
+            matMask = new Material(ab.LoadAsset<Shader>("assets/shaders/alphamask.shader"));
+            matScale = new Material(ab.LoadAsset<Shader>("assets/shaders/resize.shader"));
             ab.Unload(false);
 
             InStudio = SceneManager.GetActiveScene().name == "Studio";
@@ -30,7 +28,7 @@ namespace alphaShot
 
         public byte[] Lanczos(Texture input, int ResolutionX, int ResolutionY)
         {
-            matScale.SetFloat("_texture_size", Mathf.Max(input.width, input.height));
+            matScale.SetVector("_KernelAndSize", new Vector4(5, 5, ResolutionX, ResolutionY));
             var rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             var prev = RenderTexture.active;
             RenderTexture.active = rt;
