@@ -85,6 +85,7 @@
     <None Include="shader_source\alphaMask.shader" />
     <None Include="shader_source\blackout.shader" />
     <None Include="shader_source\EquirectangularConverter.shader" />
+    <None Include="shader_source\Resize.shader" />
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
