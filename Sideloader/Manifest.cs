@@ -20,6 +20,7 @@ namespace Sideloader
         public string Author => manifestDocument.Root?.Element("author")?.Value;
         public string Website => manifestDocument.Root?.Element("website")?.Value;
         public string Description => manifestDocument.Root?.Element("description")?.Value;
+        public string Game => manifestDocument.Root?.Element("game")?.Value;
 
         public Manifest(Stream stream)
         {
