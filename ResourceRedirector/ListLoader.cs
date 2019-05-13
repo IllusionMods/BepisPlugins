@@ -92,9 +92,9 @@ namespace ResourceRedirector
 
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
-                chaListData.categoryNo = int.Parse(reader.ReadLine().Trim());
-                chaListData.distributionNo = int.Parse(reader.ReadLine().Trim());
-                chaListData.filePath = reader.ReadLine().Trim();
+                chaListData.categoryNo = int.Parse(reader.ReadLine().Split(',')[0].Trim());
+                chaListData.distributionNo = int.Parse(reader.ReadLine().Split(',')[0].Trim());
+                chaListData.filePath = reader.ReadLine().Split(',')[0].Trim();
                 chaListData.lstKey = reader.ReadLine().Trim().Split(',').ToList();
 
                 int i = 0;
