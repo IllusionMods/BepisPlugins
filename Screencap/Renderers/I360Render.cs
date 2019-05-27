@@ -1,5 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using BepInEx.Logging;
+using Harmony;
 using UnityEngine;
 using UnityStandardAssets.ImageEffects;
 
@@ -20,6 +26,36 @@ namespace Screencap
             var ab = AssetBundle.LoadFromMemory(abd);
             equirectangularConverter = new Material(ab.LoadAsset<Shader>("assets/shaders/equirectangularconverter.shader"));
             ab.Unload(false);
+
+            HarmonyInstance.Create(ScreenshotManager.GUID).PatchAll(typeof(I360Render));
+        }
+
+        [HarmonyTranspiler]
+        [HarmonyPatch(typeof(MirrorReflection), nameof(MirrorReflection.OnWillRenderObject))]
+        public static IEnumerable<CodeInstruction> MirrorReflectionTpl(IEnumerable<CodeInstruction> instructions)
+        {
+            var prop = typeof(GL).GetProperty(nameof(GL.invertCulling), AccessTools.all);
+            if (prop == null) BepInEx.Logger.Log(LogLevel.Error, "Failed to find GL.invertCulling " + new StackTrace());
+
+            foreach (var codeInstruction in instructions)
+            {
+                if (prop != null && codeInstruction.operand is MethodInfo m && m.Name == "SetRevertBackfacing")
+                {
+                    // Get rid of the method parameter
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    // Get current value
+                    yield return new CodeInstruction(OpCodes.Call, prop.GetGetMethod());
+                    // Invert it
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
+                    yield return new CodeInstruction(OpCodes.Ceq);
+                    // Set the inverted value
+                    yield return new CodeInstruction(OpCodes.Call, prop.GetSetMethod());
+                }
+                else
+                {
+                    yield return codeInstruction;
+                }
+            }
         }
 
         public static byte[] Capture(int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null)
