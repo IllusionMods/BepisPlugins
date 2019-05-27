@@ -14,7 +14,7 @@ namespace Screencap
 
         public static void Init()
         {
-            if(equirectangularConverter != null) return;
+            if (equirectangularConverter != null) return;
 
             var abd = Properties.Resources.EquirectangularConverter;
             var ab = AssetBundle.LoadFromMemory(abd);
@@ -53,7 +53,7 @@ namespace Screencap
 
                 if (!renderCam.RenderToCubemap(cubemap))
                     throw new Exception("Rendering to cubemap is not supported on device/platform");
-                
+
                 Graphics.Blit(cubemap, equirectangularTexture, equirectangularConverter);
                 output = RtToT2D(equirectangularTexture);
 
