@@ -23,6 +23,8 @@ namespace Sideloader
         public const string GUID = "com.bepis.bepinex.sideloader";
         public const string Version = BepisPlugins.Metadata.PluginsVersion;
 
+        private static readonly string[] GameNameList = { "koikatsu", "koikatu", "コイカツ" };
+
         protected List<ZipFile> Archives = new List<ZipFile>();
 
         public static readonly List<Manifest> LoadedManifests = new List<Manifest>();
@@ -116,7 +118,7 @@ namespace Sideloader
                 {
                     archive = new ZipFile(archivePath);
 
-                    if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                    if (Manifest.TryLoadFromZip(archive, out Manifest manifest) && (manifest.Game.IsNullOrWhiteSpace() || GameNameList.Contains(manifest.Game.ToLower().Replace("!", ""))))
                         archives.Add(archive, manifest);
                 }
                 catch (Exception ex)
@@ -127,7 +129,7 @@ namespace Sideloader
                 }
             }
 
-            // Handlie duplicate GUIDs and load unique mods
+            // Handle duplicate GUIDs and load unique mods
             foreach (var modGroup in archives.GroupBy(x => x.Value.GUID))
             {
                 // Order by version if available, else use modified dates (less reliable)

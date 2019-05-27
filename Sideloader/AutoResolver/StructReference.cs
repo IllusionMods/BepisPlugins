@@ -1,8 +1,9 @@
 ﻿using Harmony;
 using System;
 using System.Collections.Generic;
-using CategoryNo = ChaListDefine.CategoryNo;
+using System.Linq;
 using static ChaFileDefine;
+using CategoryNo = ChaListDefine.CategoryNo;
 
 namespace Sideloader.AutoResolver
 {
@@ -21,10 +22,7 @@ namespace Sideloader.AutoResolver
             Prefix = prefix;
         }
 
-        public override string ToString()
-        {
-            return Prefix != "" ? $"{Prefix}.{Property}" : Property;
-        }
+        public override string ToString() => Prefix != "" ? $"{Prefix}.{Property}" : Property;
     }
 
     public static class StructReference
@@ -75,13 +73,13 @@ namespace Sideloader.AutoResolver
                 new CategoryProperty(CategoryNo.mt_eye, "Pupil1", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileFace)obj).pupil[0].id = value; },
-                    (obj) =>          ((ChaFileFace)obj).pupil[0].id));
+                    (obj) => ((ChaFileFace)obj).pupil[0].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_eye, "Pupil2", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileFace)obj).pupil[1].id = value; },
-                    (obj) =>          ((ChaFileFace)obj).pupil[1].id));
+                    (obj) => ((ChaFileFace)obj).pupil[1].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_eye_gradation, "PupilGradient1", prefix),
@@ -115,38 +113,38 @@ namespace Sideloader.AutoResolver
             };
 
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileBody), baseProperties, prefix);
-            
+
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_body_paint, "PaintID1", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileBody)obj).paintId[0] = value; },
-                    (obj) =>          ((ChaFileBody)obj).paintId[0]));
+                    (obj) => ((ChaFileBody)obj).paintId[0]));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_body_paint, "PaintID2", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileBody)obj).paintId[1] = value; },
-                    (obj) =>          ((ChaFileBody)obj).paintId[1]));
+                    (obj) => ((ChaFileBody)obj).paintId[1]));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.bodypaint_layout, "PaintLayoutID1", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileBody)obj).paintLayoutId[0] = value; },
-                    (obj) =>          ((ChaFileBody)obj).paintLayoutId[0]));
+                    (obj) => ((ChaFileBody)obj).paintLayoutId[0]));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.bodypaint_layout, "PaintLayoutID2", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileBody)obj).paintLayoutId[1] = value; },
-                    (obj) =>          ((ChaFileBody)obj).paintLayoutId[1]));
+                    (obj) => ((ChaFileBody)obj).paintLayoutId[1]));
 
             return generatedProperties;
         }
 
-	    public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = _chaFileBodyGenerator();
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = _chaFileBodyGenerator();
 
-	    #endregion
+        #endregion
 
         #region ChaFileHair
         private static Dictionary<CategoryProperty, StructValue<int>> _chaFileHairGenerator()
@@ -164,30 +162,30 @@ namespace Sideloader.AutoResolver
                 new CategoryProperty(CategoryNo.bo_hair_b, "HairBack", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.back].id = value; },
-                    (obj) =>          ((ChaFileHair)obj).parts[(int)HairKind.back].id));
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.back].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.bo_hair_f, "HairFront", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.front].id = value; },
-                    (obj) =>          ((ChaFileHair)obj).parts[(int)HairKind.front].id));
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.front].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.bo_hair_s, "HairSide", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.side].id = value; },
-                    (obj) =>          ((ChaFileHair)obj).parts[(int)HairKind.side].id));
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.side].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.bo_hair_o, "HairOption", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.option].id = value; },
-                    (obj) =>          ((ChaFileHair)obj).parts[(int)HairKind.option].id));
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.option].id));
 
             return generatedProperties;
         }
 
-	    public static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties { get; } = _chaFileHairGenerator();
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties { get; } = _chaFileHairGenerator();
         #endregion
 
         #region ChaFileMakeup
@@ -203,25 +201,25 @@ namespace Sideloader.AutoResolver
             };
 
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileMakeup), baseProperties, prefix);
-            
+
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_face_paint, "PaintID1", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileMakeup)obj).paintId[0] = value; },
-                    (obj) =>          ((ChaFileMakeup)obj).paintId[0]));
+                    (obj) => ((ChaFileMakeup)obj).paintId[0]));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_face_paint, "PaintID2", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileMakeup)obj).paintId[1] = value; },
-                    (obj) =>          ((ChaFileMakeup)obj).paintId[1]));
-            
+                    (obj) => ((ChaFileMakeup)obj).paintId[1]));
+
 
             return generatedProperties;
         }
 
-	    public static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties { get; } = _chaFileMakeupGenerator();
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties { get; } = _chaFileMakeupGenerator();
         #endregion
 
         #region ChaFileClothes
@@ -230,103 +228,103 @@ namespace Sideloader.AutoResolver
             const string prefix = nameof(ChaFileClothes);
 
             var generatedProperties = new Dictionary<CategoryProperty, StructValue<int>>();
-            
+
             //main parts
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_top, "ClothesTop", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.top].id));
-            
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].id));
+
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_bot, "ClothesBot", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].id));
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_bra, "ClothesBra", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].id));
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_shorts, "ClothesShorts", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].id));
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_gloves, "ClothesGloves", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].id));
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_panst, "ClothesPants", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].id));
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_socks, "ClothesSocks", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].id));
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_shoes, "ClothesShoesInner", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].id));
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_shoes, "ClothesShoesOuter", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].id = value; },
-                    (obj) =>          ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].id));
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].id));
 
-            
-            
+
+
             //sub parts
             //jacket sub
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.cpo_jacket_a, "ClothesJacketSubA", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsA] = value; },
-                    (obj) =>          ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsA]));
-            
+                    (obj) => ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsA]));
+
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.cpo_jacket_b, "ClothesJacketSubB", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsB] = value; },
-                    (obj) =>          ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsB]));
-            
+                    (obj) => ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsB]));
+
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.cpo_jacket_c, "ClothesJacketSubC", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC] = value; },
-                    (obj) =>          ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC]));
+                    (obj) => ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC]));
 
-            
+
             //sailor sub
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.cpo_sailor_a, "ClothesSailorSubA", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsA] = value; },
-                    (obj) =>          ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsA]));
-            
+                    (obj) => ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsA]));
+
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.cpo_sailor_b, "ClothesSailorSubB", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsB] = value; },
-                    (obj) =>          ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsB]));
-            
+                    (obj) => ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsB]));
+
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.cpo_sailor_c, "ClothesSailorSubC", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC] = value; },
-                    (obj) =>          ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC]));
+                    (obj) => ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC]));
 
 
             //Emblems
@@ -384,77 +382,136 @@ namespace Sideloader.AutoResolver
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].emblemeId = value; },
                     (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].emblemeId));
 
+            //Emblems 2
+            //Check if Emblems2 exists. It was added later on in Koikatsu and may not exist for users running older versions of the game.
+            if (typeof(ChaFileClothes.PartsInfo).GetProperties(AccessTools.all).Any(p => p.Name == "emblemeId2"))
+            {
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesTopEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].emblemeId2 = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].emblemeId2));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesBotEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].emblemeId2 = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].emblemeId2));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesBraEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].emblemeId2 = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].emblemeId2));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesShortsEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].emblemeId2 = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].emblemeId2));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesGlovesEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].emblemeId2 = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].emblemeId2));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesPantsEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].emblemeId2 = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].emblemeId2));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesSocksEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].emblemeId2 = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].emblemeId2));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesShoesInnerEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].emblemeId2 = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].emblemeId2));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_emblem, "ClothesShoesOuterEmblem2", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].emblemeId = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].emblemeId2));
+            }
+
             //Patterns
-			for (int i = 0; i < 4; i++)
-			{
-				//we declare a separate value here instead of reusing `i` since closures and for variables don't mix very well
-				//see this link for more info (it's specifically about foreach, but it applies here too)
-				//https://stackoverflow.com/questions/12112881/has-foreachs-use-of-variables-been-changed-in-c-sharp-5
-				int index = i;
+            for (int i = 0; i < 4; i++)
+            {
+                //we declare a separate value here instead of reusing `i` since closures and for variables don't mix very well
+                //see this link for more info (it's specifically about foreach, but it applies here too)
+                //https://stackoverflow.com/questions/12112881/has-foreachs-use-of-variables-been-changed-in-c-sharp-5
+                int index = i;
 
-				//top
-				generatedProperties.Add(
-				new CategoryProperty(CategoryNo.mt_pattern, $"ClothesTopPattern{index}", prefix),
-				new StructValue<int>(
-					(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[index].pattern = value; },
-					(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[index].pattern));
+                //top
+                generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mt_pattern, $"ClothesTopPattern{index}", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[index].pattern = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].colorInfo[index].pattern));
 
-				//bot
-				generatedProperties.Add(
-					new CategoryProperty(CategoryNo.mt_pattern, $"ClothesBotPattern{index}", prefix),
-					new StructValue<int>(
-						(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[index].pattern = value; },
-						(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[index].pattern));
+                //bot
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_pattern, $"ClothesBotPattern{index}", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[index].pattern = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].colorInfo[index].pattern));
 
-				//bra
-				generatedProperties.Add(
-					new CategoryProperty(CategoryNo.mt_pattern, $"ClothesBraPattern{index}", prefix),
-					new StructValue<int>(
-						(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[index].pattern = value; },
-						(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[index].pattern));
+                //bra
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_pattern, $"ClothesBraPattern{index}", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[index].pattern = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bra].colorInfo[index].pattern));
 
-				//shorts
-				generatedProperties.Add(
-					new CategoryProperty(CategoryNo.mt_pattern, $"ClothesShortsPattern{index}", prefix),
-					new StructValue<int>(
-						(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[index].pattern = value; },
-						(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[index].pattern));
+                //shorts
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_pattern, $"ClothesShortsPattern{index}", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[index].pattern = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shorts].colorInfo[index].pattern));
 
-				//gloves
-				generatedProperties.Add(
-					new CategoryProperty(CategoryNo.mt_pattern, $"ClothesGlovesPattern{index}", prefix),
-					new StructValue<int>(
-						(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[index].pattern = value; },
-						(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[index].pattern));
+                //gloves
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_pattern, $"ClothesGlovesPattern{index}", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[index].pattern = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].colorInfo[index].pattern));
 
-				//pants
-				generatedProperties.Add(
-					new CategoryProperty(CategoryNo.mt_pattern, $"ClothesPantsPattern{index}", prefix),
-					new StructValue<int>(
-						(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[index].pattern = value; },
-						(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[index].pattern));
+                //pants
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_pattern, $"ClothesPantsPattern{index}", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[index].pattern = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.panst].colorInfo[index].pattern));
 
-				//socks
-				generatedProperties.Add(
-					new CategoryProperty(CategoryNo.mt_pattern, $"ClothesSocksPattern{index}", prefix),
-					new StructValue<int>(
-						(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[index].pattern = value; },
-						(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[index].pattern));
+                //socks
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_pattern, $"ClothesSocksPattern{index}", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[index].pattern = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[index].pattern));
 
-				//shoes inner
-				generatedProperties.Add(
-					new CategoryProperty(CategoryNo.mt_pattern, $"ClothesShoesInnerPattern{index}", prefix),
-					new StructValue<int>(
-						(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[index].pattern = value; },
-						(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[index].pattern));
+                //shoes inner
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_pattern, $"ClothesShoesInnerPattern{index}", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[index].pattern = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_inner].colorInfo[index].pattern));
 
-				//shoes outer
-				generatedProperties.Add(
-					new CategoryProperty(CategoryNo.mt_pattern, $"ClothesShoesOuterPattern{index}", prefix),
-					new StructValue<int>(
-						(obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[index].pattern = value; },
-						(obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[index].pattern));
-			}
+                //shoes outer
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.mt_pattern, $"ClothesShoesOuterPattern{index}", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[index].pattern = value; },
+                        (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes_outer].colorInfo[index].pattern));
+            }
 
             return generatedProperties;
         }
@@ -495,13 +552,13 @@ namespace Sideloader.AutoResolver
         {
             var collated = new Dictionary<CategoryProperty, StructValue<int>>();
 
-	        foreach (var kv in ChaFileFaceProperties) collated.Add(kv.Key, kv.Value);
-	        foreach (var kv in ChaFileBodyProperties) collated.Add(kv.Key, kv.Value);
-	        foreach (var kv in ChaFileHairProperties) collated.Add(kv.Key, kv.Value);
+            foreach (var kv in ChaFileFaceProperties) collated.Add(kv.Key, kv.Value);
+            foreach (var kv in ChaFileBodyProperties) collated.Add(kv.Key, kv.Value);
+            foreach (var kv in ChaFileHairProperties) collated.Add(kv.Key, kv.Value);
 
-	        foreach (var kv in ChaFileClothesProperties) collated.Add(kv.Key, kv.Value);
-	        foreach (var kv in ChaFileMakeupProperties) collated.Add(kv.Key, kv.Value);
-	        foreach (var kv in ChaFileAccessoryPartsInfoProperties) collated.Add(kv.Key, kv.Value);
+            foreach (var kv in ChaFileClothesProperties) collated.Add(kv.Key, kv.Value);
+            foreach (var kv in ChaFileMakeupProperties) collated.Add(kv.Key, kv.Value);
+            foreach (var kv in ChaFileAccessoryPartsInfoProperties) collated.Add(kv.Key, kv.Value);
 
             return collated;
         }
