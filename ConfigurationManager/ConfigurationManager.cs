@@ -194,8 +194,11 @@ namespace ConfigurationManager
                 foreach (var plugin in _filteredSetings)
                     DrawSinglePlugin(plugin);
 
-                GUILayout.Space(10);
-                GUILayout.Label("Plugins with no options available: " + _modsWithoutSettings);
+                if (_showDebug)
+                {
+                    GUILayout.Space(10);
+                    GUILayout.Label("Plugins with no options available: " + _modsWithoutSettings);
+                }
             }
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
