@@ -133,6 +133,9 @@ namespace ConfigurationManager
             return false;
         }
 
+        private int _leftColumnWidth;
+        //private int _rightColumnWidth;
+
         private void CalculateWindowRect()
         {
             var size = new Vector2(Mathf.Min(Screen.width - 100, 650), Screen.height - 100);
@@ -140,6 +143,9 @@ namespace ConfigurationManager
             _settingWindowRect = new Rect(offset, size);
 
             _screenRect = new Rect(0, 0, Screen.width, Screen.height);
+
+            _leftColumnWidth = Mathf.RoundToInt(_settingWindowRect.width / 2.5f);
+            //_rightColumnWidth = (int)_settingWindowRect.width - _leftColumnWidth - GUI.skin.window.margin.left - GUI.skin.window.margin.right;
         }
 
         protected void OnGUI()
@@ -301,7 +307,7 @@ namespace ConfigurationManager
                             : new GUIContent(x.Category)
                 })
                     .GroupBy(a => a.category.text)
-                    .OrderBy(x=> string.Equals(x.Key, KeyboardShortcutsCategoryName.text, StringComparison.Ordinal))
+                    .OrderBy(x => string.Equals(x.Key, KeyboardShortcutsCategoryName.text, StringComparison.Ordinal))
                     .ThenBy(x => x.Key))
                 {
                     if (!string.IsNullOrEmpty(category.Key))
@@ -321,8 +327,8 @@ namespace ConfigurationManager
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description),
-                    GUILayout.Width(_settingWindowRect.width / 2.5f));
+                GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description), 
+                    GUILayout.Width(_leftColumnWidth), GUILayout.MaxWidth(_leftColumnWidth));
 
                 if (setting.AcceptableValues is CustomSettingDrawAttribute customDrawer)
                     customDrawer.Run(setting.PluginInstance);
