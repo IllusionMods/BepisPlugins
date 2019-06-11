@@ -1,6 +1,8 @@
-﻿using BepInEx;
-using Manager;
+﻿using System.Collections;
+using System.Linq;
+using BepInEx;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace ConfigurationManagerKK
@@ -11,38 +13,33 @@ namespace ConfigurationManagerKK
     {
         private static Texture2D _buttonBackground;
         private Rect _buttonRect;
-        private bool _displayingButton;
         private bool _previousWindowState;
 
         private static bool _isStudio;
         private bool _noCtrlConditionDone;
 
         private ConfigurationManager.ConfigurationManager _manager;
-        
-        public bool DisplayingButton
+
+        private void SetIsDisplaying(bool value)
         {
-            get => _displayingButton;
-            set
+            if (enabled == value) return;
+
+            enabled = value;
+
+            if (value)
             {
-                if (_displayingButton == value) return;
+                CalculateWindowRect();
 
-                _displayingButton = value;
+                _manager.DisplayingWindow = _previousWindowState;
 
-                if (_displayingButton)
-                {
-                    CalculateWindowRect();
-
-                    _manager.DisplayingWindow = _previousWindowState;
-                    
-                    if (_manager.DisplayingWindow)
-                        SetGameCanvasInputsEnabled(false);
-                }
-                else
-                {
-                    SetGameCanvasInputsEnabled(true);
-                    _previousWindowState = _manager.DisplayingWindow;
-                    _manager.DisplayingWindow = false;
-                }
+                if (_manager.DisplayingWindow)
+                    SetGameCanvasInputsEnabled(false);
+            }
+            else
+            {
+                SetGameCanvasInputsEnabled(true);
+                _previousWindowState = _manager.DisplayingWindow;
+                _manager.DisplayingWindow = false;
             }
         }
 
@@ -52,20 +49,14 @@ namespace ConfigurationManagerKK
                 c.enabled = mouseInputEnabled;
         }
 
-        protected void OnGUI()
+        private void OnGUI()
         {
-            if (DisplayingButton)
-            {
-                GUI.Box(_buttonRect, GUIContent.none, new GUIStyle {normal = new GUIStyleState {background = _buttonBackground}});
-                if (GUI.Button(
-                    _buttonRect, new GUIContent(
-                        "Plugin / mod settings",
-                        "Change settings of installed BepInEx plugins.")))
-                    _manager.DisplayingWindow = !_manager.DisplayingWindow;
-            }
+            GUI.Box(_buttonRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = _buttonBackground } });
+            if (GUI.Button(_buttonRect, new GUIContent("Plugin / mod settings", "Change settings of installed BepInEx plugins.")))
+                _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        protected void Start()
+        private void Start()
         {
             _isStudio = Application.productName == "CharaStudio";
 
@@ -77,11 +68,37 @@ namespace ConfigurationManagerKK
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.KeyPressedOverride = KeyPressedOverride;
             _manager.DisplayingWindowChanged += (sender, args) => SetGameCanvasInputsEnabled(!args.NewValue);
+
+            SceneManager.sceneLoaded += (arg0, mode) => StartCoroutine(SceneChanged());
+            SceneManager.sceneUnloaded += arg0 => StartCoroutine(SceneChanged());
         }
 
-        protected void Update()
+        private IEnumerator SceneChanged()
         {
-            DisplayingButton = IsConfigOpened();
+            // Wait until everything is initialized
+            yield return new WaitForEndOfFrame();
+
+            var isConfig = Manager.Scene.Instance.AddSceneName == "Config";
+
+            SetIsDisplaying(isConfig);
+
+            if (isConfig)
+            {
+                // Button size fix for Koikatsu Party
+                var rootNode = GameObject.Find("ConfigScene/Canvas/Node ShortCut");
+                if (rootNode != null)
+                {
+                    foreach (var hGroup in rootNode.transform.Cast<Transform>().Select(x => x.GetComponent<HorizontalLayoutGroup>()))
+                    {
+                        // HorizontalLayoutGroup stretching is only used in Koikatsu Party, in KK it's null
+                        if (hGroup != null && hGroup.childForceExpandWidth)
+                        {
+                            hGroup.padding = new RectOffset(30, 30, 0, 0);
+                            hGroup.childForceExpandWidth = false;
+                        }
+                    }
+                }
+            }
         }
 
         private void CalculateWindowRect()
@@ -93,14 +110,9 @@ namespace ConfigurationManagerKK
                 Screen.height * 0.04f);
         }
 
-        private static bool IsConfigOpened()
-        {
-            return Scene.Instance.AddSceneName == "Config";
-        }
-
         private void KeyPressedOverride()
         {
-            if (_isStudio && !Scene.Instance.IsNowLoadingFade && Singleton<StudioScene>.Instance)
+            if (_isStudio && !Manager.Scene.Instance.IsNowLoadingFade && Singleton<StudioScene>.Instance)
             {
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
 
