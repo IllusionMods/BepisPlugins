@@ -127,23 +127,20 @@ namespace ConfigurationManager
                 var strResult = GUILayout.TextField(strVal, GUILayout.Width(50));
                 if (strResult != strVal)
                 {
-                    var resultVal = (float) Convert.ToDouble(strResult);
+                    var resultVal = (float)Convert.ToDouble(strResult);
                     var clampedResultVal = Mathf.Clamp(resultVal, leftValue, rightValue);
                     setting.Set(Convert.ChangeType(clampedResultVal, setting.SettingType));
                 }
             }
         }
-
-        /// <summary>
-        ///     Unknown type, read only
-        /// </summary>
-        public void DrawUnknownField(PropSettingEntry setting)
+        
+        public void DrawUnknownField(PropSettingEntry setting, int rightColumnWidth)
         {
             // Try to use user-supplied converters
             if (setting.ObjToStr != null && setting.StrToObj != null)
             {
                 var text = setting.ObjToStr(setting.Get());
-                var result = GUILayout.TextField(text);
+                var result = GUILayout.TextField(text, GUILayout.MaxWidth(rightColumnWidth));
                 if (result != text)
                     setting.Set(setting.StrToObj(result));
                 return;
@@ -153,14 +150,16 @@ namespace ConfigurationManager
             var value = setting.Get()?.ToString() ?? "NULL";
             if (CanCovert(value, setting.SettingType))
             {
-                var result = GUILayout.TextField(value);
+                var result = GUILayout.TextField(value, GUILayout.MaxWidth(rightColumnWidth));
                 if (result != value)
                     setting.Set(Convert.ChangeType(result, setting.SettingType));
             }
             else
             {
-                GUILayout.TextArea(value);
+                GUILayout.TextArea(value, GUILayout.MaxWidth(rightColumnWidth));
             }
+
+            GUILayout.FlexibleSpace();
         }
 
         private readonly Dictionary<Type, bool> _canCovertCache = new Dictionary<Type, bool>();

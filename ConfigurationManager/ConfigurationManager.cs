@@ -134,7 +134,7 @@ namespace ConfigurationManager
         }
 
         private int _leftColumnWidth;
-        //private int _rightColumnWidth;
+        private int _rightColumnWidth;
 
         private void CalculateWindowRect()
         {
@@ -145,7 +145,7 @@ namespace ConfigurationManager
             _screenRect = new Rect(0, 0, Screen.width, Screen.height);
 
             _leftColumnWidth = Mathf.RoundToInt(_settingWindowRect.width / 2.5f);
-            //_rightColumnWidth = (int)_settingWindowRect.width - _leftColumnWidth - GUI.skin.window.margin.left - GUI.skin.window.margin.right;
+            _rightColumnWidth = (int)_settingWindowRect.width - _leftColumnWidth - 115;
         }
 
         protected void OnGUI()
@@ -378,7 +378,7 @@ namespace ConfigurationManager
             if (_settingDrawHandlers.TryGetValue(setting.SettingType, out var drawMethod))
                 drawMethod(setting);
             else
-                _fieldDrawer.DrawUnknownField(setting);
+                _fieldDrawer.DrawUnknownField(setting, _rightColumnWidth);
         }
 
         private static bool DrawDefaultButton()
