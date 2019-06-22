@@ -17,6 +17,7 @@ namespace Screencap
     public static class I360Render
     {
         private static Material equirectangularConverter = null;
+        private static int paddingX;
 
         public static void Init()
         {
@@ -25,11 +26,13 @@ namespace Screencap
             var abd = Properties.Resources.EquirectangularConverter;
             var ab = AssetBundle.LoadFromMemory(abd);
             equirectangularConverter = new Material(ab.LoadAsset<Shader>("assets/shaders/equirectangularconverter.shader"));
+            paddingX = Shader.PropertyToID("_PaddingX");
             ab.Unload(false);
 
             HarmonyInstance.Create(ScreenshotManager.GUID).PatchAll(typeof(I360Render));
         }
 
+        // Fix mirrors messing up the capture by blindly inverting culling
         [HarmonyTranspiler]
         [HarmonyPatch(typeof(MirrorReflection), nameof(MirrorReflection.OnWillRenderObject))]
         public static IEnumerable<CodeInstruction> MirrorReflectionTpl(IEnumerable<CodeInstruction> instructions)
@@ -58,7 +61,7 @@ namespace Screencap
             }
         }
 
-        public static byte[] Capture(int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null)
+        public static byte[] Capture(int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true)
         {
             if (renderCam == null)
             {
@@ -90,6 +93,7 @@ namespace Screencap
                 if (!renderCam.RenderToCubemap(cubemap))
                     throw new Exception("Rendering to cubemap is not supported on device/platform");
 
+                equirectangularConverter.SetFloat(paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
                 Graphics.Blit(cubemap, equirectangularTexture, equirectangularConverter);
                 output = RtToT2D(equirectangularTexture);
 
