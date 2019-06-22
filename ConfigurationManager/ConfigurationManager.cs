@@ -205,6 +205,11 @@ namespace ConfigurationManager
                     GUILayout.Space(10);
                     GUILayout.Label("Plugins with no options available: " + _modsWithoutSettings);
                 }
+                else
+                {
+                    // Always leave some space in case there's a dropdown box at the very bottom of the list
+                    GUILayout.Space(70);
+                }
             }
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
