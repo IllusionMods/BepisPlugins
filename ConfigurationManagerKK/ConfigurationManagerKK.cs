@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.ComponentModel;
 using System.Linq;
 using BepInEx;
 using UnityEngine;
@@ -9,6 +10,7 @@ namespace ConfigurationManagerKK
 {
     [BepInPlugin(ConfigurationManager.ConfigurationManager.GUID + "KK", "Configuration Manager wrapper for Koikatsu", ConfigurationManager.ConfigurationManager.Version)]
     [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
+    [Browsable(false)]
     public class ConfigurationManagerKk : BaseUnityPlugin
     {
         private static Texture2D _buttonBackground;
