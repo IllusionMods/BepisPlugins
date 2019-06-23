@@ -28,17 +28,25 @@ namespace ColorCorrector
         AmplifyColorEffect amplifyComponent;
         BloomAndFlares bloomComponent;
 
-        public ColorCorrector()
+        private void Start()
         {
+            if(Application.productName == "CharaStudio")
+            {
+                enabled = false;
+                return;
+            }
+
             SaturationEnabled = new ConfigWrapper<bool>("SaturationEnabled", this, true);
             BloomStrength = new ConfigWrapper<float>("BloomStrength", this, 1);
             SaturationEnabled.SettingChanged += OnSettingChanged;
             BloomStrength.SettingChanged += OnSettingChanged;
+
+            SceneManager.sceneLoaded += LevelFinishedLoading;
         }
 
-        protected void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
+        private void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
-            if (Camera.main != null && Camera.main?.gameObject != null)
+            if (Camera.main != null)
             {
                 amplifyComponent = Camera.main.gameObject.GetComponent<AmplifyColorEffect>();
                 bloomComponent = Camera.main.gameObject.GetComponent<BloomAndFlares>();
@@ -53,18 +61,8 @@ namespace ColorCorrector
             if (amplifyComponent != null)
                 amplifyComponent.enabled = satEnabled;
 
-            if (bloomComponent != null && !Singleton<Studio.Studio>.IsInstance())
+            if (bloomComponent != null)
                 bloomComponent.bloomIntensity = bloomPower;
-        }
-
-        protected void OnEnable()
-        {
-            SceneManager.sceneLoaded += LevelFinishedLoading;
-        }
-
-        protected void OnDisable()
-        {
-            SceneManager.sceneLoaded -= LevelFinishedLoading;
         }
 
         private void OnSettingChanged(object sender, System.EventArgs e)
