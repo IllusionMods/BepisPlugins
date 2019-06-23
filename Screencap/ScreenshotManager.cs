@@ -326,6 +326,9 @@ namespace Screencap
                 if (GUILayout.Button("Open screenshot dir"))
                     Process.Start(screenshotDir);
 
+                GUILayout.Space(3);
+                GUILayout.Label("More in Plugin Settings");
+
                 GUI.DragWindow();
             }
             #endregion
