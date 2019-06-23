@@ -7,7 +7,7 @@ using UnityStandardAssets.ImageEffects;
 
 namespace ColorCorrector
 {
-    [BepInPlugin(GUID: GUID, Name: "Color Filter Remover", Version: Version)]
+    [BepInPlugin(GUID, "Color Filter Remover", Version)]
     public class ColorCorrector : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.colorcorrector";
@@ -25,8 +25,8 @@ namespace ColorCorrector
         private ConfigWrapper<float> BloomStrength { get; set; }
         #endregion
 
-        AmplifyColorEffect amplifyComponent;
-        BloomAndFlares bloomComponent;
+        AmplifyColorEffect _amplifyComponent;
+        BloomAndFlares _bloomComponent;
 
         private void Start()
         {
@@ -48,8 +48,8 @@ namespace ColorCorrector
         {
             if (Camera.main != null)
             {
-                amplifyComponent = Camera.main.gameObject.GetComponent<AmplifyColorEffect>();
-                bloomComponent = Camera.main.gameObject.GetComponent<BloomAndFlares>();
+                _amplifyComponent = Camera.main.gameObject.GetComponent<AmplifyColorEffect>();
+                _bloomComponent = Camera.main.gameObject.GetComponent<BloomAndFlares>();
 
                 SetEffects(SaturationEnabled.Value, BloomStrength.Value);
             }
@@ -57,12 +57,11 @@ namespace ColorCorrector
 
         private void SetEffects(bool satEnabled, float bloomPower)
         {
-            //TODO allow to modify amplifyComponent.Exposure and others if possible
-            if (amplifyComponent != null)
-                amplifyComponent.enabled = satEnabled;
-
-            if (bloomComponent != null)
-                bloomComponent.bloomIntensity = bloomPower;
+            if (_amplifyComponent != null)
+                _amplifyComponent.enabled = satEnabled;
+            
+            if (_bloomComponent != null)
+                _bloomComponent.bloomIntensity = bloomPower;
         }
 
         private void OnSettingChanged(object sender, System.EventArgs e)
