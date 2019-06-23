@@ -2,12 +2,14 @@
 using BepInEx.Logging;
 using ExtensibleSaveFormat;
 using Harmony;
+using Illusion.Elements.Xml;
 using Illusion.Extensions;
 using Studio;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using UnityEngine.UI;
 using static Sideloader.AutoResolver.StudioObjectSearch;
 
@@ -404,8 +406,8 @@ namespace Sideloader.AutoResolver
                         ObjectResolutionInfo.Add(intResolve);
 
                         //set item ID back to default
-                if (Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Info, $"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Info, $"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
                         Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
                     }
                 }
@@ -519,6 +521,75 @@ namespace Sideloader.AutoResolver
                 }
                 counter++;
             }
+        }
+        #endregion
+
+        #region Ramp
+        [HarmonyPrefix, HarmonyPatch(typeof(Control), nameof(Control.Write))]
+        public static void XMLWritePrefix(Control __instance, ref int __state)
+        {
+            __state = -1;
+            foreach (Data data in __instance.Datas)
+                if (data is Config.EtceteraSystem etceteraSystem)
+                    if (etceteraSystem.rampId >= 100000000)
+                    {
+                        ResolveInfo RampResolveInfo = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.LocalSlot == etceteraSystem.rampId);
+                        if (RampResolveInfo == null)
+                        {
+                            //ID is a sideloader ID but no resolve info found, set it to the default
+                            __state = 1;
+                            etceteraSystem.rampId = 1;
+                        }
+                        else
+                        {
+                            //Switch out the resolved ID for the original
+                            __state = etceteraSystem.rampId;
+                            etceteraSystem.rampId = RampResolveInfo.Slot;
+                        }
+                    }
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Control), nameof(Control.Write))]
+        public static void XMLWritePostfix(Control __instance, ref int __state)
+        {
+            int rampId = __state;
+            if (rampId >= 100000000)
+                foreach (Data data in __instance.Datas)
+                    if (data is Config.EtceteraSystem etceteraSystem)
+                    {
+                        ResolveInfo RampResolveInfo = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.LocalSlot == rampId);
+                        if (RampResolveInfo != null)
+                        {
+                            //Restore the resolved ID
+                            etceteraSystem.rampId = RampResolveInfo.LocalSlot;
+
+                            var xmlDoc = XDocument.Load("UserData/config/system.xml");
+                            xmlDoc.Element("System").Element("Etc").Element("rampId").AddAfterSelf(new XElement("rampGUID", RampResolveInfo.GUID));
+                            xmlDoc.Save("UserData/config/system.xml");
+                        }
+                    }
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Control), nameof(Control.Read))]
+        public static void XMLReadPostfix(Control __instance)
+        {
+            foreach (Data data in __instance.Datas)
+                if (data is Config.EtceteraSystem etceteraSystem)
+                    if (etceteraSystem.rampId >= 100000000) //Saved with a resolved ID, reset it to default
+                        etceteraSystem.rampId = 1;
+                    else
+                    {
+                        var xmlDoc = XDocument.Load("UserData/config/system.xml");
+                        string rampGUID = xmlDoc.Element("System").Element("Etc").Element("rampGUID")?.Value;
+                        if (!rampGUID.IsNullOrWhiteSpace())
+                        {
+                            ResolveInfo RampResolveInfo = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == etceteraSystem.rampId);
+                            if (RampResolveInfo == null) //Missing mod, reset ID to default
+                                etceteraSystem.rampId = 1;
+                            else //Restore the resolved ID                               
+                                etceteraSystem.rampId = RampResolveInfo.LocalSlot;
+                        }
+                    }
         }
         #endregion
     }

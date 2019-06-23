@@ -151,28 +151,54 @@ namespace Sideloader.AutoResolver
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                results.AddRange(propertyKeys.Select(propertyKey =>
+                if (data.categoryNo == (int)ChaListDefine.CategoryNo.mt_ramp)
                 {
+                    //Special handling for ramp stuff since it's the only thing that isn't saved to the character
                     if (Sideloader.DebugResolveInfoLogging.Value)
                     {
                         Logger.Log(LogLevel.Info, $"ResolveInfo - " +
                                                   $"GUID: {manifest.GUID} " +
                                                   $"Slot: {int.Parse(kv.Value[0])} " +
                                                   $"LocalSlot: {newSlot} " +
-                                                  $"Property: {propertyKey.ToString()} " +
+                                                  $"Property: Ramp " +
                                                   $"CategoryNo: {category} " +
                                                   $"Count: {LoadedResolutionInfo.Count()}");
                     }
 
-                    return new ResolveInfo
+                    results.Add(new ResolveInfo
                     {
                         GUID = manifest.GUID,
                         Slot = int.Parse(kv.Value[0]),
                         LocalSlot = newSlot,
-                        Property = propertyKey.ToString(),
+                        Property = "Ramp",
                         CategoryNo = category
-                    };
-                }));
+                    });
+                }
+                else
+                {
+                    results.AddRange(propertyKeys.Select(propertyKey =>
+                    {
+                        if (Sideloader.DebugResolveInfoLogging.Value)
+                        {
+                            Logger.Log(LogLevel.Info, $"ResolveInfo - " +
+                                                      $"GUID: {manifest.GUID} " +
+                                                      $"Slot: {int.Parse(kv.Value[0])} " +
+                                                      $"LocalSlot: {newSlot} " +
+                                                      $"Property: {propertyKey.ToString()} " +
+                                                      $"CategoryNo: {category} " +
+                                                      $"Count: {LoadedResolutionInfo.Count()}");
+                        }
+
+                        return new ResolveInfo
+                        {
+                            GUID = manifest.GUID,
+                            Slot = int.Parse(kv.Value[0]),
+                            LocalSlot = newSlot,
+                            Property = propertyKey.ToString(),
+                            CategoryNo = category
+                        };
+                    }));
+                }
 
                 kv.Value[0] = newSlot.ToString();
             }
