@@ -44,6 +44,12 @@ namespace ConfigurationManager
             {
                 var wrapper = settingProp.GetValue(instance, null);
 
+                if (wrapper == null)
+                {
+                    Logger.Log(LogLevel.Debug, $"Skipping ConfigWrapper entry because it's null : {instance} | {settingProp?.Name} | {pluginInfo?.Name}");
+                    return null;
+                }
+
                 var innerProp = wrapper.GetType().GetProperty("Value", BindingFlags.Instance | BindingFlags.Public);
 
                 var entry = new PropSettingEntry();
