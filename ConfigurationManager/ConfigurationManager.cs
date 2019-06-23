@@ -138,9 +138,11 @@ namespace ConfigurationManager
 
         private void CalculateWindowRect()
         {
-            var size = new Vector2(Mathf.Min(Screen.width - 100, 650), Screen.height - 100);
-            var offset = new Vector2((Screen.width - size.x) / 2, (Screen.height - size.y) / 2);
-            _settingWindowRect = new Rect(offset, size);
+            var width = Mathf.Min(Screen.width, 650);
+            var height = Screen.height < 560 ? Screen.height : Screen.height - 100;
+            var offsetX = Mathf.RoundToInt((Screen.width - width) / 2f);
+            var offsetY = Mathf.RoundToInt((Screen.height - height) / 2f);
+            _settingWindowRect = new Rect(offsetX, offsetY, width, height);
 
             _screenRect = new Rect(0, 0, Screen.width, Screen.height);
 
@@ -332,7 +334,7 @@ namespace ConfigurationManager
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description), 
+                GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description),
                     GUILayout.Width(_leftColumnWidth), GUILayout.MaxWidth(_leftColumnWidth));
 
                 if (setting.AcceptableValues is CustomSettingDrawAttribute customDrawer)
