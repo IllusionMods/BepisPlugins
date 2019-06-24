@@ -61,7 +61,7 @@ namespace Screencap
             }
         }
 
-        public static byte[] Capture(int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true)
+        public static Texture2D CaptureTex(int width = 1024, Camera renderCam = null, bool faceCameraDirection = true)
         {
             if (renderCam == null)
             {
@@ -97,7 +97,7 @@ namespace Screencap
                 Graphics.Blit(cubemap, equirectangularTexture, equirectangularConverter);
                 output = RtToT2D(equirectangularTexture);
 
-                return encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG(output) : InsertXMPIntoTexture2D_PNG(output);
+                return output;
             }
             finally
             {
@@ -109,11 +109,16 @@ namespace Screencap
                 if (equirectangularTexture != null)
                     RenderTexture.ReleaseTemporary(equirectangularTexture);
 
-                if (output != null)
-                    UnityEngine.Object.DestroyImmediate(output);
-
                 foreach (var comp in disabled) comp.enabled = true;
             }
+        }
+
+        public static byte[] Capture(int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true)
+        {
+            var output = CaptureTex(width, renderCam, faceCameraDirection);
+            var result = encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG(output) : InsertXMPIntoTexture2D_PNG(output);
+            GameObject.Destroy(output);
+            return result;
         }
 
         private static Texture2D RtToT2D(RenderTexture equirectangularTexture)

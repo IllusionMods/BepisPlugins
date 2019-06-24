@@ -67,7 +67,9 @@ namespace Screencap
             var nh = t2d.height / CardRenderRate;
 
             //Downsample texture
-            encoded = ScreenshotManager.Instance.currentAlphaShot.Lanczos(t2d, nw, nh);
+            var result = ScreenshotManager.Instance.currentAlphaShot.LanczosTex(t2d, nw, nh);
+            encoded = result.EncodeToPNG();
+            Object.Destroy(result);
         }
     }
 }

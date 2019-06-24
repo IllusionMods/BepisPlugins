@@ -8,6 +8,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using IllusionUtility.SetUtility;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -32,11 +33,20 @@ namespace Screencap
                      "Not affected by settings for rendered screenshots.")]
         public static SavedKeyboardShortcut CK_Capture { get; private set; }
 
+        [Description("Capture a high quality screenshot without UI.")]
         public static SavedKeyboardShortcut CK_CaptureAlpha { get; private set; }
 
         [Description("Captures a 360 screenshot around current camera. The created image is in equirectangular " +
-                     "format and can be viewed by most 360 image viewers (e.g. Google Cardboard).")]
+                     "format and can be viewed by most 360 image viewers (e.g. Google Cardboard). They can be uploaded to flickr.")]
         public static SavedKeyboardShortcut CK_Capture360 { get; private set; }
+
+        [Description("Capture a high quality screenshot without UI in stereoscopic 3D (2 captures for each eye in one image).\n\n" +
+                     "These images can be viewed by crossing your eyes or any stereoscopic image viewer.")]
+        public static SavedKeyboardShortcut CK_CaptureAlphaIn3D { get; private set; }
+
+        [Description("Captures a 360 screenshot around current camera in stereoscopic 3D (2 captures for each eye in one image).\n\n" +
+                     "These images can be viewed by image viewers supporting 3D stereo format (e.g. VR Media Player - 360° Viewer).")]
+        public static SavedKeyboardShortcut CK_Capture360in3D { get; private set; }
 
         public static SavedKeyboardShortcut CK_Gui { get; private set; }
 
@@ -55,6 +65,16 @@ namespace Screencap
                      "WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to take, 8192 will need much more.")]
         [AcceptableValueList(new object[] { 1024, 2048, 4096, 8192 })]
         public static ConfigWrapper<int> Resolution360 { get; private set; }
+
+        [DisplayName("3D screenshot eye separation")]
+        [Description("Distance between the two captured stereoscopic screenshots in arbitrary units.")]
+        [AcceptableValueRange(0.01f, 0.5f, false)]
+        public static ConfigWrapper<float> EyeSeparation { get; private set; }
+
+        [DisplayName("3D screenshot image separation adjust")]
+        [Description("Move images in stereoscopic screenshots closer together by this percentage. Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.")]
+        [AcceptableValueRange(0f, 1f)]
+        public static ConfigWrapper<float> ImageSeparationCorrection { get; private set; }
 
         [DisplayName("Rendered screenshot upsampling ratio")]
         [Description("Capture screenshots in a higher resolution and then downscale them to desired size. " +
@@ -88,18 +108,22 @@ namespace Screencap
         {
             if (Instance)
             {
-                GameObject.DestroyImmediate(this);
+                DestroyImmediate(this);
                 return;
             }
             Instance = this;
             CK_Capture = new SavedKeyboardShortcut("Take UI screenshot", this, new KeyboardShortcut(KeyCode.F9));
             CK_CaptureAlpha = new SavedKeyboardShortcut("Take rendered screenshot", this, new KeyboardShortcut(KeyCode.F11));
             CK_Capture360 = new SavedKeyboardShortcut("Take 360 screenshot", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl));
+            CK_CaptureAlphaIn3D = new SavedKeyboardShortcut("Take rendered 3D screenshot", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftAlt));
+            CK_Capture360in3D = new SavedKeyboardShortcut("Take 360 3D screenshot", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl, KeyCode.LeftShift));
             CK_Gui = new SavedKeyboardShortcut("Open settings window", this, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift));
 
             ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
             ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
             Resolution360 = new ConfigWrapper<int>("resolution-360", this, 4096);
+            EyeSeparation = new ConfigWrapper<float>("eye-separation", this, 0.11f);
+            ImageSeparationCorrection = new ConfigWrapper<float>("image-separation-correction", this, 0.23f);
 
             ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
             ResolutionY.SettingChanged += (sender, args) => ResolutionYBuffer = ResolutionY.Value.ToString();
@@ -134,9 +158,11 @@ namespace Screencap
                 ResolutionXBuffer = ResolutionX.Value.ToString();
                 ResolutionYBuffer = ResolutionY.Value.ToString();
             }
-            else if (CK_CaptureAlpha.IsDown()) StartCoroutine(TakeCharScreenshot());
+            else if (CK_CaptureAlpha.IsDown()) StartCoroutine(TakeCharScreenshot(false));
             else if (CK_Capture.IsDown()) TakeScreenshot();
-            else if (CK_Capture360.IsDown()) StartCoroutine(Take360Screenshot());
+            else if (CK_Capture360.IsDown()) StartCoroutine(Take360Screenshot(false));
+            else if (CK_CaptureAlphaIn3D.IsDown()) StartCoroutine(TakeCharScreenshot(true));
+            else if (CK_Capture360in3D.IsDown()) StartCoroutine(Take360Screenshot(true));
         }
 
         private void TakeScreenshot()
@@ -154,14 +180,53 @@ namespace Screencap
             BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"UI screenshot saved to {filename}");
         }
 
-        private IEnumerator TakeCharScreenshot()
+        private IEnumerator TakeCharScreenshot(bool in3D)
         {
-            yield return new WaitForEndOfFrame();
-
             if (currentAlphaShot != null)
             {
                 var filename = GetUniqueFilename();
-                File.WriteAllBytes(filename, currentAlphaShot.Capture(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value));
+
+                if (!in3D)
+                {
+                    yield return new WaitForEndOfFrame();
+                    var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+                    File.WriteAllBytes(filename, capture.EncodeToPNG());
+                    Destroy(capture);
+                }
+                else
+                {
+                    var targetTr = Camera.main.transform.parent;
+                    targetTr.SetLocalPositionX(targetTr.localPosition.x - EyeSeparation.Value / 2);
+                    yield return new WaitForEndOfFrame();
+                    var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+
+                    targetTr.SetLocalPositionX(targetTr.localPosition.x + EyeSeparation.Value);
+                    yield return new WaitForEndOfFrame();
+                    var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+
+                    targetTr.SetLocalPositionX(targetTr.localPosition.x - EyeSeparation.Value / 2);
+
+                    // Merge the two images together
+                    var xAdjust = (int)(capture.width * ImageSeparationCorrection.Value);
+                    var result = new Texture2D((capture.width - xAdjust) * 2, capture.height, TextureFormat.ARGB32, false);
+                    for (int x = 0; x < result.width; x++)
+                    {
+                        var first = x < result.width / 2;
+                        var targetX = first ? x : x - capture.width + xAdjust * 2;
+                        var targetTex = first ? capture : capture2;
+                        for (int y = 0; y < result.height; y++)
+                        {
+                            result.SetPixel(x, y, targetTex.GetPixel(targetX, y));
+                        }
+                    }
+                    result.Apply();
+
+                    File.WriteAllBytes(filename, result.EncodeToPNG());
+
+                    Destroy(capture);
+                    Destroy(capture2);
+                    Destroy(result);
+                }
 
                 Utils.Sound.Play(SystemSE.photo);
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"Character screenshot saved to {filename}");
@@ -172,23 +237,43 @@ namespace Screencap
             }
         }
 
-        private IEnumerator Take360Screenshot()
+        private IEnumerator Take360Screenshot(bool in3D)
         {
             yield return new WaitForEndOfFrame();
 
-            try
+            var filename = GetUniqueFilename();
+            if (!in3D)
             {
-                var filename = GetUniqueFilename();
+                yield return new WaitForEndOfFrame();
                 File.WriteAllBytes(filename, I360Render.Capture(Resolution360.Value, false));
-
-                Utils.Sound.Play(SystemSE.photo);
-                BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"360 screenshot saved to {filename}");
             }
-            catch (Exception e)
+            else
             {
-                BepInEx.Logger.Log(LogLevel.Message | LogLevel.Error, "Failed to take a 360 screenshot - " + e.Message);
-                BepInEx.Logger.Log(LogLevel.Error, e.StackTrace);
+                var targetTr = Camera.main.transform.parent;
+                targetTr.SetLocalPositionX(targetTr.localPosition.x - EyeSeparation.Value / 2);
+                // Let the game render at the new position
+                yield return new WaitForEndOfFrame();
+                var capture = I360Render.CaptureTex(Resolution360.Value);
+
+                targetTr.SetLocalPositionX(targetTr.localPosition.x + EyeSeparation.Value);
+                yield return new WaitForEndOfFrame();
+                var capture2 = I360Render.CaptureTex(Resolution360.Value);
+
+                targetTr.SetLocalPositionX(targetTr.localPosition.x - EyeSeparation.Value / 2);
+
+                var result = new Texture2D(capture.width * 2, capture.height, TextureFormat.ARGB32, false);
+                result.SetPixels32(0, 0, capture.width, capture.height, capture.GetPixels32());
+                result.SetPixels32(capture.width, 0, capture2.width, capture2.height, capture2.GetPixels32());
+                result.Apply();
+
+                File.WriteAllBytes(filename, I360Render.InsertXMPIntoTexture2D_PNG(result));
+                Destroy(result);
+                Destroy(capture);
+                Destroy(capture2);
             }
+
+            Utils.Sound.Play(SystemSE.photo);
+            BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"360 screenshot saved to {filename}");
         }
 
         #region UI
@@ -208,13 +293,13 @@ namespace Screencap
             GUILayout.BeginVertical(GUI.skin.box);
             {
                 GUILayout.Label("Output resolution (W/H)", new GUIStyle
+                {
+                    alignment = TextAnchor.MiddleCenter,
+                    normal = new GUIStyleState
                     {
-                        alignment = TextAnchor.MiddleCenter,
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    });
+                        textColor = Color.white
+                    }
+                });
 
                 GUILayout.BeginHorizontal();
                 {
@@ -222,13 +307,13 @@ namespace Screencap
                     ResolutionXBuffer = GUILayout.TextField(ResolutionXBuffer);
 
                     GUILayout.Label("x", new GUIStyle
+                    {
+                        alignment = TextAnchor.LowerCenter,
+                        normal = new GUIStyleState
                         {
-                            alignment = TextAnchor.LowerCenter,
-                            normal = new GUIStyleState
-                            {
-                                textColor = Color.white
-                            }
-                        }, GUILayout.ExpandWidth(false));
+                            textColor = Color.white
+                        }
+                    }, GUILayout.ExpandWidth(false));
 
                     GUI.SetNextControlName("Y");
                     ResolutionYBuffer = GUILayout.TextField(ResolutionYBuffer);
@@ -265,26 +350,26 @@ namespace Screencap
                 GUILayout.BeginVertical(GUI.skin.box);
                 {
                     GUILayout.Label("Screen upsampling rate", new GUIStyle
+                    {
+                        alignment = TextAnchor.MiddleCenter,
+                        normal = new GUIStyleState
                         {
-                            alignment = TextAnchor.MiddleCenter,
-                            normal = new GUIStyleState
-                            {
-                                textColor = Color.white
-                            }
-                        });
+                            textColor = Color.white
+                        }
+                    });
 
                     GUILayout.BeginHorizontal();
                     {
                         int downscale = (int)Math.Round(GUILayout.HorizontalSlider(DownscalingRate.Value, 1, 4));
 
                         GUILayout.Label($"{downscale}x", new GUIStyle
+                        {
+                            alignment = TextAnchor.UpperRight,
+                            normal = new GUIStyleState
                             {
-                                alignment = TextAnchor.UpperRight,
-                                normal = new GUIStyleState
-                                {
-                                    textColor = Color.white
-                                }
-                            }, GUILayout.ExpandWidth(false));
+                                textColor = Color.white
+                            }
+                        }, GUILayout.ExpandWidth(false));
                         DownscalingRate.Value = downscale;
                     }
                     GUILayout.EndHorizontal();
@@ -295,26 +380,26 @@ namespace Screencap
                 GUILayout.BeginVertical(GUI.skin.box);
                 {
                     GUILayout.Label("Card upsampling rate", new GUIStyle
+                    {
+                        alignment = TextAnchor.MiddleCenter,
+                        normal = new GUIStyleState
                         {
-                            alignment = TextAnchor.MiddleCenter,
-                            normal = new GUIStyleState
-                            {
-                                textColor = Color.white
-                            }
-                        });
+                            textColor = Color.white
+                        }
+                    });
 
                     GUILayout.BeginHorizontal();
                     {
                         int carddownscale = (int)Math.Round(GUILayout.HorizontalSlider(CardDownscalingRate.Value, 1, 4));
 
                         GUILayout.Label($"{carddownscale}x", new GUIStyle
+                        {
+                            alignment = TextAnchor.UpperRight,
+                            normal = new GUIStyleState
                             {
-                                alignment = TextAnchor.UpperRight,
-                                normal = new GUIStyleState
-                                {
-                                    textColor = Color.white
-                                }
-                            }, GUILayout.ExpandWidth(false));
+                                textColor = Color.white
+                            }
+                        }, GUILayout.ExpandWidth(false));
                         CardDownscalingRate.Value = carddownscale;
                     }
                     GUILayout.EndHorizontal();

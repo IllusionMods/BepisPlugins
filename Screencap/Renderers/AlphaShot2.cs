@@ -13,7 +13,7 @@ namespace alphaShot
 
         private bool InStudio = false;
 
-        void Awake()
+        private void Awake()
         {
             var abd = Screencap.Properties.Resources.blackout;
             var ab = AssetBundle.LoadFromMemory(abd);
@@ -28,6 +28,14 @@ namespace alphaShot
 
         public byte[] Lanczos(Texture input, int ResolutionX, int ResolutionY)
         {
+            var t2d = LanczosTex(input, ResolutionX, ResolutionY);
+            var ret = t2d.EncodeToPNG();
+            Destroy(t2d);
+            return ret;
+        }
+
+        public Texture2D LanczosTex(Texture input, int ResolutionX, int ResolutionY)
+        {
             matScale.SetVector("_KernelAndSize", new Vector4(5, 5, ResolutionX, ResolutionY));
             var rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             var prev = RenderTexture.active;
@@ -40,12 +48,18 @@ namespace alphaShot
             t2d.Apply();
             RenderTexture.active = prev;
             RenderTexture.ReleaseTemporary(rt);
-            var ret = t2d.EncodeToPNG();
-            GameObject.DestroyImmediate(t2d);
-            return ret;
+            return t2d;
         }
 
         public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
+        {
+            var fullSizeCapture = CaptureTex(ResolutionX, ResolutionY, DownscalingRate, Transparent);
+            var ret = fullSizeCapture.EncodeToPNG();
+            Destroy(fullSizeCapture);
+            return ret;
+        }
+
+        public Texture2D CaptureTex(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
         {
             Texture2D fullSizeCapture = null;
             int newWidth = ResolutionX * DownscalingRate;
@@ -56,17 +70,10 @@ namespace alphaShot
             else
                 fullSizeCapture = CaptureOpaque(newWidth, newHeight);
 
-            byte[] ret = null;
             if (DownscalingRate > 1)
-            {
-                ret = Lanczos(fullSizeCapture, ResolutionX, ResolutionY);
-            }
-            else
-            {
-                ret = fullSizeCapture.EncodeToPNG();
-                GameObject.Destroy(fullSizeCapture);
-            }
-            return ret;
+                return LanczosTex(fullSizeCapture, ResolutionX, ResolutionY);
+
+            return fullSizeCapture;
         }
 
         private Texture2D CaptureOpaque(int ResolutionX, int ResolutionY)
