@@ -8,7 +8,6 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using IllusionUtility.SetUtility;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -122,8 +121,8 @@ namespace Screencap
             ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
             ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
             Resolution360 = new ConfigWrapper<int>("resolution-360", this, 4096);
-            EyeSeparation = new ConfigWrapper<float>("eye-separation", this, 0.11f);
-            ImageSeparationCorrection = new ConfigWrapper<float>("image-separation-correction", this, 0.23f);
+            EyeSeparation = new ConfigWrapper<float>("eye-separation", this, 0.18f);
+            ImageSeparationCorrection = new ConfigWrapper<float>("image-separation-correction", this, 0.21f);
 
             ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
             ResolutionY.SettingChanged += (sender, args) => ResolutionYBuffer = ResolutionY.Value.ToString();
@@ -195,16 +194,25 @@ namespace Screencap
                 }
                 else
                 {
-                    var targetTr = Camera.main.transform.parent;
-                    targetTr.SetLocalPositionX(targetTr.localPosition.x - EyeSeparation.Value / 2);
+                    var targetTr = Camera.main.transform;
+                    // Needed for studio because it prevents changes to position
+                    var cc = targetTr.GetComponent<Studio.CameraControl>();
+                    if (cc != null) cc.enabled = false;
+                    Time.timeScale = 0.01f;
+                    yield return new WaitForEndOfFrame();
+
+                    targetTr.localPosition += targetTr.right * EyeSeparation.Value / 2;
                     yield return new WaitForEndOfFrame();
                     var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
 
-                    targetTr.SetLocalPositionX(targetTr.localPosition.x + EyeSeparation.Value);
+                    targetTr.localPosition -= targetTr.right * EyeSeparation.Value;
                     yield return new WaitForEndOfFrame();
                     var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
 
-                    targetTr.SetLocalPositionX(targetTr.localPosition.x - EyeSeparation.Value / 2);
+                    targetTr.localPosition += targetTr.right * EyeSeparation.Value / 2;
+
+                    if (cc != null) cc.enabled = true;
+                    Time.timeScale = 1;
 
                     // Merge the two images together
                     var xAdjust = (int)(capture.width * ImageSeparationCorrection.Value);
@@ -249,17 +257,27 @@ namespace Screencap
             }
             else
             {
-                var targetTr = Camera.main.transform.parent;
-                targetTr.SetLocalPositionX(targetTr.localPosition.x - EyeSeparation.Value / 2);
+                var targetTr = Camera.main.transform;
+
+                // Needed for studio because it prevents changes to position
+                var cc = targetTr.GetComponent<Studio.CameraControl>();
+                if (cc != null) cc.enabled = false;
+                Time.timeScale = 0.01f;
+                yield return new WaitForEndOfFrame();
+
+                targetTr.localPosition += targetTr.right * EyeSeparation.Value / 2;
                 // Let the game render at the new position
                 yield return new WaitForEndOfFrame();
                 var capture = I360Render.CaptureTex(Resolution360.Value);
 
-                targetTr.SetLocalPositionX(targetTr.localPosition.x + EyeSeparation.Value);
+                targetTr.localPosition -= targetTr.right * EyeSeparation.Value;
                 yield return new WaitForEndOfFrame();
                 var capture2 = I360Render.CaptureTex(Resolution360.Value);
 
-                targetTr.SetLocalPositionX(targetTr.localPosition.x - EyeSeparation.Value / 2);
+                targetTr.localPosition += targetTr.right * EyeSeparation.Value / 2;
+
+                if (cc != null) cc.enabled = true;
+                Time.timeScale = 1;
 
                 var result = new Texture2D(capture.width * 2, capture.height, TextureFormat.ARGB32, false);
                 result.SetPixels32(0, 0, capture.width, capture.height, capture.GetPixels32());
