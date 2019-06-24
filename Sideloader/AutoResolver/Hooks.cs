@@ -34,7 +34,9 @@ namespace Sideloader.AutoResolver
             harmony.Patch(typeof(SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
                 new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnValueChangedLutPrefix), AccessTools.all)), null);
             harmony.Patch(typeof(SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
-                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(UpdateInfoPostfix), AccessTools.all)));
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ACEUpdateInfoPostfix), AccessTools.all)));
+            harmony.Patch(typeof(SystemButtonCtrl).GetNestedType("EtcInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
+                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ETCUpdateInfoPostfix), AccessTools.all)));
         }
 
         #region ChaFile
@@ -332,6 +334,7 @@ namespace Sideloader.AutoResolver
             UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Load);
             UniversalAutoResolver.ResolveStudioMap(ExtendedData, UniversalAutoResolver.ResolveType.Load);
             UniversalAutoResolver.ResolveStudioFilter(ExtendedData, UniversalAutoResolver.ResolveType.Load);
+            UniversalAutoResolver.ResolveStudioRamp(ExtendedData, UniversalAutoResolver.ResolveType.Load);
         }
 
         private static void ExtendedSceneImport(string path)
@@ -465,8 +468,24 @@ namespace Sideloader.AutoResolver
 
                     //Set filter ID back to default
                     if (Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Info, $"Setting Filter ID:{mapID}->{extResolve.Slot}");
+                        Logger.Log(LogLevel.Info, $"Setting Filter ID:{filterID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.aceNo = extResolve.Slot;
+                }
+            }
+
+            //Add the extended data for the ramp, if any
+            int rampID = Studio.Studio.Instance.sceneInfo.rampG;
+            if (rampID > 100000000)
+            {
+                ResolveInfo extResolve = UniversalAutoResolver.TryGetResolutionInfo("Ramp", rampID);
+                if (extResolve != null)
+                {
+                    ExtendedData.Add("rampInfoGUID", extResolve.GUID);
+
+                    //Set ramp ID back to default
+                    if (Sideloader.DebugLogging.Value)
+                        Logger.Log(LogLevel.Info, $"Setting Ramp ID:{rampID}->{extResolve.Slot}");
+                    Studio.Studio.Instance.sceneInfo.rampG = extResolve.Slot;
                 }
             }
 
@@ -487,6 +506,7 @@ namespace Sideloader.AutoResolver
             UniversalAutoResolver.ResolveStudioObjects(ExtendedData, UniversalAutoResolver.ResolveType.Save);
             UniversalAutoResolver.ResolveStudioMap(ExtendedData, UniversalAutoResolver.ResolveType.Save);
             UniversalAutoResolver.ResolveStudioFilter(ExtendedData, UniversalAutoResolver.ResolveType.Save);
+            UniversalAutoResolver.ResolveStudioRamp(ExtendedData, UniversalAutoResolver.ResolveType.Save);
         }
         /// <summary>
         /// Translate the value (selected index) to the actual ID of the filter. This allows us to save the ID to the scene.
@@ -508,7 +528,7 @@ namespace Sideloader.AutoResolver
         /// <summary>
         /// Called after a scene load. Find the index of the currrent filter ID and set the dropdown.
         /// </summary>
-        public static void UpdateInfoPostfix(object __instance)
+        public static void ACEUpdateInfoPostfix(object __instance)
         {
             int counter = 0;
             foreach (var x in Info.Instance.dicFilterLoadInfo)
@@ -517,6 +537,23 @@ namespace Sideloader.AutoResolver
                 {
                     Dropdown dropdownLut = (Dropdown)Traverse.Create(__instance).Field("dropdownLut").GetValue();
                     dropdownLut.value = counter;
+                    break;
+                }
+                counter++;
+            }
+        }
+        /// <summary>
+        /// Called after a scene load. Find the index of the currrent ramp ID and set the dropdown.
+        /// </summary>
+        public static void ETCUpdateInfoPostfix(object __instance)
+        {
+            int counter = 0;
+            foreach (var x in ResourceRedirector.ListLoader.InternalDataList[ChaListDefine.CategoryNo.mt_ramp])
+            {
+                if (x.Key == Studio.Studio.Instance.sceneInfo.rampG)
+                {
+                    Dropdown dropdownRamp = (Dropdown)Traverse.Create(__instance).Field("dropdownRamp").GetValue();
+                    dropdownRamp.value = counter;
                     break;
                 }
                 counter++;
@@ -586,10 +623,26 @@ namespace Sideloader.AutoResolver
                             ResolveInfo RampResolveInfo = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == etceteraSystem.rampId);
                             if (RampResolveInfo == null) //Missing mod, reset ID to default
                                 etceteraSystem.rampId = 1;
-                            else //Restore the resolved ID                               
+                            else //Restore the resolved ID
                                 etceteraSystem.rampId = RampResolveInfo.LocalSlot;
                         }
                     }
+        }
+        //Studio
+        [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), nameof(SceneInfo.Init))]
+        public static void SceneInfoInit(SceneInfo __instance)
+        {
+            var xmlDoc = XDocument.Load("UserData/config/system.xml");
+            string rampGUID = xmlDoc.Element("System").Element("Etc").Element("rampGUID")?.Value;
+            string rampIDXML = xmlDoc.Element("System").Element("Etc").Element("rampId")?.Value;
+            if (!rampGUID.IsNullOrWhiteSpace() && !rampIDXML.IsNullOrWhiteSpace() && int.TryParse(rampIDXML, out int rampID))
+            {
+                ResolveInfo RampResolveInfo = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == rampID);
+                if (RampResolveInfo == null) //Missing mod, reset ID to default
+                    __instance.rampG = 1;
+                else //Restore the resolved ID
+                    __instance.rampG = RampResolveInfo.LocalSlot;
+            }
         }
         #endregion
     }

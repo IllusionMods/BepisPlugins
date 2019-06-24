@@ -474,6 +474,45 @@ namespace Sideloader.AutoResolver
             }
         }
 
+        internal static void ResolveStudioRamp(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
+        {
+            //Set ramp ID to the resolved ID
+            int rampID = Studio.Studio.Instance.sceneInfo.rampG;
+
+            if (extData != null && extData.data.ContainsKey("rampInfoGUID"))
+            {
+                string rampGUID = (string)extData.data["rampInfoGUID"];
+
+                ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == rampID);
+                if (intResolve != null)
+                {
+                    if (resolveType == ResolveType.Load)
+                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Ramp) [{rampID}] {rampID}->{intResolve.LocalSlot}");
+
+                    Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
+                }
+                else
+                    ShowGUIDError(rampGUID);
+            }
+            else if (resolveType == ResolveType.Load)
+            {
+                if (!ListLoader.InternalDataList[ChaListDefine.CategoryNo.mt_ramp].ContainsKey(rampID))
+                {
+                    //Ramp ID saved to the scene doesn't exist in the items list, try compatibility resolving
+                    ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.Slot == rampID);
+                    if (intResolve != null)
+                    {
+                        //Found a matching sideloader mod
+                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Ramp) {rampID}->{intResolve.LocalSlot}");
+                        Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
+                    }
+                    else
+                    {
+                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Ramp) failed, no match found for ID {rampID}");
+                    }
+                }
+            }
+        }
 
         private static readonly HashSet<string> CategoryAndGroupList = new HashSet<string>()
         {
