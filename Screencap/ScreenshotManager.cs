@@ -101,6 +101,10 @@ namespace Screencap
         [Description("Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)")]
         public static ConfigWrapper<NameFormat> ScreenshotNameFormat { get; private set; }
 
+        [Advanced(true)]
+        [DisplayName("Screenshot file name override")]
+        [Description("Changes the Name part of the file name")]
+        public static ConfigWrapper<string> ScreenshotNameOverride { get; private set; }
         #endregion
 
         private string GetUniqueFilename(string capType)
@@ -108,6 +112,8 @@ namespace Screencap
             string filename;
             // Replace needed for Koikatu Party to get ride of the space
             var productName = Application.productName.Replace(" ", "");
+            if (!ScreenshotNameOverride.Value.IsNullOrEmpty())
+                productName = ScreenshotNameOverride.Value;
             switch (ScreenshotNameFormat.Value)
             {
                 case NameFormat.NameDate:
@@ -163,6 +169,7 @@ namespace Screencap
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
             ScreenshotMessage = new ConfigWrapper<bool>("screenshotmessage", this, true);
             ScreenshotNameFormat = new ConfigWrapper<NameFormat>("screenshot-name-format", this, NameFormat.NameDateType);
+            ScreenshotNameOverride = new ConfigWrapper<string>("screenshot-name-override", this, "");
 
             SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
             InstallSceenshotHandler();
