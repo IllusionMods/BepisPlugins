@@ -97,23 +97,27 @@ namespace Screencap
         [Description("Whether screenshot messages will be displayed on screen. Messages will still be written to the log.")]
         public static ConfigWrapper<bool> ScreenshotMessage { get; private set; }
 
-        [DisplayName("Screenshot file name format")]
+        [DisplayName("Screenshot filename format")]
         [Description("Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)")]
         public static ConfigWrapper<NameFormat> ScreenshotNameFormat { get; private set; }
 
         [Advanced(true)]
-        [DisplayName("Screenshot file name override")]
-        [Description("Changes the Name part of the file name")]
+        [DisplayName("Screenshot filename Name override")]
+        [Description("Forces the Name part of the filename to always be this instead of varying depending on the name of the current game.\n\n" +
+                     "Use \"Koikatsu\" to get the old filename behaviour.")]
         public static ConfigWrapper<string> ScreenshotNameOverride { get; private set; }
+
         #endregion
 
         private string GetUniqueFilename(string capType)
         {
             string filename;
+
             // Replace needed for Koikatu Party to get ride of the space
             var productName = Application.productName.Replace(" ", "");
-            if (!ScreenshotNameOverride.Value.IsNullOrEmpty())
+            if (!string.IsNullOrEmpty(ScreenshotNameOverride.Value))
                 productName = ScreenshotNameOverride.Value;
+
             switch (ScreenshotNameFormat.Value)
             {
                 case NameFormat.NameDate:
@@ -137,6 +141,7 @@ namespace Screencap
                 default:
                     throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
             }
+
             return Path.GetFullPath(Path.Combine(screenshotDir, filename));
         }
 
