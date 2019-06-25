@@ -123,7 +123,7 @@ namespace Screencap
             ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
             Resolution360 = new ConfigWrapper<int>("resolution-360", this, 4096);
             EyeSeparation = new ConfigWrapper<float>("3d-eye-separation", this, 0.18f);
-            ImageSeparationOffset = new ConfigWrapper<float>("3d-image-stitching-offset", this, 0.21f);
+            ImageSeparationOffset = new ConfigWrapper<float>("3d-image-stitching-offset", this, 0.25f);
 
             ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
             ResolutionY.SettingChanged += (sender, args) => ResolutionYBuffer = ResolutionY.Value.ToString();
@@ -182,68 +182,57 @@ namespace Screencap
 
         private IEnumerator TakeCharScreenshot(bool in3D)
         {
-            if (currentAlphaShot != null)
+            if (currentAlphaShot == null)
             {
-                var filename = GetUniqueFilename();
+                BepInEx.Logger.Log(LogLevel.Message, "Can't render a screenshot here, try UI screenshot instead");
+                yield break;
+            }
 
-                if (!in3D)
-                {
-                    yield return new WaitForEndOfFrame();
-                    var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
-                    File.WriteAllBytes(filename, capture.EncodeToPNG());
-                    Destroy(capture);
-                }
-                else
-                {
-                    var targetTr = Camera.main.transform;
-                    // Needed for studio because it prevents changes to position
-                    var cc = targetTr.GetComponent<Studio.CameraControl>();
-                    if (cc != null) cc.enabled = false;
-                    Time.timeScale = 0.01f;
-                    yield return new WaitForEndOfFrame();
+            var filename = GetUniqueFilename();
 
-                    targetTr.localPosition += targetTr.right * EyeSeparation.Value / 2;
-                    yield return new WaitForEndOfFrame();
-                    var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
-
-                    targetTr.localPosition -= targetTr.right * EyeSeparation.Value;
-                    yield return new WaitForEndOfFrame();
-                    var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
-
-                    targetTr.localPosition += targetTr.right * EyeSeparation.Value / 2;
-
-                    if (cc != null) cc.enabled = true;
-                    Time.timeScale = 1;
-
-                    // Merge the two images together
-                    var xAdjust = (int)(capture.width * ImageSeparationOffset.Value);
-                    var result = new Texture2D((capture.width - xAdjust) * 2, capture.height, TextureFormat.ARGB32, false);
-                    for (int x = 0; x < result.width; x++)
-                    {
-                        var first = x < result.width / 2;
-                        var targetX = first ? x : x - capture.width + xAdjust * 2;
-                        var targetTex = first ? capture : capture2;
-                        for (int y = 0; y < result.height; y++)
-                        {
-                            result.SetPixel(x, y, targetTex.GetPixel(targetX, y));
-                        }
-                    }
-                    result.Apply();
-
-                    File.WriteAllBytes(filename, result.EncodeToPNG());
-
-                    Destroy(capture);
-                    Destroy(capture2);
-                    Destroy(result);
-                }
-
-                Utils.Sound.Play(SystemSE.photo);
+            if (!in3D)
+            {
+                yield return new WaitForEndOfFrame();
+                var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+                File.WriteAllBytes(filename, capture.EncodeToPNG());
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"Character screenshot saved to {filename}");
+                Destroy(capture);
             }
             else
             {
-                BepInEx.Logger.Log(LogLevel.Message, "Can't render a screenshot here, try UI screenshot instead");
+                var targetTr = Camera.main.transform;
+
+                ToggleCameraControllers(targetTr, false);
+                Time.timeScale = 0.01f;
+                yield return new WaitForEndOfFrame();
+
+                targetTr.position += targetTr.right * EyeSeparation.Value / 2;
+                // Let the game render at the new position
+                yield return new WaitForEndOfFrame();
+                var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+
+                targetTr.position -= targetTr.right * EyeSeparation.Value;
+                yield return new WaitForEndOfFrame();
+                var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+
+                targetTr.position += targetTr.right * EyeSeparation.Value / 2;
+
+                ToggleCameraControllers(targetTr, true);
+                Time.timeScale = 1;
+
+                // Merge the two images together
+                var result = StitchImages(capture, capture2, ImageSeparationOffset.Value);
+
+                File.WriteAllBytes(filename, result.EncodeToPNG());
+
+                BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D Character screenshot saved to {filename}");
+
+                Destroy(capture);
+                Destroy(capture2);
+                Destroy(result);
             }
+
+            Utils.Sound.Play(SystemSE.photo);
         }
 
         private IEnumerator Take360Screenshot(bool in3D)
@@ -255,44 +244,75 @@ namespace Screencap
             {
                 yield return new WaitForEndOfFrame();
                 File.WriteAllBytes(filename, I360Render.Capture(Resolution360.Value, false));
+
+                BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"360 screenshot saved to {filename}");
             }
             else
             {
                 var targetTr = Camera.main.transform;
 
-                // Needed for studio because it prevents changes to position
-                var cc = targetTr.GetComponent<Studio.CameraControl>();
-                if (cc != null) cc.enabled = false;
+                ToggleCameraControllers(targetTr, false);
                 Time.timeScale = 0.01f;
                 yield return new WaitForEndOfFrame();
 
-                targetTr.localPosition += targetTr.right * EyeSeparation.Value / 2;
+                targetTr.position += targetTr.right * EyeSeparation.Value / 2;
                 // Let the game render at the new position
                 yield return new WaitForEndOfFrame();
                 var capture = I360Render.CaptureTex(Resolution360.Value);
 
-                targetTr.localPosition -= targetTr.right * EyeSeparation.Value;
+                targetTr.position -= targetTr.right * EyeSeparation.Value;
                 yield return new WaitForEndOfFrame();
                 var capture2 = I360Render.CaptureTex(Resolution360.Value);
 
-                targetTr.localPosition += targetTr.right * EyeSeparation.Value / 2;
+                targetTr.position += targetTr.right * EyeSeparation.Value / 2;
 
-                if (cc != null) cc.enabled = true;
+                ToggleCameraControllers(targetTr, true);
                 Time.timeScale = 1;
 
-                var result = new Texture2D(capture.width * 2, capture.height, TextureFormat.ARGB32, false);
-                result.SetPixels32(0, 0, capture.width, capture.height, capture.GetPixels32());
-                result.SetPixels32(capture.width, 0, capture2.width, capture2.height, capture2.GetPixels32());
-                result.Apply();
+                // Overlap is useless for these so don't use
+                var result = StitchImages(capture, capture2, 0);
 
                 File.WriteAllBytes(filename, I360Render.InsertXMPIntoTexture2D_PNG(result));
+
+                BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D 360 screenshot saved to {filename}");
+
                 Destroy(result);
                 Destroy(capture);
                 Destroy(capture2);
             }
 
             Utils.Sound.Play(SystemSE.photo);
-            BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"360 screenshot saved to {filename}");
+        }
+
+        /// <summary>
+        /// Need to disable camera controllers because they prevent changes to position
+        /// </summary>
+        private static void ToggleCameraControllers(Transform targetTr, bool enabled)
+        {
+            foreach (var controllerType in new[] { typeof(Studio.CameraControl), typeof(BaseCameraControl_Ver2), typeof(BaseCameraControl) })
+            {
+                var cc = targetTr.GetComponent(controllerType);
+                if (cc is MonoBehaviour mb)
+                    mb.enabled = enabled;
+            }
+        }
+
+        private static Texture2D StitchImages(Texture2D capture, Texture2D capture2, float overlapOffset)
+        {
+            var xAdjust = (int)(capture.width * overlapOffset);
+            var result = new Texture2D((capture.width - xAdjust) * 2, capture.height, TextureFormat.ARGB32, false);
+            for (int x = 0; x < result.width; x++)
+            {
+                var first = x < result.width / 2;
+                var targetX = first ? x : x - capture.width + xAdjust * 2;
+                var targetTex = first ? capture : capture2;
+                for (int y = 0; y < result.height; y++)
+                {
+                    result.SetPixel(x, y, targetTex.GetPixel(targetX, y));
+                }
+            }
+            result.Apply();
+            return result;
         }
 
         #region UI
