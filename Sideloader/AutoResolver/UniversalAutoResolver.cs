@@ -22,24 +22,16 @@ namespace Sideloader.AutoResolver
             _resolveInfoLookupLocalSlot = results.ToLookup(info => info.LocalSlot);
         }
 
-        public static IEnumerable<ResolveInfo> LoadedResolutionInfo => _resolveInfoLookupSlot?.SelectMany(x => x) ?? Enumerable.Empty<ResolveInfo>();
-
-        public static ResolveInfo TryGetResolutionInfo(string property, int localSlot)
-        {
-            return _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.Property == property);
-        }
-        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo)
-        {
-            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
-        }
-        public static ResolveInfo TryGetResolutionInfo(int slot, string property, string guid)
-        {
-            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.GUID == guid);
-        }
-        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo, string guid)
-        {
-            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo && x.GUID == guid);
-        }
+        public static IEnumerable<ResolveInfo> LoadedResolutionInfo =>
+            _resolveInfoLookupSlot?.SelectMany(x => x) ?? Enumerable.Empty<ResolveInfo>();
+        public static ResolveInfo TryGetResolutionInfo(string property, int localSlot) =>
+            _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.Property == property);
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, string guid) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.GUID == guid);
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo, string guid) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo && x.GUID == guid);
 
         public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
@@ -65,6 +57,8 @@ namespace Sideloader.AutoResolver
                     {
                         //No match was found
                         Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
+                        if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
+                            kv.Value.SetMethod(structure, 1);
                     }
                 }
             }
@@ -112,7 +106,10 @@ namespace Sideloader.AutoResolver
                                 {
                                     //ID found but it conflicts with a vanilla item. Change the ID to avoid conflicts.
                                     ShowGUIDError(extResolve.GUID);
-                                    kv.Value.SetMethod(structure, 999999);
+                                    if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
+                                        kv.Value.SetMethod(structure, 1);
+                                    else
+                                        kv.Value.SetMethod(structure, 999999);
                                 }
                                 else
                                 {
@@ -124,7 +121,10 @@ namespace Sideloader.AutoResolver
                             {
                                 //ID not found. Change the ID to avoid potential future conflicts.
                                 ShowGUIDError(extResolve.GUID);
-                                kv.Value.SetMethod(structure, 999999);
+                                if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
+                                    kv.Value.SetMethod(structure, 1);
+                                else
+                                    kv.Value.SetMethod(structure, 999999);
                             }
                         }
                     }
