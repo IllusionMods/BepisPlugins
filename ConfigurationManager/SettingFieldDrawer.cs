@@ -195,9 +195,7 @@ namespace ConfigurationManager
                     foreach (var key in KeysToCheck)
                         if (Input.GetKeyUp(key))
                         {
-                            shortcut.MainKey = key;
-                            shortcut.Modifiers = KeysToCheck.Where(Input.GetKey).OrderBy(x => x.ToString()).ToArray();
-
+                            setting.Set(new KeyboardShortcut(key, KeysToCheck.Where(Input.GetKey).ToArray()));
                             CurrentKeyboardShortcutToSet = null;
                             break;
                         }
@@ -212,7 +210,7 @@ namespace ConfigurationManager
 
                     if (GUILayout.Button("Clear", GUILayout.ExpandWidth(false)))
                     {
-                        setting.Set(KeyboardShortcut.Empty);
+                        setting.Set(new KeyboardShortcut());
                         CurrentKeyboardShortcutToSet = null;
                     }
                 }

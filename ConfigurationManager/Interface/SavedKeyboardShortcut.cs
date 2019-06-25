@@ -12,38 +12,14 @@ namespace BepInEx
     /// </summary>
     public class SavedKeyboardShortcut : ConfigWrapper<KeyboardShortcut>
     {
-        private KeyboardShortcut _last;
-
         public SavedKeyboardShortcut(string name, BaseUnityPlugin plugin, KeyboardShortcut defaultShortcut)
-            : base(name, plugin, KeyboardShortcut.Deserialize, k => k.Serialize(), defaultShortcut)
+            : base(name, plugin, KeyboardShortcut.Deserialize, k => k.Serialize(), defaultShortcut ?? new KeyboardShortcut())
         {
         }
 
         public SavedKeyboardShortcut(string name, string section, KeyboardShortcut defaultShortcut)
-            : base(name, section, KeyboardShortcut.Deserialize, k => k.Serialize(), defaultShortcut)
+            : base(name, section, KeyboardShortcut.Deserialize, k => k.Serialize(), defaultShortcut ?? new KeyboardShortcut())
         {
-        }
-
-        private void SetNewLast(KeyboardShortcut value)
-        {
-            if (_last != null)
-                _last.PropertyChanged -= ShortcutChanged;
-
-            _last = value;
-            _last.PropertyChanged += ShortcutChanged;
-        }
-
-        protected override void SetValue(KeyboardShortcut value)
-        {
-            SetNewLast(value);
-            base.SetValue(value);
-        }
-
-        protected override KeyboardShortcut GetValue()
-        {
-            var value = base.GetValue();
-            SetNewLast(value);
-            return value;
         }
 
         private void ShortcutChanged(object sender, PropertyChangedEventArgs e)

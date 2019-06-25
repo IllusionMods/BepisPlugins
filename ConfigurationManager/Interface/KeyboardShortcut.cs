@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using BepInEx.Logging;
 using UnityEngine;
@@ -15,78 +14,47 @@ namespace BepInEx
     ///     Use SavedKeyboardShortcut to allow user to change this shortcut and have the changes saved.
     ///     How to use: Use IsDown instead of the Imput.GetKeyDown in the Update loop.
     /// </summary>
-    public class KeyboardShortcut : INotifyPropertyChanged
+    public class KeyboardShortcut
     {
-        public static readonly KeyboardShortcut Empty = new KeyboardShortcut(KeyCode.None);
-
         public static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[]) Enum.GetValues(typeof(KeyCode));
 
-        private KeyCode[] allKeys;
-        private HashSet<KeyCode> allKeysLookup;
+        private readonly KeyCode[] _allKeys;
+        private readonly HashSet<KeyCode> _allKeysLookup;
 
         /// <summary>
         ///     Create a new keyboard shortcut.
         /// </summary>
         /// <param name="mainKey">Main key to press</param>
         /// <param name="modifiers">Keys that should be held down before main key is registered</param>
-        public KeyboardShortcut(KeyCode mainKey, params KeyCode[] modifiers)
+        public KeyboardShortcut(KeyCode mainKey, params KeyCode[] modifiers) : this(new[] { mainKey }.Concat(modifiers).ToArray())
         {
-            AllKeys = new[] {mainKey}.Concat(modifiers).ToArray();
         }
 
-        private KeyboardShortcut(params KeyCode[] keys)
+        private KeyboardShortcut(KeyCode[] keys)
         {
-            AllKeys = keys;
+            _allKeys = SanitizeKeys(keys);
+            _allKeysLookup = new HashSet<KeyCode>(_allKeys);
         }
 
         public KeyboardShortcut()
         {
-            AllKeys = new KeyCode[] { };
+            _allKeys = SanitizeKeys();
+            _allKeysLookup = new HashSet<KeyCode>(_allKeys);
         }
 
-        public KeyCode[] AllKeys
+        private static KeyCode[] SanitizeKeys(params KeyCode[] keys)
         {
-            get => allKeys;
-            set
-            {
-                allKeys = value;
-                allKeysLookup = new HashSet<KeyCode>(value);
-            }
+            if (keys == null || keys.Length == 0)
+                return new[] { KeyCode.None };
+
+            return new[] { keys[0] }.Concat(keys.Skip(1).OrderBy(x => x.ToString())).ToArray();
         }
 
-        public KeyCode MainKey
-        {
-            get => AllKeys.Length > 0 ? AllKeys[0] : KeyCode.None;
+        public IEnumerable<KeyCode> AllKeys => _allKeys;
 
-            set
-            {
-                if (MainKey == value) return;
+        public KeyCode MainKey => _allKeys.Length > 0 ? _allKeys[0] : KeyCode.None;
 
-                if (AllKeys.Length > 0)
-                    AllKeys[0] = value;
-                else
-                    AllKeys = new[] {value};
-
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainKey)));
-            }
-        }
-
-        public IEnumerable<KeyCode> Modifiers
-        {
-            get => AllKeys.Skip(1);
-
-            set
-            {
-                if (AllKeys.Length > 0)
-                    AllKeys = new[] {AllKeys[0]}.Concat(value).ToArray();
-                else
-                    AllKeys = value.ToArray();
-
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Modifiers)));
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        public IEnumerable<KeyCode> Modifiers => _allKeys.Skip(1);
 
         public static KeyboardShortcut Deserialize(string str)
         {
@@ -99,7 +67,7 @@ namespace BepInEx
             catch (SystemException ex)
             {
                 Logger.Log(LogLevel.Error, "Failed to read keybind from settings: " + ex.Message);
-                return null;
+                return new KeyboardShortcut();
             }
         }
 
@@ -142,9 +110,9 @@ namespace BepInEx
         {
             return AllKeyCodes.All(c =>
             {
-                if (allKeysLookup.Contains(c))
+                if (_allKeysLookup.Contains(c))
                 {
-                    if (AllKeys[0] == c)
+                    if (_allKeys[0] == c)
                         return true;
                     return Input.GetKey(c);
                 }
@@ -157,6 +125,19 @@ namespace BepInEx
             if (MainKey == KeyCode.None) return "Not set";
 
             return string.Join(" + ", AllKeys.Select(c => c.ToString()).ToArray());
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is KeyboardShortcut shortcut && _allKeys.SequenceEqual(shortcut._allKeys);
+        }
+
+        public override int GetHashCode()
+        {
+            var hc = _allKeys.Length;
+            for (var i = 0; i < _allKeys.Length; i++)
+                hc = unchecked(hc * 31 + (int) _allKeys[i]);
+            return hc;
         }
     }
 }
