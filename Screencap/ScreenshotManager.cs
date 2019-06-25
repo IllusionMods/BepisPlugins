@@ -76,13 +76,13 @@ namespace Screencap
         [AcceptableValueRange(0f, 1f)]
         public static ConfigWrapper<float> ImageSeparationOffset { get; private set; }
 
-        [DisplayName("Rendered screenshot upsampling ratio")]
+        [DisplayName("Upsampling ratio of rendered screenshots")]
         [Description("Capture screenshots in a higher resolution and then downscale them to desired size. " +
                      "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
         public static ConfigWrapper<int> DownscalingRate { get; private set; }
 
-        [DisplayName("Card image upsampling ratio")]
+        [DisplayName("Upsampling ratio of card images")]
         [Description("Capture character card images in a higher resolution and then downscale them to desired size. " +
                      "Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.")]
         [AcceptableValueRange(1, 4, false)]
@@ -97,11 +97,41 @@ namespace Screencap
         [Description("Whether screenshot messages will be displayed on screen. Messages will still be written to the log.")]
         public static ConfigWrapper<bool> ScreenshotMessage { get; private set; }
 
+        [DisplayName("Screenshot file name format")]
+        [Description("Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)")]
+        public static ConfigWrapper<NameFormat> ScreenshotNameFormat { get; private set; }
+
         #endregion
 
-        private string GetUniqueFilename()
+        private string GetUniqueFilename(string capType)
         {
-            return Path.GetFullPath(Path.Combine(screenshotDir, $"Koikatsu-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png"));
+            string filename;
+            // Replace needed for Koikatu Party to get ride of the space
+            var productName = Application.productName.Replace(" ", "");
+            switch (ScreenshotNameFormat.Value)
+            {
+                case NameFormat.NameDate:
+                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    break;
+                case NameFormat.NameTypeDate:
+                    filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    break;
+                case NameFormat.NameDateType:
+                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.png";
+                    break;
+                case NameFormat.TypeDate:
+                    filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    break;
+                case NameFormat.TypeNameDate:
+                    filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    break;
+                case NameFormat.Date:
+                    filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
+            }
+            return Path.GetFullPath(Path.Combine(screenshotDir, filename));
         }
 
         protected void Awake()
@@ -132,6 +162,7 @@ namespace Screencap
             CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 3);
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
             ScreenshotMessage = new ConfigWrapper<bool>("screenshotmessage", this, true);
+            ScreenshotNameFormat = new ConfigWrapper<NameFormat>("screenshot-name-format", this, NameFormat.NameDateType);
 
             SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
             InstallSceenshotHandler();
@@ -167,7 +198,7 @@ namespace Screencap
 
         private void TakeScreenshot()
         {
-            var filename = GetUniqueFilename();
+            var filename = GetUniqueFilename("UI");
             Application.CaptureScreenshot(filename);
 
             StartCoroutine(TakeScreenshotLog(filename));
@@ -188,14 +219,15 @@ namespace Screencap
                 yield break;
             }
 
-            var filename = GetUniqueFilename();
-
             if (!in3D)
             {
                 yield return new WaitForEndOfFrame();
                 var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+
+                var filename = GetUniqueFilename("Render");
                 File.WriteAllBytes(filename, capture.EncodeToPNG());
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"Character screenshot saved to {filename}");
+
                 Destroy(capture);
             }
             else
@@ -220,9 +252,9 @@ namespace Screencap
                 ToggleCameraControllers(targetTr, true);
                 Time.timeScale = 1;
 
-                // Merge the two images together
                 var result = StitchImages(capture, capture2, ImageSeparationOffset.Value);
 
+                var filename = GetUniqueFilename("3D-Render");
                 File.WriteAllBytes(filename, result.EncodeToPNG());
 
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D Character screenshot saved to {filename}");
@@ -239,11 +271,13 @@ namespace Screencap
         {
             yield return new WaitForEndOfFrame();
 
-            var filename = GetUniqueFilename();
             if (!in3D)
             {
                 yield return new WaitForEndOfFrame();
-                File.WriteAllBytes(filename, I360Render.Capture(Resolution360.Value, false));
+                var capture = I360Render.Capture(Resolution360.Value, false);
+
+                var filename = GetUniqueFilename("360");
+                File.WriteAllBytes(filename, capture);
 
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"360 screenshot saved to {filename}");
             }
@@ -272,6 +306,7 @@ namespace Screencap
                 // Overlap is useless for these so don't use
                 var result = StitchImages(capture, capture2, 0);
 
+                var filename = GetUniqueFilename("3D-360");
                 File.WriteAllBytes(filename, I360Render.InsertXMPIntoTexture2D_PNG(result));
 
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D 360 screenshot saved to {filename}");
