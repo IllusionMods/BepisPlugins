@@ -51,6 +51,10 @@ namespace Sideloader
              "Warning: Will increase game start up time and will result in very large log sizes.")]
         public static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
 
+        [DisplayName("Keep missing accessories")]
+        [Category("Settings")]
+        [Description("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.")]
+        public static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
         /// <summary>
         /// Check if a mod with specified GUID has been loaded
         /// </summary>
@@ -82,6 +86,7 @@ namespace Sideloader
             MissingModWarning = new ConfigWrapper<bool>("MissingModWarning", this, true);
             DebugLogging = new ConfigWrapper<bool>("DebugLogging", this, false);
             DebugResolveInfoLogging = new ConfigWrapper<bool>("DebugResolveInfoLogging", this, false);
+            KeepMissingAccessories = new ConfigWrapper<bool>("KeepMissingAccessories", this, false);
 
             //check mods directory
             var modDirectory = Path.Combine(Paths.GameRootPath, "mods");
@@ -97,10 +102,7 @@ namespace Sideloader
 
         private void LoadModsFromDirectory(string modDirectory)
         {
-            string GetRelativeArchiveDir(string archiveDir)
-            {
-                return archiveDir.Length < modDirectory.Length ? archiveDir : archiveDir.Substring(modDirectory.Length).Trim(' ', '/', '\\');
-            }
+            string GetRelativeArchiveDir(string archiveDir) => archiveDir.Length < modDirectory.Length ? archiveDir : archiveDir.Substring(modDirectory.Length).Trim(' ', '/', '\\');
 
             Logger.Log(LogLevel.Info, "[SIDELOADER] Scanning the \"mods\" directory...");
 
@@ -321,12 +323,9 @@ namespace Sideloader
         /// <summary>
         /// Check whether the .png file comes from a sideloader mod
         /// </summary>
-        public static bool IsPng(string pngFile)
-        {
-            return PngList.ContainsKey(pngFile);
-        }
+        public static bool IsPng(string pngFile) => PngList.ContainsKey(pngFile);
 
-        private static MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", BindingFlags.NonPublic | BindingFlags.Instance);
 
         protected void LoadAllUnityArchives(ZipFile arc, string archiveFilename)
         {

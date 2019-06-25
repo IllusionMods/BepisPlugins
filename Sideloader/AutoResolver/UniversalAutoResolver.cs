@@ -22,24 +22,16 @@ namespace Sideloader.AutoResolver
             _resolveInfoLookupLocalSlot = results.ToLookup(info => info.LocalSlot);
         }
 
-        public static IEnumerable<ResolveInfo> LoadedResolutionInfo => _resolveInfoLookupSlot?.SelectMany(x => x) ?? Enumerable.Empty<ResolveInfo>();
-
-        public static ResolveInfo TryGetResolutionInfo(string property, int localSlot)
-        {
-            return _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.Property == property);
-        }
-        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo)
-        {
-            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
-        }
-        public static ResolveInfo TryGetResolutionInfo(int slot, string property, string guid)
-        {
-            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.GUID == guid);
-        }
-        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo, string guid)
-        {
-            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo && x.GUID == guid);
-        }
+        public static IEnumerable<ResolveInfo> LoadedResolutionInfo =>
+            _resolveInfoLookupSlot?.SelectMany(x => x) ?? Enumerable.Empty<ResolveInfo>();
+        public static ResolveInfo TryGetResolutionInfo(string property, int localSlot) =>
+            _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.Property == property);
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, string guid) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.GUID == guid);
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo, string guid) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo && x.GUID == guid);
 
         public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
@@ -57,14 +49,18 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //found a match
-                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
 
                         kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
                     else
                     {
                         //No match was found
-                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
+                        if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
+                            kv.Value.SetMethod(structure, 1);
                     }
                 }
             }
@@ -112,7 +108,10 @@ namespace Sideloader.AutoResolver
                                 {
                                     //ID found but it conflicts with a vanilla item. Change the ID to avoid conflicts.
                                     ShowGUIDError(extResolve.GUID);
-                                    kv.Value.SetMethod(structure, 999999);
+                                    if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
+                                        kv.Value.SetMethod(structure, 1);
+                                    else
+                                        kv.Value.SetMethod(structure, 999999);
                                 }
                                 else
                                 {
@@ -124,7 +123,10 @@ namespace Sideloader.AutoResolver
                             {
                                 //ID not found. Change the ID to avoid potential future conflicts.
                                 ShowGUIDError(extResolve.GUID);
-                                kv.Value.SetMethod(structure, 999999);
+                                if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
+                                    kv.Value.SetMethod(structure, 1);
+                                else
+                                    kv.Value.SetMethod(structure, 999999);
                             }
                         }
                     }
@@ -331,7 +333,7 @@ namespace Sideloader.AutoResolver
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Item.no && x.GUID == extResolve.GUID);
                 if (intResolve != null)
                 {
-                    if (resolveType == ResolveType.Load)
+                    if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
                     Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
                 }
@@ -343,7 +345,7 @@ namespace Sideloader.AutoResolver
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Light.no && x.GUID == extResolve.GUID);
                 if (intResolve != null)
                 {
-                    if (resolveType == ResolveType.Load)
+                    if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
                     Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
                 }
@@ -363,7 +365,8 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //Found a match
-                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
                         Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
                     }
                     else
@@ -381,7 +384,8 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //Found a match
-                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
                         Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
                     }
                     else
@@ -408,7 +412,7 @@ namespace Sideloader.AutoResolver
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID && x.GUID == MapGUID);
                 if (intResolve != null)
                 {
-                    if (resolveType == ResolveType.Load)
+                    if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
                     Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                 }
@@ -424,7 +428,8 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //Found a matching sideloader mod
-                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
                         Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                     }
                     else
@@ -447,7 +452,7 @@ namespace Sideloader.AutoResolver
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == filterID && x.GUID == filterGUID);
                 if (intResolve != null)
                 {
-                    if (resolveType == ResolveType.Load)
+                    if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Filter) [{filterGUID}] {filterID}->{intResolve.LocalSlot}");
                     Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
                 }
@@ -463,7 +468,8 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //Found a matching sideloader mod
-                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Filter) {filterID}->{intResolve.LocalSlot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Filter) {filterID}->{intResolve.LocalSlot}");
                         Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
                     }
                     else
@@ -486,7 +492,7 @@ namespace Sideloader.AutoResolver
                 ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == rampID);
                 if (intResolve != null)
                 {
-                    if (resolveType == ResolveType.Load)
+                    if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Ramp) [{rampID}] {rampID}->{intResolve.LocalSlot}");
 
                     Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
@@ -503,7 +509,8 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         //Found a matching sideloader mod
-                        Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Ramp) {rampID}->{intResolve.LocalSlot}");
+                        if (Sideloader.DebugLogging.Value)
+                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Ramp) {rampID}->{intResolve.LocalSlot}");
                         Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
                     }
                     else
