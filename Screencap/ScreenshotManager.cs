@@ -70,10 +70,11 @@ namespace Screencap
         [AcceptableValueRange(0.01f, 0.5f, false)]
         public static ConfigWrapper<float> EyeSeparation { get; private set; }
 
-        [DisplayName("3D screenshot image separation adjust")]
-        [Description("Move images in stereoscopic screenshots closer together by this percentage. Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.")]
+        [DisplayName("3D screenshot image separation offset")]
+        [Description("Move images in stereoscopic screenshots closer together by this percentage (discards overlapping parts). " +
+                     "Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.")]
         [AcceptableValueRange(0f, 1f)]
-        public static ConfigWrapper<float> ImageSeparationCorrection { get; private set; }
+        public static ConfigWrapper<float> ImageSeparationOffset { get; private set; }
 
         [DisplayName("Rendered screenshot upsampling ratio")]
         [Description("Capture screenshots in a higher resolution and then downscale them to desired size. " +
@@ -121,8 +122,8 @@ namespace Screencap
             ResolutionX = new ConfigWrapper<int>("resolution-x", this, Screen.width);
             ResolutionY = new ConfigWrapper<int>("resolution-y", this, Screen.height);
             Resolution360 = new ConfigWrapper<int>("resolution-360", this, 4096);
-            EyeSeparation = new ConfigWrapper<float>("eye-separation", this, 0.18f);
-            ImageSeparationCorrection = new ConfigWrapper<float>("image-separation-correction", this, 0.21f);
+            EyeSeparation = new ConfigWrapper<float>("3d-eye-separation", this, 0.18f);
+            ImageSeparationOffset = new ConfigWrapper<float>("3d-image-stitching-offset", this, 0.21f);
 
             ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
             ResolutionY.SettingChanged += (sender, args) => ResolutionYBuffer = ResolutionY.Value.ToString();
@@ -215,7 +216,7 @@ namespace Screencap
                     Time.timeScale = 1;
 
                     // Merge the two images together
-                    var xAdjust = (int)(capture.width * ImageSeparationCorrection.Value);
+                    var xAdjust = (int)(capture.width * ImageSeparationOffset.Value);
                     var result = new Texture2D((capture.width - xAdjust) * 2, capture.height, TextureFormat.ARGB32, false);
                     for (int x = 0; x < result.width; x++)
                     {
