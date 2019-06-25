@@ -410,7 +410,7 @@ namespace Sideloader.AutoResolver
 
                         //set item ID back to default
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Info, $"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
+                            Logger.Log(LogLevel.Debug, $"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
                         Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
                     }
                 }
@@ -431,7 +431,7 @@ namespace Sideloader.AutoResolver
 
                         //Set item ID back to default
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Info, $"Setting [{Light.dicKey}] ID:{Light.no}->{extResolve.Slot}");
+                            Logger.Log(LogLevel.Debug, $"Setting [{Light.dicKey}] ID:{Light.no}->{extResolve.Slot}");
                         Traverse.Create(Light).Property("no").SetValue(extResolve.Slot);
                     }
                 }
@@ -452,7 +452,7 @@ namespace Sideloader.AutoResolver
 
                     //Set map ID back to default
                     if (Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Info, $"Setting Map ID:{mapID}->{extResolve.Slot}");
+                        Logger.Log(LogLevel.Debug, $"Setting Map ID:{mapID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.map = extResolve.Slot;
                 }
             }
@@ -468,7 +468,7 @@ namespace Sideloader.AutoResolver
 
                     //Set filter ID back to default
                     if (Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Info, $"Setting Filter ID:{filterID}->{extResolve.Slot}");
+                        Logger.Log(LogLevel.Debug, $"Setting Filter ID:{filterID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.aceNo = extResolve.Slot;
                 }
             }
@@ -484,7 +484,7 @@ namespace Sideloader.AutoResolver
 
                     //Set ramp ID back to default
                     if (Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Info, $"Setting Ramp ID:{rampID}->{extResolve.Slot}");
+                        Logger.Log(LogLevel.Debug, $"Setting Ramp ID:{rampID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.rampG = extResolve.Slot;
                 }
             }
