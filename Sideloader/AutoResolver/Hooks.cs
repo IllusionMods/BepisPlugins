@@ -425,7 +425,7 @@ namespace Sideloader.AutoResolver
                             Slot = extResolve.Slot,
                             LocalSlot = extResolve.LocalSlot,
                             DicKey = Light.dicKey,
-                            ObjectOrder = ItemOrder[Light.dicKey]
+                            ObjectOrder = LightOrder[Light.dicKey]
                         };
                         ObjectResolutionInfo.Add(intResolve);
 
