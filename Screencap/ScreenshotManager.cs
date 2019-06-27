@@ -8,6 +8,7 @@ using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using StrayTech;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -342,6 +343,9 @@ namespace Screencap
                 if (cc is MonoBehaviour mb)
                     mb.enabled = enabled;
             }
+
+            var actionScene = GameObject.Find("ActionScene/CameraSystem");
+            if (actionScene != null) actionScene.GetComponent<CameraSystem>().ShouldUpdate = enabled;
         }
 
         private static Texture2D StitchImages(Texture2D capture, Texture2D capture2, float overlapOffset)
