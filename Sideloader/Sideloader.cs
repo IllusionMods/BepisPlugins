@@ -120,8 +120,11 @@ namespace Sideloader
                 {
                     archive = new ZipFile(archivePath);
 
-                    if (Manifest.TryLoadFromZip(archive, out Manifest manifest) && (manifest.Game.IsNullOrWhiteSpace() || GameNameList.Contains(manifest.Game.ToLower().Replace("!", ""))))
-                        archives.Add(archive, manifest);
+                    if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                        if (manifest.Game.IsNullOrWhiteSpace() || GameNameList.Contains(manifest.Game.ToLower().Replace("!", "")))
+                            archives.Add(archive, manifest);
+                        else
+                            Logger.Log(LogLevel.Info, $"Not loading archive \"{GetRelativeArchiveDir(archivePath)}\" due to incorrect game specified in manifest.xml");
                 }
                 catch (Exception ex)
                 {
