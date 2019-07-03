@@ -245,6 +245,22 @@ namespace Sideloader
                         }
                     }
                 }
+                else if (entry.Name.StartsWith("abdata/map/list/mapinfo/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        var stream = arc.GetInputStream(entry);
+                        MapInfo mapListData = ListLoader.LoadMapCSV(stream);
+
+                        UniversalAutoResolver.GenerateMapResolutionInfo(mapListData);
+                        ListLoader.ExternalMapList.Add(mapListData);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Failed to load list file \"{entry.Name}\" from archive \"{arc.Name}\" with error: {ex.Message}");
+                        Logger.Log(LogLevel.Error, $"[SIDELOADER] Error details: {ex}");
+                    }
+                }
             }
 
             //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
@@ -426,30 +442,22 @@ namespace Sideloader
 
         protected bool AssetBundleRedirectHook(string assetBundleName, out AssetBundle result)
         {
-            //The only asset bundles that need to be loaded are studio maps
-            //Loading asset bundles unnecessarily can interfere with normal sideloader asset handling so avoid it whenever possible
-            if (Hooks.MapLoading)
-            {
-                string bundle = assetBundleName.Remove(0, assetBundleName.IndexOf("/abdata/")).Replace("/abdata/", "");
-                if (Hooks.MapABName == bundle)
-                {
-                    //Only load asset bundles that do not exist on disk to avoid loading partial files
-                    if (!File.Exists(assetBundleName))
-                    {
-                        if (BundleManager.Bundles.TryGetValue(bundle, out List<Lazy<AssetBundle>> lazyList))
-                        {
-                            Hooks.MapLoading = false;
-                            Hooks.MapABName = "";
+            string bundle = assetBundleName.Remove(0, assetBundleName.IndexOf("/abdata/")).Replace("/abdata/", "");
 
-                            //If more than one exist, only the first will be loaded.
-                            result = lazyList[0].Instance;
-                            return true;
-                        }
+            //The only asset bundles that need to be loaded are maps
+            //Loading asset bundles unnecessarily can interfere with normal sideloader asset handling so avoid it whenever possible
+            if (bundle.StartsWith("map/scene/"))
+            {
+                if (!File.Exists(assetBundleName))
+                {
+                    if (BundleManager.Bundles.TryGetValue(bundle, out List<Lazy<AssetBundle>> lazyList))
+                    {
+                        //If more than one exist, only the first will be loaded.
+                        result = lazyList[0].Instance;
+                        return true;
                     }
                 }
             }
-            Hooks.MapLoading = false;
-            Hooks.MapABName = "";
 
             result = null;
             return false;

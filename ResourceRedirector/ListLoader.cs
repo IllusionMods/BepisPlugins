@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using UnityEngine;
 
 namespace ResourceRedirector
 {
@@ -10,18 +11,16 @@ namespace ResourceRedirector
     {
         internal static int CategoryMultiplier = 1000000; //was originally 1000 but that means the limit is 999 for each item
 
-        private static FieldInfo r_dictListInfo = typeof(ChaListControl).GetField("dictListInfo", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly FieldInfo r_dictListInfo = typeof(ChaListControl).GetField("dictListInfo", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
         private static HashSet<int> _internalStudioItemList = null;
 
         public static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
         public static List<StudioListData> ExternalStudioDataList { get; private set; } = new List<StudioListData>();
+        public static List<MapInfo> ExternalMapList { get; private set; } = new List<MapInfo>();
 
-        public static int CalculateGlobalID(int category, int ID)
-        {
-            return (category * CategoryMultiplier) + ID;
-        }
+        public static int CalculateGlobalID(int category, int ID) => (category * CategoryMultiplier) + ID;
 
         internal static void LoadAllLists(ChaListControl instance)
         {
@@ -33,10 +32,7 @@ namespace ResourceRedirector
             instance.LoadItemID();
         }
 
-        public static void LoadList(this ChaListControl instance, ChaListData data)
-        {
-            LoadList(instance, (ChaListDefine.CategoryNo)data.categoryNo, data);
-        }
+        public static void LoadList(this ChaListControl instance, ChaListData data) => LoadList(instance, (ChaListDefine.CategoryNo)data.categoryNo, data);
 
         public static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
         {
@@ -156,7 +152,43 @@ namespace ResourceRedirector
                 FileNameWithoutExtension = Path.GetFileNameWithoutExtension(FileName);
                 AssetBundleName = FileName.Remove(FileName.LastIndexOf('/')).Remove(0, FileName.IndexOf('/') + 1) + ".unity3d";
             }
+        }
 
+        public static MapInfo LoadMapCSV(Stream stream)
+        {
+            MapInfo data = ScriptableObject.CreateInstance<MapInfo>();
+
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+            {
+                while (!reader.EndOfStream)
+                {
+                    MapInfo.Param param = new MapInfo.Param();
+
+                    string line = reader.ReadLine().Trim();
+
+                    if (!line.Contains(','))
+                        break;
+                    var lineSplit = line.Split(',').ToList();
+
+                    param.MapName = lineSplit[0];
+                    param.No = int.Parse(lineSplit[1]);
+                    param.AssetBundleName = lineSplit[2];
+                    param.AssetName = lineSplit[3];
+                    param.isGate = lineSplit[4] == "1";
+                    param.is2D = lineSplit[5] == "1";
+                    param.isWarning = lineSplit[6] == "1";
+                    param.State = int.Parse(lineSplit[7]);
+                    param.LookFor = int.Parse(lineSplit[8]);
+                    param.isOutdoors = lineSplit[9] == "1";
+                    param.isFreeH = lineSplit[10] == "1";
+                    param.isSpH = lineSplit[11] == "1";
+                    param.ThumbnailBundle = lineSplit[12];
+                    param.ThumbnailAsset = lineSplit[13];
+
+                    data.param.Add(param);
+                }
+            }
+            return data;
         }
         #endregion
     }

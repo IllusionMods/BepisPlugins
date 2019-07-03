@@ -1,10 +1,6 @@
-﻿using BepInEx;
-using BepInEx.Logging;
-using Harmony;
-using System;
+﻿using Harmony;
 using System.Linq;
 using UnityEngine;
-using Logger = BepInEx.Logger;
 
 namespace Sideloader
 {
@@ -91,13 +87,5 @@ namespace Sideloader
                 }
             }
         }
-
-        public static bool MapLoading = false;
-        public static string MapABName = "";
-
-        [HarmonyPrefix, HarmonyPatch(typeof(Studio.Map), nameof(Studio.Map.LoadMapCoroutine))]
-        public static void LoadMapCoroutinePrefix() => MapLoading = true;
-        [HarmonyPrefix, HarmonyPatch(typeof(Manager.Scene), nameof(Manager.Scene.LoadBaseScene))]
-        public static void LoadBaseScenePrefix(Manager.Scene.Data data) => MapABName = data.assetBundleName;
     }
 }

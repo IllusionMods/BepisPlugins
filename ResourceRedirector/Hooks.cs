@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using BepInEx.Logging;
+﻿using BepInEx.Logging;
 using Harmony;
 using System;
 using System.Collections.Generic;
@@ -13,7 +12,7 @@ using Logger = BepInEx.Logger;
 
 namespace ResourceRedirector
 {
-    static class Hooks
+    internal static class Hooks
     {
         public static void InstallHooks()
         {
@@ -75,6 +74,14 @@ namespace ResourceRedirector
                 }
 
             ListLoader.LoadAllLists(__instance);
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(BaseMap), "LoadMapInfo")]
+        public static void LoadMapInfo(BaseMap __instance)
+        {
+            foreach (var mapInfo in ListLoader.ExternalMapList)
+                foreach (var param in mapInfo.param)
+                    __instance.infoDic[param.No] = param;
         }
         #endregion
 
