@@ -206,7 +206,6 @@ namespace Sideloader.AutoResolver
             }
         }
 
-        private static int CurrentStudioSlotID = 100000000;
         public static void GenerateStudioResolutionInfo(Manifest manifest, ListLoader.StudioListData data)
         {
             string StudioListType;
@@ -257,7 +256,7 @@ namespace Sideloader.AutoResolver
             {
                 foreach (List<string> entry in data.Entries)
                 {
-                    int newSlot = Interlocked.Increment(ref CurrentStudioSlotID);
+                    int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
                     LoadedStudioResolutionInfo.Add(new StudioResolveInfo
                     {
@@ -278,6 +277,16 @@ namespace Sideloader.AutoResolver
 
                     entry[0] = newSlot.ToString();
                 }
+            }
+        }
+
+        public static void GenerateMapResolutionInfo(MapInfo data)
+        {
+            //maps don't save or load to anything so they just need their ID changed. No need for a resolution list.
+            foreach (var param in data.param)
+            {
+                int newSlot = Interlocked.Increment(ref CurrentSlotID);
+                param.No = newSlot;
             }
         }
 
