@@ -94,6 +94,17 @@ namespace Screencap
                      "background (e.g. the map). Works well in character creator and studio.")]
         public static ConfigWrapper<bool> CaptureAlpha { get; private set; }
 
+        [DisplayName("Save screenshots as .jpg instead of .png")]
+        [Description("Save screenshots in lower quality in return for smaller file sizes. Transparency is NOT supported in .jpg screenshots. " +
+                     "Strongly consider not using this option if you want to share your work.\n\n\"" +
+                     "Do I look like I know what a jpeg is?\"")]
+        public static ConfigWrapper<bool> UseJpg { get; private set; }
+
+        [DisplayName("Quality of .jpg files")]
+        [Description("Lower quality = lower file sizes. Even 100 is worse than a .png file.")]
+        [AcceptableValueRange(1, 100, true)]
+        public static ConfigWrapper<int> JpgQuality { get; private set; }
+
         [DisplayName("Show messages on screen")]
         [Description("Whether screenshot messages will be displayed on screen. Messages will still be written to the log.")]
         public static ConfigWrapper<bool> ScreenshotMessage { get; private set; }
@@ -119,31 +130,43 @@ namespace Screencap
             if (!string.IsNullOrEmpty(ScreenshotNameOverride.Value))
                 productName = ScreenshotNameOverride.Value;
 
+            var extension = UseJpg.Value ? "jpg" : "png";
+
             switch (ScreenshotNameFormat.Value)
             {
                 case NameFormat.NameDate:
-                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
                     break;
                 case NameFormat.NameTypeDate:
-                    filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
                     break;
                 case NameFormat.NameDateType:
-                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.png";
+                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
                     break;
                 case NameFormat.TypeDate:
-                    filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
                     break;
                 case NameFormat.TypeNameDate:
-                    filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
                     break;
                 case NameFormat.Date:
-                    filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.png";
+                    filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
             }
 
             return Path.GetFullPath(Path.Combine(screenshotDir, filename));
+        }
+
+        private static byte[] EncodeToFile(Texture2D result)
+        {
+            return UseJpg.Value ? result.EncodeToJPG(JpgQuality.Value) : result.EncodeToPNG();
+        }
+
+        private static byte[] EncodeToXmpFile(Texture2D result)
+        {
+            return UseJpg.Value ? I360Render.InsertXMPIntoTexture2D_JPEG(result, JpgQuality.Value) : I360Render.InsertXMPIntoTexture2D_PNG(result);
         }
 
         protected void Awake()
@@ -173,6 +196,10 @@ namespace Screencap
             DownscalingRate = new ConfigWrapper<int>("downscalerate", this, 2);
             CardDownscalingRate = new ConfigWrapper<int>("carddownscalerate", this, 3);
             CaptureAlpha = new ConfigWrapper<bool>("capturealpha", this, true);
+
+            UseJpg = new ConfigWrapper<bool>("jpg", this, false);
+            JpgQuality = new ConfigWrapper<int>("jpg-quality", this, 100);
+
             ScreenshotMessage = new ConfigWrapper<bool>("screenshotmessage", this, true);
             ScreenshotNameFormat = new ConfigWrapper<NameFormat>("screenshot-name-format", this, NameFormat.NameDateType);
             ScreenshotNameOverride = new ConfigWrapper<string>("screenshot-name-override", this, "");
@@ -238,7 +265,7 @@ namespace Screencap
                 var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
 
                 var filename = GetUniqueFilename("Render");
-                File.WriteAllBytes(filename, capture.EncodeToPNG());
+                File.WriteAllBytes(filename, EncodeToFile(capture));
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"Character screenshot saved to {filename}");
 
                 Destroy(capture);
@@ -268,7 +295,7 @@ namespace Screencap
                 var result = StitchImages(capture, capture2, ImageSeparationOffset.Value);
 
                 var filename = GetUniqueFilename("3D-Render");
-                File.WriteAllBytes(filename, result.EncodeToPNG());
+                File.WriteAllBytes(filename, EncodeToFile(result));
 
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D Character screenshot saved to {filename}");
 
@@ -287,12 +314,16 @@ namespace Screencap
             if (!in3D)
             {
                 yield return new WaitForEndOfFrame();
-                var capture = I360Render.Capture(Resolution360.Value, false);
+
+                var output = I360Render.CaptureTex(Resolution360.Value);
+                var capture = EncodeToXmpFile(output);
 
                 var filename = GetUniqueFilename("360");
                 File.WriteAllBytes(filename, capture);
 
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"360 screenshot saved to {filename}");
+
+                Destroy(output);
             }
             else
             {
@@ -320,7 +351,7 @@ namespace Screencap
                 var result = StitchImages(capture, capture2, 0);
 
                 var filename = GetUniqueFilename("3D-360");
-                File.WriteAllBytes(filename, I360Render.InsertXMPIntoTexture2D_PNG(result));
+                File.WriteAllBytes(filename, EncodeToXmpFile(result));
 
                 BepInEx.Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D 360 screenshot saved to {filename}");
 
