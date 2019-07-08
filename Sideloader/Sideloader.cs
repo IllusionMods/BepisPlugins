@@ -252,7 +252,6 @@ namespace Sideloader
                         var stream = arc.GetInputStream(entry);
                         MapInfo mapListData = ListLoader.LoadMapCSV(stream);
 
-                        UniversalAutoResolver.GenerateMapResolutionInfo(mapListData);
                         ListLoader.ExternalMapList.Add(mapListData);
                     }
                     catch (Exception ex)
