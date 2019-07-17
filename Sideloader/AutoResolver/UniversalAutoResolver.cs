@@ -280,16 +280,6 @@ namespace Sideloader.AutoResolver
             }
         }
 
-        public static void GenerateMapResolutionInfo(MapInfo data)
-        {
-            //maps don't save or load to anything so they just need their ID changed. No need for a resolution list.
-            foreach (var param in data.param)
-            {
-                int newSlot = Interlocked.Increment(ref CurrentSlotID);
-                param.No = newSlot;
-            }
-        }
-
         public static void ShowGUIDError(string guid)
         {
             if (LoadedResolutionInfo.Any(x => x.GUID == guid) || LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
