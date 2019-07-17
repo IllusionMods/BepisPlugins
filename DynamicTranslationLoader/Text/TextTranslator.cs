@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using BepisPlugins;
 using TARC.Compiler;
 using TMPro;
 using UnityEngine;
@@ -26,7 +27,7 @@ namespace DynamicTranslationLoader.Text
         private static readonly Dictionary<string, CompiledLine> FolderTranslations = new Dictionary<string, CompiledLine>();
         private static readonly Dictionary<Regex, CompiledLine> regexFolderTranslations = new Dictionary<Regex, CompiledLine>();
 
-        private static readonly Dictionary<WeakReference, string> OriginalTranslations = new Dictionary<WeakReference, string>();
+        private static readonly WeakKeyDictionary<object, string> OriginalTranslations = new WeakKeyDictionary<object, string>();
         private static readonly HashSet<string> Untranslated = new HashSet<string>();
 
         private static readonly string CurrentExe = Paths.ProcessName;
@@ -76,9 +77,8 @@ namespace DynamicTranslationLoader.Text
             if (string.IsNullOrEmpty(input))
                 return input;
 
-            // Consider changing this! You have a dictionary, but you iterate instead of making a lookup. Why do you not use the WeakKeyDictionary, you have instead? 
-            if (OriginalTranslations.All(x => x.Key.Target != obj)) //check if we don't have the object in the dictionary
-                OriginalTranslations.Add(new WeakReference(obj), input);
+            if (obj != null && !OriginalTranslations.Contains(obj))
+                OriginalTranslations.Set(obj, input);
 
             if (Translations.TryGetValue(input.Trim(), out CompiledLine translation))
                 return translation.TranslatedLine;
@@ -171,14 +171,9 @@ namespace DynamicTranslationLoader.Text
 
             foreach (var kv in OriginalTranslations)
             {
-                if (!kv.Key.IsAlive)
-                    continue;
-
-                aliveCount++;
-
                 try
                 {
-                    switch (kv.Key.Target)
+                    switch (kv.Key)
                     {
                         case TMP_Text tmtext:
                             tmtext.text = kv.Value;
@@ -188,6 +183,7 @@ namespace DynamicTranslationLoader.Text
                             tmtext.text = kv.Value;
                             break;
                     }
+                    aliveCount++;
                 }
                 catch
                 {

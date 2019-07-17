@@ -1,41 +1,70 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BepisPlugins
 {
-    internal class WeakKeyDictionary<TKey, TValue> where TValue : class
+    internal class WeakKeyDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TValue : class
     {
-        private readonly Dictionary<HashedWeakReference, TValue> Items;
+        private readonly Dictionary<HashedWeakReference, TValue> _items;
 
         public WeakKeyDictionary()
         {
-            Items = new Dictionary<HashedWeakReference, TValue>();
+            _items = new Dictionary<HashedWeakReference, TValue>();
         }
 
         public int Count
         {
-            get { return Items.Count; }
+            get { return _items.Count; }
         }
 
         public void Set(TKey key, TValue value)
         {
-            Items[new HashedWeakReference(key)] = value;
+            _items[new HashedWeakReference(key)] = value;
+            PurgeDeadKeys();
+        }
+
+        private void PurgeDeadKeys()
+        {
             // Naive O(n) key prune
-            var deadKeys = Items.Keys.Where(reference => !reference.IsAlive).ToList();
-            foreach (HashedWeakReference reference in deadKeys)
+            var deadKeys = _items.Keys.Where(reference => !reference.IsAlive).ToList();
+            foreach (var reference in deadKeys)
             {
-                Items.Remove(reference);
+                _items.Remove(reference);
             }
         }
 
         public TValue Get(TKey key)
         {
-            if (Items.TryGetValue(new HashedWeakReference(key), out TValue value))
+            if (_items.TryGetValue(new HashedWeakReference(key), out TValue value))
             {
                 return value;
             }
 
             return null;
+        }
+
+        public bool Contains(TKey key)
+        {
+            return _items.TryGetValue(new HashedWeakReference(key), out TValue _);
+        }
+
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+        {
+            return _items
+                .Where(x => x.Key.IsAlive)
+                .Select(x => new KeyValuePair<TKey, TValue>((TKey)x.Key.Target, x.Value))
+                .GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public void Clear()
+        {
+            _items.Clear();
         }
     }
 }

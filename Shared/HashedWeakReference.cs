@@ -4,45 +4,36 @@ namespace BepisPlugins
 {
     internal class HashedWeakReference
     {
-        private int TargetHashCode;
-        private WeakReference Reference;
-
-        private void setTarget(object target)
-        {
-            TargetHashCode = target.GetHashCode();
-            Reference = new WeakReference(target);
-        }
+        private readonly int _targetHashCode;
+        private readonly WeakReference _reference;
 
         public HashedWeakReference(object target)
         {
-            setTarget(target);
+            _targetHashCode = target.GetHashCode();
+            _reference = new WeakReference(target);
         }
 
         public object Target
         {
-            get { return Reference.Target; }
-            set
-            {
-                setTarget(value);
-            }
+            get { return _reference.Target; }
         }
 
         public bool IsAlive
         {
             get
             {
-                return Reference.IsAlive;
+                return _reference.IsAlive;
             }
         }
 
         public override int GetHashCode()
         {
-            return TargetHashCode;
+            return _targetHashCode;
         }
 
         public override bool Equals(object obj)
         {
-            return TargetHashCode == obj?.GetHashCode();// && Reference.IsAlive && Target == obj;
+            return _targetHashCode == obj?.GetHashCode();
         }
     }
 }
