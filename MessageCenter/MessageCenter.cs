@@ -14,27 +14,23 @@ namespace BepisPlugins
         public const string GUID = "com.bepis.messagecenter";
         public const string Version = Metadata.PluginsVersion;
 
-        private readonly List<LogEntry> _shownLogLines = new List<LogEntry>();
+        private static readonly List<LogEntry> _shownLogLines = new List<LogEntry>();
 
-        private float _showCounter;
-        private string _shownLogText = string.Empty;
+        private static float _showCounter;
+        private static string _shownLogText = string.Empty;
 
-        public MessageCenter()
+        static MessageCenter()
         {
-            Enabled = new ConfigWrapper<bool>("enabled", this, true);
+            Enabled = new ConfigWrapper<bool>("enabled", GUID, true);
+            BepInEx.Logger.EntryLogged += OnEntryLogged;
         }
 
         [DisplayName("Show messages in UI")]
         [Description("Allow plugins to show pop-up messages")]
         [Advanced(true)]
-        public ConfigWrapper<bool> Enabled { get; }
-
-        private void Awake()
-        {
-            BepInEx.Logger.EntryLogged += OnEntryLogged;
-        }
-
-        private void OnEntryLogged(LogLevel level, object log)
+        public static ConfigWrapper<bool> Enabled { get; }
+        
+        private static void OnEntryLogged(LogLevel level, object log)
         {
             if ((level & LogLevel.Message) != LogLevel.None && Enabled.Value)
             {
