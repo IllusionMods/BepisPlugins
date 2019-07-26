@@ -354,7 +354,7 @@ namespace Sideloader
         /// <summary>
         /// Get a new copy of the png file if it exists in any of the loaded zipmods
         /// </summary>
-        public static Texture2D GetPng(string pngPath)
+        public static Texture2D GetPng(string pngPath, TextureFormat format = TextureFormat.RGBA32, bool mipmap = true)
         {
             if (string.IsNullOrEmpty(pngPath))
                 return null;
@@ -368,7 +368,7 @@ namespace Sideloader
                 {
                     var stream = archive.GetInputStream(entry);
 
-                    var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size);
+                    var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size, format, mipmap);
 
                     if (pngPath.Contains("clamp"))
                         tex.wrapMode = TextureWrapMode.Clamp;

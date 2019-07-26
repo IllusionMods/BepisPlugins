@@ -32,16 +32,26 @@ namespace ResourceRedirector
 
         public static Texture2D LoadTexture(Stream stream, int length)
         {
+            return LoadTexture(stream, length, TextureFormat.RGBA32, true);
+        }
+
+        public static Texture2D LoadTexture(Stream stream, int length, TextureFormat format, bool mipmap)
+        {
             byte[] buffer = new byte[length];
 
             stream.Read(buffer, 0 , length);
 
-            return LoadTexture(buffer);
+            return LoadTexture(buffer, format, mipmap);
         }
 
         public static Texture2D LoadTexture(byte[] data)
         {
-            Texture2D tex = new Texture2D(2, 2);
+            return LoadTexture(data, TextureFormat.RGBA32, true);
+        }
+
+        public static Texture2D LoadTexture(byte[] data, TextureFormat format, bool mipmap)
+        {
+            Texture2D tex = new Texture2D(2, 2, format, mipmap);
 
             //DDS method
             //tex.LoadRawTextureData
