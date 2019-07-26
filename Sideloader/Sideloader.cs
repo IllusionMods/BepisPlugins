@@ -55,15 +55,6 @@ namespace Sideloader
         [Category("Settings")]
         [Description("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.")]
         public static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
-        /// <summary>
-        /// Check if a mod with specified GUID has been loaded
-        /// </summary>
-        public bool IsModLoaded(string guid)
-        {
-            if (guid == null)
-                return false;
-            return LoadedManifests.Any(x => x.GUID == guid);
-        }
 
         public Sideloader()
         {
@@ -309,6 +300,7 @@ namespace Sideloader
                 }
             }
         }
+
         /// <summary>
         /// Build a list of folders that contain .pngs but do not match an existing asset bundle
         /// </summary>
@@ -329,6 +321,7 @@ namespace Sideloader
                 PngFolderOnlyList.Add(folder);
             }
         }
+
         /// <summary>
         /// Check whether the asset bundle matches a folder that contains .png files and does not match an existing asset bundle
         /// </summary>
@@ -338,6 +331,57 @@ namespace Sideloader
             var trimmedName = extStart >= 0 ? assetBundleName.Remove(extStart) : assetBundleName;
             return PngFolderOnlyList.Contains(trimmedName);
         }
+
+        [Obsolete]
+        public bool IsModLoaded(string guid) => GetManifest(guid) != null;
+
+        /// <summary>
+        /// Check if a mod with specified GUID has been loaded and fetch its manifest.
+        /// Returns null if there was no mod with this guid loaded.
+        /// </summary>
+        public static Manifest GetManifest(string guid)
+        {
+            if (string.IsNullOrEmpty(guid))
+                return null;
+            return LoadedManifests.FirstOrDefault(x => x.GUID == guid);
+        }
+
+        /// <summary>
+        /// Get a list of file paths to all png files inside the loaded mods
+        /// </summary>
+        public static IEnumerable<string> GetPngNames() => PngList.Keys;
+
+        /// <summary>
+        /// Get a new copy of the png file if it exists in any of the loaded zipmods
+        /// </summary>
+        public static Texture2D GetPng(string pngPath)
+        {
+            if (string.IsNullOrEmpty(pngPath))
+                return null;
+
+            //Only search the archives for a .png that can actually be found
+            if (PngList.TryGetValue(pngPath, out ZipFile archive))
+            {
+                var entry = archive.GetEntry(pngPath);
+
+                if (entry != null)
+                {
+                    var stream = archive.GetInputStream(entry);
+
+                    var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size);
+
+                    if (pngPath.Contains("clamp"))
+                        tex.wrapMode = TextureWrapMode.Clamp;
+                    else if (pngPath.Contains("repeat"))
+                        tex.wrapMode = TextureWrapMode.Repeat;
+
+                    return tex;
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Check whether the .png file comes from a sideloader mod
         /// </summary>
@@ -407,25 +451,11 @@ namespace Sideloader
             {
                 zipPath = $"{zipPath}.png";
 
-                //Only search the archives for a .png that can actually be found
-                if (PngList.TryGetValue(zipPath, out ZipFile archive))
+                var tex = GetPng(zipPath);
+                if (tex != null)
                 {
-                    var entry = archive.GetEntry(zipPath);
-
-                    if (entry != null)
-                    {
-                        var stream = archive.GetInputStream(entry);
-
-                        var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size);
-
-                        if (zipPath.Contains("clamp"))
-                            tex.wrapMode = TextureWrapMode.Clamp;
-                        else if (zipPath.Contains("repeat"))
-                            tex.wrapMode = TextureWrapMode.Repeat;
-
-                        result = new AssetBundleLoadAssetOperationSimulation(tex);
-                        return true;
-                    }
+                    result = new AssetBundleLoadAssetOperationSimulation(tex);
+                    return true;
                 }
             }
 
