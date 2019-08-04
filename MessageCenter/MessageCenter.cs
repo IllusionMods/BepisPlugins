@@ -67,8 +67,8 @@ namespace BepisPlugins
         {
             if (_showCounter <= 0) return;
 
-            var textColor = Color.white;
-            var outlineColor = Color.black;
+            var textColor = Color.black;
+            var outlineColor = Color.white;
 
             if (_showCounter <= 1)
             {
@@ -80,7 +80,7 @@ namespace BepisPlugins
             {
                 alignment = TextAnchor.UpperLeft,
                 fontSize = 20
-            }, outlineColor, textColor, 3f);
+            }, textColor, outlineColor, 3);
         }
 
         private sealed class LogEntry
