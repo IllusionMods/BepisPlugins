@@ -1,4 +1,5 @@
 ﻿using Harmony;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -10,6 +11,8 @@ namespace Sideloader
         {
             var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader");
             harmony.PatchAll(typeof(Hooks));
+            harmony.Patch(typeof(GlobalMethod).GetMethod(nameof(GlobalMethod.LoadAllFolder), AccessTools.all).MakeGenericMethod(typeof(Object)),
+                          null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
@@ -86,6 +89,22 @@ namespace Sideloader
                         i += 1;
                 }
             }
+        }
+        /// <summary>
+        /// Patch for loading h/common/ stuff for Sideloader maps
+        /// </summary>
+        public static void LoadAllFolderPostfix(string _findFolder, string _strLoadFile, ref List<Object> __result)
+        {
+            if (__result.Count() == 0 && _findFolder == "h/common/")
+                foreach (var kvp in BundleManager.Bundles.Where(x => x.Key.StartsWith(_findFolder)))
+                    foreach (var lazyList in kvp.Value)
+                        foreach (var assetName in lazyList.Instance.GetAllAssetNames())
+                            if (assetName.ToLower().Contains(_strLoadFile.ToLower()))
+                            {
+                                GameObject go = CommonLib.LoadAsset<GameObject>(kvp.Key, assetName);
+                                if (go)
+                                    __result.Add(go);
+                            }
         }
     }
 }
