@@ -37,7 +37,7 @@ namespace BepisPlugins
                 if (_showCounter <= 0)
                     _shownLogLines.Clear();
 
-                _showCounter = Mathf.Max(_showCounter, 7f);
+                _showCounter = Mathf.Clamp(_showCounter, 7, 12);
 
                 var logText = log.ToString();
 
