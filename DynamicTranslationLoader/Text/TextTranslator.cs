@@ -69,6 +69,24 @@ namespace DynamicTranslationLoader.Text
             return false;
         }
 
+        /// <summary>
+        /// Try to get local translation for specified string, to be used by other plugins.
+        /// If no local translation was found returns null. XUA is not called.
+        /// </summary>
+        public static string TryGetTranslation(string toTranslate)
+        {
+            if (string.IsNullOrEmpty(toTranslate))
+                return toTranslate;
+
+            if (Translations.TryGetValue(toTranslate.Trim(), out var translatedLine))
+                return translatedLine.TranslatedLine;
+
+            if (TryGetRegex(toTranslate, out var translation))
+                return translation;
+
+            return null;
+        }
+
         public static string TranslateText(string input, object obj)
         {
             if (DynamicTranslator.IsPastingToClipboard.Value)
