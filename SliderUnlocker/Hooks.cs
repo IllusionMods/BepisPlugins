@@ -1,10 +1,11 @@
 ﻿using ChaCustom;
-using Harmony;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using UnityEngine;
+using BepInEx.Harmony;
 
 namespace SliderUnlocker
 {
@@ -12,8 +13,7 @@ namespace SliderUnlocker
     {
         public static void InstallHooks()
         {
-            var harmony = HarmonyInstance.Create("com.bepis.bepinex.sliderunlocker");
-            harmony.PatchAll(typeof(Hooks));
+            HarmonyWrapper.PatchAll(typeof(Hooks));
         }
 
         private static FieldInfo akf_dictInfo = typeof(AnimationKeyInfo).GetField("dictInfo", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -55,20 +55,9 @@ namespace SliderUnlocker
                 __result = value;
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", new[] { typeof(string), typeof(float), typeof(Vector3[]), typeof(bool[]) }, new[] { 2 })]
-        public static void GetInfoPreHook(ref float __state, string name, ref float rate, ref Vector3[] value, bool[] flag)
-        {
-            __state = rate;
-
-            if (rate > 1)
-                rate = 1f;
-
-
-            if (rate < 0)
-                rate = 0f;
-        }
-
-        [HarmonyPrefix, HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", new[] { typeof(string), typeof(float), typeof(Vector3), typeof(byte) }, new[] { 2 })]
+        [ParameterByRef(2)]
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", typeof(string), typeof(float), typeof(Vector3), typeof(byte))]
         public static void GetInfoSingularPreHook(ref float __state, string name, ref float rate, ref Vector3 value, byte type)
         {
             __state = rate;
@@ -81,7 +70,9 @@ namespace SliderUnlocker
                 rate = 0f;
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", new[] { typeof(string), typeof(float), typeof(Vector3), typeof(byte) }, new[] { 2 })]
+        [ParameterByRef(2)]
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", typeof(string), typeof(float), typeof(Vector3), typeof(byte))]
         public static void GetInfoSingularPostHook(AnimationKeyInfo __instance, bool __result, float __state, string name, float rate, ref Vector3 value, byte type)
         {
             if (!__result)
@@ -110,7 +101,24 @@ namespace SliderUnlocker
             }
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", new[] { typeof(string), typeof(float), typeof(Vector3[]), typeof(bool[]) }, new[] { 2 })]
+        [ParameterByRef(2)]
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", typeof(string), typeof(float), typeof(Vector3[]), typeof(bool[]))]
+        public static void GetInfoPreHook(ref float __state, string name, ref float rate, ref Vector3[] value, bool[] flag)
+        {
+            __state = rate;
+
+            if (rate > 1)
+                rate = 1f;
+
+
+            if (rate < 0)
+                rate = 0f;
+        }
+
+        [ParameterByRef(2)]
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", typeof(string), typeof(float), typeof(Vector3[]), typeof(bool[]))]
         public static void GetInfoPostHook(AnimationKeyInfo __instance, bool __result, float __state, string name, float rate, ref Vector3[] value, bool[] flag)
         {
             if (!__result)

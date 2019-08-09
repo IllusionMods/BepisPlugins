@@ -11,6 +11,7 @@ namespace ExtensibleSaveFormat
     {
         public const string GUID = "com.bepis.bepinex.extendedsave";
         public const string Version = Metadata.PluginsVersion;
+        internal static new ManualLogSource Logger;
         /// <summary>
         /// Whether extended data load events should be triggered. Temporarily disable it when extended data will never be used, for example loading lists of cards.
         /// </summary>
@@ -44,8 +45,9 @@ namespace ExtensibleSaveFormat
 
         public static event SceneEventHandler SceneBeingImported;
 
-        void Awake()
+        private void Awake()
         {
+            Logger = base.Logger;
             Hooks.InstallHooks();
         }
 
@@ -184,15 +186,9 @@ namespace ExtensibleSaveFormat
 
         #endregion
 
-        public static Dictionary<string, PluginData> GetAllExtendedData(ChaFile file)
-        {
-            return internalCharaDictionary.Get(file);
-        }
+        public static Dictionary<string, PluginData> GetAllExtendedData(ChaFile file) => internalCharaDictionary.Get(file);
 
-        public static Dictionary<string, PluginData> GetAllExtendedData(ChaFileCoordinate file)
-        {
-            return internalCoordinateDictionary.Get(file);
-        }
+        public static Dictionary<string, PluginData> GetAllExtendedData(ChaFileCoordinate file) => internalCoordinateDictionary.Get(file);
 
         public static PluginData GetExtendedDataById(ChaFile file, string id)
         {
@@ -257,9 +253,6 @@ namespace ExtensibleSaveFormat
             return null;
         }
 
-        public static void SetSceneExtendedDataById(string id, PluginData extendedFormatData)
-        {
-            internalSceneDictionary[id] = extendedFormatData;
-        }
+        public static void SetSceneExtendedDataById(string id, PluginData extendedFormatData) => internalSceneDictionary[id] = extendedFormatData;
     }
 }

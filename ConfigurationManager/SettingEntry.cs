@@ -1,10 +1,10 @@
 ﻿// Made by MarC0 / ManlyMarco
 // Copyright 2018 GNU General Public License v3.0
 
-using System;
-using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
+using System;
+using System.Reflection;
 
 namespace ConfigurationManager
 {
@@ -27,15 +27,9 @@ namespace ConfigurationManager
 
         public override Type SettingType => _settingType ?? (_settingType = Property.PropertyType);
 
-        public override object Get()
-        {
-            return Property.GetValue(Instance, null);
-        }
+        public override object Get() => Property.GetValue(Instance, null);
 
-        public override void Set(object newVal)
-        {
-            Property.SetValue(Instance, newVal, null);
-        }
+        public override void Set(object newVal) => Property.SetValue(Instance, newVal, null);
 
         public static PropSettingEntry FromConfigWrapper(object instance, PropertyInfo settingProp,
             BepInPlugin pluginInfo, BaseUnityPlugin pluginInstance)
@@ -46,7 +40,7 @@ namespace ConfigurationManager
 
                 if (wrapper == null)
                 {
-                    Logger.Log(LogLevel.Debug, $"Skipping ConfigWrapper entry because it's null : {instance} | {settingProp?.Name} | {pluginInfo?.Name}");
+                    ConfigurationManager.Logger.Log(LogLevel.Debug, $"Skipping ConfigWrapper entry because it's null : {instance} | {settingProp?.Name} | {pluginInfo?.Name}");
                     return null;
                 }
 
@@ -57,7 +51,7 @@ namespace ConfigurationManager
 
                 if (innerProp == null)
                 {
-                    Logger.Log(LogLevel.Error, "Failed to find property Value of ConfigWrapper");
+                    ConfigurationManager.Logger.Log(LogLevel.Error, "Failed to find property Value of ConfigWrapper");
                     return null;
                 }
 
@@ -95,7 +89,7 @@ namespace ConfigurationManager
                 {
                     var inv = objToStr.GetType().GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
                     if (inv != null)
-                        entry.ObjToStr = o => inv.Invoke(objToStr, new object[] {o}) as string;
+                        entry.ObjToStr = o => inv.Invoke(objToStr, new object[] { o }) as string;
                 }
                 else
                 {
@@ -106,7 +100,7 @@ namespace ConfigurationManager
             }
             catch (SystemException ex)
             {
-                Logger.Log(LogLevel.Error,
+                ConfigurationManager.Logger.Log(LogLevel.Error,
                     $"Failed to create ConfigWrapper entry : {instance} | {settingProp?.Name} | {pluginInfo?.Name} | Error: {ex.Message}");
                 return null;
             }

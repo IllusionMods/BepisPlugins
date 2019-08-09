@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using ICSharpCode.SharpZipLib.Zip;
 using ResourceRedirector;
@@ -6,14 +7,12 @@ using Shared;
 using Sideloader.AutoResolver;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using Logger = BepInEx.Logger;
 
 namespace Sideloader
 {
@@ -24,6 +23,7 @@ namespace Sideloader
     {
         public const string GUID = "com.bepis.bepinex.sideloader";
         public const string Version = BepisPlugins.Metadata.PluginsVersion;
+        internal static new ManualLogSource Logger;
 
         private static readonly string[] GameNameList = { "koikatsu", "koikatu", "コイカツ" };
 
@@ -37,50 +37,24 @@ namespace Sideloader
         protected static HashSet<string> PngFolderList = new HashSet<string>();
         protected static HashSet<string> PngFolderOnlyList = new HashSet<string>();
 
-        [DisplayName("Show missing mod warnings")]
-        [Category("Settings")]
-        [Description("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log.")]
         public static ConfigWrapper<bool> MissingModWarning { get; private set; }
-
-        [DisplayName("Debug logging")]
-        [Category("Settings")]
-        [Description("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\n\n" +
-                     "Warning: Will increase load and save times noticeably and will result in very large log sizes.")]
-
         public static ConfigWrapper<bool> DebugLogging { get; private set; }
-
-        [DisplayName("Debug resolve info logging")]
-        [Category("Settings")]
-        [Description("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\n\n" +
-             "Warning: Will increase game start up time and will result in very large log sizes.")]
         public static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
-
-        [DisplayName("Keep missing accessories")]
-        [Category("Settings")]
-        [Description("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.")]
         public static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
 
         public Sideloader()
         {
-            //ilmerge
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-            {
-                if (args.Name == "I18N, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756"
-                 || args.Name == "I18N.West, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
-                    return Assembly.GetExecutingAssembly();
-
-                return null;
-            };
+            Logger = base.Logger;
 
             Hooks.InstallHooks();
             AutoResolver.Hooks.InstallHooks();
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
             ResourceRedirector.ResourceRedirector.AssetBundleResolvers.Add(AssetBundleRedirectHook);
 
-            MissingModWarning = new ConfigWrapper<bool>("MissingModWarning", this, true);
-            DebugLogging = new ConfigWrapper<bool>("DebugLogging", this, false);
-            DebugResolveInfoLogging = new ConfigWrapper<bool>("DebugResolveInfoLogging", this, false);
-            KeepMissingAccessories = new ConfigWrapper<bool>("KeepMissingAccessories", this, false);
+            MissingModWarning = Config.Wrap("Settings", "Show missing mod warnings", "Whether missing mod warnings will be displayed on screen. Messages will still be written to the log.", true);
+            DebugLogging = Config.Wrap("Settings", "Debug logging", "Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes.", false);
+            DebugResolveInfoLogging = Config.Wrap("Settings", "Debug resolve info logging", "Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes.", false);
+            KeepMissingAccessories = Config.Wrap("Settings", "Keep missing accessories", "Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.", false);
 
             if (Directory.Exists(ModsDirectory))
                 LoadModsFromDirectory();
@@ -88,10 +62,7 @@ namespace Sideloader
                 Logger.Log(LogLevel.Warning, "[SIDELOADER] Could not find the \"mods\" directory");
         }
 
-        private static string GetRelativeArchiveDir(string archiveDir)
-        {
-            return archiveDir.Length < ModsDirectory.Length ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
-        }
+        private static string GetRelativeArchiveDir(string archiveDir) => archiveDir.Length < ModsDirectory.Length ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
 
         private void LoadModsFromDirectory()
         {

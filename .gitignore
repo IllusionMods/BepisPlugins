@@ -286,11 +286,8 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
-lib/Assembly-CSharp-firstpass.dll
-lib/Assembly-CSharp.dll
-lib/copy dll.bat
-lib/TextMeshPro-1.0.55.56.0b12.dll
-lib/UnityEngine.dll
-lib/UnityEngine.UI.dll
-lib/BepInEx.dll
+
+# BepisPlugins
+lib/*
 /ConfigurationManager/ConfigurationManager.csproj.DotSettings
+PostBuild.bat

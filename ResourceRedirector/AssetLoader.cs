@@ -13,12 +13,12 @@ namespace ResourceRedirector
                 AudioClip clip = loadGachi.GetAudioClipCompressed(false, type);
 
                 //force single threaded loading instead of using a coroutine
-                while (!clip.isReadyToPlay) { }
+                while (clip.loadState != AudioDataLoadState.Loaded) { }
 
                 return clip;
             }
         }
-        
+
 
         public static Texture2D LoadTexture(string path)
         {
@@ -39,7 +39,7 @@ namespace ResourceRedirector
         {
             byte[] buffer = new byte[length];
 
-            stream.Read(buffer, 0 , length);
+            stream.Read(buffer, 0, length);
 
             return LoadTexture(buffer, format, mipmap);
         }

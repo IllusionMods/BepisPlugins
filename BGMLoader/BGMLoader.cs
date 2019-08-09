@@ -1,46 +1,47 @@
-﻿using System;
-using System.IO;
-using BepisPlugins;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Logging;
+using BepisPlugins;
 using Illusion.Game;
-using Logger = BepInEx.Logger;
+using System;
+using System.IO;
 
 namespace BGMLoader
 {
-	[BepInPlugin(GUID, "BGM Loader", Version)]
+    [BepInPlugin(GUID, "BGM Loader", Version)]
     public class BGMLoader : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bgmloader";
         public const string Version = Metadata.PluginsVersion;
+        internal static new ManualLogSource Logger;
 
         public BGMLoader()
-	    {
-	        Hooks.InstallHooks();
+        {
+            Hooks.InstallHooks();
 
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(HandleAsset);
-	    }
+            Logger = base.Logger;
+        }
 
-	    public static bool HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
-	    {
-		    if (assetName.StartsWith("bgm") && assetName.Length > 4)
-		    {
-				int bgmTrack = int.Parse(assetName.Remove(0, 4));
+        public static bool HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
+        {
+            if (assetName.StartsWith("bgm") && assetName.Length > 4)
+            {
+                int bgmTrack = int.Parse(assetName.Remove(0, 4));
 
-			    var path = Utility.CombinePaths(Paths.PluginPath, "bgm", $"BGM{bgmTrack:00}.ogg");
-				
-			    if (File.Exists(path))
-			    {
-				    Logger.Log(LogLevel.Info, $"Loading BGM track \"{(BGM)bgmTrack}\" from {path}");
+                var path = Utility.CombinePaths(Paths.PluginPath, "bgm", $"BGM{bgmTrack:00}.ogg");
 
-				    result = new AssetBundleLoadAssetOperationSimulation(AudioLoader.LoadVorbis(path));
+                if (File.Exists(path))
+                {
+                    Logger.Log(LogLevel.Info, $"Loading BGM track \"{(BGM)bgmTrack}\" from {path}");
 
-				    return true;
-			    }
-		    }
+                    result = new AssetBundleLoadAssetOperationSimulation(AudioLoader.LoadVorbis(path));
 
-		    result = null;
-		    return false;
-	    }
+                    return true;
+                }
+            }
+
+            result = null;
+            return false;
+        }
     }
 }

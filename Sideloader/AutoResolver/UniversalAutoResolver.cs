@@ -1,6 +1,5 @@
-﻿using BepInEx;
-using BepInEx.Logging;
-using Harmony;
+﻿using BepInEx.Logging;
+using HarmonyLib;
 using ResourceRedirector;
 using Studio;
 using System.Collections.Generic;
@@ -50,7 +49,7 @@ namespace Sideloader.AutoResolver
                     {
                         //found a match
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
 
                         kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
@@ -58,7 +57,7 @@ namespace Sideloader.AutoResolver
                     {
                         //No match was found
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
                         if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
                             kv.Value.SetMethod(structure, 1);
                     }
@@ -94,7 +93,7 @@ namespace Sideloader.AutoResolver
                         {
                             //found a match to a corrosponding internal mod
                             if (Sideloader.DebugLogging.Value)
-                                Logger.Log(LogLevel.Debug, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
+                                Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }
                         else
@@ -116,7 +115,7 @@ namespace Sideloader.AutoResolver
                                 else
                                 {
                                     //ID found and it does not conflict with a vanilla item, likely the user has a hard mod version of the mod installed
-                                    Logger.Log(LogLevel.Debug, $"[UAR] Missing mod detected [{extResolve.GUID}] but matching ID found");
+                                    Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Missing mod detected [{extResolve.GUID}] but matching ID found");
                                 }
                             }
                             else
@@ -158,13 +157,13 @@ namespace Sideloader.AutoResolver
                     //Special handling for ramp stuff since it's the only thing that isn't saved to the character
                     if (Sideloader.DebugResolveInfoLogging.Value)
                     {
-                        Logger.Log(LogLevel.Info, $"ResolveInfo - " +
-                                                  $"GUID: {manifest.GUID} " +
-                                                  $"Slot: {int.Parse(kv.Value[0])} " +
-                                                  $"LocalSlot: {newSlot} " +
-                                                  $"Property: Ramp " +
-                                                  $"CategoryNo: {category} " +
-                                                  $"Count: {LoadedResolutionInfo.Count()}");
+                        Sideloader.Logger.Log(LogLevel.Info, $"ResolveInfo - " +
+                                                             $"GUID: {manifest.GUID} " +
+                                                             $"Slot: {int.Parse(kv.Value[0])} " +
+                                                             $"LocalSlot: {newSlot} " +
+                                                             $"Property: Ramp " +
+                                                             $"CategoryNo: {category} " +
+                                                             $"Count: {LoadedResolutionInfo.Count()}");
                     }
 
                     results.Add(new ResolveInfo
@@ -182,13 +181,13 @@ namespace Sideloader.AutoResolver
                     {
                         if (Sideloader.DebugResolveInfoLogging.Value)
                         {
-                            Logger.Log(LogLevel.Info, $"ResolveInfo - " +
-                                                      $"GUID: {manifest.GUID} " +
-                                                      $"Slot: {int.Parse(kv.Value[0])} " +
-                                                      $"LocalSlot: {newSlot} " +
-                                                      $"Property: {propertyKey.ToString()} " +
-                                                      $"CategoryNo: {category} " +
-                                                      $"Count: {LoadedResolutionInfo.Count()}");
+                            Sideloader.Logger.Log(LogLevel.Info, $"ResolveInfo - " +
+                                                                 $"GUID: {manifest.GUID} " +
+                                                                 $"Slot: {int.Parse(kv.Value[0])} " +
+                                                                 $"LocalSlot: {newSlot} " +
+                                                                 $"Property: {propertyKey.ToString()} " +
+                                                                 $"CategoryNo: {category} " +
+                                                                 $"Count: {LoadedResolutionInfo.Count()}");
                         }
 
                         return new ResolveInfo
@@ -268,11 +267,11 @@ namespace Sideloader.AutoResolver
 
                     if (Sideloader.DebugResolveInfoLogging.Value)
                     {
-                        Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
-                                              $"GUID: {manifest.GUID} " +
-                                              $"Slot: {int.Parse(entry[0])} " +
-                                              $"LocalSlot: {newSlot} " +
-                                              $"Count: {LoadedStudioResolutionInfo.Count}");
+                        Sideloader.Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
+                                                             $"GUID: {manifest.GUID} " +
+                                                             $"Slot: {int.Parse(entry[0])} " +
+                                                             $"LocalSlot: {newSlot} " +
+                                                             $"Count: {LoadedStudioResolutionInfo.Count}");
                     }
 
                     entry[0] = newSlot.ToString();
@@ -284,10 +283,10 @@ namespace Sideloader.AutoResolver
         {
             if (LoadedResolutionInfo.Any(x => x.GUID == guid) || LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
-                Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{guid}]");
+                Sideloader.Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{guid}]");
             else
                 //did not find a match, we don't have the mod
-                Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Missing mod detected! [{guid}]");
+                Sideloader.Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Missing mod detected! [{guid}]");
         }
 
         public enum ResolveType { Save, Load }
@@ -333,7 +332,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
                     Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
                 }
                 else if (resolveType == ResolveType.Load)
@@ -345,7 +344,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
                     Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
                 }
                 else if (resolveType == ResolveType.Load)
@@ -365,13 +364,13 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a match
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
                         Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
                     }
                     else
                     {
                         //No match was found
-                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Item) failed, no match found for ID {Item.no}");
+                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Item) failed, no match found for ID {Item.no}");
                     }
                 }
             }
@@ -384,13 +383,13 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a match
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
                         Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
                     }
                     else
                     {
                         //No match was found
-                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Light) failed, no match found for ID {Light.no}");
+                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Light) failed, no match found for ID {Light.no}");
                     }
                 }
             }
@@ -412,7 +411,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
                     Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                 }
                 else
@@ -428,12 +427,12 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
                         Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                     }
                     else
                     {
-                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Map) failed, no match found for ID {MapID}");
+                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Map) failed, no match found for ID {MapID}");
                     }
                 }
             }
@@ -452,7 +451,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Filter) [{filterGUID}] {filterID}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Filter) [{filterGUID}] {filterID}->{intResolve.LocalSlot}");
                     Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
                 }
                 else
@@ -468,12 +467,12 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Filter) {filterID}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Filter) {filterID}->{intResolve.LocalSlot}");
                         Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
                     }
                     else
                     {
-                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Filter) failed, no match found for ID {filterID}");
+                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Filter) failed, no match found for ID {filterID}");
                     }
                 }
             }
@@ -492,7 +491,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Ramp) [{rampID}] {rampID}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resolving (Studio Ramp) [{rampID}] {rampID}->{intResolve.LocalSlot}");
 
                     Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
                 }
@@ -509,12 +508,12 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Ramp) {rampID}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving (Studio Ramp) {rampID}->{intResolve.LocalSlot}");
                         Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
                     }
                     else
                     {
-                        Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Ramp) failed, no match found for ID {rampID}");
+                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Ramp) failed, no match found for ID {rampID}");
                     }
                 }
             }

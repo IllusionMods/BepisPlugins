@@ -1,10 +1,10 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepisPlugins;
 using ChaCustom;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using TMPro;
@@ -31,20 +31,17 @@ namespace SliderUnlocker
         private static readonly List<Target> _targets = new List<Target>();
 
         #region Settings
-        [DisplayName("Minimum slider value")]
-        [Description("Changes will take effect next time the editor is loaded or a character is loaded.")]
         [AcceptableValueRange(-500, 0, false)]
         public static ConfigWrapper<int> Minimum { get; private set; }
-        [DisplayName("Maximum slider value")]
-        [Description("Changes will take effect next time the editor is loaded or a character is loaded.")]
+
         [AcceptableValueRange(100, 500, false)]
         public static ConfigWrapper<int> Maximum { get; private set; }
         #endregion
 
         public SliderUnlocker()
         {
-            Minimum = new ConfigWrapper<int>("wideslider-minimum", this, -100);
-            Maximum = new ConfigWrapper<int>("wideslider-maximum", this, 200);
+            Minimum = Config.Wrap("Slider Limits", "Minimum slider value", "Changes will take effect next time the editor is loaded or a character is loaded.", 0);
+            Maximum = Config.Wrap("Slider Limits", "Maximum slider value", "Changes will take effect next time the editor is loaded or a character is loaded.", 100);
         }
 
         protected void Awake()
@@ -221,7 +218,6 @@ namespace SliderUnlocker
                 }
             }
         }
-
         /// <summary>
         /// Make sure the entered value is within range
         /// </summary>
@@ -241,7 +237,6 @@ namespace SliderUnlocker
             }
             UnlockSlider(_slider, value, defaultRange);
         }
-
         /// <summary>
         /// Unlock or lock the slider depending on the entered value
         /// </summary>

@@ -8,20 +8,11 @@ namespace ConfigurationManager.Utilities
     {
         private readonly FieldInfo _baseInfo;
 
-        public FieldToPropertyInfoWrapper(FieldInfo baseInfo)
-        {
-            _baseInfo = baseInfo ?? throw new ArgumentNullException(nameof(baseInfo));
-        }
+        public FieldToPropertyInfoWrapper(FieldInfo baseInfo) => _baseInfo = baseInfo ?? throw new ArgumentNullException(nameof(baseInfo));
 
-        public override object[] GetCustomAttributes(bool inherit)
-        {
-            return _baseInfo.GetCustomAttributes(inherit);
-        }
+        public override object[] GetCustomAttributes(bool inherit) => _baseInfo.GetCustomAttributes(inherit);
 
-        public override bool IsDefined(Type attributeType, bool inherit)
-        {
-            return _baseInfo.IsDefined(attributeType, inherit);
-        }
+        public override bool IsDefined(Type attributeType, bool inherit) => _baseInfo.IsDefined(attributeType, inherit);
 
         public override string Name => _baseInfo.Name;
 
@@ -35,39 +26,18 @@ namespace ConfigurationManager.Utilities
         public override bool CanRead { get; } = true;
         public override bool CanWrite { get; } = true;
 
-        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
-        {
-            return _baseInfo.GetCustomAttributes(attributeType, inherit);
-        }
-        
-        public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture)
-        {
-            return _baseInfo.GetValue(obj);
-        }
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit) => _baseInfo.GetCustomAttributes(attributeType, inherit);
 
-        public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture)
-        {
-            _baseInfo.SetValue(obj, value);
-        }
+        public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture) => _baseInfo.GetValue(obj);
 
-        public override MethodInfo[] GetAccessors(bool nonPublic)
-        {
-            throw new NotImplementedException();
-        }
+        public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture) => _baseInfo.SetValue(obj, value);
 
-        public override MethodInfo GetGetMethod(bool nonPublic)
-        {
-            throw new NotImplementedException();
-        }
+        public override MethodInfo[] GetAccessors(bool nonPublic) => throw new NotImplementedException();
 
-        public override MethodInfo GetSetMethod(bool nonPublic)
-        {
-            throw new NotImplementedException();
-        }
+        public override MethodInfo GetGetMethod(bool nonPublic) => throw new NotImplementedException();
 
-        public override ParameterInfo[] GetIndexParameters()
-        {
-            throw new NotImplementedException();
-        }
+        public override MethodInfo GetSetMethod(bool nonPublic) => throw new NotImplementedException();
+
+        public override ParameterInfo[] GetIndexParameters() => throw new NotImplementedException();
     }
 }

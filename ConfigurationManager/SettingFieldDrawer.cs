@@ -1,13 +1,13 @@
 ﻿// Made by MarC0 / ManlyMarco
 // Copyright 2018 GNU General Public License v3.0
 
+using BepInEx;
+using ConfigurationManager.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using BepInEx;
-using ConfigurationManager.Utilities;
 using UnityEngine;
 
 namespace ConfigurationManager
@@ -22,10 +22,7 @@ namespace ConfigurationManager
 
         private PropSettingEntry CurrentKeyboardShortcutToSet;
 
-        public void ClearCache()
-        {
-            _comboBoxCache.Clear();
-        }
+        public void ClearCache() => _comboBoxCache.Clear();
 
         public void DrawBoolField(PropSettingEntry setting)
         {
@@ -133,7 +130,7 @@ namespace ConfigurationManager
                 }
             }
         }
-        
+
         public void DrawUnknownField(PropSettingEntry setting, int rightColumnWidth)
         {
             // Try to use user-supplied converters
@@ -163,7 +160,7 @@ namespace ConfigurationManager
         }
 
         private readonly Dictionary<Type, bool> _canCovertCache = new Dictionary<Type, bool>();
-        private Boolean CanCovert(string value, Type type)
+        private bool CanCovert(string value, Type type)
         {
             if (_canCovertCache.ContainsKey(type))
                 return _canCovertCache[type];

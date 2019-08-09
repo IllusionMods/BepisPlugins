@@ -19,22 +19,11 @@ namespace Sideloader.AutoResolver
         [Key("CategoryNo")]
         public ChaListDefine.CategoryNo CategoryNo { get; set; }
 
-        public bool CanResolve(ResolveInfo other)
-        {
-            return GUID == other.GUID
-                    && Property == other.Property
-                    && Slot == other.Slot;
-        }
+        public bool CanResolve(ResolveInfo other) => GUID == other.GUID && Property == other.Property && Slot == other.Slot;
 
-        public static ResolveInfo Unserialize(byte[] data)
-        {
-            return MessagePackSerializer.Deserialize<ResolveInfo>(data);
-        }
+        public static ResolveInfo Unserialize(byte[] data) => MessagePackSerializer.Deserialize<ResolveInfo>(data);
 
-        public byte[] Serialize()
-        {
-            return MessagePackSerializer.Serialize(this);
-        }
+        public byte[] Serialize() => MessagePackSerializer.Serialize(this);
 
         public ResolveInfo AppendPropertyPrefix(string prefix)
         {
@@ -63,19 +52,10 @@ namespace Sideloader.AutoResolver
         [Key("ResolveItem")] //Used to determine if the item should be searched for ID lookups
         public bool ResolveItem { get; set; }
 
-        public bool CanResolve(ResolveInfo other)
-        {
-            return GUID == other.GUID && Slot == other.Slot;
-        }
+        public bool CanResolve(ResolveInfo other) => GUID == other.GUID && Slot == other.Slot;
 
-        public static StudioResolveInfo Unserialize(byte[] data)
-        {
-            return MessagePackSerializer.Deserialize<StudioResolveInfo>(data);
-        }
+        public static StudioResolveInfo Unserialize(byte[] data) => MessagePackSerializer.Deserialize<StudioResolveInfo>(data);
 
-        public byte[] Serialize()
-        {
-            return MessagePackSerializer.Serialize(this);
-        }
+        public byte[] Serialize() => MessagePackSerializer.Serialize(this);
     }
 }

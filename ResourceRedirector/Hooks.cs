@@ -1,5 +1,6 @@
-﻿using BepInEx.Logging;
-using Harmony;
+﻿using BepInEx.Harmony;
+using BepInEx.Logging;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,17 +9,12 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using UnityEngine;
-using Logger = BepInEx.Logger;
 
 namespace ResourceRedirector
 {
     internal static class Hooks
     {
-        public static void InstallHooks()
-        {
-            var harmony = HarmonyInstance.Create("com.bepis.bepinex.resourceredirector");
-            harmony.PatchAll(typeof(Hooks));
-        }
+        public static void InstallHooks() => HarmonyWrapper.PatchAll(typeof(Hooks));
 
         #region List Loading
         [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.CheckItemID), new[] { typeof(int), typeof(int) })]
@@ -134,7 +130,7 @@ namespace ResourceRedirector
                 {
                     //An asset that does not exist is being requested from from an asset bundle that does not exist
                     //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors
-                    Logger.Log(LogLevel.Debug, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
+                    ResourceRedirector.Logger.Log(LogLevel.Debug, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
                     assetBundleName = "chara/mt_ramp_00.unity3d";
                     assetName = "dummy";
                 }
@@ -155,7 +151,7 @@ namespace ResourceRedirector
                 {
                     //An asset that does not exist is being requested from from an asset bundle that does not exist
                     //Redirect to an asset bundle the does exist so that the game does not attempt to open a non-existant file and cause errors
-                    Logger.Log(LogLevel.Debug, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
+                    ResourceRedirector.Logger.Log(LogLevel.Debug, $"Asset {assetName} does not exist in asset bundle {assetBundleName}.");
                     assetBundleName = "chara/mt_ramp_00.unity3d";
                     assetName = "dummy";
                 }

@@ -8,15 +8,9 @@ namespace BepisPlugins
     {
         private readonly Dictionary<HashedWeakReference, TValue> _items;
 
-        public WeakKeyDictionary()
-        {
-            _items = new Dictionary<HashedWeakReference, TValue>();
-        }
+        public WeakKeyDictionary() => _items = new Dictionary<HashedWeakReference, TValue>();
 
-        public int Count
-        {
-            get { return _items.Count; }
-        }
+        public int Count => _items.Count;
 
         public void Set(TKey key, TValue value)
         {
@@ -44,27 +38,15 @@ namespace BepisPlugins
             return null;
         }
 
-        public bool Contains(TKey key)
-        {
-            return _items.TryGetValue(new HashedWeakReference(key), out TValue _);
-        }
+        public bool Contains(TKey key) => _items.TryGetValue(new HashedWeakReference(key), out TValue _);
 
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            return _items
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _items
                 .Where(x => x.Key.IsAlive)
                 .Select(x => new KeyValuePair<TKey, TValue>((TKey)x.Key.Target, x.Value))
                 .GetEnumerator();
-        }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void Clear()
-        {
-            _items.Clear();
-        }
+        public void Clear() => _items.Clear();
     }
 }

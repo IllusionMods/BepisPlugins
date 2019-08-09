@@ -1,12 +1,12 @@
 ﻿// Made by MarC0 / ManlyMarco
 // Copyright 2018 GNU General Public License v3.0
 
+using BepInEx;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using BepInEx;
 using Object = UnityEngine.Object;
 
 namespace ConfigurationManager.Utilities
@@ -55,14 +55,9 @@ namespace ConfigurationManager.Utilities
             return false;
         }
 
-        public static BaseUnityPlugin[] FindPlugins()
-        {
-            return Object.FindObjectsOfType<BaseUnityPlugin>();
-        }
+        public static BaseUnityPlugin[] FindPlugins() => Object.FindObjectsOfType<BaseUnityPlugin>();
 
-        public static bool IsNumber(this object value)
-        {
-            return value is sbyte
+        public static bool IsNumber(this object value) => value is sbyte
                    || value is byte
                    || value is short
                    || value is ushort
@@ -73,6 +68,5 @@ namespace ConfigurationManager.Utilities
                    || value is float
                    || value is double
                    || value is decimal;
-        }
     }
 }

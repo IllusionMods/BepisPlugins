@@ -10,7 +10,7 @@ using BepisPlugins;
 using BepInEx;
 using BepInEx.Logging;
 using UnityEngine;
-using Logger = BepInEx.Logger;
+using BepInEx.Configuration;
 
 namespace ConfigurationManager
 {
@@ -20,10 +20,11 @@ namespace ConfigurationManager
     {
         public const string GUID = "com.bepis.bepinex.configurationmanager";
         public const string Version = Metadata.PluginsVersion;
+        internal static new ManualLogSource Logger;
 
         private static readonly GUIContent KeyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
-            "The first key is the main key, while the rest are modifiers." +
-            "\nThe shortcut will only fire when you press \n" +
+            "The first key is the main key, while the rest are modifiers.\n" +
+            "The shortcut will only fire when you press \n" +
             "the main key while all modifiers are already pressed.");
 
         private const string SearchBoxName = "searchBox";
@@ -57,9 +58,10 @@ namespace ConfigurationManager
 
         public ConfigurationManager()
         {
-            _showAdvanced = new ConfigWrapper<bool>("showAdvanced", this, false);
-            _showKeybinds = new ConfigWrapper<bool>("showKeybinds", this, true);
-            _showSettings = new ConfigWrapper<bool>("showSettings", this, true);
+            Logger = base.Logger;
+            _showAdvanced = Config.Wrap("", "Show advanced", "", false);
+            _showKeybinds = Config.Wrap("", "Show keybinds", "", true);
+            _showSettings = Config.Wrap("", "Show settings", "", true);
         }
 
         public bool DisplayingWindow

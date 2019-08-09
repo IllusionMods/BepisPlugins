@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
-using Logger = BepInEx.Logger;
 
 namespace ResourceRedirector
 {
@@ -14,6 +13,7 @@ namespace ResourceRedirector
     {
         public const string GUID = "com.bepis.bepinex.resourceredirector";
         public const string Version = Metadata.PluginsVersion;
+        internal static new ManualLogSource Logger;
 
         public static string EmulatedDir => Path.Combine(Paths.GameRootPath, "abdata-emulated");
         public static bool EmulationEnabled;
@@ -31,6 +31,7 @@ namespace ResourceRedirector
             Hooks.InstallHooks();
 
             EmulationEnabled = Directory.Exists(EmulatedDir);
+            Logger = base.Logger;
         }
 
         public static AssetBundleLoadAssetOperation HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, ref AssetBundleLoadAssetOperation __result)

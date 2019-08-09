@@ -1,57 +1,54 @@
-﻿using System.ComponentModel;
-using BepInEx;
-using UnityEngine;
-using System.Linq;
+﻿using BepInEx;
+using BepInEx.Configuration;
+using BepInEx.Logging;
 using BepisPlugins;
 using ConfigurationManager;
-using Logger = BepInEx.Logger;
+using System.Linq;
+using UnityEngine;
 
 namespace DeveloperConsole
 {
     [BepInPlugin(GUID: GUID, Name: "Developer Console", Version: Version)]
-    public class DeveloperConsole : BaseUnityPlugin
+    public partial class DeveloperConsole : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.developerconsole";
         public const string Version = Metadata.PluginsVersion;
+        internal static new ManualLogSource Logger;
 
         private bool showingUI = false;
-        private string TotalLog = "";
+        private static string TotalLog = "";
         private Rect UI = new Rect(20, 20, 400, 400);
-        private Vector2 scrollPosition = Vector2.zero;
+        private static Vector2 scrollPosition = Vector2.zero;
 
-        [DisplayName("Show developer console")]
         public SavedKeyboardShortcut ShowKey { get; }
 
-        [DisplayName("Size of the log buffer in characters")]
-        [AcceptableValueRange(4000, 16300, false)]
         [Advanced(true)]
-        public ConfigWrapper<int> LogDepth { get; }
+        public static ConfigWrapper<int> LogDepth { get; private set; }
 
         public DeveloperConsole()
         {
-            LogDepth = new ConfigWrapper<int>("LogDepth", this, 16300);
-            ShowKey = new SavedKeyboardShortcut("ShowKey", this, new KeyboardShortcut(KeyCode.F12));
+            ShowKey = new SavedKeyboardShortcut(Config, "Show developer console", "", new KeyboardShortcut(KeyCode.Pause));
+            LogDepth = Config.Wrap("Config", "Log buffer size", "Size of the log buffer in characters", 16300);
+            BepInEx.Logging.Logger.Listeners.Add(new LogListener());
+            Logger = base.Logger;
         }
 
-        protected void Awake()
+        private static void OnEntryLogged(LogEventArgs logEventArgs)
         {
-            Logger.EntryLogged += (level, log) =>
+            string current = $"{TotalLog}\r\n{logEventArgs.Data?.ToString()}";
+            if (current.Length > LogDepth.Value)
             {
-                string current = $"{TotalLog}\r\n{log}";
-                if (current.Length > LogDepth.Value)
-                {
-                    var trimmed = current.Remove(0, 1000);
+                var trimmed = current.Remove(0, 1000);
 
-                    // Trim until the first newline to avoid partial line
-                    var newlineHit = false;
-                    trimmed = new string(trimmed.SkipWhile(x => !newlineHit && !(newlineHit = (x == '\n'))).ToArray());
+                // Trim until the first newline to avoid partial line
+                var newlineHit = false;
+                trimmed = new string(trimmed.SkipWhile(x => !newlineHit && !(newlineHit = (x == '\n'))).ToArray());
 
-                    current = "--LOG TRIMMED--\n" + trimmed;
-                }
-                TotalLog = current;
+                current = "--LOG TRIMMED--\n" + trimmed;
+            }
+            TotalLog = current;
 
-                scrollPosition = new Vector2(0, float.MaxValue);
-            };
+            scrollPosition = new Vector2(0, float.MaxValue);
         }
 
         protected void OnGUI()
@@ -63,9 +60,7 @@ namespace DeveloperConsole
         protected void Update()
         {
             if (ShowKey.IsDown())
-            {
                 showingUI = !showingUI;
-            }
         }
 
         private void WindowFunction(int windowID)

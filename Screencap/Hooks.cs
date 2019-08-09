@@ -1,34 +1,26 @@
-﻿using alphaShot;
+﻿using BepInEx.Harmony;
 using ChaCustom;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 
 namespace Screencap
 {
     public static class Hooks
     {
-        //Chara card Render/Downsample rate.
+        /// <summary> Chara card Render/Downsample rate.</summary>
         private static int CardRenderRate => ScreenshotManager.CardDownscalingRate.Value;
 
-        public static void InstallHooks()
-        {
-            var harmony = HarmonyInstance.Create(ScreenshotManager.GUID);
-            harmony.PatchAll(typeof(Hooks));
-        }
-
+        public static void InstallHooks() => HarmonyWrapper.PatchAll(typeof(Hooks));
+        /// <summary>
+        /// Cancel the vanilla screenshot
+        /// </summary>
         [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), "Capture")]
-        public static bool CapturePreHook()
-        {
-            //cancel the vanilla screenshot
-            return false;
-        }
-
+        public static bool CapturePreHook() => false;
+        /// <summary>
+        /// Cancel the vanilla screenshot
+        /// </summary>
         [HarmonyPrefix, HarmonyPatch(typeof(Studio.GameScreenShot), "Capture")]
-        public static bool StudioCapturePreHook()
-        {
-            //cancel the vanilla screenshot
-            return false;
-        }
+        public static bool StudioCapturePreHook() => false;
 
         [HarmonyPrefix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
         public static bool pre_CreatePng(ref int createW, ref int createH)

@@ -5,7 +5,6 @@ using System.Text;
 using BepInEx.Logging;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Logger = BepInEx.Logger;
 
 namespace DeveloperConsole
 {
@@ -55,7 +54,7 @@ namespace DeveloperConsole
                     }
                     catch (Exception e)
                     {
-                        Logger.Log(LogLevel.Debug, e);
+                        DeveloperConsole.Logger.Log(LogLevel.Debug, e);
                     }
                 }
 

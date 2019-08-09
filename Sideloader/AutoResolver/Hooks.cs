@@ -1,7 +1,7 @@
-﻿using BepInEx;
+﻿using BepInEx.Harmony;
 using BepInEx.Logging;
 using ExtensibleSaveFormat;
-using Harmony;
+using HarmonyLib;
 using Illusion.Elements.Xml;
 using Illusion.Extensions;
 using Studio;
@@ -28,8 +28,7 @@ namespace Sideloader.AutoResolver
             ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
             ExtendedSave.SceneBeingImported += ExtendedSceneImport;
 
-            var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader.universalautoresolver");
-            harmony.PatchAll(typeof(Hooks));
+            var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
 
             harmony.Patch(typeof(SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
                 new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnValueChangedLutPrefix), AccessTools.all)), null);
@@ -66,14 +65,14 @@ namespace Sideloader.AutoResolver
 
         private static void ExtendedCardLoad(ChaFile file)
         {
-            Logger.Log(LogLevel.Debug, $"Loading card [{file.charaFileName}]");
+            Sideloader.Logger.Log(LogLevel.Debug, $"Loading card [{file.charaFileName}]");
 
             var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
             List<ResolveInfo> extInfo;
 
             if (extData == null || !extData.data.ContainsKey("info"))
             {
-                Logger.Log(LogLevel.Debug, "No sideloader marker found");
+                Sideloader.Logger.Log(LogLevel.Debug, "No sideloader marker found");
                 extInfo = null;
             }
             else
@@ -81,12 +80,12 @@ namespace Sideloader.AutoResolver
                 var tmpExtInfo = (object[])extData.data["info"];
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
-                Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
+                Sideloader.Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
 
                 if (Sideloader.DebugLogging.Value)
                 {
                     foreach (ResolveInfo info in extInfo)
-                        Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
                 }
             }
 
@@ -152,19 +151,19 @@ namespace Sideloader.AutoResolver
         [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", new[] { typeof(BinaryWriter), typeof(bool) })]
         public static void ChaFileSaveFilePostHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng)
         {
-            Logger.Log(LogLevel.Debug, $"Reloading card [{__instance.charaFileName}]");
+            Sideloader.Logger.Log(LogLevel.Debug, $"Reloading card [{__instance.charaFileName}]");
 
             var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
             var tmpExtInfo = (List<byte[]>)extData.data["info"];
             var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
 
-            Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
+            Sideloader.Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
 
             if (Sideloader.DebugLogging.Value)
             {
                 foreach (ResolveInfo info in extInfo)
-                    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                    Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
             }
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
@@ -178,7 +177,7 @@ namespace Sideloader.AutoResolver
                         kv.Value.SetMethod(structure, extResolve.LocalSlot);
 
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
                     }
                 }
             }
@@ -204,14 +203,14 @@ namespace Sideloader.AutoResolver
 
         private static void ExtendedCoordinateLoad(ChaFileCoordinate file)
         {
-            Logger.Log(LogLevel.Debug, $"Loading coordinate [{file.coordinateName}]");
+            Sideloader.Logger.Log(LogLevel.Debug, $"Loading coordinate [{file.coordinateName}]");
 
             var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
             List<ResolveInfo> extInfo;
 
             if (extData == null || !extData.data.ContainsKey("info"))
             {
-                Logger.Log(LogLevel.Debug, "No sideloader marker found");
+                Sideloader.Logger.Log(LogLevel.Debug, "No sideloader marker found");
                 extInfo = null;
             }
             else
@@ -219,12 +218,12 @@ namespace Sideloader.AutoResolver
                 var tmpExtInfo = (object[])extData.data["info"];
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Unserialize((byte[])x)).ToList();
 
-                Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
+                Sideloader.Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
 
                 if (Sideloader.DebugLogging.Value)
                 {
                     foreach (ResolveInfo info in extInfo)
-                        Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
                 }
             }
 
@@ -290,19 +289,19 @@ namespace Sideloader.AutoResolver
         [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), new[] { typeof(string) })]
         public static void ChaFileCoordinateSaveFilePostHook(ChaFileCoordinate __instance, string path)
         {
-            Logger.Log(LogLevel.Debug, $"Reloading coordinate [{path}]");
+            Sideloader.Logger.Log(LogLevel.Debug, $"Reloading coordinate [{path}]");
 
             var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
             var tmpExtInfo = (List<byte[]>)extData.data["info"];
             var extInfo = tmpExtInfo.Select(ResolveInfo.Unserialize).ToList();
 
-            Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
+            Sideloader.Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
 
             if (Sideloader.DebugLogging.Value)
             {
                 foreach (ResolveInfo info in extInfo)
-                    Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                    Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
             }
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
@@ -316,7 +315,7 @@ namespace Sideloader.AutoResolver
                         kv.Value.SetMethod(structure, extResolve.LocalSlot);
 
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
                     }
                 }
             }
@@ -410,7 +409,7 @@ namespace Sideloader.AutoResolver
 
                         //set item ID back to default
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
                         Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
                     }
                 }
@@ -431,7 +430,7 @@ namespace Sideloader.AutoResolver
 
                         //Set item ID back to default
                         if (Sideloader.DebugLogging.Value)
-                            Logger.Log(LogLevel.Debug, $"Setting [{Light.dicKey}] ID:{Light.no}->{extResolve.Slot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"Setting [{Light.dicKey}] ID:{Light.no}->{extResolve.Slot}");
                         Traverse.Create(Light).Property("no").SetValue(extResolve.Slot);
                     }
                 }
@@ -452,7 +451,7 @@ namespace Sideloader.AutoResolver
 
                     //Set map ID back to default
                     if (Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Debug, $"Setting Map ID:{mapID}->{extResolve.Slot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"Setting Map ID:{mapID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.map = extResolve.Slot;
                 }
             }
@@ -468,7 +467,7 @@ namespace Sideloader.AutoResolver
 
                     //Set filter ID back to default
                     if (Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Debug, $"Setting Filter ID:{filterID}->{extResolve.Slot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"Setting Filter ID:{filterID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.aceNo = extResolve.Slot;
                 }
             }
@@ -484,7 +483,7 @@ namespace Sideloader.AutoResolver
 
                     //Set ramp ID back to default
                     if (Sideloader.DebugLogging.Value)
-                        Logger.Log(LogLevel.Debug, $"Setting Ramp ID:{rampID}->{extResolve.Slot}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"Setting Ramp ID:{rampID}->{extResolve.Slot}");
                     Studio.Studio.Instance.sceneInfo.rampG = extResolve.Slot;
                 }
             }

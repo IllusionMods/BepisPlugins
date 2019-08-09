@@ -1,10 +1,10 @@
 ﻿// Made by MarC0 / ManlyMarco
 // Copyright 2018 GNU General Public License v3.0
 
+using BepInEx.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BepInEx.Logging;
 using UnityEngine;
 
 namespace BepInEx
@@ -16,7 +16,9 @@ namespace BepInEx
     /// </summary>
     public class KeyboardShortcut
     {
-        public static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[]) Enum.GetValues(typeof(KeyCode));
+        public static readonly KeyboardShortcut Empty = new KeyboardShortcut(KeyCode.None);
+
+        public static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[])Enum.GetValues(typeof(KeyCode));
 
         private readonly KeyCode[] _allKeys;
         private readonly HashSet<KeyCode> _allKeysLookup;
@@ -60,21 +62,18 @@ namespace BepInEx
         {
             try
             {
-                var parts = str.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(x => (KeyCode) Enum.Parse(typeof(KeyCode), x)).ToArray();
+                var parts = str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => (KeyCode)Enum.Parse(typeof(KeyCode), x)).ToArray();
                 return new KeyboardShortcut(parts);
             }
             catch (SystemException ex)
             {
-                Logger.Log(LogLevel.Error, "Failed to read keybind from settings: " + ex.Message);
+                ConfigurationManager.ConfigurationManager.Logger.Log(LogLevel.Error, "Failed to read keybind from settings: " + ex.Message);
                 return new KeyboardShortcut();
             }
         }
 
-        public string Serialize()
-        {
-            return string.Join(" ", AllKeys.Select(x => x.ToString()).ToArray());
-        }
+        public string Serialize() => string.Join(" ", AllKeys.Select(x => x.ToString()).ToArray());
 
         /// <summary>
         ///     Check if the main key was just pressed (Input.GetKeyDown), and specified modifier keys are all pressed
@@ -106,19 +105,16 @@ namespace BepInEx
             return Input.GetKeyUp(MainKey) && ModifierKeyTest();
         }
 
-        private bool ModifierKeyTest()
-        {
-            return AllKeyCodes.All(c =>
-            {
-                if (_allKeysLookup.Contains(c))
-                {
-                    if (_allKeys[0] == c)
-                        return true;
-                    return Input.GetKey(c);
-                }
-                return !Input.GetKey(c);
-            });
-        }
+        private bool ModifierKeyTest() => AllKeyCodes.All(c =>
+                                                    {
+                                                        if (_allKeysLookup.Contains(c))
+                                                        {
+                                                            if (_allKeys[0] == c)
+                                                                return true;
+                                                            return Input.GetKey(c);
+                                                        }
+                                                        return !Input.GetKey(c);
+                                                    });
 
         public override string ToString()
         {
@@ -127,16 +123,13 @@ namespace BepInEx
             return string.Join(" + ", AllKeys.Select(c => c.ToString()).ToArray());
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is KeyboardShortcut shortcut && _allKeys.SequenceEqual(shortcut._allKeys);
-        }
+        public override bool Equals(object obj) => obj is KeyboardShortcut shortcut && _allKeys.SequenceEqual(shortcut._allKeys);
 
         public override int GetHashCode()
         {
             var hc = _allKeys.Length;
             for (var i = 0; i < _allKeys.Length; i++)
-                hc = unchecked(hc * 31 + (int) _allKeys[i]);
+                hc = unchecked(hc * 31 + (int)_allKeys[i]);
             return hc;
         }
     }

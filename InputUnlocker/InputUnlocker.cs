@@ -1,5 +1,5 @@
-﻿using BepisPlugins;
-using BepInEx;
+﻿using BepInEx;
+using BepisPlugins;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -20,23 +20,14 @@ namespace InputUnlocker
         private void LevelFinishedLoading(Scene scene, LoadSceneMode mode)
         {
             foreach (var obj in scene.GetRootGameObjects())
-            foreach (var inputFieldObject in obj.GetComponentsInChildren<InputField>(true))
-                UnlockInput(inputFieldObject);
+                foreach (var inputFieldObject in obj.GetComponentsInChildren<InputField>(true))
+                    UnlockInput(inputFieldObject);
         }
 
-        private void UnlockInput(InputField input)
-        {
-            input.characterLimit = 999;
-        }
-        
-        protected void OnEnable()
-        {
-            SceneManager.sceneLoaded += LevelFinishedLoading;
-        }
+        private void UnlockInput(InputField input) => input.characterLimit = 999;
 
-        protected void OnDisable()
-        {
-            SceneManager.sceneLoaded -= LevelFinishedLoading;
-        }
+        protected void OnEnable() => SceneManager.sceneLoaded += LevelFinishedLoading;
+
+        protected void OnDisable() => SceneManager.sceneLoaded -= LevelFinishedLoading;
     }
 }

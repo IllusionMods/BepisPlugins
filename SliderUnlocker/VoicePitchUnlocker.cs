@@ -2,11 +2,11 @@
  * Code by essu
  * ~ can you hear me now? ~
  */
-
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using ChaCustom;
-using Harmony;
+using HarmonyLib;
+using BepInEx.Harmony;
 
 namespace SliderUnlocker
 {
@@ -21,13 +21,12 @@ namespace SliderUnlocker
 
         public static void Init()
         {
-            var hi = HarmonyInstance.Create(nameof(VoicePitchUnlocker));
-            hi.PatchAll(typeof(VoicePitchUnlocker));
+            var harmony = HarmonyWrapper.PatchAll(typeof(VoicePitchUnlocker));
 
             var iteratorType = typeof(CvsChara).GetNestedType("<SetInputText>c__Iterator0", AccessTools.all);
             var iteratorMethod = AccessTools.Method(iteratorType, "MoveNext");
             var transpiler = new HarmonyMethod(typeof(VoicePitchUnlocker), nameof(voicePitchTpl));
-            hi.Patch(iteratorMethod, null, null, transpiler);
+            harmony.Patch(iteratorMethod, null, null, transpiler);
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFileParameter), "get_voicePitch")]

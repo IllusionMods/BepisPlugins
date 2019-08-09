@@ -1,11 +1,12 @@
-﻿using System;
+﻿using BepInEx.Harmony;
+using BepInEx.Logging;
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using BepInEx.Logging;
-using Harmony;
 using UnityEngine;
 using UnityStandardAssets.ImageEffects;
 
@@ -29,7 +30,7 @@ namespace Screencap
             paddingX = Shader.PropertyToID("_PaddingX");
             ab.Unload(false);
 
-            HarmonyInstance.Create(ScreenshotManager.GUID).PatchAll(typeof(I360Render));
+            HarmonyWrapper.PatchAll(typeof(I360Render));
         }
 
         // Fix mirrors messing up the capture by blindly inverting culling
@@ -38,7 +39,8 @@ namespace Screencap
         public static IEnumerable<CodeInstruction> MirrorReflectionTpl(IEnumerable<CodeInstruction> instructions)
         {
             var prop = typeof(GL).GetProperty(nameof(GL.invertCulling), AccessTools.all);
-            if (prop == null) BepInEx.Logger.Log(LogLevel.Error, "Failed to find GL.invertCulling " + new StackTrace());
+            if (prop == null)
+                ScreenshotManager.Logger.Log(LogLevel.Error, "Failed to find GL.invertCulling " + new StackTrace());
 
             foreach (var codeInstruction in instructions)
             {
@@ -137,15 +139,9 @@ namespace Screencap
         private const string XMP_CONTENT_TO_FORMAT_PNG = "XML:com.adobe.xmp\0\0\0\0\0<?xpacket begin=\"ï»¿\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?><x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\"> <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"> <rdf:Description rdf:about=\"\" xmlns:GPano=\"http://ns.google.com/photos/1.0/panorama/\" xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:xmpMM=\"http://ns.adobe.com/xap/1.0/mm/\" xmlns:stEvt=\"http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\" xmlns:tiff=\"http://ns.adobe.com/tiff/1.0/\" xmlns:exif=\"http://ns.adobe.com/exif/1.0/\"> <GPano:UsePanoramaViewer>True</GPano:UsePanoramaViewer> <GPano:CaptureSoftware>Unity3D</GPano:CaptureSoftware> <GPano:StitchingSoftware>Unity3D</GPano:StitchingSoftware> <GPano:ProjectionType>equirectangular</GPano:ProjectionType> <GPano:PoseHeadingDegrees>180.0</GPano:PoseHeadingDegrees> <GPano:InitialViewHeadingDegrees>0.0</GPano:InitialViewHeadingDegrees> <GPano:InitialViewPitchDegrees>0.0</GPano:InitialViewPitchDegrees> <GPano:InitialViewRollDegrees>0.0</GPano:InitialViewRollDegrees> <GPano:InitialHorizontalFOVDegrees>{0}</GPano:InitialHorizontalFOVDegrees> <GPano:CroppedAreaLeftPixels>0</GPano:CroppedAreaLeftPixels> <GPano:CroppedAreaTopPixels>0</GPano:CroppedAreaTopPixels> <GPano:CroppedAreaImageWidthPixels>{1}</GPano:CroppedAreaImageWidthPixels> <GPano:CroppedAreaImageHeightPixels>{2}</GPano:CroppedAreaImageHeightPixels> <GPano:FullPanoWidthPixels>{1}</GPano:FullPanoWidthPixels> <GPano:FullPanoHeightPixels>{2}</GPano:FullPanoHeightPixels> <tiff:Orientation>1</tiff:Orientation> <exif:PixelXDimension>{1}</exif:PixelXDimension> <exif:PixelYDimension>{2}</exif:PixelYDimension> </rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end=\"w\"?>";
         private static uint[] CRC_TABLE_PNG = null;
 
-        public static byte[] InsertXMPIntoTexture2D_JPEG(Texture2D image, int quality)
-        {
-            return DoTheHardWork_JPEG(image.EncodeToJPG(quality), image.width, image.height);
-        }
+        public static byte[] InsertXMPIntoTexture2D_JPEG(Texture2D image, int quality) => DoTheHardWork_JPEG(image.EncodeToJPG(quality), image.width, image.height);
 
-        public static byte[] InsertXMPIntoTexture2D_PNG(Texture2D image)
-        {
-            return DoTheHardWork_PNG(image.EncodeToPNG(), image.width, image.height);
-        }
+        public static byte[] InsertXMPIntoTexture2D_PNG(Texture2D image) => DoTheHardWork_PNG(image.EncodeToPNG(), image.width, image.height);
 
         #region JPEG Encoding
         private static byte[] DoTheHardWork_JPEG(byte[] fileBytes, int imageWidth, int imageHeight)

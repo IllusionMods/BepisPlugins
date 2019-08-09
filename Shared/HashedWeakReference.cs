@@ -13,27 +13,12 @@ namespace BepisPlugins
             _reference = new WeakReference(target);
         }
 
-        public object Target
-        {
-            get { return _reference.Target; }
-        }
+        public object Target => _reference.Target;
 
-        public bool IsAlive
-        {
-            get
-            {
-                return _reference.IsAlive;
-            }
-        }
+        public bool IsAlive => _reference.IsAlive;
 
-        public override int GetHashCode()
-        {
-            return _targetHashCode;
-        }
+        public override int GetHashCode() => _targetHashCode;
 
-        public override bool Equals(object obj)
-        {
-            return _targetHashCode == obj?.GetHashCode();
-        }
+        public override bool Equals(object obj) => _targetHashCode == obj?.GetHashCode();
     }
 }

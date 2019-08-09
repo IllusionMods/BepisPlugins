@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using BepInEx;
+using BepInEx.Configuration;
+using BepInEx.Logging;
+using ConfigurationManager.Utilities;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using BepInEx;
-using BepInEx.Logging;
-using ConfigurationManager.Utilities;
 
 namespace ConfigurationManager
 {
@@ -30,7 +31,7 @@ namespace ConfigurationManager
                 var pluginInfo = MetadataHelper.GetMetadata(type);
                 if (pluginInfo == null)
                 {
-                    Logger.Log(LogLevel.Error, $"Plugin {type.FullName} is missing the BepInPlugin attribute!");
+                    ConfigurationManager.Logger.Log(LogLevel.Error, $"Plugin {type.FullName} is missing the BepInPlugin attribute!");
                     modsWithoutSettings.Add(type.FullName);
                     continue;
                 }
@@ -78,10 +79,7 @@ namespace ConfigurationManager
 
                 // Normal properties ------
 
-                bool IsPropSafeToShow(PropertyInfo p)
-                {
-                    return p.GetSetMethod()?.IsPublic == true && (p.PropertyType.IsValueType || p.PropertyType == typeof(string));
-                }
+                bool IsPropSafeToShow(PropertyInfo p) => p.GetSetMethod()?.IsPublic == true && (p.PropertyType.IsValueType || p.PropertyType == typeof(string));
 
                 var normalPropsSafeToShow = type
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)

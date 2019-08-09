@@ -1,4 +1,5 @@
-﻿using Harmony;
+﻿using BepInEx.Harmony;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,8 +10,7 @@ namespace Sideloader
     {
         public static void InstallHooks()
         {
-            var harmony = HarmonyInstance.Create("com.bepis.bepinex.sideloader");
-            harmony.PatchAll(typeof(Hooks));
+            var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
             harmony.Patch(typeof(GlobalMethod).GetMethod(nameof(GlobalMethod.LoadAllFolder), AccessTools.all).MakeGenericMethod(typeof(Object)),
                           null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));
         }
@@ -29,7 +29,7 @@ namespace Sideloader
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(AssetBundleData))]
-        [HarmonyPatch(nameof(AssetBundleData.isFile), PropertyMethod.Getter)]
+        [HarmonyPatch(nameof(AssetBundleData.isFile), MethodType.Getter)]
         public static void IsFileHook2(ref bool __result, AssetBundleData __instance)
         {
             if (!__result)

@@ -1,14 +1,15 @@
-﻿using ChaCustom;
-using Harmony;
+﻿using BepInEx.Harmony;
+using BepInEx.Logging;
+using ChaCustom;
+using HarmonyLib;
 using MessagePack;
+using Studio;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using BepInEx.Logging;
-using Studio;
 
 namespace ExtensibleSaveFormat
 {
@@ -21,22 +22,17 @@ namespace ExtensibleSaveFormat
 
         public static void InstallHooks()
         {
-            var harmony = HarmonyInstance.Create("com.bepis.bepinex.extensiblesaveformat");
-            harmony.PatchAll(typeof(Hooks));
+            var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
             harmony.Patch(typeof(Studio.MPCharCtrl).GetNestedType("CostumeInfo", BindingFlags.NonPublic).GetMethod("InitFileList", BindingFlags.Instance | BindingFlags.NonPublic),
                 new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPreHook), BindingFlags.Static | BindingFlags.Public)),
                 new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPostHook), BindingFlags.Static | BindingFlags.Public)));
         }
 
-
         #region ChaFile
 
         #region Loading
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "LoadFile", new[] { typeof(BinaryReader), typeof(bool), typeof(bool) })]
-        public static void ChaFileLoadFilePreHook(ChaFile __instance, BinaryReader br, bool noLoadPNG, bool noLoadStatus)
-        {
-            cardReadEventCalled = false;
-        }
+        public static void ChaFileLoadFilePreHook(ChaFile __instance, BinaryReader br, bool noLoadPNG, bool noLoadStatus) => cardReadEventCalled = false;
 
         public static void ChaFileLoadFileHook(ChaFile file, BlockHeader header, BinaryReader reader)
         {
@@ -48,7 +44,7 @@ namespace ExtensibleSaveFormat
                 long basePosition = originalPosition - header.lstInfo.Sum(x => x.size);
 
                 reader.BaseStream.Position = basePosition + info.pos;
-                
+
                 byte[] data = reader.ReadBytes((int)info.size);
 
                 reader.BaseStream.Position = originalPosition;
@@ -63,7 +59,7 @@ namespace ExtensibleSaveFormat
                 catch (Exception e)
                 {
                     ExtendedSave.internalCharaDictionary.Set(file, new Dictionary<string, PluginData>());
-                    BepInEx.Logger.Log(LogLevel.Warning, $"Invalid or corrupted extended data in card \"{file.charaFileName}\" - {e.Message}");
+                    ExtendedSave.Logger.Log(LogLevel.Warning, $"Invalid or corrupted extended data in card \"{file.charaFileName}\" - {e.Message}");
                 }
 
                 ExtendedSave.cardReadEvent(file);
@@ -161,10 +157,7 @@ namespace ExtensibleSaveFormat
         private static byte[] currentlySavingData = null;
 
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", new[] { typeof(BinaryWriter), typeof(bool) })]
-        public static void ChaFileSaveFilePreHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng)
-        {
-            ExtendedSave.cardWriteEvent(__instance);
-        }
+        public static void ChaFileSaveFilePreHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng) => ExtendedSave.cardWriteEvent(__instance);
 
         public static void ChaFileSaveFileHook(ChaFile file, BlockHeader header, ref long[] array3)
         {
@@ -245,7 +238,9 @@ namespace ExtensibleSaveFormat
 
         #region Loading
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Load", new[] { typeof(string), typeof(Version) }, new[] { 1 })]
+        [ParameterByRef(1)]
+        [HarmonyTranspiler]
+        [HarmonyPatch(typeof(SceneInfo), "Load", typeof(string), typeof(Version))]
         public static IEnumerable<CodeInstruction> SceneInfoLoadTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             bool set = false;
@@ -294,7 +289,7 @@ namespace ExtensibleSaveFormat
 
             ExtendedSave.sceneReadEvent(path);
         }
-        
+
         [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Import", new[] { typeof(string) })]
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -613,7 +608,7 @@ namespace ExtensibleSaveFormat
         {
             ExtendedSave.coordinateWriteEvent(file);
 
-            BepInEx.Logger.Log(BepInEx.Logging.LogLevel.Debug, "Coordinate hook!");
+            ExtendedSave.Logger.Log(BepInEx.Logging.LogLevel.Debug, "Coordinate hook!");
 
             Dictionary<string, PluginData> extendedData = ExtendedSave.GetAllExtendedData(file);
             if (extendedData == null)
@@ -633,19 +628,13 @@ namespace ExtensibleSaveFormat
 
         #region Helper
 
-        public static bool CheckCallVirtName(CodeInstruction instruction, string name)
-        {
-            return instruction.opcode == OpCodes.Callvirt &&
+        public static bool CheckCallVirtName(CodeInstruction instruction, string name) => instruction.opcode == OpCodes.Callvirt &&
                    //need to do reflection fuckery here because we can't access MonoMethod which is the operand type, not MehtodInfo like normal reflection
                    instruction.operand.GetType().GetProperty("Name", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).GetGetMethod().Invoke(instruction.operand, null).ToString().ToString() == name;
-        }
 
-        public static bool CheckNewObjTypeName(CodeInstruction instruction, string name)
-        {
-            return instruction.opcode == OpCodes.Newobj &&
+        public static bool CheckNewObjTypeName(CodeInstruction instruction, string name) => instruction.opcode == OpCodes.Newobj &&
                    //need to do reflection fuckery here because we can't access MonoCMethod which is the operand type, not ConstructorInfo like normal reflection
                    instruction.operand.GetType().GetProperty("DeclaringType", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).GetGetMethod().Invoke(instruction.operand, null).ToString() == name;
-        }
 
         #endregion
 

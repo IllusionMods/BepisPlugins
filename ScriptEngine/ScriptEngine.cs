@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using Logger = BepInEx.Logger;
 
 namespace ScriptEngine
 {
@@ -13,18 +12,15 @@ namespace ScriptEngine
     public class ScriptEngine : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.scriptengine";
-        public const string Version = "2.0";
+        public const string Version = BepisPlugins.Metadata.PluginsVersion;
 
         public string ScriptDirectory => Path.Combine(Paths.PluginPath, "scripts");
 
         private GameObject scriptManager = new GameObject();
 
-        void Awake()
-        {
-            ReloadPlugins();
-        }
+        private void Awake() => ReloadPlugins(false);
 
-        void Update()
+        private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Delete) && Event.current.control)
             {
@@ -32,7 +28,7 @@ namespace ScriptEngine
             }
         }
 
-        void ReloadPlugins()
+        private void ReloadPlugins(bool message = false)
         {
             Destroy(scriptManager);
 
@@ -40,20 +36,23 @@ namespace ScriptEngine
 
             DontDestroyOnLoad(scriptManager);
 
-            foreach (string path in Directory.GetFiles(ScriptDirectory, "*.dll"))
-            {
-                LoadDLL(path, scriptManager);
-            }
+            if (Directory.Exists(ScriptDirectory))
+                foreach (string path in Directory.GetFiles(ScriptDirectory, "*.dll"))
+                {
+                    LoadDLL(path, scriptManager);
+                }
 
-	        Logger.Log(LogLevel.Message, "Reloaded script plugins!");
+            if (message)
+                Logger.Log(LogLevel.Message, "Reloaded script plugins!");
         }
 
         private void LoadDLL(string path, GameObject obj)
         {
             var defaultResolver = new DefaultAssemblyResolver();
-            defaultResolver.AddSearchDirectory(ScriptDirectory);
-	        defaultResolver.AddSearchDirectory(Paths.ManagedPath);
-            
+            if (Directory.Exists(ScriptDirectory))
+                defaultResolver.AddSearchDirectory(ScriptDirectory);
+            defaultResolver.AddSearchDirectory(Paths.ManagedPath);
+
             AssemblyDefinition dll = AssemblyDefinition.ReadAssembly(path, new ReaderParameters
             {
                 AssemblyResolver = defaultResolver
