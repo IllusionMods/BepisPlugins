@@ -1,7 +1,7 @@
 ﻿using Shared;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using System.Threading;
 using UnityEngine;
 
@@ -23,42 +23,25 @@ namespace Sideloader
 
         public static void RandomizeCAB(byte[] assetBundleData)
         {
-            var startIndex = -1;
-            var endIndex = -1;
+            var ascii = Encoding.ASCII.GetString(assetBundleData, 0, Mathf.Min(1024, assetBundleData.Length - 4));
 
-            var searchLength = Mathf.Min(1024, assetBundleData.Length - 4);
-            for (var i = 0; i < searchLength; i++)
-            {
-                if (startIndex < 0)
-                {
-                    if (assetBundleData[i + 0] == 'C' &&
-                        assetBundleData[i + 1] == 'A' &&
-                        assetBundleData[i + 2] == 'B' &&
-                        assetBundleData[i + 3] == '-')
-                    {
-                        startIndex = i;
-                        i += 3;
-                    }
-                }
-                else
-                {
-                    if (assetBundleData[i] == '\0')
-                    {
-                        endIndex = i;
-                        break;
-                    }
-                }
-            }
+            var origCabIndex = ascii.IndexOf("CAB-", StringComparison.Ordinal);
 
-            if (startIndex < 0 || endIndex < 0)
+            if (origCabIndex < 0)
                 return;
 
-            var newCab = GenerateCAB().Select(Convert.ToByte).ToArray();
+            var origCabLength = ascii.Substring(origCabIndex).IndexOf('\0');
 
-            if (endIndex - startIndex < newCab.Length)
+            if (origCabLength < 0)
                 return;
 
-            Buffer.BlockCopy(newCab, 0, assetBundleData, startIndex, newCab.Length);
+            var CAB = GenerateCAB().Substring(4);
+            var cabBytes = Encoding.ASCII.GetBytes(CAB);
+
+            if (origCabLength > 36)
+                return;
+
+            Buffer.BlockCopy(cabBytes, 36 - origCabLength, assetBundleData, origCabIndex + 4, origCabLength - 4);
         }
 
         public static void AddBundleLoader(Func<AssetBundle> func, string path, out string warning)
@@ -79,7 +62,7 @@ namespace Sideloader
 
         public static bool TryGetObjectFromName<T>(string name, string assetBundle, out T obj) where T : UnityEngine.Object
         {
-            bool result = TryGetObjectFromName(name, assetBundle, typeof(T), out UnityEngine.Object tObj);
+            var result = TryGetObjectFromName(name, assetBundle, typeof(T), out var tObj);
 
             obj = (T)tObj;
 
@@ -90,7 +73,7 @@ namespace Sideloader
         {
             obj = null;
 
-            if (Bundles.TryGetValue(assetBundle, out List<Lazy<AssetBundle>> lazyBundleList))
+            if (Bundles.TryGetValue(assetBundle, out var lazyBundleList))
             {
                 foreach (AssetBundle bundle in lazyBundleList)
                 {
