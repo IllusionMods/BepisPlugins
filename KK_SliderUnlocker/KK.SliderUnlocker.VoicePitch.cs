@@ -2,11 +2,11 @@
  * Code by essu
  * ~ can you hear me now? ~
  */
-using System.Collections.Generic;
-using System.Reflection.Emit;
+using BepInEx.Harmony;
 using ChaCustom;
 using HarmonyLib;
-using BepInEx.Harmony;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace SliderUnlocker
 {

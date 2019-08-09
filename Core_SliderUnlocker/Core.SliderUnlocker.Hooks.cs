@@ -1,52 +1,16 @@
-﻿using ChaCustom;
+﻿using BepInEx.Harmony;
 using HarmonyLib;
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Reflection;
 using UnityEngine;
-using BepInEx.Harmony;
 
 namespace SliderUnlocker
 {
-    public static class Hooks
+    public static partial class Hooks
     {
-        public static void InstallHooks()
-        {
-            HarmonyWrapper.PatchAll(typeof(Hooks));
-        }
+        public static void InstallHooks() => HarmonyWrapper.PatchAll(typeof(Hooks));
 
-        private static FieldInfo akf_dictInfo = typeof(AnimationKeyInfo).GetField("dictInfo", BindingFlags.NonPublic | BindingFlags.Instance);
-
-        [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), "ConvertTextFromRate")]
-        public static void ConvertTextFromRateHook(ref string __result, int min, int max, float value)
-        {
-            if (min == 0 && max == 100)
-                __result = Math.Round(100 * value).ToString(CultureInfo.InvariantCulture);
-        }
-
-        [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), "ConvertRateFromText")]
-        public static void ConvertRateFromTextHook(ref float __result, int min, int max, string buf)
-        {
-            if (min == 0 && max == 100)
-            {
-                if (buf.IsNullOrEmpty())
-                {
-                    __result = 0f;
-                }
-                else
-                {
-                    if (!float.TryParse(buf, out float val))
-                    {
-                        __result = 0f;
-                    }
-                    else
-                    {
-                        __result = val / 100;
-                    }
-                }
-            }
-        }
+        private static readonly FieldInfo akf_dictInfo = typeof(AnimationKeyInfo).GetField("dictInfo", AccessTools.all);
 
         [HarmonyPostfix, HarmonyPatch(typeof(Mathf), "Clamp", new[] { typeof(float), typeof(float), typeof(float) })]
         public static void MathfClampHook(ref float __result, float value, float min, float max)
@@ -134,30 +98,14 @@ namespace SliderUnlocker
 
 
                 if (flag[0])
-                {
                     value[0] = SliderMath.CalculatePosition(list, rate);
-                }
 
                 if (flag[1])
-                {
                     value[1] = SliderMath.SafeCalculateRotation(value[1], name, list, rate);
-                }
 
                 if (flag[2])
-                {
                     value[2] = SliderMath.CalculateScale(list, rate);
-                }
             }
         }
-
-        [HarmonyPrefix, HarmonyPatch(typeof(ChaFileControl), "CheckDataRange")]
-        public static bool CheckDataRangePreHook(ref bool __result)
-        {
-            __result = true;
-            return false;
-        }
-
-        [HarmonyPrefix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.Reload))]
-        public static void Reload(ChaControl __instance) => __instance.StartCoroutine(SliderUnlocker.ResetAllSliders());
     }
 }
