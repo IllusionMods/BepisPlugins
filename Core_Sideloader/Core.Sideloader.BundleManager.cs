@@ -9,17 +9,14 @@ namespace Sideloader
 {
     public static class BundleManager
     {
-        public static Dictionary<string, List<Lazy<AssetBundle>>> Bundles = new Dictionary<string, List<Lazy<AssetBundle>>>();
+        public static Dictionary<string, List<LazyCustom<AssetBundle>>> Bundles = new Dictionary<string, List<LazyCustom<AssetBundle>>>();
 
         public static string DummyPath => "list/characustom/00.unity3d";
 
         private static long CABCounter;
 
-        public static string GenerateCAB()
-        {
-            // Only ASCII chars or we'll explode
-            return "CAB-" + Interlocked.Increment(ref CABCounter).ToString("x32");
-        }
+        // Only ASCII chars or we'll explode
+        public static string GenerateCAB() => "CAB-" + Interlocked.Increment(ref CABCounter).ToString("x32");
 
         public static void RandomizeCAB(byte[] assetBundleData)
         {
@@ -51,12 +48,12 @@ namespace Sideloader
             if (Bundles.TryGetValue(path, out var lazyList))
             {
                 warning = $"Duplicate asset bundle detected! {path}";
-                lazyList.Add(Lazy<AssetBundle>.Create(func));
+                lazyList.Add(LazyCustom<AssetBundle>.Create(func));
             }
             else
-                Bundles.Add(path, new List<Lazy<AssetBundle>>
+                Bundles.Add(path, new List<LazyCustom<AssetBundle>>
                 {
-                    Lazy<AssetBundle>.Create(func)
+                    LazyCustom<AssetBundle>.Create(func)
                 });
         }
 

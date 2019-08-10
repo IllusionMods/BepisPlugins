@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Studio;
+using System;
 using System.Collections.Generic;
-using Studio;
 
 namespace Sideloader.AutoResolver
 {

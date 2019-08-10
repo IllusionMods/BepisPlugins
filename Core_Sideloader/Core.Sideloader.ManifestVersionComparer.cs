@@ -23,7 +23,7 @@ namespace Sideloader
                 }
                 catch (ArgumentException)
                 {
-                    if(first is string s1 && second is string s2)
+                    if (first is string s1 && second is string s2)
                     {
                         // Handle invalid characters in strings by comparing them byte by byte
                         var result = string.CompareOrdinal(s1, s2);
@@ -35,17 +35,8 @@ namespace Sideloader
             return version.First.Length.CompareTo(version.Second.Length);
         }
 
-        private IComparable[] GetVersion(string version)
-        {
-            return (from part in version.Trim().Split('.', ' ', '-', ',', '_')
-                select Parse(part)).ToArray();
-        }
+        private IComparable[] GetVersion(string version) => (from part in version.Trim().Split('.', ' ', '-', ',', '_') select Parse(part)).ToArray();
 
-        private IComparable Parse(string version)
-        {
-            if (int.TryParse(version, out var result))
-                return result;
-            return version;
-        }
+        private IComparable Parse(string version) => int.TryParse(version, out var result) ? result : (IComparable)version;
     }
 }
