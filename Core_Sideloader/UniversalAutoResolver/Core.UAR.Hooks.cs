@@ -81,7 +81,7 @@ namespace Sideloader.AutoResolver
         {
             Sideloader.Logger.Log(LogLevel.Debug, $"Loading card [{file.charaFileName}]");
 
-            var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
+            var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
             List<ResolveInfo> extInfo;
 
             if (extData == null || !extData.data.ContainsKey("info"))
@@ -175,7 +175,7 @@ namespace Sideloader.AutoResolver
 
             Sideloader.Logger.Log(LogLevel.Debug, $"Reloading card [{__instance.charaFileName}]");
 
-            var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
+            var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
             var tmpExtInfo = (List<byte[]>)extData.data["info"];
             var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
@@ -227,7 +227,7 @@ namespace Sideloader.AutoResolver
         {
             Sideloader.Logger.Log(LogLevel.Debug, $"Loading coordinate [{file.coordinateName}]");
 
-            var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
+            var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
             List<ResolveInfo> extInfo;
 
             if (extData == null || !extData.data.ContainsKey("info"))
@@ -320,8 +320,8 @@ namespace Sideloader.AutoResolver
             if (DoingImport) return;
 
             Sideloader.Logger.Log(LogLevel.Debug, $"Reloading coordinate [{path}]");
-
-            var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
+            
+            var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
             var tmpExtInfo = (List<byte[]>)extData.data["info"];
             var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();

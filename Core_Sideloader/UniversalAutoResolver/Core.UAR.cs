@@ -9,6 +9,7 @@ namespace Sideloader.AutoResolver
     public static partial class UniversalAutoResolver
     {
         public const string UARExtID = "com.bepis.sideloader.universalautoresolver";
+        public const string UARExtIDOld = "EC.Core.Sideloader.UniversalAutoResolver";
 
         private static ILookup<int, ResolveInfo> _resolveInfoLookupSlot;
         private static ILookup<int, ResolveInfo> _resolveInfoLookupLocalSlot;

@@ -16,7 +16,7 @@ namespace Sideloader.AutoResolver
 
         private static void ExtendedCardImport(Dictionary<string, PluginData> importedExtendedData)
         {
-            if (importedExtendedData.TryGetValue("com.bepis.sideloader.universalautoresolver", out var pluginData))
+            if (importedExtendedData.TryGetValue(UniversalAutoResolver.UARExtID, out var pluginData))
             {
                 if (pluginData != null && pluginData.data.ContainsKey("info"))
                 {
@@ -84,7 +84,7 @@ namespace Sideloader.AutoResolver
 
         private static void ExtendedCoordinateImport(Dictionary<string, PluginData> importedExtendedData)
         {
-            if (importedExtendedData.TryGetValue("com.bepis.sideloader.universalautoresolver", out var pluginData))
+            if (importedExtendedData.TryGetValue(UniversalAutoResolver.UARExtID, out var pluginData))
             {
                 if (pluginData != null && pluginData.data.ContainsKey("info"))
                 {
