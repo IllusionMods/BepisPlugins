@@ -4,20 +4,22 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepisPlugins;
 using Illusion.Game;
-using StrayTech;
 using System;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if KK
+using StrayTech;
+#endif
 
 namespace Screencap
 {
-    [BepInPlugin(GUID: GUID, Name: "Screenshot Manager", Version: Version)]
-    public class ScreenshotManager : BaseUnityPlugin
+    public partial class ScreenshotManager
     {
         public const string GUID = "com.bepis.bepinex.screenshotmanager";
+        public const string PluginName = "Screenshot Manager";
         public const string Version = Metadata.PluginsVersion;
         internal static new ManualLogSource Logger;
         private const int ScreenshotSizeMax = 4096;
@@ -25,7 +27,7 @@ namespace Screencap
 
         public static ScreenshotManager Instance { get; private set; }
 
-        private readonly string screenshotDir = Path.Combine(Paths.GameRootPath, "UserData\\cap\\");
+        private readonly string screenshotDir = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
         internal AlphaShot2 currentAlphaShot;
 
         #region Config properties
@@ -67,7 +69,7 @@ namespace Screencap
         [AcceptableValueRange(1, 100, true)]
         public static ConfigWrapper<int> JpgQuality { get; private set; }
 
-        public static ConfigWrapper<NameFormat> ScreenshotNameFormat { get; private set; }
+        //TODO:public static ConfigWrapper<NameFormat> ScreenshotNameFormat { get; private set; }
 
         [Advanced(true)]
         public static ConfigWrapper<string> ScreenshotNameOverride { get; private set; }
@@ -102,7 +104,7 @@ namespace Screencap
             ImageSeparationOffset = Config.Wrap("3D Settings", "3D screenshot image separation offset", "Move images in stereoscopic screenshots closer together by this percentage (discards overlapping parts). Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.", 0.25f);
             UseJpg = Config.Wrap("JPG Settings", "Save screenshots as .jpg instead of .png", "Save screenshots in lower quality in return for smaller file sizes. Transparency is NOT supported in .jpg screenshots. Strongly consider not using this option if you want to share your work.", false);
             JpgQuality = Config.Wrap("3D Settings", "Quality of .jpg files", "Lower quality = lower file sizes. Even 100 is worse than a .png file.", 100);
-            ScreenshotNameFormat = Config.Wrap("General", "Screenshot filename format", "Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)", NameFormat.NameDateType);
+            //TODO:ScreenshotNameFormat = Config.Wrap("General", "Screenshot filename format", "Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)", NameFormat.NameDateType);
             ScreenshotNameOverride = Config.Wrap("General", "Screenshot filename Name override", "Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", "");
 
             ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
@@ -131,29 +133,31 @@ namespace Screencap
 
             var extension = UseJpg.Value ? "jpg" : "png";
 
-            switch (ScreenshotNameFormat.Value)
-            {
-                case NameFormat.NameDate:
-                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                case NameFormat.NameTypeDate:
-                    filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                case NameFormat.NameDateType:
-                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
-                    break;
-                case NameFormat.TypeDate:
-                    filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                case NameFormat.TypeNameDate:
-                    filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                case NameFormat.Date:
-                    filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
-            }
+            //TODO:
+            filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
+            //switch (ScreenshotNameFormat.Value)
+            //{
+            //    case NameFormat.NameDate:
+            //        filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+            //        break;
+            //    case NameFormat.NameTypeDate:
+            //        filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+            //        break;
+            //    case NameFormat.NameDateType:
+            //        filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
+            //        break;
+            //    case NameFormat.TypeDate:
+            //        filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+            //        break;
+            //    case NameFormat.TypeNameDate:
+            //        filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+            //        break;
+            //    case NameFormat.Date:
+            //        filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+            //        break;
+            //    default:
+            //        throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
+            //}
 
             return Path.GetFullPath(Path.Combine(screenshotDir, filename));
         }
@@ -186,7 +190,11 @@ namespace Screencap
         private void TakeScreenshot()
         {
             var filename = GetUniqueFilename("UI");
+#if KK
             Application.CaptureScreenshot(filename);
+#elif EC
+            ScreenCapture.CaptureScreenshot(filename);
+#endif
 
             StartCoroutine(TakeScreenshotLog(filename));
         }
@@ -315,6 +323,7 @@ namespace Screencap
         /// </summary>
         private static void ToggleCameraControllers(Transform targetTr, bool enabled)
         {
+#if KK
             foreach (var controllerType in new[] { typeof(Studio.CameraControl), typeof(BaseCameraControl_Ver2), typeof(BaseCameraControl) })
             {
                 var cc = targetTr.GetComponent(controllerType);
@@ -324,6 +333,7 @@ namespace Screencap
 
             var actionScene = GameObject.Find("ActionScene/CameraSystem");
             if (actionScene != null) actionScene.GetComponent<CameraSystem>().ShouldUpdate = enabled;
+#endif
         }
 
         private static Texture2D StitchImages(Texture2D capture, Texture2D capture2, float overlapOffset)
@@ -344,7 +354,7 @@ namespace Screencap
             return result;
         }
 
-        #region UI
+#region UI
         private readonly int uiWindowHash = GUID.GetHashCode();
         private Rect uiRect = new Rect(20, Screen.height / 2 - 150, 160, 223);
         private bool uiShow = false;
@@ -484,7 +494,7 @@ namespace Screencap
 
                 GUI.DragWindow();
             }
-            #endregion
+#endregion
         }
     }
 }

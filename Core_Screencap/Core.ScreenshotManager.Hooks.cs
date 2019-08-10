@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Screencap
 {
-    public static class Hooks
+    public static partial class Hooks
     {
         /// <summary> Chara card Render/Downsample rate.</summary>
         private static int CardRenderRate => ScreenshotManager.CardDownscalingRate.Value;
@@ -16,11 +16,6 @@ namespace Screencap
         /// </summary>
         [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), "Capture")]
         public static bool CapturePreHook() => false;
-        /// <summary>
-        /// Cancel the vanilla screenshot
-        /// </summary>
-        [HarmonyPrefix, HarmonyPatch(typeof(Studio.GameScreenShot), "Capture")]
-        public static bool StudioCapturePreHook() => false;
 
         [HarmonyPrefix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
         public static bool pre_CreatePng(ref int createW, ref int createH)
@@ -33,18 +28,6 @@ namespace Screencap
 
         [HarmonyPostfix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
         public static void post_CreatePng(ref byte[] pngData) => DownscaleEncoded(ref pngData);
-
-        [HarmonyPrefix, HarmonyPatch(typeof(Studio.GameScreenShot), "CreatePngScreen")]
-        public static bool pre_CreatePngScreen(ref int _width, ref int _height)
-        {
-            //Multiply up render resolution.
-            _width *= CardRenderRate;
-            _height *= CardRenderRate;
-            return true;
-        }
-
-        [HarmonyPostfix, HarmonyPatch(typeof(Studio.GameScreenShot), "CreatePngScreen")]
-        public static void post_CreatePngScreen(ref byte[] __result) => DownscaleEncoded(ref __result);
 
         private static void DownscaleEncoded(ref byte[] encoded)
         {
