@@ -8,10 +8,10 @@ using UnityEngine;
 
 namespace ResourceRedirector
 {
-    [BepInPlugin(GUID: GUID, Name: "Asset Emulator", Version: Version)]
-    public class ResourceRedirector : BaseUnityPlugin
+    public partial class ResourceRedirector 
     {
         public const string GUID = "com.bepis.bepinex.resourceredirector";
+        public const string PluginName = "Resource Redirector";
         public const string Version = Metadata.PluginsVersion;
         internal static new ManualLogSource Logger;
 
@@ -61,7 +61,7 @@ namespace ResourceRedirector
                     if (!File.Exists(path))
                         return __result;
 
-                    Logger.Log(LogLevel.Info, $"Loading emulated asset {path}");
+                    Logger.Log(LogLevel.Debug, $"Loading emulated asset {path}");
 
                     var tex = AssetLoader.LoadTexture(path);
 
@@ -81,7 +81,7 @@ namespace ResourceRedirector
                     if (!File.Exists(path))
                         return __result;
 
-                    Logger.Log(LogLevel.Info, $"Loading emulated asset {path}");
+                    Logger.Log(LogLevel.Debug, $"Loading emulated asset {path}");
 
                     return new AssetBundleLoadAssetOperationSimulation(AssetLoader.LoadAudioClip(path, AudioType.WAV));
                 }
@@ -126,6 +126,6 @@ namespace ResourceRedirector
         /// <summary>
         /// Check if the asset bundle file exists on disk. Moved to a separate method so other plugins can hook and override if necessary.
         /// </summary>
-        public static bool AssetBundleExists(string assetBundleName) => File.Exists($"{Application.dataPath}/../abdata/{assetBundleName}");
+        public static bool AssetBundleExists(string assetBundleName) => File.Exists($"{Paths.GameRootPath}/abdata/{assetBundleName}");
     }
 }

@@ -100,9 +100,9 @@
       <Name>ExtensibleSaveFormat</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\ResourceRedirector\ResourceRedirector.csproj">
+    <ProjectReference Include="..\KK_ResourceRedirector\KK_ResourceRedirector.csproj">
       <Project>{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}</Project>
-      <Name>ResourceRedirector</Name>
+      <Name>KK_ResourceRedirector</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>

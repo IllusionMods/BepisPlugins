@@ -1,5 +1,5 @@
-﻿using System.IO;
-using BepInEx;
+﻿using BepInEx;
+using System.IO;
 using UnityEngine;
 
 namespace ResourceRedirector
@@ -19,21 +19,11 @@ namespace ResourceRedirector
             }
         }
 
+        public static Texture2D LoadTexture(string path) => LoadTexture(File.ReadAllBytes(path));
 
-        public static Texture2D LoadTexture(string path)
-        {
-            return LoadTexture(File.ReadAllBytes(path));
-        }
+        public static Texture2D LoadTexture(Stream stream) => LoadTexture(stream, (int)stream.Length);
 
-        public static Texture2D LoadTexture(Stream stream)
-        {
-            return LoadTexture(stream, (int)stream.Length);
-        }
-
-        public static Texture2D LoadTexture(Stream stream, int length)
-        {
-            return LoadTexture(stream, length, TextureFormat.RGBA32, true);
-        }
+        public static Texture2D LoadTexture(Stream stream, int length) => LoadTexture(stream, length, TextureFormat.RGBA32, true);
 
         public static Texture2D LoadTexture(Stream stream, int length, TextureFormat format, bool mipmap)
         {
@@ -44,19 +34,16 @@ namespace ResourceRedirector
             return LoadTexture(buffer, format, mipmap);
         }
 
-        public static Texture2D LoadTexture(byte[] data)
-        {
-            return LoadTexture(data, TextureFormat.RGBA32, true);
-        }
+        public static Texture2D LoadTexture(byte[] data) => LoadTexture(data, TextureFormat.RGBA32, true);
 
         public static Texture2D LoadTexture(byte[] data, TextureFormat format, bool mipmap)
         {
             Texture2D tex = new Texture2D(2, 2, format, mipmap);
-
-            //DDS method
-            //tex.LoadRawTextureData
-
+#if KK
             tex.LoadImage(data);
+#elif EC
+            ImageConversion.LoadImage(tex, data);
+#endif
 
             return tex;
         }
