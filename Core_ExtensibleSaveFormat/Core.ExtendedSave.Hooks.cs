@@ -17,8 +17,6 @@ namespace ExtensibleSaveFormat
         public static string Marker = "KKEx";
         public static int Version = 3;
 
-        private static bool cardReadEventCalled;
-
         public static void InstallHooks()
         {
             var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
@@ -32,8 +30,10 @@ namespace ExtensibleSaveFormat
         #region ChaFile
 
         #region Loading
-        [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "LoadFile", new[] { typeof(BinaryReader), typeof(bool), typeof(bool) })]
+#if KK
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
         public static void ChaFileLoadFilePreHook(ChaFile __instance, BinaryReader br, bool noLoadPNG, bool noLoadStatus) => cardReadEventCalled = false;
+#endif
 
         public static void ChaFileLoadFileHook(ChaFile file, BlockHeader header, BinaryReader reader)
         {
@@ -50,7 +50,9 @@ namespace ExtensibleSaveFormat
 
                 reader.BaseStream.Position = originalPosition;
 
+#if KK
                 cardReadEventCalled = true;
+#endif
 
                 try
                 {
@@ -71,7 +73,11 @@ namespace ExtensibleSaveFormat
             }
         }
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "LoadFile", new[] { typeof(BinaryReader), typeof(bool), typeof(bool) })]
+#if KK
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
+#elif EC
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
+#endif
         public static IEnumerable<CodeInstruction> ChaFileLoadFileTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> newInstructionSet = new List<CodeInstruction>(instructions);
@@ -96,7 +102,8 @@ namespace ExtensibleSaveFormat
             return newInstructionSet;
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "LoadFile", new[] { typeof(BinaryReader), typeof(bool), typeof(bool) })]
+#if KK
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
         public static void ChaFileLoadFilePostHook(ChaFile __instance, bool __result, BinaryReader br, bool noLoadPNG, bool noLoadStatus)
         {
             if (!__result)
@@ -150,14 +157,18 @@ namespace ExtensibleSaveFormat
                 ExtendedSave.CardReadEvent(__instance);
             }
         }
-
+#endif
         #endregion
 
         #region Saving
 
         private static byte[] currentlySavingData = null;
 
-        [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", new[] { typeof(BinaryWriter), typeof(bool) })]
+#if KK
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+#elif EC
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+#endif
         public static void ChaFileSaveFilePreHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng) => ExtendedSave.CardWriteEvent(__instance);
 
         public static void ChaFileSaveFileHook(ChaFile file, BlockHeader header, ref long[] array3)
@@ -191,7 +202,11 @@ namespace ExtensibleSaveFormat
             header.lstInfo.Add(info);
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", new[] { typeof(BinaryWriter), typeof(bool) })]
+#if KK
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+#elif EC
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+#endif
         public static void ChaFileSaveFilePostHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng)
         {
             if (!__result || currentlySavingData == null)
@@ -200,7 +215,11 @@ namespace ExtensibleSaveFormat
             bw.Write(currentlySavingData);
         }
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "SaveFile", new[] { typeof(BinaryWriter), typeof(bool) })]
+#if KK
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+#elif EC
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+#endif
         public static IEnumerable<CodeInstruction> ChaFileSaveFileTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> newInstructionSet = new List<CodeInstruction>(instructions);
@@ -239,7 +258,11 @@ namespace ExtensibleSaveFormat
 
         #region Loading
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.LoadFile), new[] { typeof(Stream) })]
+#if KK
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.LoadFile), typeof(Stream))]
+#elif EC
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.LoadFile), typeof(Stream), typeof(int))]
+#endif
         public static IEnumerable<CodeInstruction> ChaFileCoordinateLoadTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             bool set = false;
@@ -296,7 +319,11 @@ namespace ExtensibleSaveFormat
 
         #region Saving
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), new[] { typeof(string) })]
+#if KK
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
+#elif EC
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string), typeof(int))]
+#endif
         public static IEnumerable<CodeInstruction> ChaFileCoordinateSaveTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             bool hooked = false;

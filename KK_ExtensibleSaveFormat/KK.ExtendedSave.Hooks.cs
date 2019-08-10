@@ -13,6 +13,8 @@ namespace ExtensibleSaveFormat
 {
     public static partial class Hooks
     {
+        private static bool cardReadEventCalled;
+
         #region SceneInfo
 
         #region Loading
