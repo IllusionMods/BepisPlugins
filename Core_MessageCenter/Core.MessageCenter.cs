@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 using BepInEx.Logging;
 using System;
 using System.Collections.Generic;
@@ -8,10 +7,10 @@ using UnityEngine;
 
 namespace BepisPlugins
 {
-    [BepInPlugin(GUID, "Message Center", Version)]
-    public partial class MessageCenter : BaseUnityPlugin
+    public partial class MessageCenter
     {
         public const string GUID = "com.bepis.messagecenter";
+        public const string PluginName = "Message Center";
         public const string Version = Metadata.PluginsVersion;
 
         private static readonly List<LogEntry> _shownLogLines = new List<LogEntry>();
