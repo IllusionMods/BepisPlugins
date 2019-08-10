@@ -4,72 +4,81 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9DB058D4-CF5A-4280-9150-A62C22FC3CB0}</ProjectGuid>
+    <ProjectGuid>{C4188EB1-8DC5-47C7-A966-8AA38B6CFB55}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SliderUnlocker</RootNamespace>
-    <AssemblyName>SliderUnlocker</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <RootNamespace>EC_SliderUnlocker</RootNamespace>
+    <AssemblyName>EC_SliderUnlocker</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
-    <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
-    <DefineConstants>TRACE;KK</DefineConstants>
-    <Optimize>false</Optimize>
     <DebugType>none</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <Optimize>false</Optimize>
     <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
-    <DefineConstants>TRACE;KK</DefineConstants>
-    <Optimize>true</Optimize>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DefineConstants>TRACE;DEBUG;EC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
+    <DefineConstants>TRACE;EC</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>..\..\KK_Plugins\lib\HS\0Harmony.dll</HintPath>
+      <HintPath>..\lib\BepInEx5\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\lib\Koikatsu\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\lib\Koikatsu\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\lib\EmotionCreators\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\KK_Plugins\lib\HS\BepInEx.dll</HintPath>
+      <HintPath>..\lib\BepInEx5\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx.Harmony">
-      <HintPath>..\..\KK_Plugins\lib\HS\BepInEx.Harmony.dll</HintPath>
+      <HintPath>..\lib\BepInEx5\BepInEx.Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
     <Reference Include="TextMeshPro-1.0.55.56.0b12">
-      <HintPath>..\lib\Koikatsu\TextMeshPro-1.0.55.56.0b12.dll</HintPath>
+      <HintPath>..\lib\EmotionCreators\TextMeshPro-1.0.55.56.0b12.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\lib\Koikatsu\UnityEngine.dll</HintPath>
+      <HintPath>..\lib\EmotionCreators\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\lib\EmotionCreators\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\lib\EmotionCreators\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\lib\Koikatsu\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\lib\EmotionCreators\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="KK.SliderUnlocker.cs" />
+    <Compile Include="EC.SliderUnlocker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="KK.SliderUnlocker.VoicePitch.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ConfigurationManager\ConfigurationManager.csproj">
@@ -81,6 +90,6 @@
   <Import Project="..\Core_SliderUnlocker\Core_SliderUnlocker.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) KK</PostBuildEvent>
+    <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) EC</PostBuildEvent>
   </PropertyGroup>
 </Project>

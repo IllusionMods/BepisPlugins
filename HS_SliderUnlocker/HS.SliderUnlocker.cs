@@ -9,13 +9,13 @@ namespace SliderUnlocker
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class SliderUnlocker : BaseUnityPlugin
     {
-        private static readonly List<Target> _targets = new List<Target>();
+        private static readonly List<SliderSet> SliderSetList = new List<SliderSet>();
 
         private void OnLevelWasLoaded(int level)
         {
             CustomScene customScene = FindObjectOfType<CustomScene>();
             if (customScene == null)
-                _targets.Clear();
+                SliderSetList.Clear();
             else
                 SetAllSliders(customScene);
         }
@@ -24,7 +24,7 @@ namespace SliderUnlocker
         /// </summary>
         private void SetAllSliders(CustomScene customScene)
         {
-            _targets.Clear();
+            SliderSetList.Clear();
 
             SubMenuItem[] smItem = customScene.customControl.subMenuCtrl.smItem;
             for (int i = 0; i < smItem.Length; i++)
@@ -33,7 +33,7 @@ namespace SliderUnlocker
                 FindSliders(objTop.transform);
             }
 
-            foreach (var target in _targets)
+            foreach (var target in SliderSetList)
             {
                 target.Slider.minValue = SliderMin;
                 target.Slider.maxValue = SliderMax;
@@ -72,7 +72,7 @@ namespace SliderUnlocker
                 Button button = slider.transform.parent.GetComponentInChildren<Button>();
 
                 if (inputField != null && button != null)
-                    _targets.Add(new Target(slider, inputField, button));
+                    SliderSetList.Add(new SliderSet(slider, inputField, button));
             }
 
             for (int i = 0; i < t.childCount; i++)
@@ -83,7 +83,7 @@ namespace SliderUnlocker
         /// </summary>
         internal static void MaximizeSliders()
         {
-            foreach (var target in _targets)
+            foreach (var target in SliderSetList)
             {
                 if (target.Slider.IsActive())
                 {
@@ -97,7 +97,7 @@ namespace SliderUnlocker
         /// </summary>
         internal static void UnlockSliders()
         {
-            foreach (var target in _targets)
+            foreach (var target in SliderSetList)
             {
                 if (target.Slider.IsActive())
                     UnlockSlider(target.Slider, target.Slider.value);
@@ -122,14 +122,16 @@ namespace SliderUnlocker
             }
             UnlockSlider(_slider, value);
         }
-
-        private sealed class Target
+        /// <summary>
+        /// A set of associated slider, inputfield, and button
+        /// </summary>
+        private sealed class SliderSet
         {
             public readonly Slider Slider;
             public readonly InputField InputField;
             public readonly Button Button;
 
-            public Target(Slider slider, InputField inputField, Button button)
+            public SliderSet(Slider slider, InputField inputField, Button button)
             {
                 Slider = slider;
                 InputField = inputField;
