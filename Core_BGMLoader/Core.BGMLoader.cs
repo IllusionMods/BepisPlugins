@@ -7,10 +7,10 @@ using System.IO;
 
 namespace BGMLoader
 {
-    [BepInPlugin(GUID, "BGM Loader", Version)]
-    public class BGMLoader : BaseUnityPlugin
+    public partial class BGMLoader
     {
         public const string GUID = "com.bepis.bgmloader";
+        public const string PluginName = "BGM Loader";
         public const string Version = Metadata.PluginsVersion;
         internal static new ManualLogSource Logger;
 

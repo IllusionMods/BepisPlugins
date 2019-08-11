@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>e1074dcd-cc19-4c67-b799-eb534c885018</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Core_BGMLoader</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Core.BGMLoader.AudioLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.BGMLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.BGMLoader.Hooks.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)lib\NAudio.dll" />
+    <None Include="$(MSBuildThisFileDirectory)lib\NVorbis.dll" />
+  </ItemGroup>
+</Project>
