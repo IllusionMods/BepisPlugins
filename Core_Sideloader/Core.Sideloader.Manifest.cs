@@ -49,7 +49,7 @@ namespace Sideloader
             }
             catch (SystemException ex)
             {
-                Sideloader.Logger.Log(LogLevel.Warning, $"[SIDELOADER] Cannot load {Path.GetFileName(zip.Name)} - {ex.Message}.");
+                Sideloader.Logger.Log(LogLevel.Warning, $"Cannot load {Path.GetFileName(zip.Name)} - {ex.Message}.");
                 if (!(ex is OperationCanceledException))
                     Sideloader.Logger.Log(LogLevel.Debug, "Error details: " + ex);
                 return false;

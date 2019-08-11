@@ -195,12 +195,7 @@ namespace Sideloader.AutoResolver
                     var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
 
                     if (extResolve != null)
-                    {
                         kv.Value.SetMethod(structure, extResolve.LocalSlot);
-
-                        if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
-                    }
                 }
             }
 
@@ -320,7 +315,7 @@ namespace Sideloader.AutoResolver
             if (DoingImport) return;
 
             Sideloader.Logger.Log(LogLevel.Debug, $"Reloading coordinate [{path}]");
-            
+
             var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
             var tmpExtInfo = (List<byte[]>)extData.data["info"];
@@ -341,12 +336,7 @@ namespace Sideloader.AutoResolver
                     var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
 
                     if (extResolve != null)
-                    {
                         kv.Value.SetMethod(structure, extResolve.LocalSlot);
-
-                        if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resetting {extResolve.GUID}:{extResolve.Property} to internal slot {extResolve.LocalSlot}");
-                    }
                 }
             }
 

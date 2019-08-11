@@ -48,7 +48,7 @@ namespace Sideloader.AutoResolver
                     {
                         //found a match
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
 
                         kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
@@ -56,7 +56,7 @@ namespace Sideloader.AutoResolver
                     {
                         //No match was found
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
+                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
                         if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
                             kv.Value.SetMethod(structure, 1);
                     }
@@ -92,7 +92,7 @@ namespace Sideloader.AutoResolver
                         {
                             //found a match to a corrosponding internal mod
                             if (Sideloader.DebugLogging.Value)
-                                Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
+                                Sideloader.Logger.Log(LogLevel.Debug, $"Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }
                         else
@@ -114,7 +114,7 @@ namespace Sideloader.AutoResolver
                                 else
                                 {
                                     //ID found and it does not conflict with a vanilla item, likely the user has a hard mod version of the mod installed
-                                    Sideloader.Logger.Log(LogLevel.Debug, $"[UAR] Missing mod detected [{extResolve.GUID}] but matching ID found");
+                                    Sideloader.Logger.Log(LogLevel.Debug, $"Missing mod detected [{extResolve.GUID}] but matching ID found");
                                 }
                             }
                             else
