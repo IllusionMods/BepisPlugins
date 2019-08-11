@@ -14,7 +14,7 @@ namespace ResourceRedirector
         public static void InstallHooks() => HarmonyWrapper.PatchAll(typeof(Hooks));
 
         #region List Loading
-        [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.CheckItemID), new[] { typeof(int), typeof(int) })]
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.CheckItemID), typeof(int), typeof(int))]
         public static bool CheckItemIDHook(int category, int id, ref byte __result, ChaListControl __instance)
         {
             int pid = ListLoader.CalculateGlobalID(category, id);
@@ -30,7 +30,7 @@ namespace ResourceRedirector
             return true;
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.AddItemID), new[] { typeof(int), typeof(int), typeof(byte) })]
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.AddItemID), typeof(int), typeof(int), typeof(byte))]
         public static bool AddItemIDHook(int category, int id, byte flags, ChaListControl __instance)
         {
             int pid = ListLoader.CalculateGlobalID(category, id);

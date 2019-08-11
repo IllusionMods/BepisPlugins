@@ -71,7 +71,7 @@ namespace ExtensibleSaveFormat
             ExtendedSave.SceneReadEvent(path);
         }
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Import", new[] { typeof(string) })]
+        [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Import", typeof(string))]
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             bool set = false;
@@ -267,7 +267,7 @@ namespace ExtensibleSaveFormat
 
         #region Saving
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+        [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
         public static IEnumerable<CodeInstruction> SceneInfoSaveTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             bool set = false;

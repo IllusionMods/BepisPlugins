@@ -14,7 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.Manifest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.ManifestVersionComparer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.ResolveInfo.cs" />

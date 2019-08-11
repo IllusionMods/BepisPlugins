@@ -7,7 +7,7 @@
     <ProjectGuid>{8AF4399E-0D5A-418E-8178-E81192C56213}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HS_SliderUnlocker</RootNamespace>
+    <RootNamespace>SliderUnlocker</RootNamespace>
     <AssemblyName>HS_SliderUnlocker</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ExtensibleSaveFormat</RootNamespace>
-    <AssemblyName>ExtensibleSaveFormat</AssemblyName>
+    <AssemblyName>KK_ExtensibleSaveFormat</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

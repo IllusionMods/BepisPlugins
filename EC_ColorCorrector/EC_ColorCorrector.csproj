@@ -7,7 +7,7 @@
     <ProjectGuid>{C1F8FEEB-09E9-4FD0-A9B1-B4A323ED2177}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EC_ColorCorrector</RootNamespace>
+    <RootNamespace>ColorCorrector</RootNamespace>
     <AssemblyName>EC_ColorCorrector</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

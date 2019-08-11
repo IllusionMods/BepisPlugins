@@ -7,7 +7,7 @@
     <ProjectGuid>{68BDAB7C-92F1-41D8-A0AB-F8F4A98C44EC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EC_Sideloader</RootNamespace>
+    <RootNamespace>Sideloader</RootNamespace>
     <AssemblyName>EC_Sideloader</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -109,7 +109,6 @@
   <ItemGroup />
   <Import Project="..\Core_Sideloader\Core_Sideloader.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
-  <Import Project="..\Shared.Lazy\Shared.Lazy.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) EC

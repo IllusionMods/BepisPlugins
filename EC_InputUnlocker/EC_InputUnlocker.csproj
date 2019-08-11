@@ -7,7 +7,7 @@
     <ProjectGuid>{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EC_InputUnlocker</RootNamespace>
+    <RootNamespace>InputUnlocker</RootNamespace>
     <AssemblyName>EC_InputUnlocker</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

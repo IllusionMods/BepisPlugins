@@ -9,7 +9,7 @@ namespace Sideloader
 {
     public static class BundleManager
     {
-        public static Dictionary<string, List<LazyCustom<AssetBundle>>> Bundles = new Dictionary<string, List<LazyCustom<AssetBundle>>>();
+        internal static Dictionary<string, List<LazyCustom<AssetBundle>>> Bundles = new Dictionary<string, List<LazyCustom<AssetBundle>>>();
 
         public static string DummyPath => "list/characustom/00.unity3d";
 

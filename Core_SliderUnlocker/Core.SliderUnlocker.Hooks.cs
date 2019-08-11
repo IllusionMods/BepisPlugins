@@ -14,7 +14,7 @@ namespace SliderUnlocker
 
         private static readonly FieldInfo akf_dictInfo = typeof(AnimationKeyInfo).GetField("dictInfo", AccessTools.all);
 
-        [HarmonyPostfix, HarmonyPatch(typeof(Mathf), "Clamp", new[] { typeof(float), typeof(float), typeof(float) })]
+        [HarmonyPostfix, HarmonyPatch(typeof(Mathf), "Clamp", typeof(float), typeof(float), typeof(float))]
         public static void MathfClampHook(ref float __result, float value, float min, float max)
         {
             if (min == 0f && max == 100f)

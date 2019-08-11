@@ -11,8 +11,8 @@ namespace BGMLoader
     {
         public static void InstallHooks() => HarmonyWrapper.PatchAll(typeof(Hooks));
 
-        [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleManager), "LoadAllAsset", new[] { typeof(string), typeof(Type), typeof(string) })]
-        public static void LoadAllAssetPostHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName, Type type, string manifestAssetBundleName = null)
+        [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleManager), "LoadAllAsset", typeof(string), typeof(Type), typeof(string))]
+        public static void LoadAllAssetPostHook(ref AssetBundleLoadAssetOperation __result, string assetBundleName)
         {
             if (assetBundleName != null)
             {

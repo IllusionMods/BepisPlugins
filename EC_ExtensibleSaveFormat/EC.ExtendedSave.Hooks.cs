@@ -15,7 +15,7 @@ namespace ExtensibleSaveFormat
 
         // HEdit.HEditData
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(HEditData), nameof(HEditData.Load), new[] { typeof(BinaryReader), typeof(int), typeof(YS_Node.NodeControl), typeof(HEditData.InfoData), typeof(bool) })]
+        [HarmonyPatch(typeof(HEditData), nameof(HEditData.Load), typeof(BinaryReader), typeof(int), typeof(YS_Node.NodeControl), typeof(HEditData.InfoData), typeof(bool))]
         private static bool HEditDataLoadHook(bool __result, HEditData __instance, ref BinaryReader _reader, ref int _loadKind, ref YS_Node.NodeControl _nodeControl, ref HEditData.InfoData _info, ref bool _isEdit)
         {
             var originalPosition = _reader.BaseStream.Position;
@@ -60,7 +60,7 @@ namespace ExtensibleSaveFormat
 
         // HEdit.HEditData
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(HEditData), nameof(HEditData.Save), new[] { typeof(BinaryWriter), typeof(YS_Node.NodeControl), typeof(bool) })]
+        [HarmonyPatch(typeof(HEditData), nameof(HEditData.Save), typeof(BinaryWriter), typeof(YS_Node.NodeControl), typeof(bool))]
         private static bool HEditDataSaveHook(bool __result, HEditData __instance, ref BinaryWriter _writer, ref YS_Node.NodeControl _nodeControl, ref bool _isInitUserID)
         {
             ExtendedSave.HEditDataWriteEvent(__instance);

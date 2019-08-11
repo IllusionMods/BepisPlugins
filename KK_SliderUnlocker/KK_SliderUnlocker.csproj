@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SliderUnlocker</RootNamespace>
-    <AssemblyName>SliderUnlocker</AssemblyName>
+    <AssemblyName>KK_SliderUnlocker</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

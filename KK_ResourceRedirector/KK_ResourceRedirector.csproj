@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ResourceRedirector</RootNamespace>
-    <AssemblyName>ResourceRedirector</AssemblyName>
+    <AssemblyName>KK_ResourceRedirector</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

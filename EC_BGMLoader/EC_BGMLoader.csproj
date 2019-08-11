@@ -7,7 +7,7 @@
     <ProjectGuid>{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EC_BGMLoader</RootNamespace>
+    <RootNamespace>BGMLoader</RootNamespace>
     <AssemblyName>EC_BGMLoader</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

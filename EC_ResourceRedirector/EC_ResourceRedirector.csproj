@@ -7,7 +7,7 @@
     <ProjectGuid>{D71910C4-A623-4C56-92FF-B4F97610DB23}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EC_ResourceRedirector</RootNamespace>
+    <RootNamespace>ResourceRedirector</RootNamespace>
     <AssemblyName>EC_ResourceRedirector</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

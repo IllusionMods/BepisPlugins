@@ -71,7 +71,7 @@ namespace Sideloader.AutoResolver
             //UniversalAutoResolver.ResolveStudioMap(extData);
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+        [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
         public static void SavePrefix()
         {
             Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
@@ -185,7 +185,7 @@ namespace Sideloader.AutoResolver
                 ExtendedSave.SetSceneExtendedDataById(UniversalAutoResolver.UARExtID, new PluginData { data = ExtendedData });
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+        [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
         public static void SavePostfix()
         {
             //Set item IDs back to the resolved ID
