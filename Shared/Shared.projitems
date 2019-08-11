@@ -12,7 +12,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)HashedWeakReference.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Metadata.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ShadowAndOutline.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WeakKeyDictionary.cs" />
   </ItemGroup>
 </Project>
