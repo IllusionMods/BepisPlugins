@@ -1,17 +1,16 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepisPlugins;
-using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
 
 namespace ColorCorrector
 {
-    [BepInPlugin(GUID, "Color Filter Remover", Version)]
-    public class ColorCorrector : BaseUnityPlugin
+    public partial class ColorCorrector
     {
         public const string GUID = "com.bepis.bepinex.colorcorrector";
+        public const string PluginName = "Color Filter Remover";
         public const string Version = Metadata.PluginsVersion;
 
         #region Config properties
