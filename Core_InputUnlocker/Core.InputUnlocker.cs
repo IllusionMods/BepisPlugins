@@ -1,14 +1,13 @@
-﻿using BepInEx;
-using BepisPlugins;
+﻿using BepisPlugins;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace InputUnlocker
 {
-    [BepInPlugin(GUID, "Input Length Unlocker", Version)]
-    internal class InputUnlocker : BaseUnityPlugin
+    internal partial class InputUnlocker
     {
         public const string GUID = "com.bepis.bepinex.inputunlocker";
+        public const string PluginName = "Input Length Unlocker";
         public const string Version = Metadata.PluginsVersion;
 
         protected void Awake()

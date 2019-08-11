@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ColorCorrector", "ColorCorr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ExtensibleSaveFormat", "KK_ExtensibleSaveFormat\KK_ExtensibleSaveFormat.csproj", "{8EBE81B9-9ED9-466D-864A-4C644BFD8827}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InputUnlocker", "InputUnlocker\InputUnlocker.csproj", "{379BA41B-9944-4B5A-8732-EEBAA7F05B04}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_InputUnlocker", "KK_InputUnlocker\KK_InputUnlocker.csproj", "{379BA41B-9944-4B5A-8732-EEBAA7F05B04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ResourceRedirector", "KK_ResourceRedirector\KK_ResourceRedirector.csproj", "{3EA76CA3-45B6-4A1A-B04F-7A1A8C978AF6}"
 EndProject
@@ -59,10 +59,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_Sideloader", "EC_Sideloa
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared.Lazy", "Shared.Lazy\Shared.Lazy.shproj", "{796748D7-86B8-46B6-8C33-DFBC97462050}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InputUnlocker", "InputUnlocker", "{CE8AB915-8694-4892-BD38-05CBB1AAA418}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_InputUnlocker", "Core_InputUnlocker\Core_InputUnlocker.shproj", "{134E383F-6E78-460D-B76A-3BAAB8EBF54B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_InputUnlocker", "EC_InputUnlocker\EC_InputUnlocker.csproj", "{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Core_ResourceRedirector\Core_ResourceRedirector.projitems*{13128f24-4964-4da6-91e1-1d115f15b717}*SharedItemsImports = 13
+		Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
 		Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
+		Core_InputUnlocker\Core_InputUnlocker.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
 		Shared\Shared.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
 		Core_Sideloader\Core_Sideloader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
 		Shared.Lazy\Shared.Lazy.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
@@ -96,6 +104,8 @@ Global
 		Shared\Shared.projitems*{d56dd83d-7471-463f-b4ff-8910a335833c}*SharedItemsImports = 4
 		Core_ResourceRedirector\Core_ResourceRedirector.projitems*{d71910c4-a623-4c56-92ff-b4f97610db23}*SharedItemsImports = 4
 		Shared\Shared.projitems*{d71910c4-a623-4c56-92ff-b4f97610db23}*SharedItemsImports = 4
+		Core_InputUnlocker\Core_InputUnlocker.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
+		Shared\Shared.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
 		Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -118,10 +128,10 @@ Global
 		{8EBE81B9-9ED9-466D-864A-4C644BFD8827}.Release|Any CPU.Build.0 = Release|Any CPU
 		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
-		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Mono|Any CPU.Build.0 = Mono|Any CPU
-		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Release|Any CPU.ActiveCfg = Mono|Any CPU
-		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Release|Any CPU.Build.0 = Mono|Any CPU
+		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Mono|Any CPU.Build.0 = Release|Any CPU
+		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{379BA41B-9944-4B5A-8732-EEBAA7F05B04}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3EA76CA3-45B6-4A1A-B04F-7A1A8C978AF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3EA76CA3-45B6-4A1A-B04F-7A1A8C978AF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3EA76CA3-45B6-4A1A-B04F-7A1A8C978AF6}.Mono|Any CPU.ActiveCfg = Release|Any CPU
@@ -200,12 +210,19 @@ Global
 		{68BDAB7C-92F1-41D8-A0AB-F8F4A98C44EC}.Mono|Any CPU.Build.0 = Release|Any CPU
 		{68BDAB7C-92F1-41D8-A0AB-F8F4A98C44EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68BDAB7C-92F1-41D8-A0AB-F8F4A98C44EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}.Mono|Any CPU.ActiveCfg = Release|Any CPU
+		{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}.Mono|Any CPU.Build.0 = Release|Any CPU
+		{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8EBE81B9-9ED9-466D-864A-4C644BFD8827} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
+		{379BA41B-9944-4B5A-8732-EEBAA7F05B04} = {CE8AB915-8694-4892-BD38-05CBB1AAA418}
 		{3EA76CA3-45B6-4A1A-B04F-7A1A8C978AF6} = {2B781F07-2125-4916-A834-DC715FFA976A}
 		{6A9D08C0-4482-4D1A-9368-9F41B7126F9E} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
 		{9DB058D4-CF5A-4280-9150-A62C22FC3CB0} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
@@ -221,6 +238,8 @@ Global
 		{747A4E61-34F4-4790-A418-BB2CB03450E3} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 		{CE5A9FAB-C188-4919-A296-D9B1422169E9} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
 		{68BDAB7C-92F1-41D8-A0AB-F8F4A98C44EC} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
+		{134E383F-6E78-460D-B76A-3BAAB8EBF54B} = {CE8AB915-8694-4892-BD38-05CBB1AAA418}
+		{DD2B2EDC-224A-487D-93FA-A71FCCC5433E} = {CE8AB915-8694-4892-BD38-05CBB1AAA418}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
