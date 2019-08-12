@@ -8,14 +8,14 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ExtensibleSaveFormat</RootNamespace>
-    <AssemblyName>KK_ExtensibleSaveFormat</AssemblyName>
+    <AssemblyName>ExtensibleSaveFormat</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
+    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
     <DefineConstants>TRACE;KK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -23,7 +23,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
-    <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
+    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
     <DefineConstants>TRACE;KK</DefineConstants>
     <Optimize>false</Optimize>
     <DebugType>none</DebugType>

@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Sideloader</RootNamespace>
-    <AssemblyName>KK_Sideloader</AssemblyName>
+    <AssemblyName>Sideloader</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -17,13 +17,13 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
+    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
     <DefineConstants>TRACE;KK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
+    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
     <DefineConstants>TRACE;KK</DefineConstants>
     <Optimize>false</Optimize>
     <DebugType>none</DebugType>

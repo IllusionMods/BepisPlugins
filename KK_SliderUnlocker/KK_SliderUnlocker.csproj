@@ -8,13 +8,13 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>SliderUnlocker</RootNamespace>
-    <AssemblyName>KK_SliderUnlocker</AssemblyName>
+    <AssemblyName>SliderUnlocker</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
-    <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
+    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
     <DefineConstants>TRACE;KK</DefineConstants>
     <Optimize>false</Optimize>
     <DebugType>none</DebugType>
@@ -23,7 +23,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\bin\BepInEx\plugins\BepisPlugins\</OutputPath>
+    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
     <DefineConstants>TRACE;KK</DefineConstants>
     <Optimize>true</Optimize>
     <PlatformTarget>AnyCPU</PlatformTarget>
