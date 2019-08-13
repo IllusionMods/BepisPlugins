@@ -7,6 +7,9 @@ using System.IO;
 
 namespace BGMLoader
 {
+    /// <summary>
+    /// Place .ogg files in BepInEx/bgm folder with the same name as BGM tracks to load them.
+    /// </summary>
     public partial class BGMLoader
     {
         public const string GUID = "com.bepis.bgmloader";

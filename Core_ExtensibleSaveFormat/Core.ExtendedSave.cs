@@ -7,6 +7,9 @@ using System.Collections.Generic;
 
 namespace ExtensibleSaveFormat
 {
+    /// <summary>
+    /// A set of tools for reading and writing extra data to card and scene files.
+    /// </summary>
     public partial class ExtendedSave
     {
         public const string GUID = "com.bepis.bepinex.extendedsave";

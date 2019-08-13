@@ -8,6 +8,9 @@ using UnityEngine;
 
 namespace ResourceRedirector
 {
+    /// <summary>
+    /// Allows plugins to redirect asset loading. Used by Sideloader.
+    /// </summary>
     public partial class ResourceRedirector 
     {
         public const string GUID = "com.bepis.bepinex.resourceredirector";

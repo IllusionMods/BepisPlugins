@@ -17,6 +17,9 @@ using TMPro;
 
 namespace SliderUnlocker
 {
+    /// <summary>
+    /// Unlocks sliders in the character maker to values set in the config or by typing a value in the text box.
+    /// </summary>
     public partial class SliderUnlocker
     {
         public const string GUID = "com.bepis.bepinex.sliderunlocker";

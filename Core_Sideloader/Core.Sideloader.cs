@@ -17,6 +17,9 @@ using UnityEngine;
 
 namespace Sideloader
 {
+    /// <summary>
+    /// Allows for loading mods in .zip format from the mods folder and automatically resolves ID conflicts.
+    /// </summary>
     public partial class Sideloader
     {
         public const string GUID = "com.bepis.bepinex.sideloader";
@@ -40,7 +43,7 @@ namespace Sideloader
         public static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
         public static ConfigWrapper<string> AdditionalModsDirectory { get; private set; }
 
-        public Sideloader()
+        private void Awake()
         {
             Logger = base.Logger;
 
