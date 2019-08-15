@@ -74,7 +74,7 @@ namespace Sideloader
             if (index >= UniversalAutoResolver.BaseSlotID)
             {
                 List<CustomMoleLayoutPreset.MolePreset> lstPreset = Traverse.Create(__instance).Field("lstPreset").GetValue() as List<CustomMoleLayoutPreset.MolePreset>;
-                CvsMole cvsMole = Traverse.Create(__instance).Field("cvsMakeup").GetValue() as CvsMole;
+                CvsMole cvsMole = Traverse.Create(__instance).Field("cvsMole").GetValue() as CvsMole;
 
                 var preset = lstPreset.FirstOrDefault(p => p.index == index);
                 if (preset == null)
