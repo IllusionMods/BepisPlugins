@@ -123,7 +123,7 @@ namespace Sideloader.AutoResolver
                         continue;
 
                     //Check if it's a vanilla item
-                    if (slot < 100000000)
+                    if (slot < UniversalAutoResolver.BaseSlotID)
                         if (ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category].ContainsKey(slot))
                             continue;
 
@@ -264,7 +264,7 @@ namespace Sideloader.AutoResolver
                         continue;
 
                     //Check if it's a vanilla item
-                    if (slot < 100000000)
+                    if (slot < UniversalAutoResolver.BaseSlotID)
                         if (ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category].ContainsKey(slot))
                             continue;
 

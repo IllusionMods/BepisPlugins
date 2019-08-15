@@ -1,6 +1,7 @@
 ﻿using BepInEx.Harmony;
 using ChaCustom;
 using HarmonyLib;
+using Sideloader.AutoResolver;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -49,7 +50,7 @@ namespace Sideloader
         [HarmonyPrefix, HarmonyPatch(typeof(CustomFacePaintLayoutPreset), nameof(CustomFacePaintLayoutPreset.OnPush))]
         public static bool FacePaintOnPush(int index, CustomFacePaintLayoutPreset __instance)
         {
-            if (index >= 100000000)
+            if (index >= UniversalAutoResolver.BaseSlotID)
             {
                 List<CustomFacePaintLayoutPreset.FacePaintPreset> lstPreset = Traverse.Create(__instance).Field("lstPreset").GetValue() as List<CustomFacePaintLayoutPreset.FacePaintPreset>;
                 CvsMakeup cvsMakeup = Traverse.Create(__instance).Field("cvsMakeup").GetValue() as CvsMakeup;
@@ -70,7 +71,7 @@ namespace Sideloader
         [HarmonyPrefix, HarmonyPatch(typeof(CustomMoleLayoutPreset), nameof(CustomMoleLayoutPreset.OnPush))]
         public static bool OnPush(int index, CustomMoleLayoutPreset __instance)
         {
-            if (index >= 100000000)
+            if (index >= UniversalAutoResolver.BaseSlotID)
             {
                 List<CustomMoleLayoutPreset.MolePreset> lstPreset = Traverse.Create(__instance).Field("lstPreset").GetValue() as List<CustomMoleLayoutPreset.MolePreset>;
                 CvsMole cvsMole = Traverse.Create(__instance).Field("cvsMakeup").GetValue() as CvsMole;

@@ -13,8 +13,11 @@ namespace Sideloader.AutoResolver
 
         private static ILookup<int, ResolveInfo> _resolveInfoLookupSlot;
         private static ILookup<int, ResolveInfo> _resolveInfoLookupLocalSlot;
-
-        private static int CurrentSlotID = 100000000;
+        /// <summary>
+        /// The starting point for UAR IDs
+        /// </summary>
+        public const int BaseSlotID = 100000000;
+        private static int CurrentSlotID = BaseSlotID;
 
         public static IEnumerable<ResolveInfo> LoadedResolutionInfo =>
             _resolveInfoLookupSlot?.SelectMany(x => x) ?? Enumerable.Empty<ResolveInfo>();
