@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>..\..\KK_Plugins\lib\HS\0Harmony.dll</HintPath>
+      <HintPath>..\lib\BepInEx5\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -44,11 +44,11 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\KK_Plugins\lib\HS\BepInEx.dll</HintPath>
+      <HintPath>..\lib\BepInEx5\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx.Harmony">
-      <HintPath>..\..\KK_Plugins\lib\HS\BepInEx.Harmony.dll</HintPath>
+      <HintPath>..\lib\BepInEx5\BepInEx.Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
