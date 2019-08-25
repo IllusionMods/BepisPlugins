@@ -65,17 +65,15 @@
       <HintPath>..\lib\Koikatsu\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="XUnity.ResourceRedirector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\XUnity.ResourceRedirector.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="KK.BGMLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\KK_ResourceRedirector\KK_ResourceRedirector.csproj">
-      <Project>{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}</Project>
-      <Name>KK_ResourceRedirector</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />

@@ -11,7 +11,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Core.BGMLoader.AudioLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.BGMLoader.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Core.BGMLoader.Hooks.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)lib\NAudio.dll" />

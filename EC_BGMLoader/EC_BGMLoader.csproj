@@ -73,17 +73,18 @@
       <HintPath>..\lib\EmotionCreators\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+      <HintPath>..\lib\EmotionCreators\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="XUnity.ResourceRedirector">
+      <HintPath>..\lib\XUnity.ResourceRedirector.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EC.BGMLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\EC_ResourceRedirector\EC_ResourceRedirector.csproj">
-      <Project>{d71910c4-a623-4c56-92ff-b4f97610db23}</Project>
-      <Name>EC_ResourceRedirector</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Core_BGMLoader\Core_BGMLoader.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />

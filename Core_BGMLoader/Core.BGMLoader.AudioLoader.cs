@@ -1,4 +1,5 @@
-﻿using NAudio.Wave;
+﻿using BepInEx;
+using NAudio.Wave;
 using NVorbis;
 using System;
 using UnityEngine;
@@ -53,6 +54,19 @@ namespace BGMLoader
                 reader.ReadSamples(audioData, 0, sampleCount);
 
                 return LoadInternal(filename, audioData, reader.Channels, reader.SampleRate);
+            }
+        }
+
+        public static AudioClip LoadAudioClip(string path, AudioType type)
+        {
+            using (WWW loadGachi = new WWW(Utility.ConvertToWWWFormat(path)))
+            {
+                AudioClip clip = loadGachi.GetAudioClipCompressed(false, type);
+
+                //force single threaded loading instead of using a coroutine
+                while (clip.loadState != AudioDataLoadState.Loaded) { }
+
+                return clip;
             }
         }
 
