@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 namespace InputUnlocker
 {
+    /// <summary>
+    /// Unlocks the length of input fields. Particularly important for the character Name fields which only allow 8 characters.
+    /// </summary>
     internal partial class InputUnlocker
     {
         public const string GUID = "com.bepis.bepinex.inputunlocker";

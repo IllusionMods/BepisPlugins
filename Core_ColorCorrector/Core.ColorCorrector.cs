@@ -7,6 +7,9 @@ using UnityStandardAssets.ImageEffects;
 
 namespace ColorCorrector
 {
+    /// <summary>
+    /// Allows toggling on/off the color saturation filter and adjusting the strength of bloom.
+    /// </summary>
     public partial class ColorCorrector
     {
         public const string GUID = "com.bepis.bepinex.colorcorrector";

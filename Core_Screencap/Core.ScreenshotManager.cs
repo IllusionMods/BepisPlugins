@@ -16,6 +16,9 @@ using StrayTech;
 
 namespace Screencap
 {
+    /// <summary>
+    /// Plugin for taking high quality screenshots.
+    /// </summary>
     public partial class ScreenshotManager
     {
         public const string GUID = "com.bepis.bepinex.screenshotmanager";

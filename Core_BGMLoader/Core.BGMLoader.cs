@@ -1,47 +1,65 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
 using BepisPlugins;
 using Illusion.Game;
-using System;
 using System.IO;
+using UnityEngine;
+using XUnity.ResourceRedirector;
 
 namespace BGMLoader
 {
+    /// <summary>
+    /// Place .ogg files in BepInEx/plugins/bgm folder with the name BGM00.ogg, BGM01.ogg, etc. to load them in place of the game's BGM
+    /// Place .wav files in BepInEx/plugins/introclips folder to load them in place of startup sounds
+    /// </summary>
     public partial class BGMLoader
     {
         public const string GUID = "com.bepis.bgmloader";
         public const string PluginName = "BGM Loader";
         public const string Version = Metadata.PluginsVersion;
-        internal static new ManualLogSource Logger;
+        public static string IntroClipsDirectory = Utility.CombinePaths(Paths.PluginPath, "introclips");
+        public static string BGMDirectory = Utility.CombinePaths(Paths.PluginPath, "bgm");
 
-        public BGMLoader()
+        public void Awake()
         {
-            Hooks.InstallHooks();
+            ResourceRedirection.EnableSyncOverAsyncAssetLoads();
 
-            ResourceRedirector.ResourceRedirector.AssetResolvers.Add(HandleAsset);
-            Logger = base.Logger;
+            if (Directory.Exists(IntroClipsDirectory))
+                ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(LoadIntroClips);
+            if (Directory.Exists(BGMDirectory))
+                ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(LoadBGM);
         }
 
-        public static bool HandleAsset(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
+        public void LoadIntroClips(IAssetLoadingContext context)
         {
-            if (assetName.StartsWith("bgm") && assetName.Length > 4)
+            if (context.Bundle.name.StartsWith("sound/data/systemse/brandcall/") || context.Bundle.name.StartsWith("sound/data/systemse/titlecall/"))
             {
-                int bgmTrack = int.Parse(assetName.Remove(0, 4));
+                var files = Directory.GetFiles(IntroClipsDirectory, "*.wav");
 
-                var path = Utility.CombinePaths(Paths.PluginPath, "bgm", $"BGM{bgmTrack:00}.ogg");
+                if (files.Length == 0)
+                    return;
+
+                var path = files[Random.Range(0, files.Length - 1)];
+
+                context.Asset = AudioLoader.LoadAudioClip(path, AudioType.WAV);
+                context.Complete();
+            }
+        }
+
+        public void LoadBGM(IAssetLoadingContext context)
+        {
+            if (context.Parameters.Name != null && context.Parameters.Name.StartsWith("bgm", System.StringComparison.InvariantCultureIgnoreCase) && context.Parameters.Name.Length > 4)
+            {
+                int bgmTrack = int.Parse(context.Parameters.Name.Substring(context.Parameters.Name.Length - 2, 2));
+                var path = Utility.CombinePaths(BGMDirectory, $"BGM{bgmTrack:00}.ogg");
 
                 if (File.Exists(path))
                 {
-                    Logger.Log(LogLevel.Info, $"Loading BGM track \"{(BGM)bgmTrack}\" from {path}");
+                    Logger.LogDebug($"Loading BGM track \"{(BGM)bgmTrack}\" from {path}");
 
-                    result = new AssetBundleLoadAssetOperationSimulation(AudioLoader.LoadVorbis(path));
-
-                    return true;
+                    context.Asset = AudioLoader.LoadVorbis(path);
+                    context.Complete();
                 }
             }
-
-            result = null;
-            return false;
         }
     }
 }

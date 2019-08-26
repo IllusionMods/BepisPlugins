@@ -81,7 +81,7 @@ namespace Sideloader.AutoResolver
 
             foreach (ObjectInfo oi in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
             {
-                if (oi is OIItemInfo Item && Item.no >= 100000000)
+                if (oi is OIItemInfo Item && Item.no >= UniversalAutoResolver.BaseSlotID)
                 {
                     StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Item.no).FirstOrDefault();
                     if (extResolve != null)
@@ -102,7 +102,7 @@ namespace Sideloader.AutoResolver
                         Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
                     }
                 }
-                else if (oi is OILightInfo Light && Light.no >= 100000000)
+                else if (oi is OILightInfo Light && Light.no >= UniversalAutoResolver.BaseSlotID)
                 {
                     StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Light.no).FirstOrDefault();
                     if (extResolve != null)
@@ -131,7 +131,7 @@ namespace Sideloader.AutoResolver
 
             //Add the extended data for the map, if any
             int mapID = Studio.Studio.Instance.sceneInfo.map;
-            if (mapID > 100000000)
+            if (mapID > UniversalAutoResolver.BaseSlotID)
             {
                 StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == mapID).FirstOrDefault();
                 if (extResolve != null)
@@ -147,7 +147,7 @@ namespace Sideloader.AutoResolver
 
             //Add the extended data for the filter, if any
             int filterID = Studio.Studio.Instance.sceneInfo.aceNo;
-            if (filterID > 100000000)
+            if (filterID > UniversalAutoResolver.BaseSlotID)
             {
                 StudioResolveInfo extResolve = UniversalAutoResolver.LoadedStudioResolutionInfo.Where(x => x.LocalSlot == filterID).FirstOrDefault();
                 if (extResolve != null)
@@ -163,7 +163,7 @@ namespace Sideloader.AutoResolver
 
             //Add the extended data for the ramp, if any
             int rampID = Studio.Studio.Instance.sceneInfo.rampG;
-            if (rampID > 100000000)
+            if (rampID > UniversalAutoResolver.BaseSlotID)
             {
                 ResolveInfo extResolve = UniversalAutoResolver.TryGetResolutionInfo("Ramp", rampID);
                 if (extResolve != null)
@@ -256,7 +256,7 @@ namespace Sideloader.AutoResolver
             __state = -1;
             foreach (Data data in __instance.Datas)
                 if (data is Config.EtceteraSystem etceteraSystem)
-                    if (etceteraSystem.rampId >= 100000000)
+                    if (etceteraSystem.rampId >= UniversalAutoResolver.BaseSlotID)
                     {
                         ResolveInfo RampResolveInfo = UniversalAutoResolver.LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.LocalSlot == etceteraSystem.rampId);
                         if (RampResolveInfo == null)
@@ -278,7 +278,7 @@ namespace Sideloader.AutoResolver
         public static void XMLWritePostfix(Control __instance, ref int __state)
         {
             int rampId = __state;
-            if (rampId >= 100000000)
+            if (rampId >= UniversalAutoResolver.BaseSlotID)
                 foreach (Data data in __instance.Datas)
                     if (data is Config.EtceteraSystem etceteraSystem)
                     {
@@ -300,7 +300,7 @@ namespace Sideloader.AutoResolver
         {
             foreach (Data data in __instance.Datas)
                 if (data is Config.EtceteraSystem etceteraSystem)
-                    if (etceteraSystem.rampId >= 100000000) //Saved with a resolved ID, reset it to default
+                    if (etceteraSystem.rampId >= UniversalAutoResolver.BaseSlotID) //Saved with a resolved ID, reset it to default
                         etceteraSystem.rampId = 1;
                     else
                     {
