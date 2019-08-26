@@ -32,80 +32,134 @@ namespace Screencap
 
         #region Config properties
 
-        public static SavedKeyboardShortcut KeyCapture { get; private set; }
-        public static SavedKeyboardShortcut KeyCaptureAlpha { get; private set; }
-        public static SavedKeyboardShortcut KeyCapture360 { get; private set; }
-        public static SavedKeyboardShortcut KeyGui { get; private set; }
-        public static SavedKeyboardShortcut KeyCaptureAlphaIn3D { get; private set; }
-        public static SavedKeyboardShortcut KeyCapture360in3D { get; private set; }
+        public static ConfigWrapper<KeyboardShortcut> KeyCapture { get; private set; }
+        public static ConfigWrapper<KeyboardShortcut> KeyCaptureAlpha { get; private set; }
+        public static ConfigWrapper<KeyboardShortcut> KeyCapture360 { get; private set; }
+        public static ConfigWrapper<KeyboardShortcut> KeyGui { get; private set; }
+        public static ConfigWrapper<KeyboardShortcut> KeyCaptureAlphaIn3D { get; private set; }
+        public static ConfigWrapper<KeyboardShortcut> KeyCapture360in3D { get; private set; }
 
-        [AcceptableValueRange(ScreenshotSizeMin, ScreenshotSizeMax, false)]
         public static ConfigWrapper<int> ResolutionX { get; private set; }
-
-        [AcceptableValueRange(ScreenshotSizeMin, ScreenshotSizeMax, false)]
         public static ConfigWrapper<int> ResolutionY { get; private set; }
-
-        [AcceptableValueList(new object[] { 1024, 2048, 4096, 8192 })]
         public static ConfigWrapper<int> Resolution360 { get; private set; }
-
-        [AcceptableValueRange(1, 4, false)]
         public static ConfigWrapper<int> DownscalingRate { get; private set; }
-
-        [AcceptableValueRange(1, 4, false)]
         public static ConfigWrapper<int> CardDownscalingRate { get; private set; }
-
         public static ConfigWrapper<bool> CaptureAlpha { get; private set; }
-
         public static ConfigWrapper<bool> ScreenshotMessage { get; private set; }
-
-        [AcceptableValueRange(0.01f, 0.5f, false)]
         public static ConfigWrapper<float> EyeSeparation { get; private set; }
-
-        [AcceptableValueRange(0f, 1f)]
         public static ConfigWrapper<float> ImageSeparationOffset { get; private set; }
-
         public static ConfigWrapper<bool> UseJpg { get; private set; }
-
-        [AcceptableValueRange(1, 100, true)]
         public static ConfigWrapper<int> JpgQuality { get; private set; }
-
-        //TODO:public static ConfigWrapper<NameFormat> ScreenshotNameFormat { get; private set; }
-
-        [Advanced(true)]
+        public static ConfigWrapper<NameFormat> ScreenshotNameFormat { get; private set; }
         public static ConfigWrapper<string> ScreenshotNameOverride { get; private set; }
+
+        private void InitializeSettings()
+        {
+            KeyCapture = Config.GetSetting(
+                "Keyboard shortcuts", "Take UI screenshot",
+                new KeyboardShortcut(KeyCode.F9),
+                new ConfigDescription("Capture a simple \"as you see it\" screenshot of the game. Not affected by settings for rendered screenshots."));
+
+            KeyCaptureAlpha = Config.GetSetting(
+                "Keyboard shortcuts", "Take rendered screenshot",
+                new KeyboardShortcut(KeyCode.F11),
+                new ConfigDescription("Take a screenshot with no interface. Can be configured by other settings to increase quality and turn on transparency."));
+
+            KeyCapture360 = Config.GetSetting(
+                "Keyboard shortcuts",
+                "Take 360 screenshot",
+                new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl),
+                new ConfigDescription("Captures a 360 screenshot around current camera. The created image is in equirectangular format and can be viewed by most 360 image viewers (e.g. Google Cardboard)."));
+
+            KeyGui = Config.GetSetting(
+                "Keyboard shortcuts", "Open settings window",
+                new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift),
+                new ConfigDescription("Open a quick access window with the most common settings."));
+
+            KeyCaptureAlphaIn3D = Config.GetSetting(
+                "Keyboard shortcuts", "Take rendered 3D screenshot",
+                new KeyboardShortcut(KeyCode.F11, KeyCode.LeftAlt),
+                new ConfigDescription("Capture a high quality screenshot without UI in stereoscopic 3D (2 captures for each eye in one image). These images can be viewed by crossing your eyes or any stereoscopic image viewer."));
+
+            KeyCapture360in3D = Config.GetSetting(
+                "Keyboard shortcuts", "Take 360 3D screenshot",
+                new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl, KeyCode.LeftShift),
+                new ConfigDescription("Captures a 360 screenshot around current camera in stereoscopic 3D (2 captures for each eye in one image). These images can be viewed by image viewers supporting 3D stereo format (e.g. VR Media Player - 360° Viewer)."));
+
+            Resolution360 = Config.GetSetting(
+                "360 Screenshots", "360 screenshot resolution",
+                4096,
+                new ConfigDescription("Horizontal resolution (width) of 360 degree/panorama screenshots. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", new AcceptableValueList<int>(1024, 2048, 4096, 8192)));
+
+            DownscalingRate = Config.GetSetting(
+                "Render Settings", "Screenshot upsampling ratio",
+                2,
+                new ConfigDescription("Capture screenshots in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4)));
+
+            CardDownscalingRate = Config.GetSetting(
+                "Render Settings", "Card image upsampling ratio",
+                3,
+                new ConfigDescription("Capture character card images in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4)));
+
+            CaptureAlpha = Config.GetSetting(
+                "Render Settings", "Transparency in rendered screenshots",
+                true,
+                new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
+
+            ScreenshotMessage = Config.GetSetting(
+                "General", "Show messages on screen",
+                true,
+                new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
+
+            ResolutionX = Config.GetSetting(
+                "Render Output Resolution", "Horizontal",
+                Screen.width,
+                new ConfigDescription("Horizontal size (width) of rendered screenshots in pixels. Doesn't affect UI and 360 screenshots.", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax)));
+
+            ResolutionY = Config.GetSetting(
+                "Render Output Resolution", "Vertical",
+                Screen.height,
+                new ConfigDescription("Vertical size (height) of rendered screenshots in pixels. Doesn't affect UI and 360 screenshots.", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax)));
+
+            EyeSeparation = Config.GetSetting(
+                "3D Settings", "3D screenshot eye separation",
+                0.18f,
+                new ConfigDescription("Distance between the two captured stereoscopic screenshots in arbitrary units.", new AcceptableValueRange<float>(0.01f, 0.5f)));
+
+            ImageSeparationOffset = Config.GetSetting(
+                "3D Settings", "3D screenshot image separation offset",
+                0.25f,
+                new ConfigDescription("Move images in stereoscopic screenshots closer together by this percentage (discards overlapping parts). Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.", new AcceptableValueRange<float>(0f, 1f)));
+
+            UseJpg = Config.GetSetting(
+                "JPG Settings", "Save screenshots as .jpg instead of .png",
+                false,
+                new ConfigDescription("Save screenshots in lower quality in return for smaller file sizes. Transparency is NOT supported in .jpg screenshots. Strongly consider not using this option if you want to share your work."));
+
+            JpgQuality = Config.GetSetting(
+                "3D Settings", "Quality of .jpg files",
+                100,
+                new ConfigDescription("Lower quality = lower file sizes. Even 100 is worse than a .png file.", new AcceptableValueRange<int>(1, 100)));
+
+            ScreenshotNameFormat = Config.GetSetting(
+                "General", "Screenshot filename format",
+                NameFormat.NameDateType,
+                new ConfigDescription("Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)"));
+
+            ScreenshotNameOverride = Config.GetSetting(
+                "General", "Screenshot filename Name override",
+                "",
+                new ConfigDescription("Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", null, "Advanced"));
+        }
+
+        #endregion
 
         protected void Awake()
         {
-            if (Instance)
-            {
-                DestroyImmediate(this);
-                return;
-            }
             Instance = this;
             Logger = base.Logger;
 
-            KeyCapture = new SavedKeyboardShortcut(Config, "Take UI screenshot", "Capture a simple \"as you see it\" screenshot of the game. Not affected by settings for rendered screenshots.", new KeyboardShortcut(KeyCode.F9));
-            KeyCaptureAlpha = new SavedKeyboardShortcut(Config, "Take rendered screenshot", null, new KeyboardShortcut(KeyCode.F11));
-            KeyCapture360 = new SavedKeyboardShortcut(Config, "Take 360 screenshot", "Captures a 360 screenshot around current camera. The created image is in equirectangular format and can be viewed by most 360 image viewers (e.g. Google Cardboard).", new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl));
-            KeyGui = new SavedKeyboardShortcut(Config, "Open settings window", null, new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift));
-
-            KeyCaptureAlphaIn3D = new SavedKeyboardShortcut(Config, "Take rendered 3D screenshot", "Capture a high quality screenshot without UI in stereoscopic 3D (2 captures for each eye in one image). These images can be viewed by crossing your eyes or any stereoscopic image viewer.", new KeyboardShortcut(KeyCode.F11, KeyCode.LeftAlt));
-            KeyCapture360in3D = new SavedKeyboardShortcut(Config, "Take 360 3D screenshot", "Captures a 360 screenshot around current camera in stereoscopic 3D (2 captures for each eye in one image). These images can be viewed by image viewers supporting 3D stereo format (e.g. VR Media Player - 360° Viewer).", new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl, KeyCode.LeftShift));
-
-            Resolution360 = Config.Wrap("360 Screenshots", "360 screenshot resolution", "Horizontal resolution (width) of 360 degree/panorama screenshots. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", 4096);
-
-            DownscalingRate = Config.Wrap("Render Settings", "Screenshot upsampling ratio", "Capture screenshots in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", 2);
-            CardDownscalingRate = Config.Wrap("Render Settings", "Card image upsampling ratio", "Capture character card images in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", 3);
-            CaptureAlpha = Config.Wrap("Render Settings", "Transparency in rendered screenshots", "Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio.", true);
-            ScreenshotMessage = Config.Wrap("General", "Show messages on screen", "Whether screenshot messages will be displayed on screen. Messages will still be written to the log.", true);
-            ResolutionX = Config.Wrap("Render Output Resolution", "Horizontal", "Horizontal size (width) of rendered screenshots in pixels. Doesn't affect UI and 360 screenshots.", Screen.width);
-            ResolutionY = Config.Wrap("Render Output Resolution", "Vertical", "Vertical size (height) of rendered screenshots in pixels. Doesn't affect UI and 360 screenshots.", Screen.height);
-            EyeSeparation = Config.Wrap("3D Settings", "3D screenshot eye separation", "Distance between the two captured stereoscopic screenshots in arbitrary units.", 0.18f);
-            ImageSeparationOffset = Config.Wrap("3D Settings", "3D screenshot image separation offset", "Move images in stereoscopic screenshots closer together by this percentage (discards overlapping parts). Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.", 0.25f);
-            UseJpg = Config.Wrap("JPG Settings", "Save screenshots as .jpg instead of .png", "Save screenshots in lower quality in return for smaller file sizes. Transparency is NOT supported in .jpg screenshots. Strongly consider not using this option if you want to share your work.", false);
-            JpgQuality = Config.Wrap("3D Settings", "Quality of .jpg files", "Lower quality = lower file sizes. Even 100 is worse than a .png file.", 100);
-            //TODO:ScreenshotNameFormat = Config.Wrap("General", "Screenshot filename format", "Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)", NameFormat.NameDateType);
-            ScreenshotNameOverride = Config.Wrap("General", "Screenshot filename Name override", "Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", "");
+            InitializeSettings();
 
             ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
             ResolutionY.SettingChanged += (sender, args) => ResolutionYBuffer = ResolutionY.Value.ToString();
@@ -120,7 +174,6 @@ namespace Screencap
 
             I360Render.Init();
         }
-        #endregion
 
         private string GetUniqueFilename(string capType)
         {
@@ -133,31 +186,29 @@ namespace Screencap
 
             var extension = UseJpg.Value ? "jpg" : "png";
 
-            //TODO:
-            filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
-            //switch (ScreenshotNameFormat.Value)
-            //{
-            //    case NameFormat.NameDate:
-            //        filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-            //        break;
-            //    case NameFormat.NameTypeDate:
-            //        filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-            //        break;
-            //    case NameFormat.NameDateType:
-            //        filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
-            //        break;
-            //    case NameFormat.TypeDate:
-            //        filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-            //        break;
-            //    case NameFormat.TypeNameDate:
-            //        filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-            //        break;
-            //    case NameFormat.Date:
-            //        filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
-            //}
+            switch (ScreenshotNameFormat.Value)
+            {
+                case NameFormat.NameDate:
+                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    break;
+                case NameFormat.NameTypeDate:
+                    filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    break;
+                case NameFormat.NameDateType:
+                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
+                    break;
+                case NameFormat.TypeDate:
+                    filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    break;
+                case NameFormat.TypeNameDate:
+                    filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    break;
+                case NameFormat.Date:
+                    filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
+            }
 
             return Path.GetFullPath(Path.Combine(screenshotDir, filename));
         }
@@ -174,17 +225,17 @@ namespace Screencap
 
         protected void Update()
         {
-            if (KeyGui.IsDown())
+            if (KeyGui.Value.IsDown())
             {
                 uiShow = !uiShow;
                 ResolutionXBuffer = ResolutionX.Value.ToString();
                 ResolutionYBuffer = ResolutionY.Value.ToString();
             }
-            else if (KeyCaptureAlpha.IsDown()) StartCoroutine(TakeCharScreenshot(false));
-            else if (KeyCapture.IsDown()) TakeScreenshot();
-            else if (KeyCapture360.IsDown()) StartCoroutine(Take360Screenshot(false));
-            else if (KeyCaptureAlphaIn3D.IsDown()) StartCoroutine(TakeCharScreenshot(true));
-            else if (KeyCapture360in3D.IsDown()) StartCoroutine(Take360Screenshot(true));
+            else if (KeyCaptureAlpha.Value.IsDown()) StartCoroutine(TakeCharScreenshot(false));
+            else if (KeyCapture.Value.IsDown()) TakeScreenshot();
+            else if (KeyCapture360.Value.IsDown()) StartCoroutine(Take360Screenshot(false));
+            else if (KeyCaptureAlphaIn3D.Value.IsDown()) StartCoroutine(TakeCharScreenshot(true));
+            else if (KeyCapture360in3D.Value.IsDown()) StartCoroutine(Take360Screenshot(true));
         }
 
         private void TakeScreenshot()
@@ -354,7 +405,7 @@ namespace Screencap
             return result;
         }
 
-#region UI
+        #region UI
         private readonly int uiWindowHash = GUID.GetHashCode();
         private Rect uiRect = new Rect(20, Screen.height / 2 - 150, 160, 223);
         private bool uiShow = false;
@@ -494,7 +545,7 @@ namespace Screencap
 
                 GUI.DragWindow();
             }
-#endregion
+            #endregion
         }
     }
 }
