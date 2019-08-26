@@ -52,11 +52,11 @@ namespace Sideloader
             ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
             ResourceRedirector.ResourceRedirector.AssetBundleResolvers.Add(AssetBundleRedirectHook);
 
-            MissingModWarning = Config.Wrap("Settings", "Show missing mod warnings", "Whether missing mod warnings will be displayed on screen. Messages will still be written to the log.", true);
-            DebugLogging = Config.Wrap("Settings", "Debug logging", "Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes.", false);
-            DebugResolveInfoLogging = Config.Wrap("Settings", "Debug resolve info logging", "Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes.", false);
-            KeepMissingAccessories = Config.Wrap("Settings", "Keep missing accessories", "Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.", false);
-            AdditionalModsDirectory = Config.Wrap("General", "Additional mods directory", "Additional directory to load zipmods from.", FindKoiZipmodDir());
+            MissingModWarning = Config.GetSetting("Settings", "Show missing mod warnings", true, new ConfigDescription("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log."));
+            DebugLogging = Config.GetSetting("Settings", "Debug logging", false, new ConfigDescription("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes."));
+            DebugResolveInfoLogging = Config.GetSetting("Settings", "Debug resolve info logging", false, new ConfigDescription("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes."));
+            KeepMissingAccessories = Config.GetSetting("Settings", "Keep missing accessories", false, new ConfigDescription("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker."));
+            AdditionalModsDirectory = Config.GetSetting("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
 
             if (!Directory.Exists(ModsDirectory))
                 Logger.Log(LogLevel.Warning, "Could not find the mods directory: " + ModsDirectory);

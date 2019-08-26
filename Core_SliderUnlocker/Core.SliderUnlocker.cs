@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepisPlugins;
 using HarmonyLib;
@@ -38,16 +37,13 @@ namespace SliderUnlocker
         /// <summary> Minimum value of sliders when not dynamically unlocked </summary>
         internal static float SliderMin => (Minimum.Value > 0 ? 0 : Minimum.Value) / 100f;
 
-        [AcceptableValueRange(-500, 0, false)]
         public static ConfigWrapper<int> Minimum { get; private set; }
-
-        [AcceptableValueRange(100, 500, false)]
         public static ConfigWrapper<int> Maximum { get; private set; }
 
         public SliderUnlocker()
         {
-            Minimum = Config.Wrap("Slider Limits", "Minimum slider value", "Changes will take effect next time the editor is loaded or a character is loaded.", 0);
-            Maximum = Config.Wrap("Slider Limits", "Maximum slider value", "Changes will take effect next time the editor is loaded or a character is loaded.", 100);
+            Minimum = Config.GetSetting("Slider Limits", "Minimum slider value", -100, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(-500, 0)));
+            Maximum = Config.GetSetting("Slider Limits", "Maximum slider value", 200, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(100, 500)));
         }
 
         protected void Awake()
