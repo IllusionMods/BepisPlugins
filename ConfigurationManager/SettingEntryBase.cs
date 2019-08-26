@@ -74,11 +74,6 @@ namespace ConfigurationManager
 
         public Func<string, object> StrToObj { get; internal set; }
 
-        /// <summary>
-        ///     todo from property that checks canread canwrite
-        ///     from method that shows a button?
-        ///     change to inheritance? or isbutton and ignore set argument
-        /// </summary>
         protected void SetFromAttributes(object[] attribs, BaseUnityPlugin pluginInstance)
         {
 			PluginInstance = pluginInstance;
@@ -102,9 +97,20 @@ namespace ConfigurationManager
 
 			CustomDrawer = attribs.OfType<CustomSettingDrawAttribute>().FirstOrDefault();
 
-			ReadOnly = attribs.OfType<ReadOnlyAttribute>().FirstOrDefault()?.IsReadOnly;
-            Browsable = attribs.OfType<BrowsableAttribute>().FirstOrDefault()?.Browsable;
-            IsAdvanced = attribs.OfType<AdvancedAttribute>().FirstOrDefault()?.IsAdvanced;
+            bool HasStringValue(string val)
+            {
+                return attribs.OfType<string>().Contains(val, StringComparer.OrdinalIgnoreCase);
+            }
+
+            if (HasStringValue("ReadOnly")) ReadOnly = true;
+            else ReadOnly = attribs.OfType<ReadOnlyAttribute>().FirstOrDefault()?.IsReadOnly;
+
+            if (HasStringValue("Browsable")) Browsable = true;
+            else if(HasStringValue("Unbrowsable") || HasStringValue("Hidden")) Browsable = false;
+            else Browsable = attribs.OfType<BrowsableAttribute>().FirstOrDefault()?.Browsable;
+
+            if (HasStringValue("Advanced")) IsAdvanced = true;
+            else IsAdvanced = attribs.OfType<AdvancedAttribute>().FirstOrDefault()?.IsAdvanced;
         }
     }
 }
