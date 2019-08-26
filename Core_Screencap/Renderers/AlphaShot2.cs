@@ -60,7 +60,8 @@ namespace alphaShot
         }
 
         public Texture2D CaptureTex(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
-        {
+        {   
+            Shader.SetGlobalInt("_alpha_a", 1);
             Texture2D fullSizeCapture = null;
             int newWidth = ResolutionX * DownscalingRate;
             int newHeight = ResolutionY * DownscalingRate;
