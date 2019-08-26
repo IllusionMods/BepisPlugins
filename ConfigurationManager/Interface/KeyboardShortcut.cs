@@ -14,8 +14,9 @@ namespace BepInEx
     ///     Use SavedKeyboardShortcut to allow user to change this shortcut and have the changes saved.
     ///     How to use: Use IsDown instead of the Imput.GetKeyDown in the Update loop.
     /// </summary>
-    public class KeyboardShortcut
-    {
+	[Obsolete("Use the one in BepInEx.Configuration namespace")]
+	public class KeyboardShortcut
+	{
         public static readonly KeyboardShortcut Empty = new KeyboardShortcut(KeyCode.None);
 
         public static readonly IEnumerable<KeyCode> AllKeyCodes = (KeyCode[])Enum.GetValues(typeof(KeyCode));

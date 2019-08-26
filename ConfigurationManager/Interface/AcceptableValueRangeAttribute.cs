@@ -9,8 +9,9 @@ namespace BepInEx
     ///     Specify the range of acceptable values for this variable. It will allow the configuration window to show a slider
     ///     and filter inputs.
     /// </summary>
+	[Obsolete("Use the one in BepInEx.Configuration namespace")]
     public sealed class AcceptableValueRangeAttribute : AcceptableValueBaseAttribute
-    {
+	{
         /// <param name="minValue">Lowest acceptable value</param>
         /// <param name="maxValue">Highest acceptable value</param>
         /// <param name="showAsPercentage">

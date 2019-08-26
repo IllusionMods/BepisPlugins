@@ -30,9 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BepInEx, Version=3.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="BepInEx">
       <HintPath>..\lib\BepInEx5\BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx.BepIn4Patcher">
+      <HintPath>..\lib\BepInEx5\BepInEx.BepIn4Patcher.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -43,7 +46,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BepInExSettings.cs" />
+    <Compile Include="ConfigSettingEntry.cs" />
     <Compile Include="Interface\AcceptableValueBaseAttribute.cs" />
     <Compile Include="Interface\AcceptableValueListAttribute.cs" />
     <Compile Include="Interface\AcceptableValueRangeAttribute.cs" />
@@ -55,7 +58,7 @@
     <Compile Include="Interface\KeyboardShortcut.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Interface\SavedKeyboardShortcut.cs" />
-    <Compile Include="SettingEntry.cs" />
+    <Compile Include="LegacySettingEntry.cs" />
     <Compile Include="SettingEntryBase.cs" />
     <Compile Include="SettingFieldDrawer.cs" />
     <Compile Include="Utilities\FieldToPropertyInfoWrapper.cs" />

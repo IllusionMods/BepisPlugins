@@ -20,7 +20,7 @@ namespace ConfigurationManager
     {
         public const string GUID = "com.bepis.bepinex.configurationmanager";
         public const string Version = Metadata.PluginsVersion;
-        internal static new ManualLogSource Logger;
+        internal new static ManualLogSource Logger;
 
         private static readonly GUIContent KeyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
             "The first key is the main key, while the rest are modifiers.\n" +
@@ -34,15 +34,15 @@ namespace ConfigurationManager
         public event EventHandler<ValueChangedEventArgs<bool>> DisplayingWindowChanged;
         public Action KeyPressedOverride;
 
-        private Dictionary<Type, Action<PropSettingEntry>> _settingDrawHandlers;
+        private Dictionary<Type, Action<SettingEntryBase>> _settingDrawHandlers;
 
         private bool _displayingWindow;
 
         private readonly SettingFieldDrawer _fieldDrawer = new SettingFieldDrawer();
         private string _modsWithoutSettings;
 
-        private List<PropSettingEntry> _allSettings;
-        private List<IGrouping<BepInPlugin, PropSettingEntry>> _filteredSetings;
+        private List<SettingEntryBase> _allSettings;
+        private List<IGrouping<BepInPlugin, SettingEntryBase>> _filteredSetings;
 
         private Rect _settingWindowRect, _screenRect;
         private Vector2 _settingWindowScrollPos;
@@ -59,9 +59,9 @@ namespace ConfigurationManager
         public ConfigurationManager()
         {
             Logger = base.Logger;
-            _showAdvanced = Config.Wrap("", "Show advanced", "", false);
-            _showKeybinds = Config.Wrap("", "Show keybinds", "", true);
-            _showSettings = Config.Wrap("", "Show settings", "", true);
+            _showAdvanced = Config.GetSetting("Filtering", "Show advanced", false);
+            _showKeybinds = Config.GetSetting("Filtering", "Show keybinds", true);
+            _showSettings = Config.GetSetting("Filtering", "Show settings", true);
         }
 
         public bool DisplayingWindow
@@ -97,7 +97,7 @@ namespace ConfigurationManager
 
         private void BuildFilteredSettingList()
         {
-            IEnumerable<PropSettingEntry> results = _allSettings;
+            IEnumerable<SettingEntryBase> results = _allSettings;
 
             if (!string.IsNullOrEmpty(_searchString))
             {
@@ -108,12 +108,17 @@ namespace ConfigurationManager
                 if (!_showAdvanced.Value)
                     results = results.Where(x => x.IsAdvanced != true);
                 if (!_showKeybinds.Value)
-                    results = results.Where(x => x.SettingType != typeof(KeyboardShortcut));
+                    results = results.Where(x => !IsKeyboardShortcut(x));
                 if (!_showSettings.Value)
-                    results = results.Where(x => x.IsAdvanced == true || x.SettingType == typeof(KeyboardShortcut));
+                    results = results.Where(x => x.IsAdvanced == true || IsKeyboardShortcut(x));
             }
 
             _filteredSetings = results.GroupBy(x => x.PluginInfo).OrderBy(x => x.Key.Name).ToList();
+        }
+
+        private static bool IsKeyboardShortcut(SettingEntryBase x)
+        {
+            return x.SettingType == typeof(BepInEx.KeyboardShortcut) || x.SettingType == typeof(BepInEx.Configuration.KeyboardShortcut);
         }
 
         private static bool ContainsSearchString(SettingEntryBase setting, string searchString)
@@ -299,75 +304,64 @@ namespace ConfigurationManager
             }
         }
 
-        private void DrawSinglePlugin(IGrouping<BepInPlugin, PropSettingEntry> plugin)
+        private void DrawSinglePlugin(IGrouping<BepInPlugin, SettingEntryBase> plugin)
         {
             GUILayout.BeginVertical(GUI.skin.box);
-            {
-                if (_showDebug)
-                    _fieldDrawer.DrawCenteredLabel(new GUIContent($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}", "GUID: " + plugin.Key.GUID));
-                else
-                    _fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}");
+			{
+				if (_showDebug)
+					_fieldDrawer.DrawCenteredLabel(new GUIContent($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}", "GUID: " + plugin.Key.GUID));
+				else
+					_fieldDrawer.DrawCenteredLabel($"{plugin.Key.Name.TrimStart('!')} {plugin.Key.Version}");
 
-                foreach (var category in plugin.Select(x => new
-                {
-                    plugin = x,
-                    category = x.SettingType == typeof(KeyboardShortcut)
-                            ? KeyboardShortcutsCategoryName
-                            : new GUIContent(x.Category)
-                })
-                    .GroupBy(a => a.category.text)
-                    .OrderBy(x => string.Equals(x.Key, KeyboardShortcutsCategoryName.text, StringComparison.Ordinal))
-                    .ThenBy(x => x.Key))
-                {
-                    if (!string.IsNullOrEmpty(category.Key))
-                        _fieldDrawer.DrawCenteredLabel(category.First().category);
+				foreach (var category in plugin.Select(x => new
+				{
+					plugin = x,
+					category = GetCategory(x)
+				})
+					.GroupBy(a => a.category.text)
+					.OrderBy(x => string.Equals(x.Key, KeyboardShortcutsCategoryName.text, StringComparison.Ordinal))
+					.ThenBy(x => x.Key))
+				{
+					if (!string.IsNullOrEmpty(category.Key))
+						_fieldDrawer.DrawCenteredLabel(category.First().category);
 
-                    foreach (var setting in category.OrderBy(x => x.plugin.DispName))
-                    {
-                        DrawSingleSetting(setting.plugin);
-                        GUILayout.Space(2);
-                    }
-                }
-            }
-            GUILayout.EndVertical();
+					foreach (var setting in category.OrderBy(x => x.plugin.DispName))
+					{
+						DrawSingleSetting(setting.plugin);
+						GUILayout.Space(2);
+					}
+				}
+			}
+			GUILayout.EndVertical();
         }
 
-        private void DrawSingleSetting(PropSettingEntry setting)
+		private static GUIContent GetCategory(SettingEntryBase x)
+		{
+			// Legacy behavior
+			if (x.SettingType == typeof(BepInEx.KeyboardShortcut)) return KeyboardShortcutsCategoryName;
+
+			return new GUIContent(x.Category);
+		}
+
+		private void DrawSingleSetting(SettingEntryBase setting)
         {
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label(new GUIContent(setting.DispName.TrimStart('!'), setting.Description),
                     GUILayout.Width(_leftColumnWidth), GUILayout.MaxWidth(_leftColumnWidth));
 
-                if (setting.AcceptableValues is CustomSettingDrawAttribute customDrawer)
-                    customDrawer.Run(setting.PluginInstance);
-                else if (setting.AcceptableValues is AcceptableValueRangeAttribute range)
-                    _fieldDrawer.DrawRangeField(setting, range);
-                else if (setting.AcceptableValues is AcceptableValueListAttribute list)
-                {
-                    try
-                    {
-                        var acceptableValues = list.GetAcceptableValues(setting.PluginInstance);
-                        if (acceptableValues == null || acceptableValues.Length == 0)
-                            throw new ArgumentException("AcceptableValueListAttribute returned a null or empty list of acceptable values. You need to supply at least 1 option.");
+                if (setting.CustomDrawer != null)
+	                setting.CustomDrawer.Run(setting.PluginInstance);
+                else if (setting.ShowRangeAsPercent != null)
+                    _fieldDrawer.DrawRangeField(setting);
+                else if (setting.AcceptableValues != null)
+		            DrawListField(setting);
+	            else if (setting.SettingType.IsEnum)
+		            _fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType), _settingWindowRect.yMax);
+	            else
+		            DrawFieldBasedOnValueType(setting);
 
-                        if (!setting.SettingType.IsInstanceOfType(acceptableValues.FirstOrDefault(x => x != null)))
-                            throw new ArgumentException("AcceptableValueListAttribute returned a list with items of type other than the settng type itself.");
-
-                        _fieldDrawer.DrawComboboxField(setting, acceptableValues, _settingWindowRect.yMax);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log(LogLevel.Error, "[ConfigManager] Failed to get acceptable values - " + ex);
-                        GUILayout.Label("Failed to get dropdown values");
-                    }
-                }
-                else if (setting.SettingType.IsEnum)
-                    _fieldDrawer.DrawComboboxField(setting, Enum.GetValues(setting.SettingType), _settingWindowRect.yMax);
-                else
-                    DrawFieldBasedOnValueType(setting);
-
-                if (setting.DefaultValue != null)
+	            if (setting.DefaultValue != null)
                 {
                     if (DrawDefaultButton())
                         setting.Set(setting.DefaultValue);
@@ -379,10 +373,36 @@ namespace ConfigurationManager
                     if (method != null && DrawDefaultButton())
                         method.Invoke(setting.Wrapper, null);
                 }
+				else if (setting.SettingType.IsClass)
+                {
+					if (DrawDefaultButton())
+						setting.Set(null);
+				}
             }
             GUILayout.EndHorizontal();
         }
-        private void DrawFieldBasedOnValueType(PropSettingEntry setting)
+
+		private void DrawListField(SettingEntryBase setting)
+		{
+			try
+			{
+				var acceptableValues = setting.AcceptableValues;
+				if (acceptableValues.Length == 0)
+					throw new ArgumentException("AcceptableValueListAttribute returned an empty list of acceptable values. You need to supply at least 1 option.");
+
+				if (!setting.SettingType.IsInstanceOfType(acceptableValues.FirstOrDefault(x => x != null)))
+					throw new ArgumentException("AcceptableValueListAttribute returned a list with items of type other than the settng type itself.");
+
+				_fieldDrawer.DrawComboboxField(setting, acceptableValues, _settingWindowRect.yMax);
+			}
+			catch (Exception ex)
+			{
+				Logger.Log(LogLevel.Error, "[ConfigManager] Failed to get acceptable values - " + ex);
+				GUILayout.Label("Failed to get dropdown values");
+			}
+		}
+
+		private void DrawFieldBasedOnValueType(SettingEntryBase setting)
         {
             if (_settingDrawHandlers.TryGetValue(setting.SettingType, out var drawMethod))
                 drawMethod(setting);
@@ -398,10 +418,11 @@ namespace ConfigurationManager
 
         private void Start()
         {
-            _settingDrawHandlers = new Dictionary<Type, Action<PropSettingEntry>>
+            _settingDrawHandlers = new Dictionary<Type, Action<SettingEntryBase>>
             {
                 {typeof(bool), _fieldDrawer.DrawBoolField},
-                {typeof(KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut}
+                {typeof(BepInEx.KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut},
+                {typeof(BepInEx.Configuration.KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut}
             };
 
             var background = new Texture2D(1, 1, TextureFormat.ARGB32, false);

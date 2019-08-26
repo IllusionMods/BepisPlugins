@@ -3,20 +3,24 @@
 
 using BepInEx;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
+using BepInEx.Configuration;
 
 namespace ConfigurationManager
 {
     internal abstract class SettingEntryBase
     {
-        public AcceptableValueBaseAttribute AcceptableValues { get; internal set; }
+        public object[] AcceptableValues { get; protected set; }
+        public KeyValuePair<object, object> AcceptableValueRange { get; protected set; }
+        public bool? ShowRangeAsPercent { get; protected set; }
+	    public CustomSettingDrawAttribute CustomDrawer { get; private set; }
 
-        /// <summary>
-        ///     Show this setting in the settings screen at all? If false, don't show.
-        /// </summary>
-        public bool? Browsable { get; internal set; }
+		/// <summary>
+		///     Show this setting in the settings screen at all? If false, don't show.
+		/// </summary>
+		public bool? Browsable { get; internal set; }
 
         /// <summary>
         ///     Category the setting is under. Null to be directly under the plugin.
@@ -38,10 +42,10 @@ namespace ConfigurationManager
         /// </summary>
         public virtual string DispName { get; internal set; }
 
-        /// <summary>
-        ///     Plugin this setting belongs to
-        /// </summary>
-        public BepInPlugin PluginInfo { get; internal set; }
+	    /// <summary>
+	    ///     Plugin this setting belongs to
+	    /// </summary>
+	    public BepInPlugin PluginInfo { get; internal set; }
 
         /// <summary>
         ///     Only allow showing of the value. False whenever possible by default.
@@ -66,26 +70,39 @@ namespace ConfigurationManager
         public abstract object Get();
         public abstract void Set(object newVal);
 
+        public Func<object, string> ObjToStr { get; internal set; }
+
+        public Func<string, object> StrToObj { get; internal set; }
+
         /// <summary>
         ///     todo from property that checks canread canwrite
         ///     from method that shows a button?
         ///     change to inheritance? or isbutton and ignore set argument
         /// </summary>
-        public void SetFromAttributes(MemberInfo settingProp, BepInPlugin pluginInfo, BaseUnityPlugin pluginInstance)
+        protected void SetFromAttributes(object[] attribs, BaseUnityPlugin pluginInstance)
         {
-            PluginInstance = pluginInstance;
-
-            PluginInfo = pluginInfo;
-
-            var attribs = settingProp.GetCustomAttributes(false);
+			PluginInstance = pluginInstance;
+            PluginInfo = pluginInstance?.Info.Metadata;
+            
+            if (attribs == null || attribs.Length == 0) return;
 
             DispName = attribs.OfType<DisplayNameAttribute>().FirstOrDefault()?.DisplayName;
             Category = attribs.OfType<CategoryAttribute>().FirstOrDefault()?.Category;
             Description = attribs.OfType<DescriptionAttribute>().FirstOrDefault()?.Description;
             DefaultValue = attribs.OfType<DefaultValueAttribute>().FirstOrDefault()?.Value;
-            AcceptableValues = attribs.OfType<AcceptableValueBaseAttribute>().FirstOrDefault();
 
-            ReadOnly = attribs.OfType<ReadOnlyAttribute>().FirstOrDefault()?.IsReadOnly;
+            var acc = attribs.OfType<AcceptableValueBaseAttribute>().FirstOrDefault();
+            if (acc is AcceptableValueListAttribute accList)
+                AcceptableValues = accList.GetAcceptableValues(pluginInstance);
+            else if (acc is AcceptableValueRangeAttribute accRange)
+            {
+                AcceptableValueRange = new KeyValuePair<object, object>(accRange.MinValue, accRange.MaxValue);
+                ShowRangeAsPercent = accRange.ShowAsPercentage;
+            }
+
+			CustomDrawer = attribs.OfType<CustomSettingDrawAttribute>().FirstOrDefault();
+
+			ReadOnly = attribs.OfType<ReadOnlyAttribute>().FirstOrDefault()?.IsReadOnly;
             Browsable = attribs.OfType<BrowsableAttribute>().FirstOrDefault()?.Browsable;
             IsAdvanced = attribs.OfType<AdvancedAttribute>().FirstOrDefault()?.IsAdvanced;
         }

@@ -1,6 +1,6 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using ConfigurationManager.Utilities;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,22 +19,25 @@ namespace ConfigurationManager
             "OnGUI"
         };
 
-        public static void CollectSettings(out IEnumerable<PropSettingEntry> results, out List<string> modsWithoutSettings, bool showDebug)
+        // todo set to false
+        private static readonly Type _bepin4BaseSettingType = Type.GetType("BepInEx4.ConfigWrapper`1, BepInEx.BepIn4Patcher, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true);
+
+        public static void CollectSettings(out IEnumerable<SettingEntryBase> results, out List<string> modsWithoutSettings, bool showDebug)
         {
-            var baseSettingType = typeof(ConfigWrapper<>);
-            results = Enumerable.Empty<PropSettingEntry>();
+            var configProperty = typeof(BaseUnityPlugin).GetProperty("Config", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (configProperty == null) throw new ArgumentNullException(nameof(configProperty));
+
+            results = Enumerable.Empty<SettingEntryBase>();
             modsWithoutSettings = new List<string>();
+
+            // Core BepInEx config
+            results = results.Concat(GetBepInExConfig());
+
             foreach (var plugin in Utils.FindPlugins())
             {
                 var type = plugin.GetType();
 
-                var pluginInfo = MetadataHelper.GetMetadata(type);
-                if (pluginInfo == null)
-                {
-                    ConfigurationManager.Logger.Log(LogLevel.Error, $"Plugin {type.FullName} is missing the BepInPlugin attribute!");
-                    modsWithoutSettings.Add(type.FullName);
-                    continue;
-                }
+                var pluginInfo = plugin.Info.Metadata;
 
                 if (type.GetCustomAttributes(typeof(BrowsableAttribute), false).Cast<BrowsableAttribute>()
                     .Any(x => !x.Browsable))
@@ -43,73 +46,12 @@ namespace ConfigurationManager
                     continue;
                 }
 
-                var detected = new List<PropSettingEntry>();
+                var detected = new List<SettingEntryBase>();
 
-                // Config wrappers ------
+                var config = (ConfigFile)configProperty.GetValue(plugin, null);
+                detected.AddRange(config.GetConfigEntries().Select(x => new ConfigSettingEntry(x, plugin)).Cast<SettingEntryBase>());
 
-                var settingProps = type
-                    .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .FilterBrowsable(true, true);
-
-                var settingFields = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
-                    .Where(f => !f.IsSpecialName)
-                    .FilterBrowsable(true, true)
-                    .Select(f => new FieldToPropertyInfoWrapper(f));
-
-                var settingEntries = settingProps.Concat(settingFields.Cast<PropertyInfo>())
-                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-
-                detected.AddRange(settingEntries.Select(x => PropSettingEntry.FromConfigWrapper(plugin, x, pluginInfo, plugin)).Where(x => x != null));
-
-                // Config wrappers static ------
-
-                var settingStaticProps = type
-                    .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                    .FilterBrowsable(true, true);
-
-                var settingStaticFields = type.GetFields(BindingFlags.Static | BindingFlags.Public)
-                    .Where(f => !f.IsSpecialName)
-                    .FilterBrowsable(true, true)
-                    .Select(f => new FieldToPropertyInfoWrapper(f));
-
-                var settingStaticEntries = settingStaticProps.Concat(settingStaticFields.Cast<PropertyInfo>())
-                    .Where(x => x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-
-                detected.AddRange(settingStaticEntries.Select(x => PropSettingEntry.FromConfigWrapper(null, x, pluginInfo, plugin)).Where(x => x != null));
-
-                // Normal properties ------
-
-                bool IsPropSafeToShow(PropertyInfo p) => p.GetSetMethod()?.IsPublic == true && (p.PropertyType.IsValueType || p.PropertyType == typeof(string));
-
-                var normalPropsSafeToShow = type
-                    .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
-                    .Where(IsPropSafeToShow)
-                    .FilterBrowsable(true, true)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-
-                var normalPropsWithBrowsable = type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                    .FilterBrowsable(true, false)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-
-                var normalProps = normalPropsSafeToShow.Concat(normalPropsWithBrowsable).Distinct();
-
-                detected.AddRange(normalProps.Select(x => PropSettingEntry.FromNormalProperty(plugin, x, pluginInfo, plugin)).Where(x => x != null));
-
-                // Normal static properties ------
-
-                var normalStaticPropsSafeToShow = type
-                    .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
-                    .Where(IsPropSafeToShow)
-                    .FilterBrowsable(true, true)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-
-                var normalStaticPropsWithBrowsable = type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-                    .FilterBrowsable(true, false)
-                    .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(baseSettingType));
-
-                var normalStaticProps = normalStaticPropsSafeToShow.Concat(normalStaticPropsWithBrowsable).Distinct();
-
-                detected.AddRange(normalStaticProps.Select(x => PropSettingEntry.FromNormalProperty(null, x, pluginInfo, plugin)).Where(x => x != null));
+                detected.AddRange(GetLegacyPluginConfig(plugin).Cast<SettingEntryBase>());
 
                 detected.RemoveAll(x => x.Browsable == false);
 
@@ -119,8 +61,7 @@ namespace ConfigurationManager
                 // Allow to enable/disable plugin if it uses any update methods ------
                 if (showDebug && type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => _updateMethodNames.Contains(x.Name)))
                 {
-                    var enabledSetting =
-                        PropSettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo, plugin);
+                    var enabledSetting = LegacySettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo, plugin);
                     enabledSetting.DispName = "!Allow plugin to run on every frame";
                     enabledSetting.Description =
                         "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
@@ -138,6 +79,96 @@ namespace ConfigurationManager
                     results = results.Concat(detected);
                 }
             }
+        }
+
+        private static IEnumerable<SettingEntryBase> GetBepInExConfig()
+        {
+            var coreConfigProp = typeof(ConfigFile).GetProperty("CoreConfig", BindingFlags.Static | BindingFlags.NonPublic);
+            if (coreConfigProp == null) throw new ArgumentNullException(nameof(coreConfigProp));
+
+            var coreConfig = (ConfigFile)coreConfigProp.GetValue(null, null);
+            var bepinMeta = new BepInPlugin("BepInEx", "BepInEx", typeof(BepInEx.Bootstrap.Chainloader).Assembly.GetName().Version.ToString());
+
+            return coreConfig.GetConfigEntries()
+                .Select(x => new ConfigSettingEntry(x, null) { IsAdvanced = true, PluginInfo = bepinMeta })
+                .Cast<SettingEntryBase>();
+        }
+
+        private static IEnumerable<LegacySettingEntry> GetLegacyPluginConfig(BaseUnityPlugin plugin)
+        {
+            if (_bepin4BaseSettingType == null)
+                return Enumerable.Empty<LegacySettingEntry>();
+
+            var type = plugin.GetType();
+            var pluginInfo = plugin.Info.Metadata;
+
+            // Config wrappers ------
+
+            var settingProps = type
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .FilterBrowsable(true, true);
+
+            var settingFields = type.GetFields(BindingFlags.Instance | BindingFlags.Public)
+                .Where(f => !f.IsSpecialName)
+                .FilterBrowsable(true, true)
+                .Select(f => new FieldToPropertyInfoWrapper(f));
+
+            var settingEntries = settingProps.Concat(settingFields.Cast<PropertyInfo>())
+                .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_bepin4BaseSettingType));
+
+            var results = settingEntries.Select(x => LegacySettingEntry.FromConfigWrapper(plugin, x, pluginInfo, plugin)).Where(x => x != null);
+
+            // Config wrappers static ------
+
+            var settingStaticProps = type
+                .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .FilterBrowsable(true, true);
+
+            var settingStaticFields = type.GetFields(BindingFlags.Static | BindingFlags.Public)
+                .Where(f => !f.IsSpecialName)
+                .FilterBrowsable(true, true)
+                .Select(f => new FieldToPropertyInfoWrapper(f));
+
+            var settingStaticEntries = settingStaticProps.Concat(settingStaticFields.Cast<PropertyInfo>())
+                .Where(x => x.PropertyType.IsSubclassOfRawGeneric(_bepin4BaseSettingType));
+
+            results = results.Concat(settingStaticEntries.Select(x => LegacySettingEntry.FromConfigWrapper(null, x, pluginInfo, plugin)).Where(x => x != null));
+
+            // Normal properties ------
+
+            bool IsPropSafeToShow(PropertyInfo p) => p.GetSetMethod()?.IsPublic == true && (p.PropertyType.IsValueType || p.PropertyType == typeof(string));
+
+            var normalPropsSafeToShow = type
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                .Where(IsPropSafeToShow)
+                .FilterBrowsable(true, true)
+                .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_bepin4BaseSettingType));
+
+            var normalPropsWithBrowsable = type.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                .FilterBrowsable(true, false)
+                .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_bepin4BaseSettingType));
+
+            var normalProps = normalPropsSafeToShow.Concat(normalPropsWithBrowsable).Distinct();
+
+            results = results.Concat(normalProps.Select(x => LegacySettingEntry.FromNormalProperty(plugin, x, pluginInfo, plugin)).Where(x => x != null));
+
+            // Normal static properties ------
+
+            var normalStaticPropsSafeToShow = type
+                .GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly)
+                .Where(IsPropSafeToShow)
+                .FilterBrowsable(true, true)
+                .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_bepin4BaseSettingType));
+
+            var normalStaticPropsWithBrowsable = type.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
+                .FilterBrowsable(true, false)
+                .Where(x => !x.PropertyType.IsSubclassOfRawGeneric(_bepin4BaseSettingType));
+
+            var normalStaticProps = normalStaticPropsSafeToShow.Concat(normalStaticPropsWithBrowsable).Distinct();
+
+            results = results.Concat(normalStaticProps.Select(x => LegacySettingEntry.FromNormalProperty(null, x, pluginInfo, plugin)).Where(x => x != null));
+
+            return results;
         }
     }
 }

@@ -10,8 +10,9 @@ namespace BepInEx
     /// <summary>
     ///     Specify the list of acceptable values for this variable. It will allow the configuration window to show a list of available values.
     /// </summary>
+	[Obsolete("Use the one in BepInEx.Configuration namespace")]
     public sealed class AcceptableValueListAttribute : AcceptableValueBaseAttribute
-    {
+	{
         private readonly string _acceptableValueGetterName;
         private readonly object[] _acceptableValues;
 

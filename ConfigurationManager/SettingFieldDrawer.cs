@@ -15,16 +15,16 @@ namespace ConfigurationManager
     internal class SettingFieldDrawer
     {
         private static readonly IEnumerable<KeyCode> KeysToCheck =
-            KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
+            BepInEx.Configuration.KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
 
-        private readonly Dictionary<PropSettingEntry, ComboBox> _comboBoxCache =
-            new Dictionary<PropSettingEntry, ComboBox>();
+        private readonly Dictionary<SettingEntryBase, ComboBox> _comboBoxCache =
+            new Dictionary<SettingEntryBase, ComboBox>();
 
-        private PropSettingEntry CurrentKeyboardShortcutToSet;
+        private SettingEntryBase CurrentKeyboardShortcutToSet;
 
         public void ClearCache() => _comboBoxCache.Clear();
 
-        public void DrawBoolField(PropSettingEntry setting)
+        public void DrawBoolField(SettingEntryBase setting)
         {
             var boolVal = (bool)setting.Get();
             var result = GUILayout.Toggle(boolVal, boolVal ? "Enabled" : "Disabled", GUILayout.ExpandWidth(true));
@@ -50,7 +50,7 @@ namespace ConfigurationManager
             GUILayout.EndHorizontal();
         }
 
-        public void DrawComboboxField(PropSettingEntry setting, IList list, float windowYmax)
+        public void DrawComboboxField(SettingEntryBase setting, IList list, float windowYmax)
         {
             var buttonText = ObjectToGuiContent(setting.Get());
             var dispRect = GUILayoutUtility.GetRect(buttonText, GUI.skin.button, GUILayout.ExpandWidth(true));
@@ -98,12 +98,12 @@ namespace ConfigurationManager
             return false;
         }
 
-        public void DrawRangeField(PropSettingEntry setting, AcceptableValueRangeAttribute range)
+        public void DrawRangeField(SettingEntryBase setting)
         {
             var value = setting.Get();
             var converted = (float)Convert.ToDouble(value);
-            var leftValue = (float)Convert.ToDouble(range.MinValue);
-            var rightValue = (float)Convert.ToDouble(range.MaxValue);
+            var leftValue = (float)Convert.ToDouble(setting.AcceptableValueRange.Key);
+            var rightValue = (float)Convert.ToDouble(setting.AcceptableValueRange.Value);
 
             var result = GUILayout.HorizontalSlider(converted, leftValue, rightValue, GUILayout.ExpandWidth(true));
             if (Math.Abs(result - converted) > Mathf.Abs(rightValue - leftValue) / 1000)
@@ -112,7 +112,7 @@ namespace ConfigurationManager
                 setting.Set(newValue);
             }
 
-            if (range.ShowAsPercentage)
+            if (setting.ShowRangeAsPercent == true)
             {
                 DrawCenteredLabel(
                     Mathf.Round(100 * Mathf.Abs(result - leftValue) / Mathf.Abs(rightValue - leftValue)) + "%",
@@ -131,7 +131,7 @@ namespace ConfigurationManager
             }
         }
 
-        public void DrawUnknownField(PropSettingEntry setting, int rightColumnWidth)
+        public void DrawUnknownField(SettingEntryBase setting, int rightColumnWidth)
         {
             // Try to use user-supplied converters
             if (setting.ObjToStr != null && setting.StrToObj != null)
@@ -178,9 +178,10 @@ namespace ConfigurationManager
             }
         }
 
-        public void DrawKeyboardShortcut(PropSettingEntry setting)
+        public void DrawKeyboardShortcut(SettingEntryBase setting)
         {
-            var shortcut = (KeyboardShortcut)setting.Get();
+            var value = setting.Get();
+            var isOldType = value is KeyboardShortcut;
 
             GUILayout.BeginHorizontal();
             {
@@ -192,7 +193,8 @@ namespace ConfigurationManager
                     foreach (var key in KeysToCheck)
                         if (Input.GetKeyUp(key))
                         {
-                            setting.Set(new KeyboardShortcut(key, KeysToCheck.Where(Input.GetKey).ToArray()));
+                            if (isOldType) setting.Set(new KeyboardShortcut(key, KeysToCheck.Where(Input.GetKey).ToArray()));
+                            else setting.Set(new BepInEx.Configuration.KeyboardShortcut(key, KeysToCheck.Where(Input.GetKey).ToArray()));
                             CurrentKeyboardShortcutToSet = null;
                             break;
                         }
@@ -202,12 +204,13 @@ namespace ConfigurationManager
                 }
                 else
                 {
-                    if (GUILayout.Button(shortcut.ToString(), GUILayout.ExpandWidth(true)))
+                    if (GUILayout.Button(value.ToString(), GUILayout.ExpandWidth(true)))
                         CurrentKeyboardShortcutToSet = setting;
 
                     if (GUILayout.Button("Clear", GUILayout.ExpandWidth(false)))
                     {
-                        setting.Set(new KeyboardShortcut());
+                        if (isOldType) setting.Set(new KeyboardShortcut());
+                        else setting.Set(BepInEx.Configuration.KeyboardShortcut.Empty);
                         CurrentKeyboardShortcutToSet = null;
                     }
                 }

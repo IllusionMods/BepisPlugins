@@ -5,7 +5,8 @@ using System;
 
 namespace BepInEx
 {
+	[Obsolete("Use the one in BepInEx.Configuration namespace")]
     public class AcceptableValueBaseAttribute : Attribute
-    {
+	{
     }
 }
