@@ -32,7 +32,7 @@ namespace ConfigurationManager
         private bool _focusSearchBox;
 
         public event EventHandler<ValueChangedEventArgs<bool>> DisplayingWindowChanged;
-        public Action KeyPressedOverride;
+        public bool OverrideHotkey;
 
         private Dictionary<Type, Action<SettingEntryBase>> _settingDrawHandlers;
 
@@ -53,6 +53,7 @@ namespace ConfigurationManager
         private readonly ConfigWrapper<bool> _showAdvanced;
         private readonly ConfigWrapper<bool> _showKeybinds;
         private readonly ConfigWrapper<bool> _showSettings;
+        private readonly ConfigWrapper<BepInEx.Configuration.KeyboardShortcut> _keybind;
         private bool _showDebug;
         private string _searchString = string.Empty;
 
@@ -62,6 +63,9 @@ namespace ConfigurationManager
             _showAdvanced = Config.GetSetting("Filtering", "Show advanced", false);
             _showKeybinds = Config.GetSetting("Filtering", "Show keybinds", true);
             _showSettings = Config.GetSetting("Filtering", "Show settings", true);
+            _keybind = Config.GetSetting("General", "Show config manager", new BepInEx.Configuration.KeyboardShortcut(KeyCode.F1), 
+                new ConfigDescription("The shortcut used to toggle the config manager window on and off. " +
+                                      "The key can be overridden by a game-specific plugin if necessary, in that case this setting is ignored."));
         }
 
         public bool DisplayingWindow
@@ -438,12 +442,11 @@ namespace ConfigurationManager
 
         private void Update()
         {
-            if (Input.GetKeyUp(KeyCode.F1))
+            if (OverrideHotkey) return;
+
+            if (_keybind.Value.IsDown())
             {
-                if (KeyPressedOverride != null)
-                    KeyPressedOverride();
-                else
-                    DisplayingWindow = !DisplayingWindow;
+                DisplayingWindow = !DisplayingWindow;
             }
         }
     }
