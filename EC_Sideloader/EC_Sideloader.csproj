@@ -76,8 +76,16 @@
       <HintPath>..\lib\EmotionCreators\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>..\lib\EmotionCreators\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\lib\EmotionCreators\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\lib\EmotionCreators\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
@@ -88,8 +96,17 @@
       <HintPath>..\lib\EmotionCreators\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+      <HintPath>..\lib\EmotionCreators\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="XUnity.ResourceRedirector">
+      <HintPath>..\lib\XUnity.ResourceRedirector.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EC.Sideloader.Hooks.cs" />
     <Compile Include="EC.Sideloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UniversalAutoResolver\EC.UAR.Hooks.cs" />
@@ -100,15 +117,11 @@
       <Name>EC_ExtensibleSaveFormat</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\EC_ResourceRedirector\EC_ResourceRedirector.csproj">
-      <Project>{d71910c4-a623-4c56-92ff-b4f97610db23}</Project>
-      <Name>EC_ResourceRedirector</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\Core_Sideloader\Core_Sideloader.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+  <Import Project="..\Shared.AssetLoader\Shared.AssetLoader.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) EC

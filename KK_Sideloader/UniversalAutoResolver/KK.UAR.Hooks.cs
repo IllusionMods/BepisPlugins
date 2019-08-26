@@ -2,6 +2,7 @@
 using ExtensibleSaveFormat;
 using HarmonyLib;
 using Illusion.Elements.Xml;
+using Sideloader.ListLoader;
 using Studio;
 using System.Collections.Generic;
 using System.Linq;
@@ -236,7 +237,7 @@ namespace Sideloader.AutoResolver
         public static void ETCUpdateInfoPostfix(object __instance)
         {
             int counter = 0;
-            foreach (var x in ResourceRedirector.ListLoader.InternalDataList[ChaListDefine.CategoryNo.mt_ramp])
+            foreach (var x in Lists.InternalDataList[ChaListDefine.CategoryNo.mt_ramp])
             {
                 if (x.Key == Studio.Studio.Instance.sceneInfo.rampG)
                 {

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.757
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29020.237
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ColorCorrector", "KK_ColorCorrector\KK_ColorCorrector.csproj", "{6809B5DC-358C-45C5-B04C-0B7027596A8B}"
 EndProject
@@ -75,6 +75,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_BGMLoader", "Core_BGML
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_BGMLoader", "EC_BGMLoader\EC_BGMLoader.csproj", "{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared.AssetLoader", "Shared.AssetLoader\Shared.AssetLoader.shproj", "{ACB2EB7F-0782-4E7C-8F92-FAAAE1B632A3}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Core_ResourceRedirector\Core_ResourceRedirector.projitems*{13128f24-4964-4da6-91e1-1d115f15b717}*SharedItemsImports = 13
@@ -83,6 +85,7 @@ Global
 		Core_InputUnlocker\Core_InputUnlocker.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
 		Shared\Shared.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
 		Core_Sideloader\Core_Sideloader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
+		Shared.AssetLoader\Shared.AssetLoader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
 		Shared\Shared.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
 		Core_ResourceRedirector\Core_ResourceRedirector.projitems*{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}*SharedItemsImports = 4
 		Shared\Shared.projitems*{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}*SharedItemsImports = 4
@@ -92,6 +95,7 @@ Global
 		Core_ColorCorrector\Core_ColorCorrector.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		Shared\Shared.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		Core_Sideloader\Core_Sideloader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
+		Shared.AssetLoader\Shared.AssetLoader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
@@ -107,6 +111,7 @@ Global
 		Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
+		Shared.AssetLoader\Shared.AssetLoader.projitems*{acb2eb7f-0782-4e7c-8f92-faaae1b632a3}*SharedItemsImports = 13
 		Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{c4188eb1-8dc5-47c7-a966-8aa38b6cfb55}*SharedItemsImports = 4

@@ -1,5 +1,5 @@
 ﻿using BepInEx.Logging;
-using ResourceRedirector;
+using Sideloader.ListLoader;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -41,7 +41,7 @@ namespace Sideloader.AutoResolver
             void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
             {
                 //Only attempt compatibility resolve if the ID does not belong to a vanilla item or hard mod
-                if (!ListLoader.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+                if (!Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
                 {
                     //the property does not have external slot information
                     //check if we have a corrosponding item for backwards compatbility
@@ -100,9 +100,9 @@ namespace Sideloader.AutoResolver
                         }
                         else
                         {
-                            if (ListLoader.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+                            if (Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
                             {
-                                string mainAB = ListLoader.InternalDataList[kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
+                                string mainAB = Lists.InternalDataList[kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
                                 mainAB = mainAB.Replace("chara/", "").Replace(".unity3d", "").Replace(kv.Key.Category.ToString() + "_", "");
 
                                 if (int.TryParse(mainAB, out int x))

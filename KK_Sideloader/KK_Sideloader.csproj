@@ -77,12 +77,18 @@
       <HintPath>..\lib\Koikatsu\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="XUnity.ResourceRedirector, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\XUnity.ResourceRedirector.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoResolver\KK.UAR.Hooks.cs" />
-    <Compile Include="AutoResolver\KK.UAR.StudioResolveInfo.cs" />
-    <Compile Include="AutoResolver\KK.UAR.StudioObjectSearch.cs" />
-    <Compile Include="AutoResolver\KK.UAR.cs" />
+    <Compile Include="UniversalAutoResolver\KK.UAR.Hooks.cs" />
+    <Compile Include="UniversalAutoResolver\KK.UAR.StudioResolveInfo.cs" />
+    <Compile Include="UniversalAutoResolver\KK.UAR.StudioObjectSearch.cs" />
+    <Compile Include="UniversalAutoResolver\KK.UAR.cs" />
+    <Compile Include="KK.Sideloader.ListLoader.cs" />
     <Compile Include="KK.Sideloader.Hooks.cs" />
     <Compile Include="KK.Sideloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -93,14 +99,10 @@
       <Name>KK_ExtensibleSaveFormat</Name>
       <Private>False</Private>
     </ProjectReference>
-    <ProjectReference Include="..\KK_ResourceRedirector\KK_ResourceRedirector.csproj">
-      <Project>{3ea76ca3-45b6-4a1a-b04f-7a1a8c978af6}</Project>
-      <Name>KK_ResourceRedirector</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="..\Core_Sideloader\Core_Sideloader.projitems" Label="Shared" />
+  <Import Project="..\Shared.AssetLoader\Shared.AssetLoader.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) KK

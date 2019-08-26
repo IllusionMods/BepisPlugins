@@ -9,6 +9,9 @@
     <Import_RootNamespace>Core_Sideloader</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.ListLoader.Hooks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.ReflectionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.ListLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.BundleManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.Hooks.cs" />
