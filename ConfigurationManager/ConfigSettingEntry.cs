@@ -16,13 +16,13 @@ namespace ConfigurationManager
 		{
 			_entry = entry;
 
-			DispName = entry.Definition.Key;
-			Category = entry.Definition.Section;
-			Description = entry.Description?.Description;
-
 			SetFromAttributes(entry.Description?.Tags, owner);
 
-			var converter = TomlTypeConverter.GetConverter(entry.SettingType);
+		    DispName = entry.Definition.Key;
+		    Category = entry.Definition.Section;
+		    Description = entry.Description?.Description;
+
+            var converter = TomlTypeConverter.GetConverter(entry.SettingType);
 			if (converter != null)
 			{
 				ObjToStr = o => converter.ConvertToString(o, entry.SettingType);
