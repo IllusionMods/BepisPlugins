@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Sideloader
 {
-    [BepInDependency(ResourceRedirector.ResourceRedirector.GUID)]
+    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier)]
     [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin

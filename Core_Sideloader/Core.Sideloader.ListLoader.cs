@@ -4,9 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace ResourceRedirector
+namespace Sideloader.ListLoader
 {
-    public static partial class ListLoader
+    public static partial class Lists
     {
         internal const int CategoryMultiplier = 1000000;
 

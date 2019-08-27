@@ -1,6 +1,6 @@
 ﻿using BepInEx.Logging;
 using HarmonyLib;
-using ResourceRedirector;
+using Sideloader.ListLoader;
 using Studio;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace Sideloader.AutoResolver
     {
         public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
-        public static void GenerateStudioResolutionInfo(Manifest manifest, ListLoader.StudioListData data)
+        public static void GenerateStudioResolutionInfo(Manifest manifest, Lists.StudioListData data)
         {
             string StudioListType;
             if (data.FileNameWithoutExtension.Contains('_'))
@@ -153,7 +153,7 @@ namespace Sideloader.AutoResolver
         {
             if (OI is OIItemInfo Item)
             {
-                if (!ListLoader.InternalStudioItemList.Contains(Item.no))
+                if (!Lists.InternalStudioItemList.Contains(Item.no))
                 {
                     //Item does not exist in the item list, probably a missing hard mod. See if we have a sideloader mod with the same ID
                     StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Item.no);
@@ -297,7 +297,7 @@ namespace Sideloader.AutoResolver
             }
             else if (resolveType == ResolveType.Load)
             {
-                if (!ListLoader.InternalDataList[ChaListDefine.CategoryNo.mt_ramp].ContainsKey(rampID))
+                if (!Lists.InternalDataList[ChaListDefine.CategoryNo.mt_ramp].ContainsKey(rampID))
                 {
                     //Ramp ID saved to the scene doesn't exist in the items list, try compatibility resolving
                     ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.Slot == rampID);

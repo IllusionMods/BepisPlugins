@@ -1,6 +1,8 @@
 ﻿using HarmonyLib;
+using Sideloader.ListLoader;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Sideloader
@@ -10,7 +12,7 @@ namespace Sideloader
         [HarmonyPostfix, HarmonyPatch(typeof(Studio.Info), "LoadExcelData")]
         public static void LoadExcelDataPostfix(string _bundlePath, string _fileName, ref ExcelData __result)
         {
-            var studioList = ResourceRedirector.ListLoader.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath && x.FileNameWithoutExtension == _fileName).ToList();
+            var studioList = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath && x.FileNameWithoutExtension == _fileName).ToList();
 
             if (studioList.Count > 0)
             {
@@ -54,6 +56,48 @@ namespace Sideloader
                     else
                         i += 1;
                 }
+            }
+        }
+        [HarmonyPostfix, HarmonyPatch(typeof(BaseMap), "LoadMapInfo")]
+        public static void LoadMapInfo(BaseMap __instance)
+        {
+            foreach (var mapInfo in Lists.ExternalMapList)
+                foreach (var param in mapInfo.param)
+                    __instance.infoDic[param.No] = param;
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.AssetBundleCheck), nameof(Studio.AssetBundleCheck.GetAllFileName))]
+        public static bool GetAllFileName(string _assetBundleName, bool _WithExtension, ref string[] __result)
+        {
+            var list = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _assetBundleName).Select(y => y.FileNameWithoutExtension.ToLower()).ToArray();
+            if (list.Count() > 0)
+            {
+                __result = list;
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(Studio.Info), "FindAllAssetName")]
+        public static bool FindAllAssetNamePrefix(string _bundlePath, string _regex, ref string[] __result)
+        {
+            var list = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath).Select(x => x.FileNameWithoutExtension).ToList();
+            if (list.Count() > 0)
+            {
+                __result = list.Where(x => Regex.Match(x, _regex, RegexOptions.IgnoreCase).Success).ToArray();
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
+        public static void GetAssetBundleNameListFromPath(string path, List<string> __result)
+        {
+            if (path == "studio/info/")
+            {
+                foreach (string assetBundleName in Lists.ExternalStudioDataList.Select(x => x.AssetBundleName).Distinct())
+                    if (!__result.Contains(assetBundleName))
+                        __result.Add(assetBundleName);
             }
         }
         /// <summary>

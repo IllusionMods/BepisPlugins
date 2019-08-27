@@ -3,6 +3,7 @@ using BepInEx.Logging;
 using ExtensibleSaveFormat;
 using HarmonyLib;
 using Illusion.Extensions;
+using Sideloader.ListLoader;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -124,7 +125,7 @@ namespace Sideloader.AutoResolver
 
                     //Check if it's a vanilla item
                     if (slot < UniversalAutoResolver.BaseSlotID)
-                        if (ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category].ContainsKey(slot))
+                        if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
                             continue;
 
                     //For accessories, make sure we're checking the appropriate category
@@ -265,7 +266,7 @@ namespace Sideloader.AutoResolver
 
                     //Check if it's a vanilla item
                     if (slot < UniversalAutoResolver.BaseSlotID)
-                        if (ResourceRedirector.ListLoader.InternalDataList[kv.Key.Category].ContainsKey(slot))
+                        if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
                             continue;
 
                     //For accessories, make sure we're checking the appropriate category

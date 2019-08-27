@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace ResourceRedirector
+namespace Sideloader.ListLoader
 {
-    public static partial class ListLoader
+    public static partial class Lists
     {
         private static HashSet<int> _internalStudioItemList = null;
         public static List<MapInfo> ExternalMapList { get; private set; } = new List<MapInfo>();

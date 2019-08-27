@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace ResourceRedirector
+namespace Sideloader
 {
     public static class ReflectionHelper
     {

@@ -3,9 +3,9 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using ICSharpCode.SharpZipLib.Zip;
-using ResourceRedirector;
 using Shared;
 using Sideloader.AutoResolver;
+using Sideloader.ListLoader;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,6 +14,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using XUnity.ResourceRedirector;
 
 namespace Sideloader
 {
@@ -49,14 +50,17 @@ namespace Sideloader
 
             Hooks.InstallHooks();
             AutoResolver.Hooks.InstallHooks();
-            ResourceRedirector.ResourceRedirector.AssetResolvers.Add(RedirectHook);
-            ResourceRedirector.ResourceRedirector.AssetBundleResolvers.Add(AssetBundleRedirectHook);
+            ListLoader.Hooks.InstallHooks();
 
-            MissingModWarning = Config.Wrap("Settings", "Show missing mod warnings", "Whether missing mod warnings will be displayed on screen. Messages will still be written to the log.", true);
-            DebugLogging = Config.Wrap("Settings", "Debug logging", "Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes.", false);
-            DebugResolveInfoLogging = Config.Wrap("Settings", "Debug resolve info logging", "Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes.", false);
-            KeepMissingAccessories = Config.Wrap("Settings", "Keep missing accessories", "Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.", false);
-            AdditionalModsDirectory = Config.Wrap("General", "Additional mods directory", "Additional directory to load zipmods from.", FindKoiZipmodDir());
+            ResourceRedirection.EnableSyncOverAsyncAssetLoads();
+            ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(RedirectHook);
+            ResourceRedirection.RegisterAssetBundleLoadingHook(AssetBundleLoadingHook);
+
+            MissingModWarning = Config.GetSetting("Settings", "Show missing mod warnings", true, new ConfigDescription("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log."));
+            DebugLogging = Config.GetSetting("Settings", "Debug logging", false, new ConfigDescription("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes."));
+            DebugResolveInfoLogging = Config.GetSetting("Settings", "Debug resolve info logging", false, new ConfigDescription("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes."));
+            KeepMissingAccessories = Config.GetSetting("Settings", "Keep missing accessories", false, new ConfigDescription("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker."));
+            AdditionalModsDirectory = Config.GetSetting("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
 
             if (!Directory.Exists(ModsDirectory))
                 Logger.Log(LogLevel.Warning, "Could not find the mods directory: " + ModsDirectory);
@@ -173,11 +177,11 @@ namespace Sideloader
                     try
                     {
                         var stream = arc.GetInputStream(entry);
-                        var chaListData = ListLoader.LoadCSV(stream);
+                        var chaListData = Lists.LoadCSV(stream);
 
                         SetPossessNew(chaListData);
                         UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
-                        ListLoader.ExternalDataList.Add(chaListData);
+                        Lists.ExternalDataList.Add(chaListData);
                     }
                     catch (Exception ex)
                     {
@@ -194,10 +198,10 @@ namespace Sideloader
                         try
                         {
                             var stream = arc.GetInputStream(entry);
-                            var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
+                            var studioListData = Lists.LoadStudioCSV(stream, entry.Name);
 
                             UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
-                            ListLoader.ExternalStudioDataList.Add(studioListData);
+                            Lists.ExternalStudioDataList.Add(studioListData);
                         }
                         catch (Exception ex)
                         {
@@ -210,9 +214,9 @@ namespace Sideloader
                     try
                     {
                         var stream = arc.GetInputStream(entry);
-                        MapInfo mapListData = ListLoader.LoadMapCSV(stream);
+                        MapInfo mapListData = Lists.LoadMapCSV(stream);
 
-                        ListLoader.ExternalMapList.Add(mapListData);
+                        Lists.ExternalMapList.Add(mapListData);
                     }
                     catch (Exception ex)
                     {
@@ -229,10 +233,10 @@ namespace Sideloader
                 try
                 {
                     var stream = arc.GetInputStream(entry);
-                    var studioListData = ListLoader.LoadStudioCSV(stream, entry.Name);
+                    var studioListData = Lists.LoadStudioCSV(stream, entry.Name);
 
                     UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
-                    ListLoader.ExternalStudioDataList.Add(studioListData);
+                    Lists.ExternalStudioDataList.Add(studioListData);
                 }
                 catch (Exception ex)
                 {
@@ -346,7 +350,7 @@ namespace Sideloader
                 {
                     var stream = archive.GetInputStream(entry);
 
-                    var tex = ResourceRedirector.AssetLoader.LoadTexture(stream, (int)entry.Size, format, mipmap);
+                    var tex = Shared.AssetLoader.LoadTexture(stream, (int)entry.Size, format, mipmap);
 
                     if (pngPath.Contains("clamp"))
                         tex.wrapMode = TextureWrapMode.Clamp;
@@ -420,53 +424,53 @@ namespace Sideloader
             }
         }
 
-        protected bool RedirectHook(string assetBundleName, string assetName, Type type, string manifestAssetBundleName, out AssetBundleLoadAssetOperation result)
+        protected void RedirectHook(IAssetLoadingContext context)
         {
-            string zipPath = $"{manifestAssetBundleName ?? "abdata"}/{assetBundleName.Replace(".unity3d", "", StringComparison.OrdinalIgnoreCase)}/{assetName}";
+            if (context.Parameters.Name == null) return;
 
-            if (type == typeof(Texture2D))
+            if (context.Parameters.Type == typeof(Texture2D))
             {
-                zipPath = $"{zipPath}.png";
+                string zipPath = $"abdata/{context.Bundle.name.Replace(".unity3d", "", StringComparison.OrdinalIgnoreCase)}/{context.Parameters.Name}.png";
 
                 var tex = GetPng(zipPath);
                 if (tex != null)
                 {
-                    result = new AssetBundleLoadAssetOperationSimulation(tex);
-                    return true;
+                    context.Asset = tex;
+                    context.Complete();
+                    return;
                 }
             }
 
-            if (BundleManager.TryGetObjectFromName(assetName, assetBundleName, type, out UnityEngine.Object obj))
+            if (BundleManager.TryGetObjectFromName(context.Parameters.Name, context.Bundle.name, context.Parameters.Type, out UnityEngine.Object obj))
             {
-                result = new AssetBundleLoadAssetOperationSimulation(obj);
-                return true;
+                context.Asset = obj;
+                context.Complete();
             }
-
-            result = null;
-            return false;
         }
 
-        protected bool AssetBundleRedirectHook(string assetBundleName, out AssetBundle result)
+        private void AssetBundleLoadingHook(AssetBundleLoadingContext context)
         {
-            string bundle = assetBundleName.Remove(0, assetBundleName.IndexOf("/abdata/")).Replace("/abdata/", "");
-
-            //The only asset bundles that need to be loaded are maps
-            //Loading asset bundles unnecessarily can interfere with normal sideloader asset handling so avoid it whenever possible
-            if (bundle.StartsWith("map/scene/"))
+            if (!File.Exists(context.Parameters.Path))
             {
-                if (!File.Exists(assetBundleName))
+                string bundle = context.Parameters.Path.Substring(context.Parameters.Path.IndexOf("/abdata/")).Replace("/abdata/", "");
+
+                if (BundleManager.Bundles.TryGetValue(bundle, out List<LazyCustom<AssetBundle>> lazyList))
                 {
-                    if (BundleManager.Bundles.TryGetValue(bundle, out List<LazyCustom<AssetBundle>> lazyList))
+                    context.Bundle = lazyList[0].Instance;
+                    context.Bundle.name = bundle;
+                    context.Complete();
+                }
+                else
+                {
+                    //Create a placeholder asset bundle for png files without a matching asset bundle
+                    if (IsPngFolderOnly(bundle))
                     {
-                        //If more than one exist, only the first will be loaded.
-                        result = lazyList[0].Instance;
-                        return true;
+                        context.Bundle = AssetBundleHelper.CreateEmptyAssetBundle();
+                        context.Bundle.name = bundle;
+                        context.Complete();
                     }
                 }
             }
-
-            result = null;
-            return false;
         }
     }
 }

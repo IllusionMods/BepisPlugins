@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 using BepisPlugins;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,7 +18,6 @@ namespace ColorCorrector
         #region Config properties
         private ConfigWrapper<bool> SaturationEnabled { get; set; }
 
-        [AcceptableValueRange(0f, 1f)]
         private ConfigWrapper<float> BloomStrength { get; set; }
         #endregion
 
@@ -34,8 +32,8 @@ namespace ColorCorrector
                 return;
             }
 
-            SaturationEnabled = Config.Wrap("Post Processing Settings", "Enable saturation filter", "Whether default saturation filter will be applied to the game. This setting has no effect in Studio.", true);
-            BloomStrength = Config.Wrap("Post Processing Settings", "Bloom strength", "Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", 1f);
+            SaturationEnabled = Config.GetSetting("Post Processing Settings", "Enable saturation filter", true, new ConfigDescription("Whether default saturation filter will be applied to the game. This setting has no effect in Studio."));
+            BloomStrength = Config.GetSetting("Post Processing Settings", "Bloom strength", 1f, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, 1f)));
             SaturationEnabled.SettingChanged += OnSettingChanged;
             BloomStrength.SettingChanged += OnSettingChanged;
 

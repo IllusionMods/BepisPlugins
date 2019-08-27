@@ -2,9 +2,9 @@
 using System.IO;
 using UnityEngine;
 
-namespace ResourceRedirector
+namespace Shared
 {
-    public static class AssetLoader
+    internal static class AssetLoader
     {
         public static AudioClip LoadAudioClip(string path, AudioType type)
         {
@@ -48,4 +48,5 @@ namespace ResourceRedirector
             return tex;
         }
     }
+
 }
