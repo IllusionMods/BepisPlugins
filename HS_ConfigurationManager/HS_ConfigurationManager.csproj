@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8589072C-44CB-4F6E-92E7-D73A42C31D69}</ProjectGuid>
+    <ProjectGuid>{FA7D93C6-05C2-42A9-B82B-C544898F26AD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConfigurationManagerKK</RootNamespace>
-    <AssemblyName>ConfigurationManagerKK</AssemblyName>
+    <RootNamespace>ConfigurationManagerWrapper</RootNamespace>
+    <AssemblyName>HS_ConfigurationManager</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -17,42 +17,46 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>..\bin\BepInEx\plugins\HS_BepisPlugins\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;HS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <OutputPath>..\bin\BepInEx\plugins\HS_BepisPlugins\</OutputPath>
+    <DefineConstants>TRACE;HS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\lib\Koikatsu\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\lib\HoneySelect\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="BepInEx">
+    <Reference Include="BepInEx, Version=4.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\BepInEx5\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\lib\Koikatsu\UnityEngine.dll</HintPath>
+      <HintPath>..\lib\HoneySelect\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\lib\Koikatsu\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\lib\HoneySelect\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConfigurationManagerKK.cs" />
+    <Compile Include="HS.ConfigurationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -62,9 +66,9 @@
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+  <Import Project="..\Core_ConfigurationManager\Core_ConfigurationManager.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) KK</PostBuildEvent>
+    <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) HS</PostBuildEvent>
   </PropertyGroup>
 </Project>

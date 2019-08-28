@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationManager", "Con
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_BGMLoader", "KK_BGMLoader\KK_BGMLoader.csproj", "{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationManagerKK", "ConfigurationManagerKK\ConfigurationManagerKK.csproj", "{8589072C-44CB-4F6E-92E7-D73A42C31D69}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ConfigurationManager", "KK_ConfigurationManager\KK_ConfigurationManager.csproj", "{8589072C-44CB-4F6E-92E7-D73A42C31D69}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SliderUnlocker", "SliderUnlocker", "{4A1808A4-FEA9-4BC9-A93A-9F41D457569A}"
 EndProject
@@ -69,9 +69,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_BGMLoader", "EC_BGMLoade
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared.AssetLoader", "Shared.AssetLoader\Shared.AssetLoader.shproj", "{ACB2EB7F-0782-4E7C-8F92-FAAAE1B632A3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConfigurationManagerWrapper", "ConfigurationManagerWrapper", "{66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ConfigurationManager", "EC_ConfigurationManager\EC_ConfigurationManager.csproj", "{6979C7C4-91FE-4FD5-8F74-101CC533B238}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ConfigurationManager", "Core_ConfigurationManager\Core_ConfigurationManager.shproj", "{348F6441-9510-47D8-9F7F-547E8655CBB5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS_ConfigurationManager", "HS_ConfigurationManager\HS_ConfigurationManager.csproj", "{FA7D93C6-05C2-42A9-B82B-C544898F26AD}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
+		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{348f6441-9510-47d8-9f7f-547e8655cbb5}*SharedItemsImports = 13
 		Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
 		Core_InputUnlocker\Core_InputUnlocker.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
 		Shared\Shared.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
@@ -86,11 +95,13 @@ Global
 		Core_Sideloader\Core_Sideloader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		Shared.AssetLoader\Shared.AssetLoader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
+		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
 		Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
 		Shared\Shared.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
 		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7cba15ab-52d1-4506-a7bf-9d23060ecf5d}*SharedItemsImports = 13
+		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
 		Shared\Shared.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
 		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
 		Shared\Shared.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
@@ -114,6 +125,7 @@ Global
 		Core_BGMLoader\Core_BGMLoader.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
 		Shared\Shared.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
 		Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
+		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -188,6 +200,14 @@ Global
 		{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6979C7C4-91FE-4FD5-8F74-101CC533B238}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6979C7C4-91FE-4FD5-8F74-101CC533B238}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6979C7C4-91FE-4FD5-8F74-101CC533B238}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6979C7C4-91FE-4FD5-8F74-101CC533B238}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA7D93C6-05C2-42A9-B82B-C544898F26AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA7D93C6-05C2-42A9-B82B-C544898F26AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA7D93C6-05C2-42A9-B82B-C544898F26AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA7D93C6-05C2-42A9-B82B-C544898F26AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,6 +220,7 @@ Global
 		{9DB058D4-CF5A-4280-9150-A62C22FC3CB0} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
 		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
 		{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
+		{8589072C-44CB-4F6E-92E7-D73A42C31D69} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{7CBA15AB-52D1-4506-A7BF-9D23060ECF5D} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
 		{8AF4399E-0D5A-418E-8178-E81192C56213} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
 		{C4188EB1-8DC5-47C7-A966-8AA38B6CFB55} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
@@ -215,6 +236,9 @@ Global
 		{C1F8FEEB-09E9-4FD0-A9B1-B4A323ED2177} = {C9731CBE-A60E-4BA8-8B52-C7952DB3BC06}
 		{E1074DCD-CC19-4C67-B799-EB534C885018} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 		{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
+		{6979C7C4-91FE-4FD5-8F74-101CC533B238} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
+		{348F6441-9510-47D8-9F7F-547E8655CBB5} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
+		{FA7D93C6-05C2-42A9-B82B-C544898F26AD} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}

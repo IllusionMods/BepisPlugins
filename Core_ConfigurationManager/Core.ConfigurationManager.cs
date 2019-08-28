@@ -1,24 +1,20 @@
 ﻿using System.Collections;
-using System.ComponentModel;
 using System.Linq;
-using BepInEx;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace ConfigurationManagerKK
+namespace ConfigurationManagerWrapper
 {
-    [BepInPlugin(ConfigurationManager.ConfigurationManager.GUID + "KK", "Configuration Manager wrapper for Koikatsu", ConfigurationManager.ConfigurationManager.Version)]
-    [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
-    [Browsable(false)]
-    public class ConfigurationManagerKK : BaseUnityPlugin
+    public partial class ConfigurationManagerWrapper
     {
+        public const string Version = ConfigurationManager.ConfigurationManager.Version;
+
         private static Texture2D _buttonBackground;
         private Rect _buttonRect;
         private bool _previousWindowState;
 
         private static bool _isStudio;
-        private bool _noCtrlConditionDone;
 
         private ConfigurationManager.ConfigurationManager _manager;
         private bool _insideConfigScreen;
@@ -40,7 +36,7 @@ namespace ConfigurationManagerKK
 
         private void Start()
         {
-            _isStudio = Application.productName == "CharaStudio";
+            _isStudio = Application.productName == "CharaStudio" || Application.productName == "StudioNEO";
 
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.OverrideHotkey = true;
@@ -53,8 +49,10 @@ namespace ConfigurationManagerKK
                 buttonBackground.Apply();
                 _buttonBackground = buttonBackground;
 
+#if !HS
                 SceneManager.sceneLoaded += (arg0, mode) => StartCoroutine(SceneChanged());
                 SceneManager.sceneUnloaded += arg0 => StartCoroutine(SceneChanged());
+#endif
             }
         }
 
@@ -98,29 +96,11 @@ namespace ConfigurationManagerKK
 
         private void CalculateWindowRect()
         {
-            var buttonOffsetH = Screen.width * 0.12f;
+            var buttonOffsetH = Screen.width * Offset;
             var buttonWidth = 215f;
             _buttonRect = new Rect(
                 Screen.width - buttonOffsetH - buttonWidth, Screen.height * 0.033f, buttonWidth,
                 Screen.height * 0.04f);
-        }
-
-        private void Update()
-        {
-            // Main game is handled in SceneChanged and OnGUI
-            if (!_isStudio) return;
-
-            if (Input.GetKeyDown(KeyCode.F1) && Singleton<Studio.Studio>.IsInstance() && !Manager.Scene.Instance.IsNowLoadingFade)
-            {
-                _manager.DisplayingWindow = !_manager.DisplayingWindow;
-
-                if (!_noCtrlConditionDone)
-                {
-                    var oldCondition = Studio.Studio.Instance.cameraCtrl.noCtrlCondition;
-                    Studio.Studio.Instance.cameraCtrl.noCtrlCondition = () => _manager.DisplayingWindow || oldCondition();
-                    _noCtrlConditionDone = true;
-                }
-            }
         }
     }
 }
