@@ -14,15 +14,21 @@ namespace ConfigurationManager
 {
     internal class SettingFieldDrawer
     {
-        private static readonly IEnumerable<KeyCode> KeysToCheck =
-            BepInEx.Configuration.KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
+        private static readonly IEnumerable<KeyCode> _keysToCheck = BepInEx.Configuration.KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
 
-        private readonly Dictionary<SettingEntryBase, ComboBox> _comboBoxCache =
-            new Dictionary<SettingEntryBase, ComboBox>();
+        private readonly Dictionary<SettingEntryBase, ComboBox> _comboBoxCache = new Dictionary<SettingEntryBase, ComboBox>();
+        private readonly Dictionary<SettingEntryBase, ColorCacheEntry> _colorCache =new Dictionary<SettingEntryBase, ColorCacheEntry>();
 
-        private SettingEntryBase CurrentKeyboardShortcutToSet;
+        private SettingEntryBase _currentKeyboardShortcutToSet;
 
-        public void ClearCache() => _comboBoxCache.Clear();
+        public void ClearCache()
+        {
+            _comboBoxCache.Clear();
+
+            foreach (var tex in _colorCache)
+                UnityEngine.Object.Destroy(tex.Value.Tex);
+            _colorCache.Clear();
+        }
 
         public void DrawBoolField(SettingEntryBase setting)
         {
@@ -185,37 +191,83 @@ namespace ConfigurationManager
 
             GUILayout.BeginHorizontal();
             {
-                if (CurrentKeyboardShortcutToSet == setting)
+                if (_currentKeyboardShortcutToSet == setting)
                 {
                     GUILayout.Label("Press any key combination", GUILayout.ExpandWidth(true));
                     GUIUtility.keyboardControl = -1;
 
-                    foreach (var key in KeysToCheck)
+                    foreach (var key in _keysToCheck)
                         if (Input.GetKeyUp(key))
                         {
-                            if (isOldType) setting.Set(new KeyboardShortcut(key, KeysToCheck.Where(Input.GetKey).ToArray()));
-                            else setting.Set(new BepInEx.Configuration.KeyboardShortcut(key, KeysToCheck.Where(Input.GetKey).ToArray()));
-                            CurrentKeyboardShortcutToSet = null;
+                            if (isOldType) setting.Set(new KeyboardShortcut(key, _keysToCheck.Where(Input.GetKey).ToArray()));
+                            else setting.Set(new BepInEx.Configuration.KeyboardShortcut(key, _keysToCheck.Where(Input.GetKey).ToArray()));
+                            _currentKeyboardShortcutToSet = null;
                             break;
                         }
 
                     if (GUILayout.Button("Cancel", GUILayout.ExpandWidth(false)))
-                        CurrentKeyboardShortcutToSet = null;
+                        _currentKeyboardShortcutToSet = null;
                 }
                 else
                 {
                     if (GUILayout.Button(value.ToString(), GUILayout.ExpandWidth(true)))
-                        CurrentKeyboardShortcutToSet = setting;
+                        _currentKeyboardShortcutToSet = setting;
 
                     if (GUILayout.Button("Clear", GUILayout.ExpandWidth(false)))
                     {
                         if (isOldType) setting.Set(new KeyboardShortcut());
                         else setting.Set(BepInEx.Configuration.KeyboardShortcut.Empty);
-                        CurrentKeyboardShortcutToSet = null;
+                        _currentKeyboardShortcutToSet = null;
                     }
                 }
             }
             GUILayout.EndHorizontal();
+        }
+
+        public void DrawColor(SettingEntryBase obj)
+        {
+            var setting = (Color)obj.Get();
+
+            if (!_colorCache.TryGetValue(obj, out var cacheEntry))
+            {
+                cacheEntry = new ColorCacheEntry
+                {
+                    Tex = new Texture2D(40, 10, TextureFormat.ARGB32, false),
+                    Last = setting
+                };
+                cacheEntry.Tex.FillTexture(setting);
+                _colorCache[obj] = cacheEntry;
+            }
+
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label("R", GUILayout.ExpandWidth(false));
+                setting.r = GUILayout.HorizontalSlider(setting.r, 0f, 1f, GUILayout.ExpandWidth(true));
+                GUILayout.Label("G", GUILayout.ExpandWidth(false));
+                setting.g = GUILayout.HorizontalSlider(setting.g, 0f, 1f, GUILayout.ExpandWidth(true));
+                GUILayout.Label("B", GUILayout.ExpandWidth(false));
+                setting.b = GUILayout.HorizontalSlider(setting.b, 0f, 1f, GUILayout.ExpandWidth(true));
+                GUILayout.Label("A", GUILayout.ExpandWidth(false));
+                setting.a = GUILayout.HorizontalSlider(setting.a, 0f, 1f, GUILayout.ExpandWidth(true));
+
+                GUILayout.Space(4);
+
+                if (setting != cacheEntry.Last)
+                {
+                    obj.Set(setting);
+                    cacheEntry.Tex.FillTexture(setting);
+                    cacheEntry.Last = setting;
+                }
+
+                GUILayout.Label(cacheEntry.Tex, GUILayout.ExpandWidth(false));
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private sealed class ColorCacheEntry
+        {
+            public Color Last;
+            public Texture2D Tex;
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace ConfigurationManager.Utilities
@@ -68,5 +69,14 @@ namespace ConfigurationManager.Utilities
                    || value is float
                    || value is double
                    || value is decimal;
+
+        public static void FillTexture(this Texture2D tex, Color color)
+        {
+            for (var x = 0; x < tex.width; x++)
+                for (var y = 0; y < tex.height; y++)
+                    tex.SetPixel(x, y, color);
+
+            tex.Apply(false);
+        }
     }
 }

@@ -76,6 +76,8 @@ namespace ConfigurationManager
                 if (_displayingWindow == value) return;
                 _displayingWindow = value;
 
+                _fieldDrawer.ClearCache();
+
                 if (_displayingWindow)
                 {
                     CalculateWindowRect();
@@ -426,7 +428,8 @@ namespace ConfigurationManager
             {
                 {typeof(bool), _fieldDrawer.DrawBoolField},
                 {typeof(BepInEx.KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut},
-                {typeof(BepInEx.Configuration.KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut}
+                {typeof(BepInEx.Configuration.KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut},
+                {typeof(Color), _fieldDrawer.DrawColor }
             };
 
             var background = new Texture2D(1, 1, TextureFormat.ARGB32, false);
