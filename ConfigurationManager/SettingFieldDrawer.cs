@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ namespace ConfigurationManager
         private static readonly IEnumerable<KeyCode> _keysToCheck = BepInEx.Configuration.KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
 
         private readonly Dictionary<SettingEntryBase, ComboBox> _comboBoxCache = new Dictionary<SettingEntryBase, ComboBox>();
-        private readonly Dictionary<SettingEntryBase, ColorCacheEntry> _colorCache =new Dictionary<SettingEntryBase, ColorCacheEntry>();
+        private readonly Dictionary<SettingEntryBase, ColorCacheEntry> _colorCache = new Dictionary<SettingEntryBase, ColorCacheEntry>();
 
         private SettingEntryBase _currentKeyboardShortcutToSet;
 
@@ -222,6 +223,74 @@ namespace ConfigurationManager
                 }
             }
             GUILayout.EndHorizontal();
+        }
+
+        public void DrawVector2(SettingEntryBase obj)
+        {
+            var setting = (Vector2)obj.Get();
+            var copy = setting;
+
+            GUILayout.BeginHorizontal();
+            {
+                setting.x = DrawSingleVectorSlider(setting.x, "X");
+                setting.y = DrawSingleVectorSlider(setting.y, "Y");
+                if (setting != copy) obj.Set(setting);
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        public void DrawVector3(SettingEntryBase obj)
+        {
+            var setting = (Vector3)obj.Get();
+            var copy = setting;
+
+            GUILayout.BeginHorizontal();
+            {
+                setting.x = DrawSingleVectorSlider(setting.x, "X");
+                setting.y = DrawSingleVectorSlider(setting.y, "Y");
+                setting.z = DrawSingleVectorSlider(setting.z, "Z");
+                if (setting != copy) obj.Set(setting);
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        public void DrawVector4(SettingEntryBase obj)
+        {
+            var setting = (Vector4)obj.Get();
+            var copy = setting;
+
+            GUILayout.BeginHorizontal();
+            {
+                setting.x = DrawSingleVectorSlider(setting.x, "X");
+                setting.y = DrawSingleVectorSlider(setting.y, "Y");
+                setting.z = DrawSingleVectorSlider(setting.z, "Z");
+                setting.w = DrawSingleVectorSlider(setting.w, "W");
+                if (setting != copy) obj.Set(setting);
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        public void DrawQuaternion(SettingEntryBase obj)
+        {
+            var setting = (Quaternion)obj.Get();
+            var copy = setting;
+
+            GUILayout.BeginHorizontal();
+            {
+                setting.x = DrawSingleVectorSlider(setting.x, "X");
+                setting.y = DrawSingleVectorSlider(setting.y, "Y");
+                setting.z = DrawSingleVectorSlider(setting.z, "Z");
+                setting.w = DrawSingleVectorSlider(setting.w, "W");
+                if (setting != copy) obj.Set(setting);
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        private static float DrawSingleVectorSlider(float setting, string label)
+        {
+            GUILayout.Label(label, GUILayout.ExpandWidth(false));
+            float.TryParse(GUILayout.TextField(setting.ToString("F", CultureInfo.InvariantCulture), GUILayout.ExpandWidth(true)), NumberStyles.Any, CultureInfo.InvariantCulture, out var x );
+            return x;
         }
 
         public void DrawColor(SettingEntryBase obj)

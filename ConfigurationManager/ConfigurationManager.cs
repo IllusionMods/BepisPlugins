@@ -429,7 +429,11 @@ namespace ConfigurationManager
                 {typeof(bool), _fieldDrawer.DrawBoolField},
                 {typeof(BepInEx.KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut},
                 {typeof(BepInEx.Configuration.KeyboardShortcut), _fieldDrawer.DrawKeyboardShortcut},
-                {typeof(Color), _fieldDrawer.DrawColor }
+                {typeof(Color), _fieldDrawer.DrawColor },
+                {typeof(Vector2), _fieldDrawer.DrawVector2 },
+                {typeof(Vector3), _fieldDrawer.DrawVector3 },
+                {typeof(Vector4), _fieldDrawer.DrawVector4 },
+                {typeof(Quaternion), _fieldDrawer.DrawQuaternion },
             };
 
             var background = new Texture2D(1, 1, TextureFormat.ARGB32, false);
