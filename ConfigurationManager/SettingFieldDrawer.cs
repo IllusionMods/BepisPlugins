@@ -17,7 +17,7 @@ namespace ConfigurationManager
     {
         private static readonly IEnumerable<KeyCode> _keysToCheck = BepInEx.Configuration.KeyboardShortcut.AllKeyCodes.Except(new[] { KeyCode.Mouse0 }).ToArray();
 
-        private readonly Dictionary<Type, Action<SettingEntryBase>> _settingDrawHandlers;
+        public Dictionary<Type, Action<SettingEntryBase>> SettingDrawHandlers { get; }
 
         private readonly Dictionary<SettingEntryBase, ComboBox> _comboBoxCache = new Dictionary<SettingEntryBase, ComboBox>();
         private readonly Dictionary<SettingEntryBase, ColorCacheEntry> _colorCache = new Dictionary<SettingEntryBase, ColorCacheEntry>();
@@ -29,7 +29,7 @@ namespace ConfigurationManager
         public SettingFieldDrawer(ConfigurationManager instance)
         {
             _instance = instance;
-            _settingDrawHandlers = new Dictionary<Type, Action<SettingEntryBase>>
+            SettingDrawHandlers = new Dictionary<Type, Action<SettingEntryBase>>
             {
                 {typeof(bool), DrawBoolField},
                 {typeof(BepInEx.KeyboardShortcut), DrawKeyboardShortcut},
@@ -108,7 +108,7 @@ namespace ConfigurationManager
 
         private void DrawFieldBasedOnValueType(SettingEntryBase setting)
         {
-            if (_settingDrawHandlers.TryGetValue(setting.SettingType, out var drawMethod))
+            if (SettingDrawHandlers.TryGetValue(setting.SettingType, out var drawMethod))
                 drawMethod(setting);
             else
                 DrawUnknownField(setting, _instance.RightColumnWidth);

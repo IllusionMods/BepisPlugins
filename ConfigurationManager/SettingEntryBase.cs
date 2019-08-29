@@ -10,7 +10,7 @@ using BepInEx.Configuration;
 
 namespace ConfigurationManager
 {
-    internal abstract class SettingEntryBase
+    public abstract class SettingEntryBase
     {
         public object[] AcceptableValues { get; protected set; }
         public KeyValuePair<object, object> AcceptableValueRange { get; protected set; }
@@ -20,37 +20,37 @@ namespace ConfigurationManager
 		/// <summary>
 		///     Show this setting in the settings screen at all? If false, don't show.
 		/// </summary>
-		public bool? Browsable { get; internal set; }
+		public bool? Browsable { get; protected set; }
 
         /// <summary>
         ///     Category the setting is under. Null to be directly under the plugin.
         /// </summary>
-        public string Category { get; internal set; }
+        public string Category { get; protected set; }
 
         /// <summary>
         ///     If set, a "Default" button will be shown next to the setting to allow resetting to default.
         /// </summary>
-        public object DefaultValue { get; internal set; }
+        public object DefaultValue { get; protected set; }
 
         /// <summary>
         ///     Optional description shown when hovering over the setting
         /// </summary>
-        public string Description { get; internal set; }
+        public string Description { get; protected set; }
 
         /// <summary>
         ///     Name of the setting
         /// </summary>
-        public virtual string DispName { get; internal set; }
+        public virtual string DispName { get; protected set; }
 
 	    /// <summary>
 	    ///     Plugin this setting belongs to
 	    /// </summary>
-	    public BepInPlugin PluginInfo { get; internal set; }
+	    public BepInPlugin PluginInfo { get; protected set; }
 
         /// <summary>
         ///     Only allow showing of the value. False whenever possible by default.
         /// </summary>
-        public bool? ReadOnly { get; internal set; }
+        public bool? ReadOnly { get; protected set; }
 
         /// <summary>
         ///     Type of the variable

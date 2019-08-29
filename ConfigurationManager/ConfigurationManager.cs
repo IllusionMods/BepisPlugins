@@ -20,12 +20,14 @@ namespace ConfigurationManager
     {
         public const string GUID = "com.bepis.bepinex.configurationmanager";
         public const string Version = Metadata.PluginsVersion;
-        internal static new ManualLogSource Logger;
 
-        private static readonly GUIContent KeyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
+        private static readonly GUIContent _keyboardShortcutsCategoryName = new GUIContent("Keyboard shortcuts",
             "The first key is the main key, while the rest are modifiers.\n" +
             "The shortcut will only fire when you press \n" +
             "the main key while all modifiers are already pressed.");
+
+        internal static new ManualLogSource Logger;
+        private static SettingFieldDrawer _fieldDrawer;
 
         private const string SearchBoxName = "searchBox";
         private const int WindowId = -68;
@@ -36,7 +38,6 @@ namespace ConfigurationManager
 
         private bool _displayingWindow;
 
-        private readonly SettingFieldDrawer _fieldDrawer;
         private string _modsWithoutSettings;
 
         private List<SettingEntryBase> _allSettings;
@@ -46,8 +47,11 @@ namespace ConfigurationManager
         private Rect _screenRect;
         private Vector2 _settingWindowScrollPos;
 
-        public static Texture2D TooltipBg;
-        public static Texture2D WindowBackground;
+        internal static Texture2D TooltipBg { get; private set; }
+        internal static Texture2D WindowBackground { get; private set; }
+
+        internal int LeftColumnWidth { get; private set; }
+        internal int RightColumnWidth { get; private set; }
 
         private readonly ConfigWrapper<bool> _showAdvanced;
         private readonly ConfigWrapper<bool> _showKeybinds;
@@ -90,6 +94,21 @@ namespace ConfigurationManager
 
                 DisplayingWindowChanged?.Invoke(this, new ValueChangedEventArgs<bool>(value));
             }
+        }
+
+        /// <summary>
+        /// Register a custom setting drawer for a given type. The action is ran in OnGui in a single setting slot.
+        /// Do not use any Begin / End layout methods, and avoid raising height from standard.
+        /// </summary>
+        public static void RegisterCustomSettingDrawer(Type settingType, Action<SettingEntryBase> onGuiDrawer)
+        {
+            if (settingType == null) throw new ArgumentNullException(nameof(settingType));
+            if (onGuiDrawer == null) throw new ArgumentNullException(nameof(onGuiDrawer));
+
+            if (_fieldDrawer.SettingDrawHandlers.ContainsKey(settingType))
+                Logger.LogWarning("Tried to add a setting drawer for type " + settingType.FullName + " while one already exists.");
+            else
+                _fieldDrawer.SettingDrawHandlers[settingType] = onGuiDrawer;
         }
 
         private void BuildSettingList()
@@ -146,9 +165,6 @@ namespace ConfigurationManager
             }
             return false;
         }
-
-        internal int LeftColumnWidth { get; private set; }
-        internal int RightColumnWidth { get; private set; }
 
         private void CalculateWindowRect()
         {
@@ -323,7 +339,7 @@ namespace ConfigurationManager
                 foreach (var category in plugin
                     .Select(x => new { plugin = x, category = GetCategory(x) })
                     .GroupBy(x => x.category.text)
-                    .OrderBy(x => string.Equals(x.Key, KeyboardShortcutsCategoryName.text, StringComparison.Ordinal))
+                    .OrderBy(x => string.Equals(x.Key, _keyboardShortcutsCategoryName.text, StringComparison.Ordinal))
                     .ThenBy(x => x.Key))
                 {
                     if (!string.IsNullOrEmpty(category.Key))
@@ -342,7 +358,7 @@ namespace ConfigurationManager
         private static GUIContent GetCategory(SettingEntryBase x)
         {
             // Legacy behavior
-            if (x.SettingType == typeof(BepInEx.KeyboardShortcut)) return KeyboardShortcutsCategoryName;
+            if (x.SettingType == typeof(BepInEx.KeyboardShortcut)) return _keyboardShortcutsCategoryName;
 
             return new GUIContent(x.Category);
         }
