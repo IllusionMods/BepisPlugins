@@ -1,5 +1,8 @@
 ﻿using BepInEx.Logging;
 using System;
+#if AI
+using AIChara;
+#endif
 
 namespace ExtensibleSaveFormat
 {
@@ -26,7 +29,7 @@ namespace ExtensibleSaveFormat
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CardBeingSaved)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CardBeingSaved)} - {ex}");
                 }
             }
         }
@@ -45,7 +48,7 @@ namespace ExtensibleSaveFormat
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CardBeingLoaded)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CardBeingLoaded)} - {ex}");
                 }
             }
         }
@@ -64,7 +67,7 @@ namespace ExtensibleSaveFormat
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CoordinateBeingSaved)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CoordinateBeingSaved)} - {ex}");
                 }
             }
         }
@@ -83,7 +86,7 @@ namespace ExtensibleSaveFormat
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CoordinateBeingLoaded)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(CoordinateBeingLoaded)} - {ex}");
                 }
             }
         }

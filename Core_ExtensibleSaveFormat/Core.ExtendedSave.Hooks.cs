@@ -1,6 +1,5 @@
 ﻿using BepInEx.Harmony;
 using BepInEx.Logging;
-using ChaCustom;
 using HarmonyLib;
 using MessagePack;
 using System;
@@ -9,6 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+#if AI
+using AIChara;
+#endif
 
 namespace ExtensibleSaveFormat
 {
@@ -62,7 +64,7 @@ namespace ExtensibleSaveFormat
                 catch (Exception e)
                 {
                     ExtendedSave.internalCharaDictionary.Set(file, new Dictionary<string, PluginData>());
-                    ExtendedSave.Logger.Log(LogLevel.Warning, $"Invalid or corrupted extended data in card \"{file.charaFileName}\" - {e.Message}");
+                    ExtendedSave.Logger.LogWarning($"Invalid or corrupted extended data in card \"{file.charaFileName}\" - {e.Message}");
                 }
 
                 ExtendedSave.CardReadEvent(file);
@@ -75,7 +77,7 @@ namespace ExtensibleSaveFormat
 
 #if KK
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
-#elif EC
+#elif EC || AI
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
 #endif
         public static IEnumerable<CodeInstruction> ChaFileLoadFileTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -166,7 +168,7 @@ namespace ExtensibleSaveFormat
 
 #if KK
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
-#elif EC
+#elif EC || AI
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
         public static void ChaFileSaveFilePreHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng) => ExtendedSave.CardWriteEvent(__instance);
@@ -204,7 +206,7 @@ namespace ExtensibleSaveFormat
 
 #if KK
         [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
-#elif EC
+#elif EC || AI
         [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
         public static void ChaFileSaveFilePostHook(ChaFile __instance, bool __result, BinaryWriter bw, bool savePng)
@@ -217,15 +219,21 @@ namespace ExtensibleSaveFormat
 
 #if KK
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
-#elif EC
+#elif EC || AI
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
         public static IEnumerable<CodeInstruction> ChaFileSaveFileTranspiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> newInstructionSet = new List<CodeInstruction>(instructions);
 
+#if AI
+            string blockHeader = "AIChara.BlockHeader";
+#else
+            string blockHeader = "BlockHeader";
+#endif
+
             //get the index of the last blockheader creation
-            int blockHeaderIndex = newInstructionSet.FindLastIndex(instruction => CheckNewObjTypeName(instruction, "BlockHeader"));
+            int blockHeaderIndex = newInstructionSet.FindLastIndex(instruction => CheckNewObjTypeName(instruction, blockHeader));
 
             //get the index of array3 (which contains data length info)
             int array3Index = newInstructionSet.FindIndex(instruction =>
@@ -234,6 +242,8 @@ namespace ExtensibleSaveFormat
                 return instruction.opcode == OpCodes.Newarr &&
                        instruction.operand.ToString() == "System.Int64";
             });
+
+            ExtendedSave.Logger.LogInfo($"blockHeaderIndex:{blockHeaderIndex} array3Index:{array3Index}");
 
             LocalBuilder blockHeaderLocalBuilder = (LocalBuilder)newInstructionSet[blockHeaderIndex + 1].operand; //get the local index for the block header
             LocalBuilder array3LocalBuilder = (LocalBuilder)newInstructionSet[array3Index + 1].operand; //get the local index for array3
@@ -250,17 +260,17 @@ namespace ExtensibleSaveFormat
             return newInstructionSet;
         }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
 
-        #region ChaFileCoordinate
+#region ChaFileCoordinate
 
-        #region Loading
+#region Loading
 
 #if KK
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.LoadFile), typeof(Stream))]
-#elif EC
+#elif EC || AI
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.LoadFile), typeof(Stream), typeof(int))]
 #endif
         public static IEnumerable<CodeInstruction> ChaFileCoordinateLoadTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -315,13 +325,13 @@ namespace ExtensibleSaveFormat
             ExtendedSave.CoordinateReadEvent(coordinate); //Firing the event in any case
         }
 
-        #endregion
+#endregion
 
-        #region Saving
+#region Saving
 
 #if KK
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
-#elif EC
+#elif EC || AI
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string), typeof(int))]
 #endif
         public static IEnumerable<CodeInstruction> ChaFileCoordinateSaveTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -360,11 +370,11 @@ namespace ExtensibleSaveFormat
             bw.Write(data);
         }
 
-        #endregion
+#endregion
 
-        #endregion
+#endregion
 
-        #region Helper
+#region Helper
 
         public static bool CheckCallVirtName(CodeInstruction instruction, string name) => instruction.opcode == OpCodes.Callvirt &&
                    //need to do reflection fuckery here because we can't access MonoMethod which is the operand type, not MehtodInfo like normal reflection
@@ -374,17 +384,19 @@ namespace ExtensibleSaveFormat
                    //need to do reflection fuckery here because we can't access MonoCMethod which is the operand type, not ConstructorInfo like normal reflection
                    instruction.operand.GetType().GetProperty("DeclaringType", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).GetGetMethod().Invoke(instruction.operand, null).ToString() == name;
 
-        #endregion
+#endregion
 
-        #region Extended Data Override Hooks
+#region Extended Data Override Hooks
+#if EC || KK
         //Prevent loading extended data when loading the list of characters in Chara Maker since it is irrelevant here
-        [HarmonyPrefix, HarmonyPatch(typeof(CustomCharaFile), "Initialize")]
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), "Initialize")]
         public static void CustomScenePreHook() => ExtendedSave.LoadEventsEnabled = false;
-        [HarmonyPostfix, HarmonyPatch(typeof(CustomCharaFile), "Initialize")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), "Initialize")]
         public static void CustomScenePostHook() => ExtendedSave.LoadEventsEnabled = true;
         //Prevent loading extended data when loading the list of coordinates in Chara Maker since it is irrelevant here
-        [HarmonyPrefix, HarmonyPatch(typeof(CustomCoordinateFile), "Initialize")]
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCoordinateFile), "Initialize")]
         public static void CustomCoordinatePreHook() => ExtendedSave.LoadEventsEnabled = false;
-        #endregion
+#endif
+#endregion
     }
 }

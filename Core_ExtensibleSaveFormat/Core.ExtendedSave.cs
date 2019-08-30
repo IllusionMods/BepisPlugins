@@ -4,6 +4,9 @@ using MessagePack;
 using MessagePack.Resolvers;
 using System;
 using System.Collections.Generic;
+#if AI
+using AIChara;
+#endif
 
 namespace ExtensibleSaveFormat
 {
@@ -100,7 +103,7 @@ namespace ExtensibleSaveFormat
             }
             catch (InvalidOperationException)
             {
-                Logger.Log(LogLevel.Warning, "Only primitive types are supported. Serialize your data first.");
+                Logger.LogWarning("Only primitive types are supported. Serialize your data first.");
                 throw;
             }
         }
@@ -117,7 +120,7 @@ namespace ExtensibleSaveFormat
             }
             catch (InvalidOperationException)
             {
-                Logger.Log(LogLevel.Warning, "Only primitive types are supported. Serialize your data first.");
+                Logger.LogWarning("Only primitive types are supported. Serialize your data first.");
                 throw;
             }
         }
