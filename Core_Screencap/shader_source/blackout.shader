@@ -1,8 +1,7 @@
 Shader "" {
     Properties {
-        _MainTex ("MainTex", 2D) = "white" {}
         _linewidthG ("linewidthG", Float ) = 0
-        _AlphaMask ("AlphaMask", 2D) = "white" {}
+        //_AlphaMask ("AlphaMask", 2D) = "white" {} //Same as below
         //_alpha_a ("alpha_a", int ) = 1    //by fetching a global (default: 1) we can enforce a default value of 1 when unspecified.
         _alpha_b ("alpha_b", int ) = 1
     }
@@ -22,7 +21,6 @@ Shader "" {
             #pragma fragmentoption ARB_precision_hint_fastest
             #pragma target 3.0
 
-            uniform sampler2D _MainTex; uniform float4 _MainTex_ST;
             uniform float _linewidthG;
             uniform sampler2D _AlphaMask; uniform float4 _AlphaMask_ST;
             uniform int _alpha_a;
@@ -44,7 +42,6 @@ Shader "" {
                 return o;
             }
             float4 frag(VertexOutput i) : COLOR {
-                float4 mt = tex2D(_MainTex, i.uv0);
                 float4 am = tex2D(_AlphaMask, i.uv0);
                 
                 float aa = step(_alpha_a, am.r);

@@ -40,14 +40,12 @@ namespace SliderUnlocker
         public static ConfigWrapper<int> Minimum { get; private set; }
         public static ConfigWrapper<int> Maximum { get; private set; }
 
-        public SliderUnlocker()
-        {
-            Minimum = Config.GetSetting("Slider Limits", "Minimum slider value", -100, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(-500, 0)));
-            Maximum = Config.GetSetting("Slider Limits", "Maximum slider value", 200, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(100, 500)));
-        }
 
         protected void Awake()
         {
+            Minimum = Config.GetSetting("Slider Limits", "Minimum slider value", -100, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(-500, 0)));
+            Maximum = Config.GetSetting("Slider Limits", "Maximum slider value", 200, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(100, 500)));
+
             Hooks.InstallHooks();
             Logger = base.Logger;
         }
@@ -274,6 +272,26 @@ namespace SliderUnlocker
         #endregion
 
 #endif
+        /// <summary>
+        /// Make sure the entered value is within range
+        /// </summary>
+        private static void UnlockSliderFromInput(Slider _slider, InputField _inputField)
+        {
+            var value = float.TryParse(_inputField.text, out var num) ? num / 100 : 0;
+
+            if (value > SliderAbsoluteMax)
+            {
+                _inputField.text = (SliderAbsoluteMax * 100).ToString();
+                value = SliderAbsoluteMax;
+            }
+            else if (value < SliderAbsoluteMin)
+            {
+                _inputField.text = (SliderAbsoluteMin * 100).ToString();
+                value = SliderAbsoluteMin;
+            }
+            UnlockSlider(_slider, value);
+        }
+
         private sealed class Target
         {
             public Target(Type type, List<FieldInfo> fields, List<FieldInfo> sliders, List<FieldInfo> buttons)

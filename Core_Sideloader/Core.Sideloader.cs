@@ -41,6 +41,7 @@ namespace Sideloader
         public static ConfigWrapper<bool> MissingModWarning { get; private set; }
         public static ConfigWrapper<bool> DebugLogging { get; private set; }
         public static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
+        public static ConfigWrapper<bool> ModLoadingLogging { get; private set; }
         public static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
         public static ConfigWrapper<string> AdditionalModsDirectory { get; private set; }
 
@@ -59,6 +60,7 @@ namespace Sideloader
             MissingModWarning = Config.GetSetting("Settings", "Show missing mod warnings", true, new ConfigDescription("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log."));
             DebugLogging = Config.GetSetting("Settings", "Debug logging", false, new ConfigDescription("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes."));
             DebugResolveInfoLogging = Config.GetSetting("Settings", "Debug resolve info logging", false, new ConfigDescription("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes."));
+            ModLoadingLogging = Config.GetSetting("Settings", "Mod loading logging", true, new ConfigDescription("Enable verbose logging when loading mods.", tags: "Advanced"));
             KeepMissingAccessories = Config.GetSetting("Settings", "Keep missing accessories", false, new ConfigDescription("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker."));
             AdditionalModsDirectory = Config.GetSetting("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
 
@@ -88,7 +90,12 @@ namespace Sideloader
             var stopWatch = Stopwatch.StartNew();
 
             // Look for mods, load their manifests
-            var allMods = modDirectories.Where(Directory.Exists).SelectMany(GetZipmodsFromDirectory);
+            var allMods = new List<string>();
+            foreach (var modDirectory in modDirectories)
+            {
+                if (!modDirectory.IsNullOrWhiteSpace() && Directory.Exists(modDirectory))
+                    allMods.AddRange(GetZipmodsFromDirectory(modDirectory));
+            }
 
             var archives = new Dictionary<ZipFile, Manifest>();
 
@@ -159,8 +166,9 @@ namespace Sideloader
             }
 
             stopWatch.Stop();
-            Logger.Log(LogLevel.Info, $"List of loaded mods:\n{modLoadInfoSb}" +
-                                      $"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
+            if (ModLoadingLogging.Value)
+                Logger.Log(LogLevel.Info, $"List of loaded mods:\n{modLoadInfoSb}");
+            Logger.Log(LogLevel.Info, $"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
 
             UniversalAutoResolver.SetResolveInfos(_gatheredResolutionInfos);
 
@@ -274,7 +282,10 @@ namespace Sideloader
 
                     //Make a list of all the .png files and archive they come from
                     if (PngList.ContainsKey(entry.Name))
-                        Logger.Log(LogLevel.Warning, $"Duplicate .png asset detected! {assetBundlePath} in \"{GetRelativeArchiveDir(arc.Name)}\"");
+                    {
+                        if (ModLoadingLogging.Value)
+                            Logger.Log(LogLevel.Warning, $"Duplicate .png asset detected! {assetBundlePath} in \"{GetRelativeArchiveDir(arc.Name)}\"");
+                    }
                     else
                         PngList.Add(entry.Name, arc);
 
@@ -418,7 +429,7 @@ namespace Sideloader
 
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
-                    if (!string.IsNullOrEmpty(warning))
+                    if (!string.IsNullOrEmpty(warning) && ModLoadingLogging.Value)
                         Logger.Log(LogLevel.Warning, $"{warning} in \"{GetRelativeArchiveDir(archiveFilename)}\"");
                 }
             }

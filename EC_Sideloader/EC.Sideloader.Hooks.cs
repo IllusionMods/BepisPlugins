@@ -1,4 +1,7 @@
-﻿using HarmonyLib;
+﻿using BepInEx;
+using HarmonyLib;
+using System;
+using System.IO;
 
 namespace Sideloader
 {
@@ -54,6 +57,64 @@ namespace Sideloader
                         {
                             temp = __instance.bundle.Replace("chara/", $"chara/{temp}/");
                             __result = AssetBundleCheck.IsFile(temp);
+                        }
+                    }
+                }
+            }
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAsset), new[] { typeof(string), typeof(string), typeof(Type), typeof(string) })]
+        public static void LoadAssetPreHook(ref string assetBundleName)
+        {
+            //Redirect KK vanilla assets to EC vanilla assets
+            if (!File.Exists($"{Paths.GameRootPath}/abdata/{assetBundleName}") && assetBundleName.EndsWith(".unity3d") && assetBundleName.StartsWith("chara/"))
+            {
+                string temp = assetBundleName.Replace(".unity3d", "");
+                if (temp.Length >= 2)
+                {
+                    temp = temp.Substring(temp.Length - 2, 2);
+                    if (int.TryParse(temp, out _))
+                    {
+                        if (assetBundleName.StartsWith("chara/thumb/") && !assetBundleName.StartsWith($"chara/thumb/{temp}/") && !assetBundleName.StartsWith($"chara/{temp}/"))
+                        {
+                            temp = assetBundleName.Replace("chara/thumb/", $"chara/thumb/{temp}/");
+                            if (File.Exists($"{Paths.GameRootPath}/abdata/{temp}"))
+                                assetBundleName = temp;
+                        }
+                        else if (assetBundleName.StartsWith("chara/") && !assetBundleName.StartsWith($"chara/thumb/{temp}/") && !assetBundleName.StartsWith($"chara/{temp}/"))
+                        {
+                            temp = assetBundleName.Replace("chara/", $"chara/{temp}/");
+                            if (File.Exists($"{Paths.GameRootPath}/abdata/{temp}"))
+                                assetBundleName = temp;
+                        }
+                    }
+                }
+            }
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), "LoadAssetAsync", new[] { typeof(string), typeof(string), typeof(Type), typeof(string) })]
+        public static void LoadAssetAsyncPreHook(ref string assetBundleName)
+        {
+            //Redirect KK vanilla assets to EC vanilla assets
+            if (!File.Exists($"{Paths.GameRootPath}/abdata/{assetBundleName}") && assetBundleName.EndsWith(".unity3d") && assetBundleName.StartsWith("chara/"))
+            {
+                string temp = assetBundleName.Replace(".unity3d", "");
+                if (temp.Length >= 2)
+                {
+                    temp = temp.Substring(temp.Length - 2, 2);
+                    if (int.TryParse(temp, out _))
+                    {
+                        if (assetBundleName.StartsWith("chara/thumb/") && !assetBundleName.StartsWith($"chara/thumb/{temp}/") && !assetBundleName.StartsWith($"chara/{temp}/"))
+                        {
+                            temp = assetBundleName.Replace("chara/thumb/", $"chara/thumb/{temp}/");
+                            if (File.Exists($"{Paths.GameRootPath}/abdata/{temp}"))
+                                assetBundleName = temp;
+                        }
+                        else if (assetBundleName.StartsWith("chara/") && !assetBundleName.StartsWith($"chara/thumb/{temp}/") && !assetBundleName.StartsWith($"chara/{temp}/"))
+                        {
+                            temp = assetBundleName.Replace("chara/", $"chara/{temp}/");
+                            if (File.Exists($"{Paths.GameRootPath}/abdata/{temp}"))
+                                assetBundleName = temp;
                         }
                     }
                 }

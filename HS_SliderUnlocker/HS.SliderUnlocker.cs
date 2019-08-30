@@ -104,25 +104,6 @@ namespace SliderUnlocker
             }
         }
         /// <summary>
-        /// Make sure the entered value is within range
-        /// </summary>
-        private static void UnlockSliderFromInput(Slider _slider, InputField _inputField)
-        {
-            var value = float.TryParse(_inputField.text, out var num) ? num / 100 : 0;
-
-            if (value > SliderAbsoluteMax)
-            {
-                _inputField.text = (SliderAbsoluteMax * 100).ToString();
-                value = SliderAbsoluteMax;
-            }
-            else if (value < SliderAbsoluteMin)
-            {
-                _inputField.text = (SliderAbsoluteMin * 100).ToString();
-                value = SliderAbsoluteMin;
-            }
-            UnlockSlider(_slider, value);
-        }
-        /// <summary>
         /// A set of associated slider, inputfield, and button
         /// </summary>
         private sealed class SliderSet
