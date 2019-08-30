@@ -35,17 +35,17 @@ namespace ConfigurationManager
         /// <summary>
         ///     Optional description shown when hovering over the setting
         /// </summary>
-        public string Description { get; protected set; }
+        public string Description { get; protected internal set; }
 
         /// <summary>
         ///     Name of the setting
         /// </summary>
-        public virtual string DispName { get; protected set; }
+        public virtual string DispName { get; protected internal set; }
 
 	    /// <summary>
 	    ///     Plugin this setting belongs to
 	    /// </summary>
-	    public BepInPlugin PluginInfo { get; protected set; }
+	    public BepInPlugin PluginInfo { get; protected internal set; }
 
         /// <summary>
         ///     Only allow showing of the value. False whenever possible by default.

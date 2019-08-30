@@ -19,7 +19,7 @@ namespace ConfigurationManager
         public override string DispName
         {
             get => string.IsNullOrEmpty(base.DispName) ? Property.Name : base.DispName;
-            internal set => base.DispName = value;
+	        protected internal set => base.DispName = value;
         }
 
         public object Instance { get; internal set; }

@@ -62,12 +62,12 @@ namespace ConfigurationManager
 
 		public override object Get()
 		{
-			return _entry.Value;
+			return _entry.BoxedValue;
 		}
 
 		public override void Set(object newVal)
 		{
-			_entry.Value = newVal;
+			_entry.BoxedValue = newVal;
 		}
 	}
 }

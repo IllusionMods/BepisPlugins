@@ -61,6 +61,7 @@ namespace ConfigurationManager
                 // Allow to enable/disable plugin if it uses any update methods ------
                 if (showDebug && type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => _updateMethodNames.Contains(x.Name)))
                 {
+					// todo make a different class for it and fix access modifiers?
                     var enabledSetting = LegacySettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo, plugin);
                     enabledSetting.DispName = "!Allow plugin to run on every frame";
                     enabledSetting.Description =
