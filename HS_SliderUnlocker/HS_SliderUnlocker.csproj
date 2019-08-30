@@ -67,12 +67,6 @@
     <Compile Include="HS.SliderUnlocker.Hooks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ConfigurationManager\ConfigurationManager.csproj">
-      <Project>{d56dd83d-7471-463f-b4ff-8910a335833c}</Project>
-      <Name>ConfigurationManager</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="..\Core_SliderUnlocker\Core_SliderUnlocker.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
