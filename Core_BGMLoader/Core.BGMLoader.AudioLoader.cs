@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using NVorbis;
 using System;
 using UnityEngine;
@@ -59,7 +58,7 @@ namespace BGMLoader
 
         public static AudioClip LoadAudioClip(string path, AudioType type)
         {
-            using (WWW loadGachi = new WWW(Utility.ConvertToWWWFormat(path)))
+            using (WWW loadGachi = new WWW(BepInEx.Utility.ConvertToWWWFormat(path)))
             {
                 AudioClip clip = loadGachi.GetAudioClipCompressed(false, type);
 

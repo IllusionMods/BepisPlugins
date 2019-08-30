@@ -16,8 +16,8 @@ namespace BGMLoader
         public const string GUID = "com.bepis.bgmloader";
         public const string PluginName = "BGM Loader";
         public const string Version = Metadata.PluginsVersion;
-        public static string IntroClipsDirectory = Utility.CombinePaths(Paths.PluginPath, "introclips");
-        public static string BGMDirectory = Utility.CombinePaths(Paths.PluginPath, "bgm");
+        public static string IntroClipsDirectory = BepInEx.Utility.CombinePaths(Paths.PluginPath, "introclips");
+        public static string BGMDirectory = BepInEx.Utility.CombinePaths(Paths.PluginPath, "bgm");
 
         public void Awake()
         {
@@ -47,10 +47,10 @@ namespace BGMLoader
 
         public void LoadBGM(IAssetLoadingContext context)
         {
-            if (context.Parameters.Name != null && context.Parameters.Name.StartsWith("bgm", System.StringComparison.InvariantCultureIgnoreCase) && context.Parameters.Name.Length > 4)
+            if (context.Parameters.Name != null && (context.Parameters.Name.StartsWith("bgm", System.StringComparison.InvariantCultureIgnoreCase) || context.Parameters.Name.StartsWith("ai_bgm", System.StringComparison.InvariantCultureIgnoreCase)) && context.Parameters.Name.Length > 4)
             {
                 int bgmTrack = int.Parse(context.Parameters.Name.Substring(context.Parameters.Name.Length - 2, 2));
-                var path = Utility.CombinePaths(BGMDirectory, $"BGM{bgmTrack:00}.ogg");
+                var path = BepInEx.Utility.CombinePaths(BGMDirectory, $"BGM{bgmTrack:00}.ogg");
 
                 if (File.Exists(path))
                 {
