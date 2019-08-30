@@ -5,6 +5,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using UnityEngine;
+#if KK || EC
+using ChaCustom;
+#elif AI
+using CharaCustom;
+using AIChara;
+#endif
 
 namespace SliderUnlocker
 {
@@ -110,15 +116,15 @@ namespace SliderUnlocker
             }
         }
 
-#if KK || EC
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaCustom.CustomBase), "ConvertTextFromRate")]
+#if KK || EC || AI
+        [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), "ConvertTextFromRate")]
         public static void ConvertTextFromRateHook(ref string __result, int min, int max, float value)
         {
             if (min == 0 && max == 100)
                 __result = Math.Round(100 * value).ToString(CultureInfo.InvariantCulture);
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaCustom.CustomBase), "ConvertRateFromText")]
+        [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), "ConvertRateFromText")]
         public static void ConvertRateFromTextHook(ref float __result, int min, int max, string buf)
         {
             if (min == 0 && max == 100)
