@@ -39,14 +39,8 @@ namespace Shared
         public static Texture2D LoadTexture(byte[] data, TextureFormat format, bool mipmap)
         {
             Texture2D tex = new Texture2D(2, 2, format, mipmap);
-#if KK
             tex.LoadImage(data);
-#elif EC
-            ImageConversion.LoadImage(tex, data);
-#endif
-
             return tex;
         }
     }
-
 }
