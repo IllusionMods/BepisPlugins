@@ -1,5 +1,4 @@
 ﻿using BepInEx.Harmony;
-using BepInEx.Logging;
 using ExtensibleSaveFormat;
 using HarmonyLib;
 using Illusion.Extensions;
@@ -8,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+#if AI
+using AIChara;
+#endif
 
 namespace Sideloader.AutoResolver
 {
@@ -41,7 +43,9 @@ namespace Sideloader.AutoResolver
                 new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ACEUpdateInfoPostfix), AccessTools.all)));
             harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("EtcInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
                 new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ETCUpdateInfoPostfix), AccessTools.all)));
+#endif
 
+#if KK || AI
             DoingImport = false;
 #endif
         }
@@ -53,7 +57,11 @@ namespace Sideloader.AutoResolver
             action(StructReference.ChaFileFaceProperties, file.custom.face, extInfo, "");
             action(StructReference.ChaFileBodyProperties, file.custom.body, extInfo, "");
             action(StructReference.ChaFileHairProperties, file.custom.hair, extInfo, "");
+#if KK || EC
             action(StructReference.ChaFileMakeupProperties, file.custom.face.baseMakeup, extInfo, "");
+#elif AI
+            action(StructReference.ChaFileMakeupProperties, file.custom.face.makeup, extInfo, "");
+#endif
 
 #if KK
             for (int i = 0; i < file.coordinate.Length; i++)
@@ -62,7 +70,7 @@ namespace Sideloader.AutoResolver
                 string prefix = $"outfit{i}.";
                 IterateCoordinate(prefix, coordinate);
             }
-#elif EC
+#elif EC || AI
             IterateCoordinate("outfit.", file.coordinate);
 #endif
             void IterateCoordinate(string prefix, ChaFileCoordinate coordinate)
@@ -80,14 +88,14 @@ namespace Sideloader.AutoResolver
 
         private static void ExtendedCardLoad(ChaFile file)
         {
-            Sideloader.Logger.Log(LogLevel.Debug, $"Loading card [{file.charaFileName}]");
+            Sideloader.Logger.LogDebug($"Loading card [{file.charaFileName}]");
 
             var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
             List<ResolveInfo> extInfo;
 
             if (extData == null || !extData.data.ContainsKey("info"))
             {
-                Sideloader.Logger.Log(LogLevel.Debug, "No sideloader marker found");
+                Sideloader.Logger.LogDebug("No sideloader marker found");
                 extInfo = null;
             }
             else
@@ -95,12 +103,12 @@ namespace Sideloader.AutoResolver
                 var tmpExtInfo = (object[])extData.data["info"];
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
 
-                Sideloader.Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
+                Sideloader.Logger.LogDebug($"Sideloader marker found, external info count: {extInfo.Count}");
 
                 if (Sideloader.DebugLogging.Value)
                 {
                     foreach (ResolveInfo info in extInfo)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                        Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
                 }
             }
 
@@ -125,7 +133,11 @@ namespace Sideloader.AutoResolver
 
                     //Check if it's a vanilla item
                     if (slot < UniversalAutoResolver.BaseSlotID)
+#if KK || EC
                         if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
+#elif AI
+                        if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
+#endif
                             continue;
 
                     //For accessories, make sure we're checking the appropriate category
@@ -174,19 +186,19 @@ namespace Sideloader.AutoResolver
         {
             if (DoingImport) return;
 
-            Sideloader.Logger.Log(LogLevel.Debug, $"Reloading card [{__instance.charaFileName}]");
+            Sideloader.Logger.LogDebug($"Reloading card [{__instance.charaFileName}]");
 
             var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
             var tmpExtInfo = (List<byte[]>)extData.data["info"];
             var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
 
-            Sideloader.Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
+            Sideloader.Logger.LogDebug($"External info count: {extInfo.Count}");
 
             if (Sideloader.DebugLogging.Value)
             {
                 foreach (ResolveInfo info in extInfo)
-                    Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                    Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
             }
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
@@ -221,14 +233,14 @@ namespace Sideloader.AutoResolver
 
         private static void ExtendedCoordinateLoad(ChaFileCoordinate file)
         {
-            Sideloader.Logger.Log(LogLevel.Debug, $"Loading coordinate [{file.coordinateName}]");
+            Sideloader.Logger.LogDebug($"Loading coordinate [{file.coordinateName}]");
 
             var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
             List<ResolveInfo> extInfo;
 
             if (extData == null || !extData.data.ContainsKey("info"))
             {
-                Sideloader.Logger.Log(LogLevel.Debug, "No sideloader marker found");
+                Sideloader.Logger.LogDebug("No sideloader marker found");
                 extInfo = null;
             }
             else
@@ -236,12 +248,12 @@ namespace Sideloader.AutoResolver
                 var tmpExtInfo = (object[])extData.data["info"];
                 extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
 
-                Sideloader.Logger.Log(LogLevel.Debug, $"Sideloader marker found, external info count: {extInfo.Count}");
+                Sideloader.Logger.LogDebug($"Sideloader marker found, external info count: {extInfo.Count}");
 
                 if (Sideloader.DebugLogging.Value)
                 {
                     foreach (ResolveInfo info in extInfo)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                        Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
                 }
             }
 
@@ -266,7 +278,11 @@ namespace Sideloader.AutoResolver
 
                     //Check if it's a vanilla item
                     if (slot < UniversalAutoResolver.BaseSlotID)
+#if KK || EC
                         if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
+#elif AI
+                        if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
+#endif
                             continue;
 
                     //For accessories, make sure we're checking the appropriate category
@@ -315,19 +331,19 @@ namespace Sideloader.AutoResolver
         {
             if (DoingImport) return;
 
-            Sideloader.Logger.Log(LogLevel.Debug, $"Reloading coordinate [{path}]");
+            Sideloader.Logger.LogDebug($"Reloading coordinate [{path}]");
 
             var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
 
             var tmpExtInfo = (List<byte[]>)extData.data["info"];
             var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
 
-            Sideloader.Logger.Log(LogLevel.Debug, $"External info count: {extInfo.Count}");
+            Sideloader.Logger.LogDebug($"External info count: {extInfo.Count}");
 
             if (Sideloader.DebugLogging.Value)
             {
                 foreach (ResolveInfo info in extInfo)
-                    Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                    Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
             }
 
             void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")

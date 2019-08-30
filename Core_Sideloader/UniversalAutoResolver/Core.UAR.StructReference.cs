@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿#if KK || EC
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -653,3 +654,4 @@ namespace Sideloader.AutoResolver
         #endregion
     }
 }
+#endif

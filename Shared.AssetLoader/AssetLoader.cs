@@ -1,5 +1,4 @@
-﻿using BepInEx;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 
 namespace Shared
@@ -8,7 +7,7 @@ namespace Shared
     {
         public static AudioClip LoadAudioClip(string path, AudioType type)
         {
-            using (WWW loadGachi = new WWW(Utility.ConvertToWWWFormat(path)))
+            using (WWW loadGachi = new WWW(BepInEx.Utility.ConvertToWWWFormat(path)))
             {
                 AudioClip clip = loadGachi.GetAudioClipCompressed(false, type);
 

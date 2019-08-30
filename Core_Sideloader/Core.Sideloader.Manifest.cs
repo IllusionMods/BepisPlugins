@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using ICSharpCode.SharpZipLib.Zip;
+﻿using ICSharpCode.SharpZipLib.Zip;
 using System;
 using System.IO;
 using System.Xml;
@@ -49,9 +48,9 @@ namespace Sideloader
             }
             catch (SystemException ex)
             {
-                Sideloader.Logger.Log(LogLevel.Warning, $"Cannot load {Path.GetFileName(zip.Name)} - {ex.Message}.");
+                Sideloader.Logger.LogWarning($"Cannot load {Path.GetFileName(zip.Name)} - {ex.Message}.");
                 if (!(ex is OperationCanceledException))
-                    Sideloader.Logger.Log(LogLevel.Debug, "Error details: " + ex);
+                    Sideloader.Logger.LogDebug("Error details: " + ex);
                 return false;
             }
         }

@@ -1,5 +1,8 @@
 ﻿using BepInEx.Harmony;
 using HarmonyLib;
+#if AI
+using AIChara;
+#endif
 
 namespace Sideloader.ListLoader
 {
@@ -39,7 +42,7 @@ namespace Sideloader.ListLoader
             return true;
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaListControl), "LoadListInfoAll")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.LoadListInfoAll))]
         public static void LoadListInfoAllPostHook(ChaListControl __instance) => Lists.LoadAllLists(__instance);
     }
 }

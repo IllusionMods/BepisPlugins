@@ -3,6 +3,9 @@ using Sideloader.ListLoader;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+#if AI
+using AIChara;
+#endif
 
 namespace Sideloader.AutoResolver
 {
@@ -41,7 +44,11 @@ namespace Sideloader.AutoResolver
             void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
             {
                 //Only attempt compatibility resolve if the ID does not belong to a vanilla item or hard mod
+#if KK || EC
                 if (!Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+#elif AI
+                if (!Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+#endif
                 {
                     //the property does not have external slot information
                     //check if we have a corrosponding item for backwards compatbility
@@ -51,7 +58,7 @@ namespace Sideloader.AutoResolver
                     {
                         //found a match
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
 
                         kv.Value.SetMethod(structure, intResolve.LocalSlot);
                     }
@@ -59,7 +66,7 @@ namespace Sideloader.AutoResolver
                     {
                         //No match was found
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
+                            Sideloader.Logger.LogDebug($"Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
                         if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
                             kv.Value.SetMethod(structure, 1);
                     }
@@ -95,15 +102,25 @@ namespace Sideloader.AutoResolver
                         {
                             //found a match to a corrosponding internal mod
                             if (Sideloader.DebugLogging.Value)
-                                Sideloader.Logger.Log(LogLevel.Debug, $"Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
+                                Sideloader.Logger.LogDebug($"Resolving {extResolve.GUID}:{extResolve.Property} from slot {extResolve.Slot} to slot {intResolve.LocalSlot}");
                             kv.Value.SetMethod(structure, intResolve.LocalSlot);
                         }
                         else
                         {
+#if KK || EC
                             if (Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+#elif AI
+                            if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+#endif
                             {
+#if KK || EC
                                 string mainAB = Lists.InternalDataList[kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
-                                mainAB = mainAB.Replace("chara/", "").Replace(".unity3d", "").Replace(kv.Key.Category.ToString() + "_", "");
+#elif AI
+                                string mainAB = Lists.InternalDataList[(int)kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
+#endif
+                                mainAB = mainAB.Replace("chara/", "").Replace(".unity3d", "").Replace(kv.Key.Category.ToString() + "_", "").Replace("/", "");
+
+                                Sideloader.Logger.LogInfo(mainAB);
 
                                 if (int.TryParse(mainAB, out int x))
                                 {
@@ -117,7 +134,7 @@ namespace Sideloader.AutoResolver
                                 else
                                 {
                                     //ID found and it does not conflict with a vanilla item, likely the user has a hard mod version of the mod installed
-                                    Sideloader.Logger.Log(LogLevel.Debug, $"Missing mod detected [{extResolve.GUID}] but matching ID found");
+                                    Sideloader.Logger.LogDebug($"Missing mod detected [{extResolve.GUID}] but matching ID found");
                                 }
                             }
                             else
@@ -153,18 +170,19 @@ namespace Sideloader.AutoResolver
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
+#if KK || EC
                 if (data.categoryNo == (int)ChaListDefine.CategoryNo.mt_ramp)
                 {
                     //Special handling for ramp stuff since it's the only thing that isn't saved to the character
                     if (Sideloader.DebugResolveInfoLogging.Value)
                     {
-                        Sideloader.Logger.Log(LogLevel.Info, $"ResolveInfo - " +
-                                                             $"GUID: {manifest.GUID} " +
-                                                             $"Slot: {int.Parse(kv.Value[0])} " +
-                                                             $"LocalSlot: {newSlot} " +
-                                                             $"Property: Ramp " +
-                                                             $"CategoryNo: {category} " +
-                                                             $"Count: {LoadedResolutionInfo.Count()}");
+                        Sideloader.Logger.LogInfo($"ResolveInfo - " +
+                                                  $"GUID: {manifest.GUID} " +
+                                                  $"Slot: {int.Parse(kv.Value[0])} " +
+                                                  $"LocalSlot: {newSlot} " +
+                                                  $"Property: Ramp " +
+                                                  $"CategoryNo: {category} " +
+                                                  $"Count: {LoadedResolutionInfo.Count()}");
                     }
 
                     results.Add(new ResolveInfo
@@ -177,18 +195,19 @@ namespace Sideloader.AutoResolver
                     });
                 }
                 else
+#endif
                 {
                     results.AddRange(propertyKeys.Select(propertyKey =>
                     {
                         if (Sideloader.DebugResolveInfoLogging.Value)
                         {
-                            Sideloader.Logger.Log(LogLevel.Info, $"ResolveInfo - " +
-                                                                 $"GUID: {manifest.GUID} " +
-                                                                 $"Slot: {int.Parse(kv.Value[0])} " +
-                                                                 $"LocalSlot: {newSlot} " +
-                                                                 $"Property: {propertyKey.ToString()} " +
-                                                                 $"CategoryNo: {category} " +
-                                                                 $"Count: {LoadedResolutionInfo.Count()}");
+                            Sideloader.Logger.LogInfo($"ResolveInfo - " +
+                                                      $"GUID: {manifest.GUID} " +
+                                                      $"Slot: {int.Parse(kv.Value[0])} " +
+                                                      $"LocalSlot: {newSlot} " +
+                                                      $"Property: {propertyKey.ToString()} " +
+                                                      $"CategoryNo: {category} " +
+                                                      $"Count: {LoadedResolutionInfo.Count()}");
                         }
 
                         return new ResolveInfo
@@ -210,7 +229,7 @@ namespace Sideloader.AutoResolver
         {
             if (LoadedResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{guid}]");
+                Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | (Sideloader.MissingModWarning.Value ? BepInEx.Logging.LogLevel.Message : BepInEx.Logging.LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{guid}]");
 #if KK
             else if (LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
@@ -218,7 +237,7 @@ namespace Sideloader.AutoResolver
 #endif
             else
                 //did not find a match, we don't have the mod
-                Sideloader.Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Missing mod detected! [{guid}]");
+                Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | (Sideloader.MissingModWarning.Value ? BepInEx.Logging.LogLevel.Message : BepInEx.Logging.LogLevel.None), $"[UAR] WARNING! Missing mod detected! [{guid}]");
         }
     }
 }

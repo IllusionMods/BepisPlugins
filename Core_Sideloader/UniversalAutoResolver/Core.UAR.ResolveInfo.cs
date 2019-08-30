@@ -1,5 +1,8 @@
 ﻿using MessagePack;
 using System;
+#if AI
+using AIChara;
+#endif
 
 namespace Sideloader.AutoResolver
 {

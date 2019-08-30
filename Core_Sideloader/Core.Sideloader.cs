@@ -15,6 +15,9 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using XUnity.ResourceRedirector;
+#if AI
+using AIChara;
+#endif
 
 namespace Sideloader
 {
@@ -54,6 +57,7 @@ namespace Sideloader
             ListLoader.Hooks.InstallHooks();
 
             ResourceRedirection.EnableSyncOverAsyncAssetLoads();
+            ResourceRedirection.EnableRedirectMissingAssetBundlesToEmptyAssetBundle(-1000);
             ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(RedirectHook);
             ResourceRedirection.RegisterAssetBundleLoadingHook(AssetBundleLoadingHook);
 
@@ -65,10 +69,10 @@ namespace Sideloader
             AdditionalModsDirectory = Config.GetSetting("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
 
             if (!Directory.Exists(ModsDirectory))
-                Logger.Log(LogLevel.Warning, "Could not find the mods directory: " + ModsDirectory);
+                Logger.LogWarning("Could not find the mods directory: " + ModsDirectory);
 
             if (!AdditionalModsDirectory.Value.IsNullOrWhiteSpace() && !Directory.Exists(AdditionalModsDirectory.Value))
-                Logger.Log(LogLevel.Warning, "Could not find the additional mods directory specified in config: " + AdditionalModsDirectory.Value);
+                Logger.LogWarning("Could not find the additional mods directory specified in config: " + AdditionalModsDirectory.Value);
 
             LoadModsFromDirectories(ModsDirectory, AdditionalModsDirectory.Value);
         }
@@ -85,7 +89,7 @@ namespace Sideloader
 
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
-            Logger.Log(LogLevel.Info, "Scanning the \"mods\" directory...");
+            Logger.LogInfo("Scanning the \"mods\" directory...");
 
             var stopWatch = Stopwatch.StartNew();
 
@@ -110,11 +114,11 @@ namespace Sideloader
                         if (manifest.Game.IsNullOrWhiteSpace() || GameNameList.Contains(manifest.Game.ToLower().Replace("!", "")))
                             archives.Add(archive, manifest);
                         else
-                            Logger.Log(LogLevel.Info, $"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {manifest.Game}");
+                            Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {manifest.Game}");
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Failed to load archive \"{GetRelativeArchiveDir(archivePath)}\" with error: {ex}");
+                    Logger.LogError($"Failed to load archive \"{GetRelativeArchiveDir(archivePath)}\" with error: {ex}");
                     archive?.Close();
                 }
             }
@@ -135,7 +139,7 @@ namespace Sideloader
                 if (orderedMods.Count > 1)
                 {
                     var modList = string.Join(", ", orderedMods.Select(x => '"' + GetRelativeArchiveDir(x.Key.Name) + '"').ToArray());
-                    Logger.Log(LogLevel.Warning, $"Archives with identical GUIDs detected! Archives: {modList}; Only \"{GetRelativeArchiveDir(orderedMods[0].Key.Name)}\" will be loaded because it's the newest");
+                    Logger.LogWarning($"Archives with identical GUIDs detected! Archives: {modList}; Only \"{GetRelativeArchiveDir(orderedMods[0].Key.Name)}\" will be loaded because it's the newest");
 
                     // Don't keep the duplicate archives in memory
                     foreach (var dupeMod in orderedMods.Skip(1))
@@ -161,14 +165,14 @@ namespace Sideloader
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Failed to load archive \"{GetRelativeArchiveDir(archive.Name)}\" with error: {ex}");
+                    Logger.LogError($"Failed to load archive \"{GetRelativeArchiveDir(archive.Name)}\" with error: {ex}");
                 }
             }
 
             stopWatch.Stop();
             if (ModLoadingLogging.Value)
-                Logger.Log(LogLevel.Info, $"List of loaded mods:\n{modLoadInfoSb}");
-            Logger.Log(LogLevel.Info, $"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
+                Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
+            Logger.LogInfo($"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
 
             UniversalAutoResolver.SetResolveInfos(_gatheredResolutionInfos);
 
@@ -193,7 +197,7 @@ namespace Sideloader
                     }
                     catch (Exception ex)
                     {
-                        Logger.Log(LogLevel.Error, $"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
+                        Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                     }
                 }
 #if KK
@@ -284,7 +288,7 @@ namespace Sideloader
                     if (PngList.ContainsKey(entry.Name))
                     {
                         if (ModLoadingLogging.Value)
-                            Logger.Log(LogLevel.Warning, $"Duplicate .png asset detected! {assetBundlePath} in \"{GetRelativeArchiveDir(arc.Name)}\"");
+                            Logger.LogWarning($"Duplicate .png asset detected! {assetBundlePath} in \"{GetRelativeArchiveDir(arc.Name)}\"");
                     }
                     else
                         PngList.Add(entry.Name, arc);
@@ -401,13 +405,13 @@ namespace Sideloader
                             long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
 
                             if (DebugLogging.Value)
-                                Logger.Log(LogLevel.Debug, $"Streaming \"{entry.Name}\" ({GetRelativeArchiveDir(archiveFilename)}) unity3d file from disk, offset {index}");
+                                Logger.LogDebug($"Streaming \"{entry.Name}\" ({GetRelativeArchiveDir(archiveFilename)}) unity3d file from disk, offset {index}");
 
                             bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
                         }
                         else
                         {
-                            Logger.Log(LogLevel.Debug, $"Cannot stream \"{entry.Name}\" ({GetRelativeArchiveDir(archiveFilename)}) unity3d file from disk, loading to RAM instead");
+                            Logger.LogDebug($"Cannot stream \"{entry.Name}\" ({GetRelativeArchiveDir(archiveFilename)}) unity3d file from disk, loading to RAM instead");
                             var stream = arc.GetInputStream(entry);
 
                             byte[] buffer = new byte[entry.Size];
@@ -421,7 +425,7 @@ namespace Sideloader
 
                         if (bundle == null)
                         {
-                            Logger.Log(LogLevel.Error, $"Asset bundle \"{entry.Name}\" ({GetRelativeArchiveDir(archiveFilename)}) failed to load. It might have a conflicting CAB string.");
+                            Logger.LogError($"Asset bundle \"{entry.Name}\" ({GetRelativeArchiveDir(archiveFilename)}) failed to load. It might have a conflicting CAB string.");
                         }
 
                         return bundle;
@@ -430,12 +434,12 @@ namespace Sideloader
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
                     if (!string.IsNullOrEmpty(warning) && ModLoadingLogging.Value)
-                        Logger.Log(LogLevel.Warning, $"{warning} in \"{GetRelativeArchiveDir(archiveFilename)}\"");
+                        Logger.LogWarning($"{warning} in \"{GetRelativeArchiveDir(archiveFilename)}\"");
                 }
             }
         }
 
-        protected void RedirectHook(IAssetLoadingContext context)
+        private void RedirectHook(IAssetLoadingContext context)
         {
             if (context.Parameters.Name == null) return;
 

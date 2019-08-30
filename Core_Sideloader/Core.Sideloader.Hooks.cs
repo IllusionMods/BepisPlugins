@@ -1,10 +1,14 @@
 ﻿using BepInEx.Harmony;
-using ChaCustom;
 using HarmonyLib;
 using Sideloader.AutoResolver;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+#if KK || EC
+using ChaCustom;
+#elif AI
+using CharaCustom;
+#endif
 
 namespace Sideloader
 {
@@ -44,6 +48,7 @@ namespace Sideloader
                     __result = true;
             }
         }
+#if KK || EC
         /// <summary>
         /// The game gets from a list by index which will cause errors. Get them safely for sideloader items
         /// </summary>
@@ -89,5 +94,6 @@ namespace Sideloader
 
             return true;
         }
+#endif
     }
 }

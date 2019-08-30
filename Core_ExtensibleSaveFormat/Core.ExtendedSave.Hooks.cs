@@ -1,5 +1,4 @@
 ﻿using BepInEx.Harmony;
-using BepInEx.Logging;
 using HarmonyLib;
 using MessagePack;
 using System;
@@ -260,13 +259,13 @@ namespace ExtensibleSaveFormat
             return newInstructionSet;
         }
 
-#endregion
+        #endregion
 
-#endregion
+        #endregion
 
-#region ChaFileCoordinate
+        #region ChaFileCoordinate
 
-#region Loading
+        #region Loading
 
 #if KK
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.LoadFile), typeof(Stream))]
@@ -325,9 +324,9 @@ namespace ExtensibleSaveFormat
             ExtendedSave.CoordinateReadEvent(coordinate); //Firing the event in any case
         }
 
-#endregion
+        #endregion
 
-#region Saving
+        #region Saving
 
 #if KK
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
@@ -370,11 +369,11 @@ namespace ExtensibleSaveFormat
             bw.Write(data);
         }
 
-#endregion
+        #endregion
 
-#endregion
+        #endregion
 
-#region Helper
+        #region Helper
 
         public static bool CheckCallVirtName(CodeInstruction instruction, string name) => instruction.opcode == OpCodes.Callvirt &&
                    //need to do reflection fuckery here because we can't access MonoMethod which is the operand type, not MehtodInfo like normal reflection
@@ -384,9 +383,9 @@ namespace ExtensibleSaveFormat
                    //need to do reflection fuckery here because we can't access MonoCMethod which is the operand type, not ConstructorInfo like normal reflection
                    instruction.operand.GetType().GetProperty("DeclaringType", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).GetGetMethod().Invoke(instruction.operand, null).ToString() == name;
 
-#endregion
+        #endregion
 
-#region Extended Data Override Hooks
+        #region Extended Data Override Hooks
 #if EC || KK
         //Prevent loading extended data when loading the list of characters in Chara Maker since it is irrelevant here
         [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), "Initialize")]
@@ -396,7 +395,12 @@ namespace ExtensibleSaveFormat
         //Prevent loading extended data when loading the list of coordinates in Chara Maker since it is irrelevant here
         [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCoordinateFile), "Initialize")]
         public static void CustomCoordinatePreHook() => ExtendedSave.LoadEventsEnabled = false;
+#elif AI
+        [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
+        public static void LoadCharacterListPrefix() => ExtendedSave.LoadEventsEnabled = false;
+        [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
+        public static void LoadCharacterListPostfix() => ExtendedSave.LoadEventsEnabled = true;
 #endif
-#endregion
+        #endregion
     }
 }

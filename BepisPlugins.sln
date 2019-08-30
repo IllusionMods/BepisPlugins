@@ -85,6 +85,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_BGMLoader", "AI_BGMLoade
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ExtensibleSaveFormat", "AI_ExtensibleSaveFormat\AI_ExtensibleSaveFormat.csproj", "{303C404B-9D91-4622-9B8B-8415E0DE6A8F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Sideloader", "AI_Sideloader\AI_Sideloader.csproj", "{737A4054-4A2B-48E9-842A-A38D24361435}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
@@ -110,6 +112,9 @@ Global
 		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
 		Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
+		Core_Sideloader\Core_Sideloader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
+		Shared.AssetLoader\Shared.AssetLoader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
+		Shared\Shared.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
 		Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
 		Shared\Shared.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
 		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7cba15ab-52d1-4506-a7bf-9d23060ecf5d}*SharedItemsImports = 13
@@ -240,6 +245,10 @@ Global
 		{303C404B-9D91-4622-9B8B-8415E0DE6A8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{303C404B-9D91-4622-9B8B-8415E0DE6A8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{303C404B-9D91-4622-9B8B-8415E0DE6A8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{737A4054-4A2B-48E9-842A-A38D24361435}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{737A4054-4A2B-48E9-842A-A38D24361435}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{737A4054-4A2B-48E9-842A-A38D24361435}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{737A4054-4A2B-48E9-842A-A38D24361435}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -275,6 +284,7 @@ Global
 		{3590476D-CE82-4B96-AB71-6DCC4B481B17} = {CE8AB915-8694-4892-BD38-05CBB1AAA418}
 		{CD6453F6-DCDE-44D4-B1DB-B0B7CDF9BCC9} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 		{303C404B-9D91-4622-9B8B-8415E0DE6A8F} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
+		{737A4054-4A2B-48E9-842A-A38D24361435} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
