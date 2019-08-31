@@ -1,8 +1,8 @@
-﻿using BepInEx.Logging;
-using Sideloader.ListLoader;
+﻿using Sideloader.ListLoader;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Logging = BepInEx.Logging;
 #if AI
 using AIChara;
 #endif
@@ -227,17 +227,19 @@ namespace Sideloader.AutoResolver
 
         public static void ShowGUIDError(string guid)
         {
+            Logging.LogLevel loglevel = Sideloader.MissingModWarning.Value ? Logging.LogLevel.Warning | Logging.LogLevel.Message : Logging.LogLevel.Warning;
+
             if (LoadedResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | (Sideloader.MissingModWarning.Value ? BepInEx.Logging.LogLevel.Message : BepInEx.Logging.LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{guid}]");
+                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]");
 #if KK
             else if (LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(LogLevel.Warning | (Sideloader.MissingModWarning.Value ? LogLevel.Message : LogLevel.None), $"[UAR] WARNING! Outdated mod detected! [{guid}]");
+                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]");
 #endif
             else
                 //did not find a match, we don't have the mod
-                Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | (Sideloader.MissingModWarning.Value ? BepInEx.Logging.LogLevel.Message : BepInEx.Logging.LogLevel.None), $"[UAR] WARNING! Missing mod detected! [{guid}]");
+                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Missing mod detected! [{guid}]");
         }
     }
 }
