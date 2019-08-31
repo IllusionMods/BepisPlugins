@@ -179,7 +179,7 @@ namespace Sideloader.AutoResolver
 
 #if KK
         [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
-#elif EC
+#else
         [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
         public static void ChaFileSaveFilePostHook(ChaFile __instance)
@@ -324,7 +324,7 @@ namespace Sideloader.AutoResolver
 
 #if KK
         [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
-#elif EC
+#else
         [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string), typeof(int))]
 #endif
         public static void ChaFileCoordinateSaveFilePostHook(ChaFileCoordinate __instance, string path)
