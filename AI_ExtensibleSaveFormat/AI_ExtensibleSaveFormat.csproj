@@ -17,7 +17,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
+    <OutputPath>..\bin\BepInEx\plugins\AI_BepisPlugins\</OutputPath>
     <DefineConstants>TRACE;DEBUG;AI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>
+    <OutputPath>..\bin\BepInEx\plugins\AI_BepisPlugins\</OutputPath>
     <DefineConstants>TRACE;AI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>..\lib\BepInEx5\0Harmony.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\lib\AIGirl\Assembly-CSharp.dll</HintPath>
@@ -40,12 +41,15 @@
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\lib\BepInEx5\BepInEx.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx.Harmony">
       <HintPath>..\lib\BepInEx5\BepInEx.Harmony.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="MessagePack">
       <HintPath>..\lib\AIGirl\MessagePack.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
