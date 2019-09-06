@@ -242,8 +242,6 @@ namespace ExtensibleSaveFormat
                        instruction.operand.ToString() == "System.Int64";
             });
 
-            ExtendedSave.Logger.LogInfo($"blockHeaderIndex:{blockHeaderIndex} array3Index:{array3Index}");
-
             LocalBuilder blockHeaderLocalBuilder = (LocalBuilder)newInstructionSet[blockHeaderIndex + 1].operand; //get the local index for the block header
             LocalBuilder array3LocalBuilder = (LocalBuilder)newInstructionSet[array3Index + 1].operand; //get the local index for array3
 
