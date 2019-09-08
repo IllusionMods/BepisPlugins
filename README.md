@@ -15,7 +15,7 @@ You can download nightly builds [here](http://bepisbuilds.dyn.mk/bepis_plugins),
 ### BGMLoader
 Loads custom BGMs and clips played on game startup. Stock audio is replaced during runtime by custom clips from BepInEx\BGM and BepInEx\IntroClips directories.
 
-[Tutorial on how to replace sound clips and background music using BGMLoader.](BGMLoader/README.md)
+[Tutorial on how to replace sound clips and background music using BGMLoader.](https://github.com/IllusionMods/BepisPlugins/wiki/BGM-Loader)
 
 ### ColorCorrector
 Allows configuration of some post-processing filters. (change of bloom amount, disable saturation filter)
