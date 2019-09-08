@@ -36,10 +36,7 @@ namespace ExtensibleSaveFormat
 
             var dict = _internalHEditDataDictionary.Get(data);
 
-            if (dict != null && dict.TryGetValue(id, out var extendedSection))
-                return extendedSection;
-
-            return null;
+            return dict != null && dict.TryGetValue(id, out var extendedSection) ? extendedSection : null;
         }
 
         /// <summary>
