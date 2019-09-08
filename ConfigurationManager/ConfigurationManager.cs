@@ -191,6 +191,8 @@ namespace ConfigurationManager
                 GUI.Box(SettingWindowRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = WindowBackground } });
 
                 GUILayout.Window(WindowId, SettingWindowRect, SettingsWindow, "Plugin / mod settings");
+
+                Input.ResetInputAxes();
             }
         }
 
