@@ -29,6 +29,7 @@
     <DefineConstants>TRACE;EC</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\bin\BepInEx\plugins\EC_BepisPlugins\EC_Sideloader.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">

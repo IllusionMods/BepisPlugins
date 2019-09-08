@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Sideloader
 {
-    public class ManifestVersionComparer : IComparer<string>
+    internal class ManifestVersionComparer : IComparer<string>
     {
         public int Compare(string x, string y)
         {

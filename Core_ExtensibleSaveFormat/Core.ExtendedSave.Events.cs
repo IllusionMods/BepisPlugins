@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using System;
+﻿using System;
 #if AI
 using AIChara;
 #endif
@@ -8,11 +7,17 @@ namespace ExtensibleSaveFormat
 {
     public partial class ExtendedSave
     {
+        /// <summary> CardEventHandler </summary>
         public delegate void CardEventHandler(ChaFile file);
+        /// <summary> Register methods to trigger on card being saved </summary>
         public static event CardEventHandler CardBeingSaved;
+        /// <summary> Register methods to trigger on card being loaded </summary>
         public static event CardEventHandler CardBeingLoaded;
+        /// <summary> CoordinateEventHandler </summary>
         public delegate void CoordinateEventHandler(ChaFileCoordinate file);
+        /// <summary> Register methods to trigger on coordinate being saved </summary>
         public static event CoordinateEventHandler CoordinateBeingSaved;
+        /// <summary> Register methods to trigger on coordinate being loaded </summary>
         public static event CoordinateEventHandler CoordinateBeingLoaded;
 
         internal static void CardWriteEvent(ChaFile file)

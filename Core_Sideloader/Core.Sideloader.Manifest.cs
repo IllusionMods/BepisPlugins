@@ -6,27 +6,54 @@ using System.Xml.Linq;
 
 namespace Sideloader
 {
+    /// <summary>
+    /// Contains data about the loaded manifest.xml
+    /// </summary>
     public class Manifest
     {
-        protected readonly int SchemaVer = 1;
+        private readonly int SchemaVer = 1;
 
+        /// <summary>
+        /// Full contents of the manifest.xml.
+        /// </summary>
         public readonly XDocument manifestDocument;
 
+        /// <summary>
+        /// GUID of the mod.
+        /// </summary>
         public string GUID => manifestDocument.Root?.Element("guid")?.Value;
+        /// <summary>
+        /// Name of the mod. Only used for display the name of the mod when mods are loaded.
+        /// </summary>
         public string Name => manifestDocument.Root?.Element("name")?.Value;
+        /// <summary>
+        /// Version of the mod.
+        /// </summary>
         public string Version => manifestDocument.Root?.Element("version")?.Value;
+        /// <summary>
+        /// Author of the mod. Not currently used for anything.
+        /// </summary>
         public string Author => manifestDocument.Root?.Element("author")?.Value;
+        /// <summary>
+        /// Website of the mod. Not currently used for anything.
+        /// </summary>
         public string Website => manifestDocument.Root?.Element("website")?.Value;
+        /// <summary>
+        /// Description of the mod. Not currently used for anything.
+        /// </summary>
         public string Description => manifestDocument.Root?.Element("description")?.Value;
+        /// <summary>
+        /// Game the mod is made for. If specified, the mod will only load for that game. If not specified will load on any game.
+        /// </summary>
         public string Game => manifestDocument.Root?.Element("game")?.Value;
 
-        public Manifest(Stream stream)
+        internal Manifest(Stream stream)
         {
             using (XmlReader reader = XmlReader.Create(stream))
                 manifestDocument = XDocument.Load(reader);
         }
 
-        public static bool TryLoadFromZip(ZipFile zip, out Manifest manifest)
+        internal static bool TryLoadFromZip(ZipFile zip, out Manifest manifest)
         {
             manifest = null;
             try

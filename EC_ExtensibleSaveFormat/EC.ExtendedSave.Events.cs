@@ -6,7 +6,9 @@ namespace ExtensibleSaveFormat
 {
     public partial class ExtendedSave
     {
+        /// <summary> MapInfoEventHandler </summary>
         public delegate void MapInfoEventHandler(HEdit.HEditData data);
+        /// <summary> ImportEventHandler </summary>
         public delegate void ImportEventHandler(Dictionary<string, PluginData> importedExtendedData);
 
         /// <summary>
@@ -21,7 +23,9 @@ namespace ExtensibleSaveFormat
         /// </summary>
         public static event ImportEventHandler CoordinateBeingImported;
 
+        /// <summary> Register methods to trigger on map being saved </summary>
         public static event MapInfoEventHandler HEditDataBeingSaved;
+        /// <summary> Register methods to trigger on map being loaded </summary>
         public static event MapInfoEventHandler HEditDataBeingLoaded;
 
         private static void CardImportEvent(Dictionary<string, PluginData> data)

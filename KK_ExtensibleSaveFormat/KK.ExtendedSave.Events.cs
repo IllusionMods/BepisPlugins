@@ -5,9 +5,13 @@ namespace ExtensibleSaveFormat
 {
     public partial class ExtendedSave
     {
+        /// <summary> SceneEventHandler </summary>
         public delegate void SceneEventHandler(string path);
+        /// <summary> Register methods to trigger on scene being saved </summary>
         public static event SceneEventHandler SceneBeingSaved;
+        /// <summary> Register methods to trigger on scene being loaded </summary>
         public static event SceneEventHandler SceneBeingLoaded;
+        /// <summary> Register methods to trigger on scene being imported </summary>
         public static event SceneEventHandler SceneBeingImported;
 
         internal static void SceneWriteEvent(string path)

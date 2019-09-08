@@ -3,27 +3,28 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using HarmonyLib;
 #if AI
 using AIChara;
 #endif
 
 namespace Sideloader.ListLoader
 {
-    public static partial class Lists
+    internal static partial class Lists
     {
         internal const int CategoryMultiplier = 1000000;
 
-        private static readonly FieldInfo r_dictListInfo = typeof(ChaListControl).GetField("dictListInfo", BindingFlags.Instance | BindingFlags.NonPublic);
+        internal static readonly FieldInfo r_dictListInfo = typeof(ChaListControl).GetField("dictListInfo", AccessTools.all);
 
 #if KK || EC
-        public static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
+        internal static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
 #elif AI
-        public static Dictionary<int, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<int, Dictionary<int, ListInfoBase>>();
+        internal static Dictionary<int, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<int, Dictionary<int, ListInfoBase>>();
 #endif
 
-        public static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
+        internal static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
 
-        public static int CalculateGlobalID(int category, int ID) => (category * CategoryMultiplier) + ID;
+        internal static int CalculateGlobalID(int category, int ID) => (category * CategoryMultiplier) + ID;
 
         internal static void LoadAllLists(ChaListControl instance)
         {
@@ -39,10 +40,10 @@ namespace Sideloader.ListLoader
             instance.LoadItemID();
         }
 
-        public static void LoadList(this ChaListControl instance, ChaListData data) => LoadList(instance, (ChaListDefine.CategoryNo)data.categoryNo, data);
+        internal static void LoadList(this ChaListControl instance, ChaListData data) => LoadList(instance, (ChaListDefine.CategoryNo)data.categoryNo, data);
 
 #if KK || EC
-        public static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
+        internal static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
         {
             var dictListInfo = r_dictListInfo.GetValue<Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>>(instance);
 
@@ -52,7 +53,7 @@ namespace Sideloader.ListLoader
             }
         }
 #elif AI
-        public static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
+        internal static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
         {
             var dictListInfo = r_dictListInfo.GetValue<Dictionary<int, Dictionary<int, ListInfoBase>>>(instance);
 
@@ -64,7 +65,7 @@ namespace Sideloader.ListLoader
 #endif
 
 #if KK || EC
-        private static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
+        internal static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
         {
             foreach (KeyValuePair<int, List<string>> keyValuePair in chaListData.dictList)
             {
@@ -83,7 +84,7 @@ namespace Sideloader.ListLoader
             }
         }
 #elif AI
-        private static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
+        internal static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
         {
             foreach (KeyValuePair<int, List<string>> keyValuePair in chaListData.dictList)
             {
@@ -104,7 +105,7 @@ namespace Sideloader.ListLoader
         }
 #endif
 
-        public static ChaListData LoadCSV(Stream stream)
+        internal static ChaListData LoadCSV(Stream stream)
         {
             ChaListData chaListData = new ChaListData();
 

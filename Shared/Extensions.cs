@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Text;
-using UnityEngine;
 
-public static class Extensions
+internal static class Extensions
 {
     //stolen from https://stackoverflow.com/a/45756981
 

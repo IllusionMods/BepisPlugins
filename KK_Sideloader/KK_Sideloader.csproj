@@ -21,6 +21,7 @@
     <DefineConstants>TRACE;KK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\bin\BepInEx\plugins\KK_BepisPlugins\Sideloader.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <OutputPath>..\bin\BepInEx\plugins\KK_BepisPlugins\</OutputPath>

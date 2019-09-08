@@ -7,94 +7,87 @@ using System.IO;
 
 namespace ExtensibleSaveFormat
 {
-    public static partial class Hooks
+    public partial class ExtendedSave
     {
-        #region HEditData
-
-        #region Loading
-
-        // HEdit.HEditData
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(HEditData), nameof(HEditData.Load), typeof(BinaryReader), typeof(int), typeof(YS_Node.NodeControl), typeof(HEditData.InfoData), typeof(bool))]
-        private static bool HEditDataLoadHook(bool __result, HEditData __instance, ref BinaryReader _reader, ref int _loadKind, ref YS_Node.NodeControl _nodeControl, ref HEditData.InfoData _info, ref bool _isEdit)
+        internal static partial class Hooks
         {
-            var originalPosition = _reader.BaseStream.Position;
-            try
+            #region HEditData
+
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(HEditData), nameof(HEditData.Load), typeof(BinaryReader), typeof(int), typeof(YS_Node.NodeControl), typeof(HEditData.InfoData), typeof(bool))]
+            internal static bool HEditDataLoadHook(bool __result, HEditData __instance, ref BinaryReader _reader)
             {
-                var marker = _reader.ReadString();
-                var version = _reader.ReadInt32();
-                var length = _reader.ReadInt32();
-                if (marker == Marker && version == Version && length > 0)
+                var originalPosition = _reader.BaseStream.Position;
+                try
                 {
-                    var bytes = _reader.ReadBytes(length);
-                    var dictionary = ExtendedSave.MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
-                    ExtendedSave._internalHEditDataDictionary.Set(__instance, dictionary);
+                    var marker = _reader.ReadString();
+                    var version = _reader.ReadInt32();
+                    var length = _reader.ReadInt32();
+                    if (marker == Marker && version == DataVersion && length > 0)
+                    {
+                        var bytes = _reader.ReadBytes(length);
+                        var dictionary = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
+                        _internalHEditDataDictionary.Set(__instance, dictionary);
+                    }
+                    else
+                    {
+                        _internalHEditDataDictionary.Set(__instance, new Dictionary<string, PluginData>());
+                        _reader.BaseStream.Position = originalPosition;
+                    }
                 }
-                else
+                catch (EndOfStreamException)
                 {
-                    ExtendedSave._internalHEditDataDictionary.Set(__instance, new Dictionary<string, PluginData>());
+                    /* Incomplete/non-existant data */
+                    _internalHEditDataDictionary.Set(__instance, new Dictionary<string, PluginData>());
                     _reader.BaseStream.Position = originalPosition;
                 }
-            }
-            catch (EndOfStreamException)
-            {
-                /* Incomplete/non-existant data */
-                ExtendedSave._internalHEditDataDictionary.Set(__instance, new Dictionary<string, PluginData>());
-                _reader.BaseStream.Position = originalPosition;
-            }
-            catch (InvalidOperationException)
-            {
-                /* Invalid/unexpected deserialized data */
-                ExtendedSave._internalHEditDataDictionary.Set(__instance, new Dictionary<string, PluginData>());
-                _reader.BaseStream.Position = originalPosition;
-            }
+                catch (InvalidOperationException)
+                {
+                    /* Invalid/unexpected deserialized data */
+                    _internalHEditDataDictionary.Set(__instance, new Dictionary<string, PluginData>());
+                    _reader.BaseStream.Position = originalPosition;
+                }
 
-            ExtendedSave.HEditDataReadEvent(__instance);
+                HEditDataReadEvent(__instance);
 
-            return __result;
-        }
-
-        #endregion
-
-        #region Saving
-
-        // HEdit.HEditData
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(HEditData), nameof(HEditData.Save), typeof(BinaryWriter), typeof(YS_Node.NodeControl), typeof(bool))]
-        private static bool HEditDataSaveHook(bool __result, HEditData __instance, ref BinaryWriter _writer, ref YS_Node.NodeControl _nodeControl, ref bool _isInitUserID)
-        {
-            ExtendedSave.HEditDataWriteEvent(__instance);
-
-            ExtendedSave.Logger.Log(LogLevel.Debug, "MapInfo hook!");
-
-            var extendedData = ExtendedSave.GetAllExtendedData(__instance);
-            if (extendedData == null || extendedData.Count == 0)
                 return __result;
-
-            var originalLength = _writer.BaseStream.Length;
-            var originalPosition = _writer.BaseStream.Position;
-            try
-            {
-                var bytes = ExtendedSave.MessagePackSerialize(extendedData);
-
-                _writer.Write(Marker);
-                _writer.Write(Version);
-                _writer.Write(bytes.Length);
-                _writer.Write(bytes);
-            }
-            catch (Exception e)
-            {
-                ExtendedSave.Logger.Log(LogLevel.Warning, $"Failed to save extended data in card. {e.Message}");
-                _writer.BaseStream.Position = originalPosition;
-                _writer.BaseStream.SetLength(originalLength);
             }
 
-            return __result;
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(HEditData), nameof(HEditData.Save), typeof(BinaryWriter), typeof(YS_Node.NodeControl), typeof(bool))]
+            internal static bool HEditDataSaveHook(bool __result, HEditData __instance, ref BinaryWriter _writer)
+            {
+                HEditDataWriteEvent(__instance);
+
+                Logger.Log(LogLevel.Debug, "MapInfo hook!");
+
+                var extendedData = GetAllExtendedData(__instance);
+                if (extendedData == null || extendedData.Count == 0)
+                    return __result;
+
+                var originalLength = _writer.BaseStream.Length;
+                var originalPosition = _writer.BaseStream.Position;
+                try
+                {
+                    var bytes = MessagePackSerialize(extendedData);
+
+                    _writer.Write(Marker);
+                    _writer.Write(DataVersion);
+                    _writer.Write(bytes.Length);
+                    _writer.Write(bytes);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(LogLevel.Warning, $"Failed to save extended data in card. {e.Message}");
+                    _writer.BaseStream.Position = originalPosition;
+                    _writer.BaseStream.SetLength(originalLength);
+                }
+
+                return __result;
+            }
+
+            #endregion
+
         }
-
-        #endregion
-
-        #endregion
-
     }
 }

@@ -7,18 +7,18 @@ using UnityEngine;
 
 namespace Sideloader
 {
-    public static class BundleManager
+    internal static class BundleManager
     {
         internal static Dictionary<string, List<LazyCustom<AssetBundle>>> Bundles = new Dictionary<string, List<LazyCustom<AssetBundle>>>();
 
-        public static string DummyPath => "list/characustom/00.unity3d";
+        internal static string DummyPath => "list/characustom/00.unity3d";
 
         private static long CABCounter;
 
         // Only ASCII chars or we'll explode
-        public static string GenerateCAB() => "CAB-" + Interlocked.Increment(ref CABCounter).ToString("x32");
+        internal static string GenerateCAB() => "CAB-" + Interlocked.Increment(ref CABCounter).ToString("x32");
 
-        public static void RandomizeCAB(byte[] assetBundleData)
+        internal static void RandomizeCAB(byte[] assetBundleData)
         {
             var ascii = Encoding.ASCII.GetString(assetBundleData, 0, Mathf.Min(1024, assetBundleData.Length - 4));
 
@@ -41,7 +41,7 @@ namespace Sideloader
             Buffer.BlockCopy(cabBytes, 36 - origCabLength, assetBundleData, origCabIndex + 4, origCabLength - 4);
         }
 
-        public static void AddBundleLoader(Func<AssetBundle> func, string path, out string warning)
+        internal static void AddBundleLoader(Func<AssetBundle> func, string path, out string warning)
         {
             warning = "";
 
@@ -57,7 +57,7 @@ namespace Sideloader
                 });
         }
 
-        public static bool TryGetObjectFromName<T>(string name, string assetBundle, out T obj) where T : UnityEngine.Object
+        internal static bool TryGetObjectFromName<T>(string name, string assetBundle, out T obj) where T : UnityEngine.Object
         {
             var result = TryGetObjectFromName(name, assetBundle, typeof(T), out var tObj);
 
@@ -66,7 +66,7 @@ namespace Sideloader
             return result;
         }
 
-        public static bool TryGetObjectFromName(string name, string assetBundle, Type type, out UnityEngine.Object obj)
+        internal static bool TryGetObjectFromName(string name, string assetBundle, Type type, out UnityEngine.Object obj)
         {
             obj = null;
 

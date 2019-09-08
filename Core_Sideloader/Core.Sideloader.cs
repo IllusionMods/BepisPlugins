@@ -26,35 +26,40 @@ namespace Sideloader
     /// </summary>
     public partial class Sideloader
     {
+        /// <summary> Plugin GUID </summary>
         public const string GUID = "com.bepis.bepinex.sideloader";
+        /// <summary> Plugin name </summary>
         public const string PluginName = "Sideloader";
+        /// <summary> Plugin version </summary>
         public const string Version = BepisPlugins.Metadata.PluginsVersion;
         internal static new ManualLogSource Logger;
 
+        /// <summary> Directory from which to load mods </summary>
         public static string ModsDirectory { get; } = Path.Combine(Paths.GameRootPath, "mods");
-        protected List<ZipFile> Archives = new List<ZipFile>();
+        private readonly List<ZipFile> Archives = new List<ZipFile>();
 
+        /// <summary> List of all loadeded manifest files </summary>
         public static readonly List<Manifest> LoadedManifests = new List<Manifest>();
 
-        protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
-        protected static HashSet<string> PngFolderList = new HashSet<string>();
-        protected static HashSet<string> PngFolderOnlyList = new HashSet<string>();
+        private static readonly Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
+        private static readonly HashSet<string> PngFolderList = new HashSet<string>();
+        private static readonly HashSet<string> PngFolderOnlyList = new HashSet<string>();
         private readonly List<ResolveInfo> _gatheredResolutionInfos = new List<ResolveInfo>();
 
-        public static ConfigWrapper<bool> MissingModWarning { get; private set; }
-        public static ConfigWrapper<bool> DebugLogging { get; private set; }
-        public static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
-        public static ConfigWrapper<bool> ModLoadingLogging { get; private set; }
-        public static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
-        public static ConfigWrapper<string> AdditionalModsDirectory { get; private set; }
+        internal static ConfigWrapper<bool> MissingModWarning { get; private set; }
+        internal static ConfigWrapper<bool> DebugLogging { get; private set; }
+        internal static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
+        internal static ConfigWrapper<bool> ModLoadingLogging { get; private set; }
+        internal static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
+        internal static ConfigWrapper<string> AdditionalModsDirectory { get; private set; }
 
-        private void Awake()
+        internal void Awake()
         {
             Logger = base.Logger;
 
             Hooks.InstallHooks();
-            AutoResolver.Hooks.InstallHooks();
-            ListLoader.Hooks.InstallHooks();
+            UniversalAutoResolver.Hooks.InstallHooks();
+            Lists.Hooks.InstallHooks();
 
             ResourceRedirection.EnableSyncOverAsyncAssetLoads();
             ResourceRedirection.EnableRedirectMissingAssetBundlesToEmptyAssetBundle(-1000);
@@ -179,7 +184,7 @@ namespace Sideloader
             BuildPngOnlyFolderList();
         }
 
-        protected void LoadAllLists(ZipFile arc, Manifest manifest)
+        private void LoadAllLists(ZipFile arc, Manifest manifest)
         {
             List<ZipEntry> BoneList = new List<ZipEntry>();
             foreach (ZipEntry entry in arc)
@@ -258,7 +263,7 @@ namespace Sideloader
 #endif
         }
 
-        protected void SetPossessNew(ChaListData data)
+        private void SetPossessNew(ChaListData data)
         {
             for (int i = 0; i < data.lstKey.Count; i++)
             {
@@ -273,7 +278,7 @@ namespace Sideloader
         /// <summary>
         /// Construct a list of all folders that contain a .png
         /// </summary>
-        protected void BuildPngFolderList(ZipFile arc)
+        private void BuildPngFolderList(ZipFile arc)
         {
             foreach (ZipEntry entry in arc)
             {
@@ -305,7 +310,7 @@ namespace Sideloader
         /// <summary>
         /// Build a list of folders that contain .pngs but do not match an existing asset bundle
         /// </summary>
-        protected void BuildPngOnlyFolderList()
+        private void BuildPngOnlyFolderList()
         {
             foreach (string folder in PngFolderList) //assetBundlePath
             {
@@ -322,6 +327,7 @@ namespace Sideloader
                 PngFolderOnlyList.Add(folder);
             }
         }
+
         /// <summary>
         /// Check whether the asset bundle matches a folder that contains .png files and does not match an existing asset bundle
         /// </summary>
@@ -331,23 +337,26 @@ namespace Sideloader
             var trimmedName = extStart >= 0 ? assetBundleName.Remove(extStart) : assetBundleName;
             return PngFolderOnlyList.Contains(trimmedName);
         }
-        [Obsolete]
+
+        /// <summary>
+        /// Check if a mod with specified GUID has been loaded.
+        /// </summary>
+        [Obsolete("Use GetManifest and check null instead")]
         public bool IsModLoaded(string guid) => GetManifest(guid) != null;
 
         /// <summary>
         /// Check if a mod with specified GUID has been loaded and fetch its manifest.
         /// Returns null if there was no mod with this guid loaded.
         /// </summary>
-        public static Manifest GetManifest(string guid)
-        {
-            if (string.IsNullOrEmpty(guid))
-                return null;
-            return LoadedManifests.FirstOrDefault(x => x.GUID == guid);
-        }
+        /// <param name="guid">GUID of the mod.</param>
+        /// <returns>Manifest of the loaded mod or null if mod is not loaded.</returns>
+        public static Manifest GetManifest(string guid) => string.IsNullOrEmpty(guid) ? null : LoadedManifests.FirstOrDefault(x => x.GUID == guid);
+
         /// <summary>
         /// Get a list of file paths to all png files inside the loaded mods
         /// </summary>
         public static IEnumerable<string> GetPngNames() => PngList.Keys;
+
         /// <summary>
         /// Get a new copy of the png file if it exists in any of the loaded zipmods
         /// </summary>
@@ -385,7 +394,7 @@ namespace Sideloader
 
         private static readonly MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", AccessTools.all);
 
-        protected void LoadAllUnityArchives(ZipFile arc, string archiveFilename)
+        private void LoadAllUnityArchives(ZipFile arc, string archiveFilename)
         {
             foreach (ZipEntry entry in arc)
             {

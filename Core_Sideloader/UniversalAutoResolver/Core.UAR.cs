@@ -9,9 +9,18 @@ using AIChara;
 
 namespace Sideloader.AutoResolver
 {
+    /// <summary>
+    /// Automatically resolves ID conflicts by saving GUID to the card and changing item IDs at runtime
+    /// </summary>
     public static partial class UniversalAutoResolver
     {
+        /// <summary>
+        /// Extended save ID
+        /// </summary>
         public const string UARExtID = "com.bepis.sideloader.universalautoresolver";
+        /// <summary>
+        /// Extended save ID used in EmotionCreators once upon a time, no longer used but must still be checked for cards that still use it
+        /// </summary>
         public const string UARExtIDOld = "EC.Core.Sideloader.UniversalAutoResolver";
 
         private static ILookup<int, ResolveInfo> _resolveInfoLookupSlot;
@@ -22,24 +31,58 @@ namespace Sideloader.AutoResolver
         public const int BaseSlotID = 100000000;
         private static int CurrentSlotID = BaseSlotID;
 
+        /// <summary>
+        /// All loaded ResolveInfo
+        /// </summary>
         public static IEnumerable<ResolveInfo> LoadedResolutionInfo =>
             _resolveInfoLookupSlot?.SelectMany(x => x) ?? Enumerable.Empty<ResolveInfo>();
+        /// <summary>
+        /// Get the ResolveInfo for an item
+        /// </summary>
+        /// <param name="property">Property as defined in StructReference</param>
+        /// <param name="localSlot">Current (resolved) ID of the item</param>
+        /// <returns>ResolveInfo</returns>
         public static ResolveInfo TryGetResolutionInfo(string property, int localSlot) =>
             _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.Property == property);
+        /// <summary>
+        /// Get the ResolveInfo for an item. Used for compatibility resolving in cases where GUID is not known (hard mods).
+        /// </summary>
+        /// <param name="slot">Original ID as defined in the list file</param>
+        /// <param name="property">Property as defined in StructReference</param>
+        /// <param name="categoryNo">Category number of the item</param>
+        /// <returns>ResolveInfo</returns>
         public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo) =>
             _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
+        /// <summary>
+        /// Get the ResolveInfo for an item
+        /// </summary>
+        /// <param name="slot">Original ID as defined in the list file</param>
+        /// <param name="property"></param>
+        /// <param name="guid"></param>
+        /// <returns>ResolveInfo</returns>
         public static ResolveInfo TryGetResolutionInfo(int slot, string property, string guid) =>
             _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.GUID == guid);
+        /// <summary>
+        /// Get the ResolveInfo for an item
+        /// </summary>
+        /// <param name="slot">Original ID as defined in the list file</param>
+        /// <param name="property"></param>
+        /// <param name="categoryNo"></param>
+        /// <param name="guid"></param>
+        /// <returns>ResolveInfo</returns>
         public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo, string guid) =>
             _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo && x.GUID == guid);
 
-        public static void SetResolveInfos(ICollection<ResolveInfo> results)
+        internal static void SetResolveInfos(ICollection<ResolveInfo> results)
         {
             _resolveInfoLookupSlot = results.ToLookup(info => info.Slot);
             _resolveInfoLookupLocalSlot = results.ToLookup(info => info.LocalSlot);
         }
 
-        public static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ICollection<ResolveInfo> extInfo, string propertyPrefix = "")
+        /// <summary>
+        /// Change the ID of items saved to a card to their resolved IDs
+        /// </summary>
+        internal static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ICollection<ResolveInfo> extInfo, string propertyPrefix = "")
         {
             void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
             {
@@ -120,8 +163,6 @@ namespace Sideloader.AutoResolver
 #endif
                                 mainAB = mainAB.Replace("chara/", "").Replace(".unity3d", "").Replace(kv.Key.Category.ToString() + "_", "").Replace("/", "");
 
-                                Sideloader.Logger.LogInfo(mainAB);
-
                                 if (int.TryParse(mainAB, out int x))
                                 {
                                     //ID found but it conflicts with a vanilla item. Change the ID to avoid conflicts.
@@ -160,7 +201,7 @@ namespace Sideloader.AutoResolver
             }
         }
 
-        public static void GenerateResolutionInfo(Manifest manifest, ChaListData data, List<ResolveInfo> results)
+        internal static void GenerateResolutionInfo(Manifest manifest, ChaListData data, List<ResolveInfo> results)
         {
             var category = (ChaListDefine.CategoryNo)data.categoryNo;
 
@@ -225,7 +266,7 @@ namespace Sideloader.AutoResolver
             }
         }
 
-        public static void ShowGUIDError(string guid)
+        internal static void ShowGUIDError(string guid)
         {
             Logging.LogLevel loglevel = Sideloader.MissingModWarning.Value ? Logging.LogLevel.Warning | Logging.LogLevel.Message : Logging.LogLevel.Warning;
 

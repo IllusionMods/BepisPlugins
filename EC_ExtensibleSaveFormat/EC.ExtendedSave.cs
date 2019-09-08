@@ -16,8 +16,19 @@ namespace ExtensibleSaveFormat
         internal static readonly WeakKeyDictionary<HEdit.HEditData, Dictionary<string, PluginData>> _internalHEditDataDictionary =
             new WeakKeyDictionary<HEdit.HEditData, Dictionary<string, PluginData>>();
 
+        /// <summary>
+        /// Get a dictionary of ID, PluginData containing all extended data for a HEditData
+        /// </summary>
+        /// <param name="data">HEditData for which to get extended data</param>
+        /// <returns>Dictionary of ID, PluginData</returns>
         public static Dictionary<string, PluginData> GetAllExtendedData(HEdit.HEditData data) => _internalHEditDataDictionary.Get(data);
 
+        /// <summary>
+        /// Get PluginData for a HEditData for the specified extended save data ID
+        /// </summary>
+        /// <param name="data">HEditData for which to get extended data</param>
+        /// <param name="id">ID of the data saved to the card</param>
+        /// <returns>PluginData</returns>
         public static PluginData GetExtendedDataById(HEdit.HEditData data, string id)
         {
             if (data == null || id == null)
@@ -31,6 +42,12 @@ namespace ExtensibleSaveFormat
             return null;
         }
 
+        /// <summary>
+        /// Set PluginData for a HEditData for the specified extended save data ID
+        /// </summary>
+        /// <param name="data">HEditData for which to set extended data</param>
+        /// <param name="id">ID of the data to be saved to the card</param>
+        /// <param name="extendedFormatData">PluginData to save to the card</param>
         public static void SetExtendedDataById(HEdit.HEditData data, string id, PluginData extendedFormatData)
         {
             var dict = _internalHEditDataDictionary.Get(data);
