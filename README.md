@@ -61,9 +61,11 @@ Loads mods packaged in .zip archives from the Mods directory without modifying t
 
 It prevents mods from colliding with each other (i.e. 2 mods have same item IDs and can't coexist; sideloader automatically assigns correct IDs). It also makes it easy to disable/remove mods with no lasting effects on your game install (just remove the .zip, no game files are changed at any point).
 
-[More information and tutorial on sideloader-compatible mod creation.](https://github.com/bbepis/BepisPlugins/wiki/Creating-.zip-mods)
+[More information and tutorial on sideloader-compatible mod creation.](https://github.com/IllusionMods/BepisPlugins/wiki/1-Introduction-to-zipmod-format)
 
-[Tool for automatically converting old list mods to sideloader-compatible form.](https://mega.nz/#!lB8jQQab!tZ_yQy-F2Czig5JcRNFUxnSgJtFShck4kx3eEhm40HM)
+[Step-by-step guide for creating a simple texture mod.](https://github.com/IllusionMods/BepisPlugins/wiki/2-How-to-create-a-simple-zipmod)
+
+[Tool for automatically converting old list mods to sideloader-compatible form.](https://github.com/IllusionMods/ZipStudio/releases)
 
 ### SliderUnlocker
 Allows user to set values outside of the standard 0-100 range on all sliders in the editor.
