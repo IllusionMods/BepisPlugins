@@ -3,7 +3,6 @@ using ExtensibleSaveFormat;
 using HarmonyLib;
 using Illusion.Extensions;
 using Sideloader.ListLoader;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,52 +46,18 @@ namespace Sideloader.AutoResolver
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ETCUpdateInfoPostfix), AccessTools.all)));
 #endif
 
-#if KK || AI
+#if !EC
                 DoingImport = false;
 #endif
             }
 
             #region ChaFile
 
-            internal static void IterateCardPrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFile file, ICollection<ResolveInfo> extInfo)
-            {
-                action(StructReference.ChaFileFaceProperties, file.custom.face, extInfo, "");
-                action(StructReference.ChaFileBodyProperties, file.custom.body, extInfo, "");
-                action(StructReference.ChaFileHairProperties, file.custom.hair, extInfo, "");
-#if KK || EC
-                action(StructReference.ChaFileMakeupProperties, file.custom.face.baseMakeup, extInfo, "");
-#elif AI
-                action(StructReference.ChaFileMakeupProperties, file.custom.face.makeup, extInfo, "");
-#endif
-
-#if KK
-                for (int i = 0; i < file.coordinate.Length; i++)
-                {
-                    var coordinate = file.coordinate[i];
-                    string prefix = $"outfit{i}.";
-                    IterateCoordinate(prefix, coordinate);
-                }
-#elif EC || AI
-                IterateCoordinate("outfit.", file.coordinate);
-#endif
-                void IterateCoordinate(string prefix, ChaFileCoordinate coordinate)
-                {
-                    action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, prefix);
-
-                    for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
-                    {
-                        string accPrefix = $"{prefix}accessory{acc}.";
-
-                        action(StructReference.ChaFileAccessoryPartsInfoProperties, coordinate.accessory.parts[acc], extInfo, accPrefix);
-                    }
-                }
-            }
-
             internal static void ExtendedCardLoad(ChaFile file)
             {
                 Sideloader.Logger.LogDebug($"Loading card [{file.charaFileName}]");
 
-                var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
+                var extData = ExtendedSave.GetExtendedDataById(file, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UARExtID);
                 List<ResolveInfo> extInfo;
 
                 if (extData == null || !extData.data.ContainsKey("info"))
@@ -114,7 +79,7 @@ namespace Sideloader.AutoResolver
                     }
                 }
 
-                IterateCardPrefixes(UniversalAutoResolver.ResolveStructure, file, extInfo);
+                IterateCardPrefixes(ResolveStructure, file, extInfo);
             }
 
             internal static void ExtendedCardSave(ChaFile file)
@@ -134,11 +99,11 @@ namespace Sideloader.AutoResolver
                             continue;
 
                         //Check if it's a vanilla item
-                        if (slot < UniversalAutoResolver.BaseSlotID)
+                        if (slot < BaseSlotID)
 #if KK || EC
                             if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
 #elif AI
-                        if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
+                            if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
 #endif
                                 continue;
 
@@ -154,7 +119,7 @@ namespace Sideloader.AutoResolver
                             }
                         }
 
-                        var info = UniversalAutoResolver.TryGetResolutionInfo(kv.Key.ToString(), slot);
+                        var info = TryGetResolutionInfo(kv.Key.ToString(), slot);
 
                         if (info == null)
                             continue;
@@ -170,7 +135,7 @@ namespace Sideloader.AutoResolver
 
                 IterateCardPrefixes(IterateStruct, file, null);
 
-                ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
+                ExtendedSave.SetExtendedDataById(file, UARExtID, new PluginData
                 {
                     data = new Dictionary<string, object>
                     {
@@ -190,7 +155,7 @@ namespace Sideloader.AutoResolver
 
                 Sideloader.Logger.LogDebug($"Reloading card [{__instance.charaFileName}]");
 
-                var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
+                var extData = ExtendedSave.GetExtendedDataById(__instance, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UARExtID);
 
                 var tmpExtInfo = (List<byte[]>)extData.data["info"];
                 var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
@@ -221,23 +186,11 @@ namespace Sideloader.AutoResolver
 
             #region ChaFileCoordinate
 
-            internal static void IterateCoordinatePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFileCoordinate coordinate, ICollection<ResolveInfo> extInfo)
-            {
-                action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, "");
-
-                for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
-                {
-                    string accPrefix = $"accessory{acc}.";
-
-                    action(StructReference.ChaFileAccessoryPartsInfoProperties, coordinate.accessory.parts[acc], extInfo, accPrefix);
-                }
-            }
-
             internal static void ExtendedCoordinateLoad(ChaFileCoordinate file)
             {
                 Sideloader.Logger.LogDebug($"Loading coordinate [{file.coordinateName}]");
 
-                var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
+                var extData = ExtendedSave.GetExtendedDataById(file, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UARExtID);
                 List<ResolveInfo> extInfo;
 
                 if (extData == null || !extData.data.ContainsKey("info"))
@@ -259,7 +212,7 @@ namespace Sideloader.AutoResolver
                     }
                 }
 
-                IterateCoordinatePrefixes(UniversalAutoResolver.ResolveStructure, file, extInfo);
+                IterateCoordinatePrefixes(ResolveStructure, file, extInfo);
             }
 
             internal static void ExtendedCoordinateSave(ChaFileCoordinate file)
@@ -279,11 +232,11 @@ namespace Sideloader.AutoResolver
                             continue;
 
                         //Check if it's a vanilla item
-                        if (slot < UniversalAutoResolver.BaseSlotID)
+                        if (slot < BaseSlotID)
 #if KK || EC
                             if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
 #elif AI
-                        if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
+                            if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
 #endif
                                 continue;
 
@@ -299,7 +252,7 @@ namespace Sideloader.AutoResolver
                             }
                         }
 
-                        var info = UniversalAutoResolver.TryGetResolutionInfo(kv.Key.ToString(), slot);
+                        var info = TryGetResolutionInfo(kv.Key.ToString(), slot);
 
                         if (info == null)
                             continue;
@@ -315,7 +268,7 @@ namespace Sideloader.AutoResolver
 
                 IterateCoordinatePrefixes(IterateStruct, file, null);
 
-                ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
+                ExtendedSave.SetExtendedDataById(file, UARExtID, new PluginData
                 {
                     data = new Dictionary<string, object>
                     {
@@ -335,7 +288,7 @@ namespace Sideloader.AutoResolver
 
                 Sideloader.Logger.LogDebug($"Reloading coordinate [{path}]");
 
-                var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
+                var extData = ExtendedSave.GetExtendedDataById(__instance, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UARExtID);
 
                 var tmpExtInfo = (List<byte[]>)extData.data["info"];
                 var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Logging = BepInEx.Logging;
+using Illusion.Extensions;
+using System;
 #if AI
 using AIChara;
 #endif
@@ -198,6 +200,42 @@ namespace Sideloader.AutoResolver
                 {
                     CompatibilityResolve(kv);
                 }
+            }
+        }
+
+        internal static void IterateCardPrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFile file, ICollection<ResolveInfo> extInfo)
+        {
+            action(StructReference.ChaFileFaceProperties, file.custom.face, extInfo, "");
+            action(StructReference.ChaFileBodyProperties, file.custom.body, extInfo, "");
+            action(StructReference.ChaFileHairProperties, file.custom.hair, extInfo, "");
+#if AI
+            action(StructReference.ChaFileMakeupProperties, file.custom.face.makeup, extInfo, "");
+#else
+            action(StructReference.ChaFileMakeupProperties, file.custom.face.baseMakeup, extInfo, "");
+#endif
+
+#if KK
+            for (int i = 0; i < file.coordinate.Length; i++)
+            {
+                var coordinate = file.coordinate[i];
+                string prefix = $"outfit{i}.";
+                IterateCoordinatePrefixes(action, coordinate, extInfo, prefix);
+            }
+#else
+            IterateCoordinatePrefixes(action, file.coordinate, extInfo, "outfit.");
+#endif
+        }
+
+        internal static void IterateCoordinatePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFileCoordinate coordinate, ICollection<ResolveInfo> extInfo, string prefix = "")
+        {
+            prefix = prefix.IsNullOrWhiteSpace() ? string.Empty : prefix;
+            action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, prefix);
+
+            for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
+            {
+                string accPrefix = $"{prefix}accessory{acc}.";
+
+                action(StructReference.ChaFileAccessoryPartsInfoProperties, coordinate.accessory.parts[acc], extInfo, accPrefix);
             }
         }
 
