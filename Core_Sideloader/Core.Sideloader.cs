@@ -38,19 +38,24 @@ namespace Sideloader
         public static string ModsDirectory { get; } = Path.Combine(Paths.GameRootPath, "mods");
         private readonly List<ZipFile> Archives = new List<ZipFile>();
 
-        /// <summary> List of all loadeded manifest files </summary>
-        public static readonly List<Manifest> LoadedManifests = new List<Manifest>();
+        /// <summary> List of all loaded manifest files </summary>
+        public static readonly Dictionary<string, Manifest> Manifests = new Dictionary<string, Manifest>();
+        /// <summary> List of all loaded manifest files </summary>
+        [Obsolete("Use Manifests or GetManifest")]
+        public static List<Manifest> LoadedManifests;
 
         private static readonly Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
         private static readonly HashSet<string> PngFolderList = new HashSet<string>();
         private static readonly HashSet<string> PngFolderOnlyList = new HashSet<string>();
         private readonly List<ResolveInfo> _gatheredResolutionInfos = new List<ResolveInfo>();
+        private readonly List<MigrationInfo> _gatheredMigrationInfos = new List<MigrationInfo>();
 
         internal static ConfigWrapper<bool> MissingModWarning { get; private set; }
         internal static ConfigWrapper<bool> DebugLogging { get; private set; }
         internal static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
         internal static ConfigWrapper<bool> ModLoadingLogging { get; private set; }
         internal static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
+        internal static ConfigWrapper<bool> MigrationEnabled { get; private set; }
         internal static ConfigWrapper<string> AdditionalModsDirectory { get; private set; }
 
         internal void Awake()
@@ -71,6 +76,7 @@ namespace Sideloader
             DebugResolveInfoLogging = Config.GetSetting("Settings", "Debug resolve info logging", false, new ConfigDescription("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes."));
             ModLoadingLogging = Config.GetSetting("Settings", "Mod loading logging", true, new ConfigDescription("Enable verbose logging when loading mods.", tags: "Advanced"));
             KeepMissingAccessories = Config.GetSetting("Settings", "Keep missing accessories", false, new ConfigDescription("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker."));
+            MigrationEnabled = Config.GetSetting("Settings", "Migration enabled", true, new ConfigDescription("Attempt to change the GUID and or ID of mods based on the data configured in the manifest.xml."));
             AdditionalModsDirectory = Config.GetSetting("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
 
             if (!Directory.Exists(ModsDirectory))
@@ -157,11 +163,13 @@ namespace Sideloader
                 try
                 {
                     Archives.Add(archive);
-                    LoadedManifests.Add(manifest);
+                    Manifests[manifest.GUID] = manifest;
 
                     LoadAllUnityArchives(archive, archive.Name);
                     LoadAllLists(archive, manifest);
                     BuildPngFolderList(archive);
+
+                    UniversalAutoResolver.GenerateMigrationInfo(manifest, _gatheredMigrationInfos);
 
                     var trimmedName = manifest.Name?.Trim();
                     var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
@@ -180,8 +188,13 @@ namespace Sideloader
             Logger.LogInfo($"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
 
             UniversalAutoResolver.SetResolveInfos(_gatheredResolutionInfos);
+            UniversalAutoResolver.SetMigrationInfos(_gatheredMigrationInfos);
 
             BuildPngOnlyFolderList();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            LoadedManifests = Manifests.Values.AsEnumerable().ToList();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private void LoadAllLists(ZipFile arc, Manifest manifest)
@@ -350,7 +363,13 @@ namespace Sideloader
         /// </summary>
         /// <param name="guid">GUID of the mod.</param>
         /// <returns>Manifest of the loaded mod or null if mod is not loaded.</returns>
-        public static Manifest GetManifest(string guid) => string.IsNullOrEmpty(guid) ? null : LoadedManifests.FirstOrDefault(x => x.GUID == guid);
+        public static Manifest GetManifest(string guid)
+        {
+            if (string.IsNullOrEmpty(guid)) return null;
+
+            Manifests.TryGetValue(guid, out Manifest manifest);
+            return manifest;
+        }
 
         /// <summary>
         /// Get a list of file paths to all png files inside the loaded mods
