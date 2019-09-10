@@ -3,7 +3,6 @@ using ExtensibleSaveFormat;
 using HarmonyLib;
 using Illusion.Extensions;
 using Sideloader.ListLoader;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,354 +12,311 @@ using AIChara;
 
 namespace Sideloader.AutoResolver
 {
-    public static partial class Hooks
+    public static partial class UniversalAutoResolver
     {
-        /// <summary>
-        /// A flag for disabling certain events when importing KK cards to EC. Should always be set to false in InstallHooks for KK and always remain false.
-        /// </summary>
-        private static bool DoingImport = true;
-
-        public static void InstallHooks()
+        internal static partial class Hooks
         {
-            var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
+            /// <summary>
+            /// A flag for disabling certain events when importing KK cards to EC. Should always be set to false in InstallHooks for KK and always remain false.
+            /// </summary>
+            private static bool DoingImport = true;
 
-            ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
-            ExtendedSave.CardBeingSaved += ExtendedCardSave;
+            internal static void InstallHooks()
+            {
+                var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
 
-            ExtendedSave.CoordinateBeingLoaded += ExtendedCoordinateLoad;
-            ExtendedSave.CoordinateBeingSaved += ExtendedCoordinateSave;
+                ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
+                ExtendedSave.CardBeingSaved += ExtendedCardSave;
+
+                ExtendedSave.CoordinateBeingLoaded += ExtendedCoordinateLoad;
+                ExtendedSave.CoordinateBeingSaved += ExtendedCoordinateSave;
 
 #if EC
-            ExtendedSave.CardBeingImported += ExtendedCardImport;
-            ExtendedSave.CoordinateBeingImported += ExtendedCoordinateImport;
+                ExtendedSave.CardBeingImported += ExtendedCardImport;
+                ExtendedSave.CoordinateBeingImported += ExtendedCoordinateImport;
 #elif KK
-            ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
-            ExtendedSave.SceneBeingImported += ExtendedSceneImport;
+                ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
+                ExtendedSave.SceneBeingImported += ExtendedSceneImport;
 
-            harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
-                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnValueChangedLutPrefix), AccessTools.all)), null);
-            harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
-                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ACEUpdateInfoPostfix), AccessTools.all)));
-            harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("EtcInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
-                new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ETCUpdateInfoPostfix), AccessTools.all)));
+                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
+                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnValueChangedLutPrefix), AccessTools.all)), null);
+                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
+                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ACEUpdateInfoPostfix), AccessTools.all)));
+                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("EtcInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
+                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ETCUpdateInfoPostfix), AccessTools.all)));
 #endif
 
-#if KK || AI
-            DoingImport = false;
+#if !EC
+                DoingImport = false;
 #endif
-        }
+            }
 
-        #region ChaFile
+            #region ChaFile
 
-        private static void IterateCardPrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFile file, ICollection<ResolveInfo> extInfo)
-        {
-            action(StructReference.ChaFileFaceProperties, file.custom.face, extInfo, "");
-            action(StructReference.ChaFileBodyProperties, file.custom.body, extInfo, "");
-            action(StructReference.ChaFileHairProperties, file.custom.hair, extInfo, "");
+            internal static void ExtendedCardLoad(ChaFile file)
+            {
+                Sideloader.Logger.LogDebug($"Loading card [{file.charaFileName}]");
+
+                var extData = ExtendedSave.GetExtendedDataById(file, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UARExtID);
+                List<ResolveInfo> extInfo;
+
+                if (extData == null || !extData.data.ContainsKey("info"))
+                {
+                    Sideloader.Logger.LogDebug("No sideloader marker found");
+                    extInfo = null;
+                }
+                else
+                {
+                    var tmpExtInfo = (object[])extData.data["info"];
+                    extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
+
+                    Sideloader.Logger.LogDebug($"Sideloader marker found, external info count: {extInfo.Count}");
+
+                    if (Sideloader.DebugLogging.Value)
+                    {
+                        foreach (ResolveInfo info in extInfo)
+                            Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                    }
+                }
+
+                IterateCardPrefixes(ResolveStructure, file, extInfo);
+            }
+
+            internal static void ExtendedCardSave(ChaFile file)
+            {
+                if (DoingImport) return;
+
+                List<ResolveInfo> resolutionInfo = new List<ResolveInfo>();
+
+                void IterateStruct(Dictionary<CategoryProperty, StructValue<int>> dict, object obj, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
+                {
+                    foreach (var kv in dict)
+                    {
+                        int slot = kv.Value.GetMethod(obj);
+
+                        //No need to attempt a resolution info lookup for empty accessory slots and pattern slots
+                        if (slot == 0)
+                            continue;
+
+                        //Check if it's a vanilla item
+                        if (slot < BaseSlotID)
 #if KK || EC
-            action(StructReference.ChaFileMakeupProperties, file.custom.face.baseMakeup, extInfo, "");
+                            if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
 #elif AI
-            action(StructReference.ChaFileMakeupProperties, file.custom.face.makeup, extInfo, "");
+                            if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
 #endif
+                                continue;
+
+                        //For accessories, make sure we're checking the appropriate category
+                        if (kv.Key.Category.ToString().Contains("ao_"))
+                        {
+                            ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)obj;
+
+                            if ((int)kv.Key.Category != AccessoryInfo.type)
+                            {
+                                //If the current category does not match the accessory's category do not attempt a resolution info lookup
+                                continue;
+                            }
+                        }
+
+                        var info = TryGetResolutionInfo(kv.Key.ToString(), slot);
+
+                        if (info == null)
+                            continue;
+
+                        var newInfo = info.DeepCopy();
+                        newInfo.Property = $"{propertyPrefix}{newInfo.Property}";
+
+                        kv.Value.SetMethod(obj, newInfo.Slot);
+
+                        resolutionInfo.Add(newInfo);
+                    }
+                }
+
+                IterateCardPrefixes(IterateStruct, file, null);
+
+                ExtendedSave.SetExtendedDataById(file, UARExtID, new PluginData
+                {
+                    data = new Dictionary<string, object>
+                    {
+                        ["info"] = resolutionInfo.Select(x => x.Serialize()).ToList()
+                    }
+                });
+            }
 
 #if KK
-            for (int i = 0; i < file.coordinate.Length; i++)
-            {
-                var coordinate = file.coordinate[i];
-                string prefix = $"outfit{i}.";
-                IterateCoordinate(prefix, coordinate);
-            }
-#elif EC || AI
-            IterateCoordinate("outfit.", file.coordinate);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+#else
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
-            void IterateCoordinate(string prefix, ChaFileCoordinate coordinate)
+            internal static void ChaFileSaveFilePostHook(ChaFile __instance)
             {
-                action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, prefix);
+                if (DoingImport) return;
 
-                for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
-                {
-                    string accPrefix = $"{prefix}accessory{acc}.";
+                Sideloader.Logger.LogDebug($"Reloading card [{__instance.charaFileName}]");
 
-                    action(StructReference.ChaFileAccessoryPartsInfoProperties, coordinate.accessory.parts[acc], extInfo, accPrefix);
-                }
-            }
-        }
+                var extData = ExtendedSave.GetExtendedDataById(__instance, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UARExtID);
 
-        private static void ExtendedCardLoad(ChaFile file)
-        {
-            Sideloader.Logger.LogDebug($"Loading card [{file.charaFileName}]");
+                var tmpExtInfo = (List<byte[]>)extData.data["info"];
+                var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
 
-            var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
-            List<ResolveInfo> extInfo;
-
-            if (extData == null || !extData.data.ContainsKey("info"))
-            {
-                Sideloader.Logger.LogDebug("No sideloader marker found");
-                extInfo = null;
-            }
-            else
-            {
-                var tmpExtInfo = (object[])extData.data["info"];
-                extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
-
-                Sideloader.Logger.LogDebug($"Sideloader marker found, external info count: {extInfo.Count}");
+                Sideloader.Logger.LogDebug($"External info count: {extInfo.Count}");
 
                 if (Sideloader.DebugLogging.Value)
                 {
                     foreach (ResolveInfo info in extInfo)
                         Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
                 }
-            }
 
-            IterateCardPrefixes(UniversalAutoResolver.ResolveStructure, file, extInfo);
-        }
-
-        private static void ExtendedCardSave(ChaFile file)
-        {
-            if (DoingImport) return;
-
-            List<ResolveInfo> resolutionInfo = new List<ResolveInfo>();
-
-            void IterateStruct(Dictionary<CategoryProperty, StructValue<int>> dict, object obj, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
-            {
-                foreach (var kv in dict)
+                void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
                 {
-                    int slot = kv.Value.GetMethod(obj);
-
-                    //No need to attempt a resolution info lookup for empty accessory slots and pattern slots
-                    if (slot == 0)
-                        continue;
-
-                    //Check if it's a vanilla item
-                    if (slot < UniversalAutoResolver.BaseSlotID)
-#if KK || EC
-                        if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
-#elif AI
-                        if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
-#endif
-                            continue;
-
-                    //For accessories, make sure we're checking the appropriate category
-                    if (kv.Key.Category.ToString().Contains("ao_"))
+                    foreach (var kv in propertyDict)
                     {
-                        ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)obj;
+                        var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
 
-                        if ((int)kv.Key.Category != AccessoryInfo.type)
-                        {
-                            //If the current category does not match the accessory's category do not attempt a resolution info lookup
-                            continue;
-                        }
+                        if (extResolve != null)
+                            kv.Value.SetMethod(structure, extResolve.LocalSlot);
                     }
-
-                    var info = UniversalAutoResolver.TryGetResolutionInfo(kv.Key.ToString(), slot);
-
-                    if (info == null)
-                        continue;
-
-                    var newInfo = info.DeepCopy();
-                    newInfo.Property = $"{propertyPrefix}{newInfo.Property}";
-
-                    kv.Value.SetMethod(obj, newInfo.Slot);
-
-                    resolutionInfo.Add(newInfo);
                 }
+
+                IterateCardPrefixes(ResetStructResolveStructure, __instance, extInfo);
             }
 
-            IterateCardPrefixes(IterateStruct, file, null);
+            #endregion
 
-            ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
+            #region ChaFileCoordinate
+
+            internal static void ExtendedCoordinateLoad(ChaFileCoordinate file)
             {
-                data = new Dictionary<string, object>
+                Sideloader.Logger.LogDebug($"Loading coordinate [{file.coordinateName}]");
+
+                var extData = ExtendedSave.GetExtendedDataById(file, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UARExtID);
+                List<ResolveInfo> extInfo;
+
+                if (extData == null || !extData.data.ContainsKey("info"))
                 {
-                    ["info"] = resolutionInfo.Select(x => x.Serialize()).ToList()
+                    Sideloader.Logger.LogDebug("No sideloader marker found");
+                    extInfo = null;
                 }
-            });
-        }
+                else
+                {
+                    var tmpExtInfo = (object[])extData.data["info"];
+                    extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
+
+                    Sideloader.Logger.LogDebug($"Sideloader marker found, external info count: {extInfo.Count}");
+
+                    if (Sideloader.DebugLogging.Value)
+                    {
+                        foreach (ResolveInfo info in extInfo)
+                            Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                    }
+                }
+
+                IterateCoordinatePrefixes(ResolveStructure, file, extInfo);
+            }
+
+            internal static void ExtendedCoordinateSave(ChaFileCoordinate file)
+            {
+                if (DoingImport) return;
+
+                List<ResolveInfo> resolutionInfo = new List<ResolveInfo>();
+
+                void IterateStruct(Dictionary<CategoryProperty, StructValue<int>> dict, object obj, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
+                {
+                    foreach (var kv in dict)
+                    {
+                        int slot = kv.Value.GetMethod(obj);
+
+                        //No need to attempt a resolution info lookup for empty accessory slots and pattern slots
+                        if (slot == 0)
+                            continue;
+
+                        //Check if it's a vanilla item
+                        if (slot < BaseSlotID)
+#if KK || EC
+                            if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
+#elif AI
+                            if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
+#endif
+                                continue;
+
+                        //For accessories, make sure we're checking the appropriate category
+                        if (kv.Key.Category.ToString().Contains("ao_"))
+                        {
+                            ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)obj;
+
+                            if ((int)kv.Key.Category != AccessoryInfo.type)
+                            {
+                                //If the current category does not match the accessory's category do not attempt a resolution info lookup
+                                continue;
+                            }
+                        }
+
+                        var info = TryGetResolutionInfo(kv.Key.ToString(), slot);
+
+                        if (info == null)
+                            continue;
+
+                        var newInfo = info.DeepCopy();
+                        newInfo.Property = $"{propertyPrefix}{newInfo.Property}";
+
+                        kv.Value.SetMethod(obj, newInfo.Slot);
+
+                        resolutionInfo.Add(newInfo);
+                    }
+                }
+
+                IterateCoordinatePrefixes(IterateStruct, file, null);
+
+                ExtendedSave.SetExtendedDataById(file, UARExtID, new PluginData
+                {
+                    data = new Dictionary<string, object>
+                    {
+                        ["info"] = resolutionInfo.Select(x => x.Serialize()).ToList()
+                    }
+                });
+            }
 
 #if KK
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
 #else
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string), typeof(int))]
 #endif
-        public static void ChaFileSaveFilePostHook(ChaFile __instance)
-        {
-            if (DoingImport) return;
-
-            Sideloader.Logger.LogDebug($"Reloading card [{__instance.charaFileName}]");
-
-            var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
-
-            var tmpExtInfo = (List<byte[]>)extData.data["info"];
-            var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
-
-            Sideloader.Logger.LogDebug($"External info count: {extInfo.Count}");
-
-            if (Sideloader.DebugLogging.Value)
+            internal static void ChaFileCoordinateSaveFilePostHook(ChaFileCoordinate __instance, string path)
             {
-                foreach (ResolveInfo info in extInfo)
-                    Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
-            }
+                if (DoingImport) return;
 
-            void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
-            {
-                foreach (var kv in propertyDict)
-                {
-                    var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
+                Sideloader.Logger.LogDebug($"Reloading coordinate [{path}]");
 
-                    if (extResolve != null)
-                        kv.Value.SetMethod(structure, extResolve.LocalSlot);
-                }
-            }
+                var extData = ExtendedSave.GetExtendedDataById(__instance, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UARExtID);
 
-            IterateCardPrefixes(ResetStructResolveStructure, __instance, extInfo);
-        }
+                var tmpExtInfo = (List<byte[]>)extData.data["info"];
+                var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
 
-        #endregion
-
-        #region ChaFileCoordinate
-
-        private static void IterateCoordinatePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFileCoordinate coordinate, ICollection<ResolveInfo> extInfo)
-        {
-            action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, "");
-
-            for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
-            {
-                string accPrefix = $"accessory{acc}.";
-
-                action(StructReference.ChaFileAccessoryPartsInfoProperties, coordinate.accessory.parts[acc], extInfo, accPrefix);
-            }
-        }
-
-        private static void ExtendedCoordinateLoad(ChaFileCoordinate file)
-        {
-            Sideloader.Logger.LogDebug($"Loading coordinate [{file.coordinateName}]");
-
-            var extData = ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UniversalAutoResolver.UARExtID);
-            List<ResolveInfo> extInfo;
-
-            if (extData == null || !extData.data.ContainsKey("info"))
-            {
-                Sideloader.Logger.LogDebug("No sideloader marker found");
-                extInfo = null;
-            }
-            else
-            {
-                var tmpExtInfo = (object[])extData.data["info"];
-                extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
-
-                Sideloader.Logger.LogDebug($"Sideloader marker found, external info count: {extInfo.Count}");
+                Sideloader.Logger.LogDebug($"External info count: {extInfo.Count}");
 
                 if (Sideloader.DebugLogging.Value)
                 {
                     foreach (ResolveInfo info in extInfo)
                         Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
                 }
-            }
 
-            IterateCoordinatePrefixes(UniversalAutoResolver.ResolveStructure, file, extInfo);
-        }
-
-        private static void ExtendedCoordinateSave(ChaFileCoordinate file)
-        {
-            if (DoingImport) return;
-
-            List<ResolveInfo> resolutionInfo = new List<ResolveInfo>();
-
-            void IterateStruct(Dictionary<CategoryProperty, StructValue<int>> dict, object obj, IEnumerable<ResolveInfo> extInfo, string propertyPrefix = "")
-            {
-                foreach (var kv in dict)
+                void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
                 {
-                    int slot = kv.Value.GetMethod(obj);
-
-                    //No need to attempt a resolution info lookup for empty accessory slots and pattern slots
-                    if (slot == 0)
-                        continue;
-
-                    //Check if it's a vanilla item
-                    if (slot < UniversalAutoResolver.BaseSlotID)
-#if KK || EC
-                        if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
-#elif AI
-                        if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
-#endif
-                            continue;
-
-                    //For accessories, make sure we're checking the appropriate category
-                    if (kv.Key.Category.ToString().Contains("ao_"))
+                    foreach (var kv in propertyDict)
                     {
-                        ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)obj;
+                        var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
 
-                        if ((int)kv.Key.Category != AccessoryInfo.type)
-                        {
-                            //If the current category does not match the accessory's category do not attempt a resolution info lookup
-                            continue;
-                        }
+                        if (extResolve != null)
+                            kv.Value.SetMethod(structure, extResolve.LocalSlot);
                     }
-
-                    var info = UniversalAutoResolver.TryGetResolutionInfo(kv.Key.ToString(), slot);
-
-                    if (info == null)
-                        continue;
-
-                    var newInfo = info.DeepCopy();
-                    newInfo.Property = $"{propertyPrefix}{newInfo.Property}";
-
-                    kv.Value.SetMethod(obj, newInfo.Slot);
-
-                    resolutionInfo.Add(newInfo);
                 }
+
+                IterateCoordinatePrefixes(ResetStructResolveStructure, __instance, extInfo);
             }
 
-            IterateCoordinatePrefixes(IterateStruct, file, null);
+            #endregion
 
-            ExtendedSave.SetExtendedDataById(file, UniversalAutoResolver.UARExtID, new PluginData
-            {
-                data = new Dictionary<string, object>
-                {
-                    ["info"] = resolutionInfo.Select(x => x.Serialize()).ToList()
-                }
-            });
         }
-
-#if KK
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
-#else
-        [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string), typeof(int))]
-#endif
-        public static void ChaFileCoordinateSaveFilePostHook(ChaFileCoordinate __instance, string path)
-        {
-            if (DoingImport) return;
-
-            Sideloader.Logger.LogDebug($"Reloading coordinate [{path}]");
-
-            var extData = ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UniversalAutoResolver.UARExtID);
-
-            var tmpExtInfo = (List<byte[]>)extData.data["info"];
-            var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
-
-            Sideloader.Logger.LogDebug($"External info count: {extInfo.Count}");
-
-            if (Sideloader.DebugLogging.Value)
-            {
-                foreach (ResolveInfo info in extInfo)
-                    Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
-            }
-
-            void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
-            {
-                foreach (var kv in propertyDict)
-                {
-                    var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
-
-                    if (extResolve != null)
-                        kv.Value.SetMethod(structure, extResolve.LocalSlot);
-                }
-            }
-
-            IterateCoordinatePrefixes(ResetStructResolveStructure, __instance, extInfo);
-        }
-
-        #endregion
-
     }
 }

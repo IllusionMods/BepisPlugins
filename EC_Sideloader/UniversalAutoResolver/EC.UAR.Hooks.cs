@@ -6,139 +6,142 @@ using System.Linq;
 
 namespace Sideloader.AutoResolver
 {
-    public static partial class Hooks
+    public static partial class UniversalAutoResolver
     {
-        /// <summary>
-        /// Re-enable sideloader card and coordinate saving once import is finished
-        /// </summary>
-        [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFileScene), "OnDestroy")]
-        public static void ConvertChaFileSceneEnd() => DoingImport = false;
-
-        private static void ExtendedCardImport(Dictionary<string, PluginData> importedExtendedData)
+        internal static partial class Hooks
         {
-            if (importedExtendedData.TryGetValue(UniversalAutoResolver.UARExtID, out var pluginData))
+            /// <summary>
+            /// Re-enable sideloader card and coordinate saving once import is finished
+            /// </summary>
+            [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFileScene), "OnDestroy")]
+            internal static void ConvertChaFileSceneEnd() => DoingImport = false;
+
+            internal static void ExtendedCardImport(Dictionary<string, PluginData> importedExtendedData)
             {
-                if (pluginData != null && pluginData.data.ContainsKey("info"))
+                if (importedExtendedData.TryGetValue(UARExtID, out var pluginData))
                 {
-                    var tmpExtInfo = (object[])pluginData.data["info"];
-                    var extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
-
-                    for (int i = 0; i < extInfo.Count;)
+                    if (pluginData != null && pluginData.data.ContainsKey("info"))
                     {
-                        if (extInfo[i].Property.StartsWith("outfit0") && extInfo[i].Property.EndsWith("ClothesShoesInner"))
+                        var tmpExtInfo = (object[])pluginData.data["info"];
+                        var extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
+
+                        for (int i = 0; i < extInfo.Count;)
                         {
-                            //KK had inner shoes, EC does not
-                            extInfo.RemoveAt(i);
-                        }
-                        else if (extInfo[i].Property.StartsWith("outfit0"))
+                            if (extInfo[i].Property.StartsWith("outfit0") && extInfo[i].Property.EndsWith("ClothesShoesInner"))
+                            {
+                                //KK had inner shoes, EC does not
+                                extInfo.RemoveAt(i);
+                            }
+                            else if (extInfo[i].Property.StartsWith("outfit0"))
 
+                            {
+                                extInfo[i].Property = extInfo[i].Property.Replace("outfit0", "outfit");
+
+                                //KK originally had only one emblem
+                                if (extInfo[i].Property.EndsWith("Emblem"))
+                                    extInfo[i].Property += "0";
+
+                                //KK has multiple shoes slots, convert to one shoes slot
+                                extInfo[i].Property = extInfo[i].Property.Replace("ClothesShoesOuter", "ClothesShoes");
+
+                                i++;
+                            }
+                            else if (extInfo[i].Property.StartsWith("outfit"))
+                            {
+                                //Remove all the excess outfits
+                                extInfo.RemoveAt(i);
+                            }
+                            else
+                                i++;
+                        }
+
+                        importedExtendedData[UARExtID] = new PluginData
                         {
-                            extInfo[i].Property = extInfo[i].Property.Replace("outfit0", "outfit");
-
-                            //KK originally had only one emblem
-                            if (extInfo[i].Property.EndsWith("Emblem"))
-                                extInfo[i].Property += "0";
-
-                            //KK has multiple shoes slots, convert to one shoes slot
-                            extInfo[i].Property = extInfo[i].Property.Replace("ClothesShoesOuter", "ClothesShoes");
-
-                            i++;
-                        }
-                        else if (extInfo[i].Property.StartsWith("outfit"))
-                        {
-                            //Remove all the excess outfits
-                            extInfo.RemoveAt(i);
-                        }
-                        else
-                            i++;
+                            data = new Dictionary<string, object>
+                            {
+                                ["info"] = extInfo.Select(x => x.Serialize()).ToList()
+                            }
+                        };
                     }
+                }
 
-                    importedExtendedData[UniversalAutoResolver.UARExtID] = new PluginData
+                if (Sideloader.DebugLogging.Value && importedExtendedData.TryGetValue(UARExtID, out var extData))
+                {
+                    if (extData == null || !extData.data.ContainsKey("info"))
                     {
-                        data = new Dictionary<string, object>
-                        {
-                            ["info"] = extInfo.Select(x => x.Serialize()).ToList()
-                        }
-                    };
-                }
-            }
-
-            if (Sideloader.DebugLogging.Value && importedExtendedData.TryGetValue(UniversalAutoResolver.UARExtID, out var extData))
-            {
-                if (extData == null || !extData.data.ContainsKey("info"))
-                {
-                    Sideloader.Logger.Log(LogLevel.Debug, "Imported card data: No sideloader marker found");
-                }
-                else
-                {
-                    var tmpExtInfo = (List<byte[]>)extData.data["info"];
-                    var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
-
-                    Sideloader.Logger.Log(LogLevel.Debug, $"Imported card data: Sideloader marker found, external info count: {extInfo.Count}");
-
-                    foreach (ResolveInfo info in extInfo)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
-                }
-            }
-        }
-
-        private static void ExtendedCoordinateImport(Dictionary<string, PluginData> importedExtendedData)
-        {
-            if (importedExtendedData.TryGetValue(UniversalAutoResolver.UARExtID, out var pluginData))
-            {
-                if (pluginData != null && pluginData.data.ContainsKey("info"))
-                {
-                    var tmpExtInfo = (object[])pluginData.data["info"];
-                    var extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
-
-                    for (int i = 0; i < extInfo.Count;)
-                    {
-                        Sideloader.Logger.Log(LogLevel.Debug, $"External info: {extInfo[i].GUID} : {extInfo[i].Property} : {extInfo[i].Slot} : {extInfo[i].CategoryNo}");
-                        if (extInfo[i].Property.EndsWith("ClothesShoesInner"))
-                        {
-                            //KK had inner shoes, EC does not
-                            extInfo.RemoveAt(i);
-                        }
-                        else
-                        {
-                            extInfo[i].Property = extInfo[i].Property.Replace("outfit0", "outfit");
-
-                            //KK originally had only one emblem
-                            if (extInfo[i].Property.EndsWith("Emblem"))
-                                extInfo[i].Property += "0";
-
-                            //KK has multiple shoes slots, convert to one shoes slot
-                            extInfo[i].Property = extInfo[i].Property.Replace("ClothesShoesOuter", "ClothesShoes");
-
-                            i++;
-                        }
+                        Sideloader.Logger.Log(LogLevel.Debug, "Imported card data: No sideloader marker found");
                     }
-
-                    importedExtendedData[UniversalAutoResolver.UARExtID] = new PluginData
+                    else
                     {
-                        data = new Dictionary<string, object>
-                        {
-                            ["info"] = extInfo.Select(x => x.Serialize()).ToList()
-                        }
-                    };
+                        var tmpExtInfo = (List<byte[]>)extData.data["info"];
+                        var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
+
+                        Sideloader.Logger.Log(LogLevel.Debug, $"Imported card data: Sideloader marker found, external info count: {extInfo.Count}");
+
+                        foreach (ResolveInfo info in extInfo)
+                            Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                    }
                 }
             }
 
-            if (Sideloader.DebugLogging.Value && importedExtendedData.TryGetValue(UniversalAutoResolver.UARExtID, out var extData))
+            internal static void ExtendedCoordinateImport(Dictionary<string, PluginData> importedExtendedData)
             {
-                if (extData == null || !extData.data.ContainsKey("info"))
+                if (importedExtendedData.TryGetValue(UARExtID, out var pluginData))
                 {
-                    Sideloader.Logger.Log(LogLevel.Debug, "Imported coordinate data: No sideloader marker found");
+                    if (pluginData != null && pluginData.data.ContainsKey("info"))
+                    {
+                        var tmpExtInfo = (object[])pluginData.data["info"];
+                        var extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
+
+                        for (int i = 0; i < extInfo.Count;)
+                        {
+                            Sideloader.Logger.Log(LogLevel.Debug, $"External info: {extInfo[i].GUID} : {extInfo[i].Property} : {extInfo[i].Slot} : {extInfo[i].CategoryNo}");
+                            if (extInfo[i].Property.EndsWith("ClothesShoesInner"))
+                            {
+                                //KK had inner shoes, EC does not
+                                extInfo.RemoveAt(i);
+                            }
+                            else
+                            {
+                                extInfo[i].Property = extInfo[i].Property.Replace("outfit0", "outfit");
+
+                                //KK originally had only one emblem
+                                if (extInfo[i].Property.EndsWith("Emblem"))
+                                    extInfo[i].Property += "0";
+
+                                //KK has multiple shoes slots, convert to one shoes slot
+                                extInfo[i].Property = extInfo[i].Property.Replace("ClothesShoesOuter", "ClothesShoes");
+
+                                i++;
+                            }
+                        }
+
+                        importedExtendedData[UARExtID] = new PluginData
+                        {
+                            data = new Dictionary<string, object>
+                            {
+                                ["info"] = extInfo.Select(x => x.Serialize()).ToList()
+                            }
+                        };
+                    }
                 }
-                else
+
+                if (Sideloader.DebugLogging.Value && importedExtendedData.TryGetValue(UARExtID, out var extData))
                 {
-                    var tmpExtInfo = (List<byte[]>)extData.data["info"];
-                    var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
+                    if (extData == null || !extData.data.ContainsKey("info"))
+                    {
+                        Sideloader.Logger.Log(LogLevel.Debug, "Imported coordinate data: No sideloader marker found");
+                    }
+                    else
+                    {
+                        var tmpExtInfo = (List<byte[]>)extData.data["info"];
+                        var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
 
-                    Sideloader.Logger.Log(LogLevel.Debug, $"Imported coordinate data: Sideloader marker found, external info count: {extInfo.Count}");
+                        Sideloader.Logger.Log(LogLevel.Debug, $"Imported coordinate data: Sideloader marker found, external info count: {extInfo.Count}");
 
-                    foreach (ResolveInfo info in extInfo)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot} : {info.CategoryNo}");
+                        foreach (ResolveInfo info in extInfo)
+                            Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot} : {info.CategoryNo}");
+                    }
                 }
             }
         }

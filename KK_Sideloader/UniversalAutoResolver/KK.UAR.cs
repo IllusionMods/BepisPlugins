@@ -10,9 +10,12 @@ namespace Sideloader.AutoResolver
 {
     public static partial class UniversalAutoResolver
     {
+        /// <summary>
+        /// All loaded StudioResolveInfo
+        /// </summary>
         public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
-        public static void GenerateStudioResolutionInfo(Manifest manifest, Lists.StudioListData data)
+        internal static void GenerateStudioResolutionInfo(Manifest manifest, Lists.StudioListData data)
         {
             string StudioListType;
             if (data.FileNameWithoutExtension.Contains('_'))
@@ -86,7 +89,7 @@ namespace Sideloader.AutoResolver
             }
         }
 
-        public enum ResolveType { Save, Load }
+        internal enum ResolveType { Save, Load }
         internal static void ResolveStudioObjects(ExtensibleSaveFormat.PluginData extendedData, ResolveType resolveType)
         {
             Dictionary<int, ObjectInfo> ObjectList = StudioObjectSearch.FindObjectInfo(StudioObjectSearch.SearchType.All);

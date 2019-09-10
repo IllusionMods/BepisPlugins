@@ -2,8 +2,8 @@
 
 namespace Sideloader
 {
-    public static class ReflectionHelper
+    internal static class ReflectionHelper
     {
-        public static T GetValue<T>(this FieldInfo info, object instance) => (T)info.GetValue(instance);
+        internal static T GetValue<T>(this FieldInfo info, object instance) => (T)info.GetValue(instance);
     }
 }

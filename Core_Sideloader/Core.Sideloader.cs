@@ -26,35 +26,45 @@ namespace Sideloader
     /// </summary>
     public partial class Sideloader
     {
+        /// <summary> Plugin GUID </summary>
         public const string GUID = "com.bepis.bepinex.sideloader";
+        /// <summary> Plugin name </summary>
         public const string PluginName = "Sideloader";
+        /// <summary> Plugin version </summary>
         public const string Version = BepisPlugins.Metadata.PluginsVersion;
         internal static new ManualLogSource Logger;
 
+        /// <summary> Directory from which to load mods </summary>
         public static string ModsDirectory { get; } = Path.Combine(Paths.GameRootPath, "mods");
-        protected List<ZipFile> Archives = new List<ZipFile>();
+        private readonly List<ZipFile> Archives = new List<ZipFile>();
 
-        public static readonly List<Manifest> LoadedManifests = new List<Manifest>();
+        /// <summary> List of all loaded manifest files </summary>
+        public static readonly Dictionary<string, Manifest> Manifests = new Dictionary<string, Manifest>();
+        /// <summary> List of all loaded manifest files </summary>
+        [Obsolete("Use Manifests or GetManifest")]
+        public static List<Manifest> LoadedManifests;
 
-        protected static Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
-        protected static HashSet<string> PngFolderList = new HashSet<string>();
-        protected static HashSet<string> PngFolderOnlyList = new HashSet<string>();
+        private static readonly Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
+        private static readonly HashSet<string> PngFolderList = new HashSet<string>();
+        private static readonly HashSet<string> PngFolderOnlyList = new HashSet<string>();
         private readonly List<ResolveInfo> _gatheredResolutionInfos = new List<ResolveInfo>();
+        private readonly List<MigrationInfo> _gatheredMigrationInfos = new List<MigrationInfo>();
 
-        public static ConfigWrapper<bool> MissingModWarning { get; private set; }
-        public static ConfigWrapper<bool> DebugLogging { get; private set; }
-        public static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
-        public static ConfigWrapper<bool> ModLoadingLogging { get; private set; }
-        public static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
-        public static ConfigWrapper<string> AdditionalModsDirectory { get; private set; }
+        internal static ConfigWrapper<bool> MissingModWarning { get; private set; }
+        internal static ConfigWrapper<bool> DebugLogging { get; private set; }
+        internal static ConfigWrapper<bool> DebugResolveInfoLogging { get; private set; }
+        internal static ConfigWrapper<bool> ModLoadingLogging { get; private set; }
+        internal static ConfigWrapper<bool> KeepMissingAccessories { get; private set; }
+        internal static ConfigWrapper<bool> MigrationEnabled { get; private set; }
+        internal static ConfigWrapper<string> AdditionalModsDirectory { get; private set; }
 
-        private void Awake()
+        internal void Awake()
         {
             Logger = base.Logger;
 
             Hooks.InstallHooks();
-            AutoResolver.Hooks.InstallHooks();
-            ListLoader.Hooks.InstallHooks();
+            UniversalAutoResolver.Hooks.InstallHooks();
+            Lists.Hooks.InstallHooks();
 
             ResourceRedirection.EnableSyncOverAsyncAssetLoads();
             ResourceRedirection.EnableRedirectMissingAssetBundlesToEmptyAssetBundle(-1000);
@@ -66,6 +76,7 @@ namespace Sideloader
             DebugResolveInfoLogging = Config.GetSetting("Settings", "Debug resolve info logging", false, new ConfigDescription("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes."));
             ModLoadingLogging = Config.GetSetting("Settings", "Mod loading logging", true, new ConfigDescription("Enable verbose logging when loading mods.", tags: "Advanced"));
             KeepMissingAccessories = Config.GetSetting("Settings", "Keep missing accessories", false, new ConfigDescription("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker."));
+            MigrationEnabled = Config.GetSetting("Settings", "Migration enabled", true, new ConfigDescription("Attempt to change the GUID and or ID of mods based on the data configured in the manifest.xml."));
             AdditionalModsDirectory = Config.GetSetting("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
 
             if (!Directory.Exists(ModsDirectory))
@@ -152,11 +163,13 @@ namespace Sideloader
                 try
                 {
                     Archives.Add(archive);
-                    LoadedManifests.Add(manifest);
+                    Manifests[manifest.GUID] = manifest;
 
                     LoadAllUnityArchives(archive, archive.Name);
                     LoadAllLists(archive, manifest);
                     BuildPngFolderList(archive);
+
+                    UniversalAutoResolver.GenerateMigrationInfo(manifest, _gatheredMigrationInfos);
 
                     var trimmedName = manifest.Name?.Trim();
                     var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
@@ -175,11 +188,16 @@ namespace Sideloader
             Logger.LogInfo($"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
 
             UniversalAutoResolver.SetResolveInfos(_gatheredResolutionInfos);
+            UniversalAutoResolver.SetMigrationInfos(_gatheredMigrationInfos);
 
             BuildPngOnlyFolderList();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            LoadedManifests = Manifests.Values.AsEnumerable().ToList();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
-        protected void LoadAllLists(ZipFile arc, Manifest manifest)
+        private void LoadAllLists(ZipFile arc, Manifest manifest)
         {
             List<ZipEntry> BoneList = new List<ZipEntry>();
             foreach (ZipEntry entry in arc)
@@ -258,7 +276,7 @@ namespace Sideloader
 #endif
         }
 
-        protected void SetPossessNew(ChaListData data)
+        private void SetPossessNew(ChaListData data)
         {
             for (int i = 0; i < data.lstKey.Count; i++)
             {
@@ -273,7 +291,7 @@ namespace Sideloader
         /// <summary>
         /// Construct a list of all folders that contain a .png
         /// </summary>
-        protected void BuildPngFolderList(ZipFile arc)
+        private void BuildPngFolderList(ZipFile arc)
         {
             foreach (ZipEntry entry in arc)
             {
@@ -305,7 +323,7 @@ namespace Sideloader
         /// <summary>
         /// Build a list of folders that contain .pngs but do not match an existing asset bundle
         /// </summary>
-        protected void BuildPngOnlyFolderList()
+        private void BuildPngOnlyFolderList()
         {
             foreach (string folder in PngFolderList) //assetBundlePath
             {
@@ -322,6 +340,7 @@ namespace Sideloader
                 PngFolderOnlyList.Add(folder);
             }
         }
+
         /// <summary>
         /// Check whether the asset bundle matches a folder that contains .png files and does not match an existing asset bundle
         /// </summary>
@@ -331,23 +350,32 @@ namespace Sideloader
             var trimmedName = extStart >= 0 ? assetBundleName.Remove(extStart) : assetBundleName;
             return PngFolderOnlyList.Contains(trimmedName);
         }
-        [Obsolete]
+
+        /// <summary>
+        /// Check if a mod with specified GUID has been loaded.
+        /// </summary>
+        [Obsolete("Use GetManifest and check null instead")]
         public bool IsModLoaded(string guid) => GetManifest(guid) != null;
 
         /// <summary>
         /// Check if a mod with specified GUID has been loaded and fetch its manifest.
         /// Returns null if there was no mod with this guid loaded.
         /// </summary>
+        /// <param name="guid">GUID of the mod.</param>
+        /// <returns>Manifest of the loaded mod or null if mod is not loaded.</returns>
         public static Manifest GetManifest(string guid)
         {
-            if (string.IsNullOrEmpty(guid))
-                return null;
-            return LoadedManifests.FirstOrDefault(x => x.GUID == guid);
+            if (string.IsNullOrEmpty(guid)) return null;
+
+            Manifests.TryGetValue(guid, out Manifest manifest);
+            return manifest;
         }
+
         /// <summary>
         /// Get a list of file paths to all png files inside the loaded mods
         /// </summary>
         public static IEnumerable<string> GetPngNames() => PngList.Keys;
+
         /// <summary>
         /// Get a new copy of the png file if it exists in any of the loaded zipmods
         /// </summary>
@@ -385,7 +413,7 @@ namespace Sideloader
 
         private static readonly MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", AccessTools.all);
 
-        protected void LoadAllUnityArchives(ZipFile arc, string archiveFilename)
+        private void LoadAllUnityArchives(ZipFile arc, string archiveFilename)
         {
             foreach (ZipEntry entry in arc)
             {

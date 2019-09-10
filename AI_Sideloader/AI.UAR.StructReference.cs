@@ -9,7 +9,7 @@ using CategoryNo = AIChara.ChaListDefine.CategoryNo;
 
 namespace Sideloader.AutoResolver
 {
-    public struct CategoryProperty
+    internal struct CategoryProperty
     {
         public CategoryNo Category;
         public string Property;
@@ -27,7 +27,7 @@ namespace Sideloader.AutoResolver
         public override string ToString() => Prefix != "" ? $"{Prefix}.{Property}" : Property;
     }
 
-    public static class StructReference
+    internal static class StructReference
     {
         #region Helper Methods
         private static Dictionary<CategoryProperty, StructValue<int>> GeneratePropertyInfoDictionary(Type t, IEnumerable<CategoryProperty> properties, string prefix = "")

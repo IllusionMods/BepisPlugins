@@ -8,14 +8,14 @@ using CategoryNo = ChaListDefine.CategoryNo;
 
 namespace Sideloader.AutoResolver
 {
-    public struct CategoryProperty
+    internal struct CategoryProperty
     {
-        public CategoryNo Category;
-        public string Property;
+        internal CategoryNo Category;
+        internal string Property;
 
-        public string Prefix;
+        internal string Prefix;
 
-        public CategoryProperty(CategoryNo category, string property, string prefix = "")
+        internal CategoryProperty(CategoryNo category, string property, string prefix = "")
         {
             Category = category;
             Property = property;
@@ -26,7 +26,7 @@ namespace Sideloader.AutoResolver
         public override string ToString() => Prefix != "" ? $"{Prefix}.{Property}" : Property;
     }
 
-    public static class StructReference
+    internal static class StructReference
     {
         #region Helper Methods
         private static Dictionary<CategoryProperty, StructValue<int>> GeneratePropertyInfoDictionary(Type t, IEnumerable<CategoryProperty> properties, string prefix = "")
@@ -96,7 +96,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties { get; } = _chaFileFaceGenerator();
+        internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties { get; } = _chaFileFaceGenerator();
         #endregion
 
         #region ChaFileBody
@@ -142,7 +142,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = _chaFileBodyGenerator();
+        internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = _chaFileBodyGenerator();
 
         #endregion
 
@@ -185,7 +185,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties { get; } = _chaFileHairGenerator();
+        internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties { get; } = _chaFileHairGenerator();
         #endregion
 
         #region ChaFileMakeup
@@ -236,7 +236,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties { get; } = _chaFileMakeupGenerator();
+        internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties { get; } = _chaFileMakeupGenerator();
         #endregion
 
         #region ChaFileClothes
@@ -603,7 +603,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesProperties { get; } = _chaFileClothesGenerator();
+        internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesProperties { get; } = _chaFileClothesGenerator();
         #endregion
 
         #region ChaFileAccessory.PartsInfo
@@ -631,7 +631,7 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoProperties { get; } = _chaFileAccessoryPartsInfoGenerator();
+        internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoProperties { get; } = _chaFileAccessoryPartsInfoGenerator();
         #endregion
 
         #region Collated
@@ -650,7 +650,7 @@ namespace Sideloader.AutoResolver
             return collated;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> CollatedStructValues { get; } = _collatedGenerator();
+        internal static Dictionary<CategoryProperty, StructValue<int>> CollatedStructValues { get; } = _collatedGenerator();
         #endregion
     }
 }

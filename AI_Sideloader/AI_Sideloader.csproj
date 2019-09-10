@@ -29,6 +29,7 @@
     <DefineConstants>TRACE;AI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\bin\BepInEx\plugins\AI_BepisPlugins\AI_Sideloader.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">

@@ -4,13 +4,13 @@ using System.Reflection.Emit;
 
 namespace Sideloader.AutoResolver
 {
-    public class StructValue<TValue>
+    internal class StructValue<TValue>
     {
-        public SetterDelegate SetMethod { get; protected set; }
-        public GetterDelegate GetMethod { get; protected set; }
-        public Type StructType { get; protected set; }
+        internal SetterDelegate SetMethod { get; set; }
+        internal GetterDelegate GetMethod { get; set; }
+        internal Type StructType { get; set; }
 
-        public StructValue(PropertyInfo info)
+        internal StructValue(PropertyInfo info)
         {
             var getter = CreateGetter(info);
             var setter = CreateSetter(info);
@@ -19,13 +19,13 @@ namespace Sideloader.AutoResolver
             GetMethod = getter;
         }
 
-        public StructValue(FieldInfo info)
+        internal StructValue(FieldInfo info)
         {
             SetMethod = (obj, value) => info.SetValue(obj, value);
             GetMethod = (obj) => (TValue)info.GetValue(obj);
         }
 
-        public StructValue(SetterDelegate setMethod, GetterDelegate getMethod)
+        internal StructValue(SetterDelegate setMethod, GetterDelegate getMethod)
         {
             SetMethod = setMethod;
             GetMethod = getMethod;
@@ -33,11 +33,11 @@ namespace Sideloader.AutoResolver
 
         #region Dynamics
 
-        public delegate TValue GetterDelegate(object obj);
+        internal delegate TValue GetterDelegate(object obj);
 
-        public delegate void SetterDelegate(object obj, TValue value);
+        internal delegate void SetterDelegate(object obj, TValue value);
 
-        protected static GetterDelegate CreateGetter(PropertyInfo property)
+        private static GetterDelegate CreateGetter(PropertyInfo property)
         {
             DynamicMethod method = new DynamicMethod($"{property} Getter", typeof(TValue), new[] { typeof(object) }, true);
             var il = method.GetILGenerator();
@@ -49,7 +49,7 @@ namespace Sideloader.AutoResolver
             return (GetterDelegate)method.CreateDelegate(typeof(GetterDelegate));
         }
 
-        protected static SetterDelegate CreateSetter(PropertyInfo property)
+        private static SetterDelegate CreateSetter(PropertyInfo property)
         {
             DynamicMethod method = new DynamicMethod($"{property} Setter", typeof(void), new[] { typeof(object), typeof(TValue) }, true);
             var il = method.GetILGenerator();

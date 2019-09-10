@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 namespace Sideloader.AutoResolver
 {
-    public class StudioObjectSearch
+    internal class StudioObjectSearch
     {
-        public enum SearchType { All, Import }
+        internal enum SearchType { All, Import }
         /// <summary>
         /// Returns a dictionary of ObjectInfo.dicKey and their order in a scene for the specified ObjectInfo type.
         /// </summary>
-        public static Dictionary<int, int> FindObjectInfoOrder(SearchType searchType, Type objectType)
+        internal static Dictionary<int, int> FindObjectInfoOrder(SearchType searchType, Type objectType)
         {
             Dictionary<int, ObjectInfo> dicObjectInfo = new Dictionary<int, ObjectInfo>();
             Dictionary<int, int> dicObjectInfoOrder = new Dictionary<int, int>();
@@ -34,7 +34,7 @@ namespace Sideloader.AutoResolver
         /// <summary>
         /// Returns a dictionary of ObjectInfo.dicKey and ObjectInfo of every ObjectInfo in a scene
         /// </summary>
-        public static Dictionary<int, ObjectInfo> FindObjectInfo(SearchType searchType)
+        internal static Dictionary<int, ObjectInfo> FindObjectInfo(SearchType searchType)
         {
             Dictionary<int, ObjectInfo> dicObjectInfo = new Dictionary<int, ObjectInfo>();
             Dictionary<int, int> dicObjectInfoOrder = new Dictionary<int, int>();
@@ -58,7 +58,7 @@ namespace Sideloader.AutoResolver
         /// Returns a dictionary of ObjectInfo.dicKey and ObjectInfo of every ObjectInfo in a scene.
         /// Also a dictionary of ObjectInfo.dicKey and their order in a scene for the specified ObjectInfo type as an out parameter.
         /// </summary>
-        public static Dictionary<int, ObjectInfo> FindObjectInfoAndOrder(SearchType searchType, Type objectType, out Dictionary<int, int> dicObjectInfoOrder)
+        internal static Dictionary<int, ObjectInfo> FindObjectInfoAndOrder(SearchType searchType, Type objectType, out Dictionary<int, int> dicObjectInfoOrder)
         {
             Dictionary<int, ObjectInfo> dicObjectInfo = new Dictionary<int, ObjectInfo>();
             dicObjectInfoOrder = new Dictionary<int, int>();

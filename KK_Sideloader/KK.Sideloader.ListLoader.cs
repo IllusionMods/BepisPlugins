@@ -6,13 +6,13 @@ using UnityEngine;
 
 namespace Sideloader.ListLoader
 {
-    public static partial class Lists
+    internal static partial class Lists
     {
-        private static HashSet<int> _internalStudioItemList = null;
-        public static List<MapInfo> ExternalMapList { get; private set; } = new List<MapInfo>();
-        public static List<StudioListData> ExternalStudioDataList { get; private set; } = new List<StudioListData>();
+        internal static HashSet<int> _internalStudioItemList = null;
+        internal static List<MapInfo> ExternalMapList { get; private set; } = new List<MapInfo>();
+        internal static List<StudioListData> ExternalStudioDataList { get; private set; } = new List<StudioListData>();
 
-        public static HashSet<int> InternalStudioItemList
+        internal static HashSet<int> InternalStudioItemList
         {
             get
             {
@@ -29,7 +29,7 @@ namespace Sideloader.ListLoader
             }
         }
 
-        public static StudioListData LoadStudioCSV(Stream stream, string fileName)
+        internal static StudioListData LoadStudioCSV(Stream stream, string fileName)
         {
             StudioListData data = new StudioListData(fileName);
 
@@ -58,7 +58,7 @@ namespace Sideloader.ListLoader
             }
             return data;
         }
-        public class StudioListData
+        internal class StudioListData
         {
             public string FileName { get; private set; }
             public string FileNameWithoutExtension { get; private set; }
@@ -74,7 +74,7 @@ namespace Sideloader.ListLoader
             }
         }
 
-        public static MapInfo LoadMapCSV(Stream stream)
+        internal static MapInfo LoadMapCSV(Stream stream)
         {
             MapInfo data = ScriptableObject.CreateInstance<MapInfo>();
 
