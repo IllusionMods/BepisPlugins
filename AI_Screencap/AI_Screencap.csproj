@@ -61,7 +61,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Screencap.cs" />
+    <Compile Include="AI.ScreenshotManager.cs" />
     <Compile Include="Pngcs\Chunks\ChunkCopyBehaviour.cs" />
     <Compile Include="Pngcs\Chunks\ChunkHelper.cs" />
     <Compile Include="Pngcs\Chunks\ChunkLoadBehaviour.cs" />

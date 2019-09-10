@@ -34,26 +34,29 @@ namespace Screencap
         /// </summary>
         public static event Action OnPostCapture;
 
-        private Material matComposite;
-        private Material matScale;
+        private Material _matComposite;
+        private Material _matScale;
 
         private ConfigWrapper<int> CaptureWidth { get; set; }
         private ConfigWrapper<int> CaptureHeight { get; set; }
         private ConfigWrapper<int> Downscaling { get; set; }
 
-        private string CapFolder = Path.Combine(Paths.GameRootPath, "UserData", "cap");
+        private static string GetCaptureFolder()
+        {
+            var dir = Path.Combine(Paths.GameRootPath, "UserData", "cap");
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
 
         private void Awake()
         {
             CaptureWidth = Config.Wrap(nameof(Screencap), nameof(CaptureWidth), "Capture width (px)", Screen.width);
             CaptureHeight = Config.Wrap(nameof(Screencap), nameof(CaptureHeight), "Capture height (px)", Screen.height);
             Downscaling = Config.Wrap(nameof(Screencap), nameof(Downscaling), "Downscaling, only takes effect when value is > 1", 1);
-
-            if (!Directory.Exists(CapFolder)) Directory.CreateDirectory(CapFolder);
-
+            
             var ab = AssetBundle.LoadFromMemory(Properties.Resources.composite);
-            matComposite = new Material(ab.LoadAsset<Shader>("composite"));
-            matScale = new Material(ab.LoadAsset<Shader>("resize"));
+            _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
+            _matScale = new Material(ab.LoadAsset<Shader>("resize"));
             ab.Unload(false);
         }
 
@@ -63,13 +66,13 @@ namespace Screencap
             {
                 StartCoroutine(WaitForEndOfFrameThen(Opaque));
             }
-            if (Input.GetKeyDown(KeyCode.F11))
+            else if (Input.GetKeyDown(KeyCode.F11))
             {
                 StartCoroutine(WaitForEndOfFrameThen(Transparent));
             }
         }
 
-        private IEnumerator WaitForEndOfFrameThen(Action a)
+        private static IEnumerator WaitForEndOfFrameThen(Action a)
         {
             yield return new WaitForEndOfFrame();
             a();
@@ -87,7 +90,7 @@ namespace Screencap
             var scaledWidth = width * downScaling;
             var scaledHeight = height * downScaling;
 
-            var aos = DisableAO();
+            var aos = DisableAmbientOcclusion();
 
             var colour = Capture(scaledWidth, scaledHeight, false);
 
@@ -113,7 +116,7 @@ namespace Screencap
             var scaledWidth = width * downScaling;
             var scaledHeight = height * downScaling;
 
-            var aos = DisableAO();
+            var aos = DisableAmbientOcclusion();
 
             var colour = Capture(scaledWidth, scaledHeight, false);
 
@@ -123,20 +126,20 @@ namespace Screencap
             var ppl = Camera.main.gameObject.GetComponent<PostProcessLayer>();
             ppl.enabled = false;
 
-            var m3d = SceneManager.GetActiveScene().GetRootGameObjects()[0].transform.Find("CustomControl/Map3D/p_ai_mi_createBG00_00").gameObject; //Disable background. Sinful, truly.
-            m3d.SetActive(false);
+            var m3D = SceneManager.GetActiveScene().GetRootGameObjects()[0].transform.Find("CustomControl/Map3D/p_ai_mi_createBG00_00").gameObject; //Disable background. Sinful, truly.
+            m3D.SetActive(false);
 
             var mask = Capture(scaledWidth, scaledHeight, true);
 
             ppl.enabled = true;
 
-            m3d.SetActive(true);
+            m3D.SetActive(true);
 
             var alpha = RenderTexture.GetTemporary(scaledWidth, scaledHeight, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 
-            matComposite.SetTexture("_Overlay", mask);
+            _matComposite.SetTexture("_Overlay", mask);
 
-            Graphics.Blit(colour, alpha, matComposite);
+            Graphics.Blit(colour, alpha, _matComposite);
 
             RenderTexture.ReleaseTemporary(mask);
             RenderTexture.ReleaseTemporary(colour);
@@ -148,7 +151,7 @@ namespace Screencap
             OnPostCapture?.Invoke();
         }
 
-        private IEnumerable<AmbientOcclusion> DisableAO()
+        private static IEnumerable<AmbientOcclusion> DisableAmbientOcclusion()
         {
             var aos = new List<AmbientOcclusion>();
             foreach (var vol in FindObjectsOfType<PostProcessVolume>())
@@ -168,8 +171,8 @@ namespace Screencap
             if (downScaling > 1)
             {
                 var resized = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
-                matScale.SetVector("_KernelAndSize", new Vector4(downScaling, downScaling, width, height));
-                Graphics.Blit(rt, resized, matScale);
+                _matScale.SetVector("_KernelAndSize", new Vector4(downScaling, downScaling, width, height));
+                Graphics.Blit(rt, resized, _matScale);
                 RenderTexture.ReleaseTemporary(rt);
                 rt = resized;    // Give em the ol' switcheroo
             }
@@ -183,7 +186,7 @@ namespace Screencap
 
             RenderTexture.ReleaseTemporary(rt);
 
-            var path = Path.Combine(CapFolder, $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png");
+            var path = Path.Combine(GetCaptureFolder(), $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png");
             //Write raw pixel data to a file
             //Uses pngcs Unity fork: https://github.com/andrew-raphael-lukasik/pngcs
             if (alpha)
@@ -198,7 +201,7 @@ namespace Screencap
             }
         }
 
-        private RenderTexture Capture(int width, int height, bool alpha)
+        private static RenderTexture Capture(int width, int height, bool alpha)
         {
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
             var rt = RenderTexture.GetTemporary(width, height, 32, fmt, RenderTextureReadWrite.Default);
