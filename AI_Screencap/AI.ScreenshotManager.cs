@@ -19,6 +19,7 @@ namespace Screencap
     /// </summary>
     [BepInPlugin(GUID, PluginName, Version)]
     [BepInIncompatibility("Screencap")]
+    [BepInIncompatibility("EdgeDestroyer")]
     public class ScreenshotManager : BaseUnityPlugin
     {
         public const string GUID = "com.bepis.bepinex.screenshotmanager";
@@ -40,20 +41,28 @@ namespace Screencap
         private ConfigWrapper<int> CaptureWidth { get; set; }
         private ConfigWrapper<int> CaptureHeight { get; set; }
         private ConfigWrapper<int> Downscaling { get; set; }
+        private ConfigWrapper<bool> Alpha { get; set; }
 
-        private static string GetCaptureFolder()
+        private ConfigWrapper<KeyboardShortcut> KeyCaptureNormal { get; set; }
+        private ConfigWrapper<KeyboardShortcut> KeyCaptureRender { get; set; }
+
+        private static string GetCaptureFilename()
         {
             var dir = Path.Combine(Paths.GameRootPath, "UserData", "cap");
             Directory.CreateDirectory(dir);
-            return dir;
+            return Path.Combine(dir, $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png");
         }
 
         private void Awake()
         {
-            CaptureWidth = Config.Wrap(nameof(Screencap), nameof(CaptureWidth), "Capture width (px)", Screen.width);
-            CaptureHeight = Config.Wrap(nameof(Screencap), nameof(CaptureHeight), "Capture height (px)", Screen.height);
-            Downscaling = Config.Wrap(nameof(Screencap), nameof(Downscaling), "Downscaling, only takes effect when value is > 1", 1);
-            
+            CaptureWidth = Config.GetSetting("Rendered screenshots", "Screenshot width", Screen.width, new ConfigDescription("Screenshot width in pixels", new AcceptableValueRange<int>(1, 10000)));
+            CaptureHeight = Config.GetSetting("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
+            Downscaling = Config.GetSetting("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
+            Alpha = Config.GetSetting("Rendered screenshots", nameof(Alpha), true, new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
+
+            KeyCaptureNormal = Config.GetSetting("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), new ConfigDescription("Capture a screenshot \"as you see it\". Includes interface and such."));
+            KeyCaptureRender = Config.GetSetting("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), new ConfigDescription("Capture a rendered screenshot with no interface. Controlled by other settings."));
+
             var ab = AssetBundle.LoadFromMemory(Properties.Resources.composite);
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
             _matScale = new Material(ab.LoadAsset<Shader>("resize"));
@@ -62,13 +71,18 @@ namespace Screencap
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F9))
+            if (KeyCaptureNormal.Value.IsDown())
             {
-                StartCoroutine(WaitForEndOfFrameThen(Opaque));
+                var path = GetCaptureFilename();
+                ScreenCapture.CaptureScreenshot(path);
+                StartCoroutine(WaitForEndOfFrameThen(() => Logger.LogMessage("Writing normal screenshot to " + path.Substring(Paths.GameRootPath.Length))));
             }
-            else if (Input.GetKeyDown(KeyCode.F11))
+            else if (KeyCaptureRender.Value.IsDown())
             {
-                StartCoroutine(WaitForEndOfFrameThen(Transparent));
+                if (Alpha.Value)
+                    StartCoroutine(WaitForEndOfFrameThen(Transparent));
+                else
+                    StartCoroutine(WaitForEndOfFrameThen(Opaque));
             }
         }
 
@@ -185,8 +199,10 @@ namespace Screencap
             while (!req.done) yield return null;
 
             RenderTexture.ReleaseTemporary(rt);
+            string path = GetCaptureFilename();
 
-            var path = Path.Combine(GetCaptureFolder(), $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png");
+            Logger.LogMessage("Writing rendered screenshot to " + path.Substring(Paths.GameRootPath.Length));
+
             //Write raw pixel data to a file
             //Uses pngcs Unity fork: https://github.com/andrew-raphael-lukasik/pngcs
             if (alpha)
