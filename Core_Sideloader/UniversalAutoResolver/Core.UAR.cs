@@ -27,7 +27,8 @@ namespace Sideloader.AutoResolver
 
         private static ILookup<int, ResolveInfo> _resolveInfoLookupSlot;
         private static ILookup<int, ResolveInfo> _resolveInfoLookupLocalSlot;
-        private static ILookup<string, MigrationInfo> _migrationInfoLookup;
+        private static ILookup<string, MigrationInfo> _migrationInfoLookupGUID;
+        private static ILookup<int, MigrationInfo> _migrationInfoLookupID;
         /// <summary>
         /// The starting point for UAR IDs
         /// </summary>
@@ -79,52 +80,30 @@ namespace Sideloader.AutoResolver
         /// </summary>
         /// <param name="guidOld">GUID that will be migrated</param>
         /// <returns>A list of MigrationInfo</returns>
-        public static List<MigrationInfo> GetMigrationInfo(string guidOld) => _migrationInfoLookup?[guidOld].ToList();
+        public static List<MigrationInfo> GetMigrationInfo(string guidOld) => _migrationInfoLookupGUID?[guidOld].ToList();
+        /// <summary>
+        /// Get all MigrationInfo for the ID
+        /// </summary>
+        /// <param name="idOld">ID that will be migrated</param>
+        /// <returns>A list of MigrationInfo</returns>
+        public static List<MigrationInfo> GetMigrationInfo(int idOld) => _migrationInfoLookupID?[idOld].ToList();
 
         internal static void SetResolveInfos(ICollection<ResolveInfo> results)
         {
             _resolveInfoLookupSlot = results.ToLookup(info => info.Slot);
             _resolveInfoLookupLocalSlot = results.ToLookup(info => info.LocalSlot);
         }
-        internal static void SetMigrationInfos(ICollection<MigrationInfo> results) => _migrationInfoLookup = results.ToLookup(info => info.GUIDOld);
+        internal static void SetMigrationInfos(ICollection<MigrationInfo> results)
+        {
+            _migrationInfoLookupGUID = results.ToLookup(info => info.GUIDOld);
+            _migrationInfoLookupID = results.ToLookup(info => info.IDOld);
+        }
 
         /// <summary>
         /// Change the ID of items saved to a card to their resolved IDs
         /// </summary>
         internal static void ResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, ICollection<ResolveInfo> extInfo, string propertyPrefix = "")
         {
-            void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv)
-            {
-                //Only attempt compatibility resolve if the ID does not belong to a vanilla item or hard mod
-#if KK || EC
-                if (!Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
-#elif AI
-                if (!Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
-#endif
-                {
-                    //the property does not have external slot information
-                    //check if we have a corrosponding item for backwards compatbility
-                    var intResolve = TryGetResolutionInfo(kv.Value.GetMethod(structure), kv.Key.ToString(), kv.Key.Category);
-
-                    if (intResolve != null)
-                    {
-                        //found a match
-                        if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.LogDebug($"Compatibility resolving {intResolve.Property} from slot {kv.Value.GetMethod(structure)} to slot {intResolve.LocalSlot}");
-
-                        kv.Value.SetMethod(structure, intResolve.LocalSlot);
-                    }
-                    else
-                    {
-                        //No match was found
-                        if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.LogDebug($"Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
-                        if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
-                            kv.Value.SetMethod(structure, 1);
-                    }
-                }
-            }
-
             foreach (var kv in propertyDict)
             {
                 string property = $"{propertyPrefix}{kv.Key}";
@@ -144,7 +123,7 @@ namespace Sideloader.AutoResolver
                 ResolveInfo extResolve = extInfo?.FirstOrDefault(x => x.Property == property);
                 if (extResolve == null)
                 {
-                    CompatibilityResolve(kv);
+                    CompatibilityResolve(kv, structure);
                     continue;
                 }
 
@@ -154,7 +133,7 @@ namespace Sideloader.AutoResolver
                 //If the GUID is blank or has been made blank by migration do compatibility resolve
                 if (extResolve.GUID.IsNullOrWhiteSpace())
                 {
-                    CompatibilityResolve(kv);
+                    CompatibilityResolve(kv, structure);
                     continue;
                 }
 
@@ -208,6 +187,51 @@ namespace Sideloader.AutoResolver
                             kv.Value.SetMethod(structure, BaseSlotID - 1);
                     }
                 }
+            }
+        }
+
+        private static void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv, object structure)
+        {
+            //Only attempt compatibility resolve if the ID does not belong to a vanilla item or hard mod
+#if KK || EC
+            if (!Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+#elif AI
+            if (!Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
+#endif
+            {
+                int slot = kv.Value.GetMethod(structure);
+                //The property does not have external slot information
+                //Check if we have a corrosponding item for backwards compatbility
+                var intResolve = TryGetResolutionInfo(slot, kv.Key.ToString(), kv.Key.Category);
+                if (intResolve != null)
+                {
+                    //found a match
+                    if (Sideloader.DebugLogging.Value)
+                        Sideloader.Logger.LogDebug($"Compatibility resolving {intResolve.Property} from slot {slot} to slot {intResolve.LocalSlot}");
+
+                    kv.Value.SetMethod(structure, intResolve.LocalSlot);
+                    return;
+                }
+
+                //Check for migration info for this ID
+                var migrationInfo = GetMigrationInfo(slot).FirstOrDefault(x => x.Category == kv.Key.Category);
+                if (migrationInfo != null)
+                {
+                    var intResolve2 = TryGetResolutionInfo(migrationInfo.IDNew, kv.Key.ToString(), kv.Key.Category, migrationInfo.GUIDNew);
+                    if (intResolve2 != null)
+                    {
+                        Sideloader.Logger.LogInfo($"Migrating {migrationInfo.IDOld} -> {migrationInfo.GUIDNew}:{migrationInfo.IDNew}");
+
+                        kv.Value.SetMethod(structure, intResolve2.LocalSlot);
+                        return;
+                    }
+                }
+
+                //No match was found
+                if (Sideloader.DebugLogging.Value)
+                    Sideloader.Logger.LogDebug($"Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
+                if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && Manager.Scene.Instance.NowSceneNames.Any(sceneName => sceneName == "CustomScene"))
+                    kv.Value.SetMethod(structure, 1);
             }
         }
 
