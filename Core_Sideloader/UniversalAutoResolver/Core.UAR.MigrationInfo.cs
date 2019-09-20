@@ -43,5 +43,11 @@ namespace Sideloader.AutoResolver
             IDOld = idOld;
             IDNew = idNew;
         }
+        internal MigrationInfo(MigrationType migrationType, string guidOld, string guidNew)
+        {
+            MigrationType = migrationType;
+            GUIDOld = guidOld;
+            GUIDNew = guidNew;
+        }
     }
 }
