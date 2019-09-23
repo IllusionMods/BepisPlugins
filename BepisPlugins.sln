@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.757
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29306.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ColorCorrector", "KK_ColorCorrector\KK_ColorCorrector.csproj", "{6809B5DC-358C-45C5-B04C-0B7027596A8B}"
 EndProject
@@ -99,10 +99,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_EnableResize", "EC_Enabl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Screencap", "AI_Screencap\AI_Screencap.csproj", "{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_SliderUnlocker", "PH_SliderUnlocker\PH_SliderUnlocker.csproj", "{2DF3121A-62DE-451B-9854-BCDA34B200F2}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
 		Shared\Shared.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
+		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
+		Shared\Shared.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
 		Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		Shared\Shared.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{348f6441-9510-47d8-9f7f-547e8655cbb5}*SharedItemsImports = 13
@@ -285,6 +289,10 @@ Global
 		{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DF3121A-62DE-451B-9854-BCDA34B200F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DF3121A-62DE-451B-9854-BCDA34B200F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DF3121A-62DE-451B-9854-BCDA34B200F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DF3121A-62DE-451B-9854-BCDA34B200F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -326,6 +334,7 @@ Global
 		{63217F63-C086-40BC-B189-CFAF459020ED} = {52ED49EF-1F5F-4FBE-B83C-4B2551AFF08C}
 		{ACC81EF3-37E0-499F-A32C-E399E097E34A} = {52ED49EF-1F5F-4FBE-B83C-4B2551AFF08C}
 		{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
+		{2DF3121A-62DE-451B-9854-BCDA34B200F2} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
