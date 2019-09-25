@@ -26,6 +26,7 @@ namespace Sideloader.AutoResolver
                 ResolveStudioMap(ExtendedData, ResolveType.Load);
                 ResolveStudioFilter(ExtendedData, ResolveType.Load);
                 ResolveStudioRamp(ExtendedData, ResolveType.Load);
+                ResolveStudioBGM(ExtendedData, ResolveType.Load);
             }
 
             internal static void ExtendedSceneImport(string path)
@@ -180,6 +181,22 @@ namespace Sideloader.AutoResolver
                     }
                 }
 
+                //Add the extended data for the bgm, if any
+                int bgmID = Studio.Studio.Instance.sceneInfo.bgmCtrl.no;
+                if (bgmID > BaseSlotID)
+                {
+                    StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == bgmID).FirstOrDefault();
+                    if (extResolve != null)
+                    {
+                        ExtendedData.Add("bgmInfoGUID", extResolve.GUID);
+
+                        //Set bgm ID back to default
+                        if (Sideloader.DebugLogging.Value)
+                            Sideloader.Logger.Log(LogLevel.Debug, $"Setting BGM ID:{bgmID}->{extResolve.Slot}");
+                        Studio.Studio.Instance.sceneInfo.bgmCtrl.no = extResolve.Slot;
+                    }
+                }
+
                 if (ExtendedData.Count == 0)
                     //Set extended data to null to remove any that may once have existed, for example in the case of deleted objects
                     ExtendedSave.SetSceneExtendedDataById(UARExtID, null);
@@ -198,6 +215,7 @@ namespace Sideloader.AutoResolver
                 ResolveStudioMap(ExtendedData, ResolveType.Save);
                 ResolveStudioFilter(ExtendedData, ResolveType.Save);
                 ResolveStudioRamp(ExtendedData, ResolveType.Save);
+                ResolveStudioBGM(ExtendedData, ResolveType.Save);
             }
             /// <summary>
             /// Translate the value (selected index) to the actual ID of the filter. This allows us to save the ID to the scene.

@@ -15,11 +15,8 @@ namespace ColorCorrector
         public const string PluginName = "Color Filter Remover";
         public const string Version = Metadata.PluginsVersion;
 
-        #region Config properties
-        private ConfigWrapper<bool> SaturationEnabled { get; set; }
-
-        private ConfigWrapper<float> BloomStrength { get; set; }
-        #endregion
+        private ConfigEntry<bool> SaturationEnabled { get; set; }
+        private ConfigEntry<float> BloomStrength { get; set; }
 
         private AmplifyColorEffect _amplifyComponent;
         private BloomAndFlares _bloomComponent;
@@ -32,8 +29,8 @@ namespace ColorCorrector
                 return;
             }
 
-            SaturationEnabled = Config.GetSetting("Post Processing Settings", "Enable saturation filter", true, new ConfigDescription("Whether default saturation filter will be applied to the game. This setting has no effect in Studio."));
-            BloomStrength = Config.GetSetting("Post Processing Settings", "Bloom strength", 1f, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, 1f)));
+            SaturationEnabled = Config.AddSetting("Post Processing Settings", "Enable saturation filter", true, new ConfigDescription("Whether default saturation filter will be applied to the game. This setting has no effect in Studio."));
+            BloomStrength = Config.AddSetting("Post Processing Settings", "Bloom strength", 1f, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, 1f)));
             SaturationEnabled.SettingChanged += OnSettingChanged;
             BloomStrength.SettingChanged += OnSettingChanged;
 

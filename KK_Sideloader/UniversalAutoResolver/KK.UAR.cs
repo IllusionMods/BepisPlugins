@@ -319,6 +319,49 @@ namespace Sideloader.AutoResolver
             }
         }
 
+        internal static void ResolveStudioBGM(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
+        {
+            //Set bgm ID to the resolved ID
+            int bgmID = Singleton<Studio.Studio>.Instance.sceneInfo.bgmCtrl.no;
+
+            if (bgmID == -1) //Loaded scene has no bgm
+                return;
+
+            if (extData != null && extData.data.ContainsKey("bgmInfoGUID"))
+            {
+                string bgmGUID = (string)extData.data["bgmInfoGUID"];
+
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == bgmID && x.GUID == bgmGUID);
+                if (intResolve != null)
+                {
+                    if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
+                        Sideloader.Logger.Log(LogLevel.Debug, $"Resolving (Studio BGM) [{bgmGUID}] {bgmID}->{intResolve.LocalSlot}");
+                    Singleton<Studio.Studio>.Instance.sceneInfo.bgmCtrl.no = intResolve.LocalSlot;
+                }
+                else
+                    ShowGUIDError(bgmGUID);
+            }
+            else if (resolveType == ResolveType.Load)
+            {
+                if (!Singleton<Info>.Instance.dicBGMLoadInfo.TryGetValue(bgmID, out Info.LoadCommonInfo bgmInfo))
+                {
+                    //BGM ID saved to the scene doesn't exist in the bgm list, try compatibility resolving
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == bgmID);
+                    if (intResolve != null)
+                    {
+                        //Found a matching sideloader mod
+                        if (Sideloader.DebugLogging.Value)
+                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving (Studio BGM) {bgmID}->{intResolve.LocalSlot}");
+                        Singleton<Studio.Studio>.Instance.sceneInfo.bgmCtrl.no = intResolve.LocalSlot;
+                    }
+                    else
+                    {
+                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio BGM) failed, no match found for ID {bgmID}");
+                    }
+                }
+            }
+        }
+
         private static readonly HashSet<string> CategoryAndGroupList = new HashSet<string>()
         {
             "itemcategory",

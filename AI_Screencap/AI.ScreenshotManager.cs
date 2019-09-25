@@ -38,13 +38,13 @@ namespace Screencap
         private Material _matComposite;
         private Material _matScale;
 
-        private ConfigWrapper<int> CaptureWidth { get; set; }
-        private ConfigWrapper<int> CaptureHeight { get; set; }
-        private ConfigWrapper<int> Downscaling { get; set; }
-        private ConfigWrapper<bool> Alpha { get; set; }
+        private ConfigEntry<int> CaptureWidth { get; set; }
+        private ConfigEntry<int> CaptureHeight { get; set; }
+        private ConfigEntry<int> Downscaling { get; set; }
+        private ConfigEntry<bool> Alpha { get; set; }
 
-        private ConfigWrapper<KeyboardShortcut> KeyCaptureNormal { get; set; }
-        private ConfigWrapper<KeyboardShortcut> KeyCaptureRender { get; set; }
+        private ConfigEntry<KeyboardShortcut> KeyCaptureNormal { get; set; }
+        private ConfigEntry<KeyboardShortcut> KeyCaptureRender { get; set; }
 
         private static string GetCaptureFilename()
         {
@@ -55,13 +55,13 @@ namespace Screencap
 
         private void Awake()
         {
-            CaptureWidth = Config.GetSetting("Rendered screenshots", "Screenshot width", Screen.width, new ConfigDescription("Screenshot width in pixels", new AcceptableValueRange<int>(1, 10000)));
-            CaptureHeight = Config.GetSetting("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
-            Downscaling = Config.GetSetting("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
-            Alpha = Config.GetSetting("Rendered screenshots", nameof(Alpha), true, new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
+            CaptureWidth = Config.AddSetting("Rendered screenshots", "Screenshot width", Screen.width, new ConfigDescription("Screenshot width in pixels", new AcceptableValueRange<int>(1, 10000)));
+            CaptureHeight = Config.AddSetting("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
+            Downscaling = Config.AddSetting("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
+            Alpha = Config.AddSetting("Rendered screenshots", nameof(Alpha), true, new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
 
-            KeyCaptureNormal = Config.GetSetting("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), new ConfigDescription("Capture a screenshot \"as you see it\". Includes interface and such."));
-            KeyCaptureRender = Config.GetSetting("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), new ConfigDescription("Capture a rendered screenshot with no interface. Controlled by other settings."));
+            KeyCaptureNormal = Config.AddSetting("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), "Capture a screenshot \"as you see it\". Includes interface and such.");
+            KeyCaptureRender = Config.AddSetting("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), "Capture a rendered screenshot with no interface. Controlled by other settings.");
 
             var ab = AssetBundle.LoadFromMemory(Properties.Resources.composite);
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
@@ -88,8 +88,13 @@ namespace Screencap
 
         private static IEnumerator WaitForEndOfFrameThen(Action a)
         {
+            var sc = QualitySettings.shadowCascades;
+            QualitySettings.shadowCascades = 0;
+
             yield return new WaitForEndOfFrame();
             a();
+
+            QualitySettings.shadowCascades = sc;
         }
 
         private void Opaque()

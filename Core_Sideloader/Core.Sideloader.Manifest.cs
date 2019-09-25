@@ -75,18 +75,31 @@ namespace Sideloader
                     else
                         migrationType = (MigrationType)Enum.Parse(typeof(MigrationType), info.Attribute("migrationType").Value);
 
-                    ChaListDefine.CategoryNo category = (ChaListDefine.CategoryNo)Enum.Parse(typeof(ChaListDefine.CategoryNo), info.Attribute("category").Value);
                     string guidOld = info.Attribute("guidOld")?.Value;
                     string guidNew = info.Attribute("guidNew")?.Value;
+                    if (guidNew.IsNullOrWhiteSpace())
+                        guidNew = GUID;
+
+                    if (guidOld.IsNullOrEmpty())
+                        throw new Exception("guidOld must be specified for migration.");
+                    if (guidNew.IsNullOrEmpty() && migrationType == MigrationType.Migrate)
+                        throw new Exception("guidNew must be specified for migration.");
+
+                    if (migrationType == MigrationType.MigrateAll || migrationType == MigrationType.StripAll)
+                    {
+                        MigrationList.Add(new MigrationInfo(migrationType, guidOld, guidNew));
+                        continue;
+                    }
+
+                    if (info.Attribute("category")?.Value == null)
+                        throw new Exception("Category must be specified for migration.");
+
+                    ChaListDefine.CategoryNo category = (ChaListDefine.CategoryNo)Enum.Parse(typeof(ChaListDefine.CategoryNo), info.Attribute("category").Value);
 
                     if (!int.TryParse(info.Attribute("idOld").Value, out int idOld) && migrationType == MigrationType.Migrate)
                         throw new Exception("ID must be specified for migration.");
                     if (!int.TryParse(info.Attribute("idNew").Value, out int idNew) && migrationType == MigrationType.Migrate)
                         throw new Exception("ID must be specified for migration.");
-                    if (guidOld.IsNullOrEmpty())
-                        throw new Exception("guidOld must be specified for migration.");
-                    if (guidNew.IsNullOrEmpty() && migrationType == MigrationType.Migrate)
-                        throw new Exception("guidNew must be specified for migration.");
 
                     MigrationList.Add(new MigrationInfo(migrationType, category, guidOld, guidNew, idOld, idNew));
                 }
