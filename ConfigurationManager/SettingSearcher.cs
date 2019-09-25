@@ -19,19 +19,21 @@ namespace ConfigurationManager
             "OnGUI"
         };
 
-        // todo set to false
-        private static readonly Type _bepin4BaseSettingType = Type.GetType("BepInEx4.ConfigWrapper`1, BepInEx.BepIn4Patcher, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", true);
+        private static readonly Type _bepin4BaseSettingType = Type.GetType("BepInEx4.ConfigWrapper`1, BepInEx.BepIn4Patcher, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", false);
 
         public static void CollectSettings(out IEnumerable<SettingEntryBase> results, out List<string> modsWithoutSettings, bool showDebug)
         {
-            var configProperty = typeof(BaseUnityPlugin).GetProperty("Config", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (configProperty == null) throw new ArgumentNullException(nameof(configProperty));
-
-            results = Enumerable.Empty<SettingEntryBase>();
             modsWithoutSettings = new List<string>();
 
-            // Core BepInEx config
-            results = results.Concat(GetBepInExConfig());
+            try
+            {
+                results = GetBepInExCoreConfig();
+            }
+            catch (Exception ex)
+            {
+                results = Enumerable.Empty<SettingEntryBase>();
+                ConfigurationManager.Logger.LogError(ex);
+            }
 
             foreach (var plugin in Utils.FindPlugins())
             {
@@ -48,8 +50,7 @@ namespace ConfigurationManager
 
                 var detected = new List<SettingEntryBase>();
 
-                var config = (ConfigFile)configProperty.GetValue(plugin, null);
-                detected.AddRange(config.GetConfigEntries().Select(x => new ConfigSettingEntry(x, plugin)).Cast<SettingEntryBase>());
+                detected.AddRange(GetPluginConfig(plugin).Cast<SettingEntryBase>());
 
                 detected.AddRange(GetLegacyPluginConfig(plugin).Cast<SettingEntryBase>());
 
@@ -61,19 +62,17 @@ namespace ConfigurationManager
                 // Allow to enable/disable plugin if it uses any update methods ------
                 if (showDebug && type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Any(x => _updateMethodNames.Contains(x.Name)))
                 {
-					// todo make a different class for it and fix access modifiers?
+                    // todo make a different class for it and fix access modifiers?
                     var enabledSetting = LegacySettingEntry.FromNormalProperty(plugin, type.GetProperty("enabled"), pluginInfo, plugin);
                     enabledSetting.DispName = "!Allow plugin to run on every frame";
-                    enabledSetting.Description =
-                        "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
+                    enabledSetting.Description = "Disabling this will disable some or all of the plugin's functionality.\nHooks and event-based functionality will not be disabled.\nThis setting will be lost after game restart.";
                     enabledSetting.IsAdvanced = true;
                     detected.Add(enabledSetting);
                 }
 
                 if (detected.Any())
                 {
-                    var isAdvancedPlugin = type.GetCustomAttributes(typeof(AdvancedAttribute), false).Cast<AdvancedAttribute>()
-                        .Any(x => x.IsAdvanced);
+                    var isAdvancedPlugin = type.GetCustomAttributes(typeof(AdvancedAttribute), false).Cast<AdvancedAttribute>().Any(x => x.IsAdvanced);
                     if (isAdvancedPlugin)
                         detected.ForEach(entry => entry.IsAdvanced = true);
 
@@ -82,7 +81,10 @@ namespace ConfigurationManager
             }
         }
 
-        private static IEnumerable<SettingEntryBase> GetBepInExConfig()
+        /// <summary>
+        /// Bepinex 5 config
+        /// </summary>
+        private static IEnumerable<SettingEntryBase> GetBepInExCoreConfig()
         {
             var coreConfigProp = typeof(ConfigFile).GetProperty("CoreConfig", BindingFlags.Static | BindingFlags.NonPublic);
             if (coreConfigProp == null) throw new ArgumentNullException(nameof(coreConfigProp));
@@ -95,6 +97,17 @@ namespace ConfigurationManager
                 .Cast<SettingEntryBase>();
         }
 
+        /// <summary>
+        /// Used by bepinex 5 plugins
+        /// </summary>
+        private static IEnumerable<ConfigSettingEntry> GetPluginConfig(BaseUnityPlugin plugin)
+        {
+            return plugin.Config.GetConfigEntries().Select(x => new ConfigSettingEntry(x, plugin));
+        }
+
+        /// <summary>
+        /// Used by bepinex 4 plugins
+        /// </summary>
         private static IEnumerable<LegacySettingEntry> GetLegacyPluginConfig(BaseUnityPlugin plugin)
         {
             if (_bepin4BaseSettingType == null)
