@@ -53,10 +53,10 @@ namespace ConfigurationManager
         internal int LeftColumnWidth { get; private set; }
         internal int RightColumnWidth { get; private set; }
 
-        private readonly ConfigWrapper<bool> _showAdvanced;
-        private readonly ConfigWrapper<bool> _showKeybinds;
-        private readonly ConfigWrapper<bool> _showSettings;
-        private readonly ConfigWrapper<BepInEx.Configuration.KeyboardShortcut> _keybind;
+        private readonly ConfigEntry<bool> _showAdvanced;
+        private readonly ConfigEntry<bool> _showKeybinds;
+        private readonly ConfigEntry<bool> _showSettings;
+        private readonly ConfigEntry<BepInEx.Configuration.KeyboardShortcut> _keybind;
         private bool _showDebug;
         private string _searchString = string.Empty;
 
@@ -65,10 +65,10 @@ namespace ConfigurationManager
             Logger = base.Logger;
             _fieldDrawer = new SettingFieldDrawer(this);
 
-            _showAdvanced = Config.GetSetting("Filtering", "Show advanced", false);
-            _showKeybinds = Config.GetSetting("Filtering", "Show keybinds", true);
-            _showSettings = Config.GetSetting("Filtering", "Show settings", true);
-            _keybind = Config.GetSetting("General", "Show config manager", new BepInEx.Configuration.KeyboardShortcut(KeyCode.F1),
+            _showAdvanced = Config.AddSetting("Filtering", "Show advanced", false);
+            _showKeybinds = Config.AddSetting("Filtering", "Show keybinds", true);
+            _showSettings = Config.AddSetting("Filtering", "Show settings", true);
+            _keybind = Config.AddSetting("General", "Show config manager", new BepInEx.Configuration.KeyboardShortcut(KeyCode.F1),
                 new ConfigDescription("The shortcut used to toggle the config manager window on and off. " +
                                       "The key can be overridden by a game-specific plugin if necessary, in that case this setting is ignored."));
         }
