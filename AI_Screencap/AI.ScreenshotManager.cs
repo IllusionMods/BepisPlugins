@@ -88,8 +88,13 @@ namespace Screencap
 
         private static IEnumerator WaitForEndOfFrameThen(Action a)
         {
+            var sc = QualitySettings.shadowCascades;
+            QualitySettings.shadowCascades = 0;
+
             yield return new WaitForEndOfFrame();
             a();
+
+            QualitySettings.shadowCascades = sc;
         }
 
         private void Opaque()
