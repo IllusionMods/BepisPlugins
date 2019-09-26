@@ -82,8 +82,7 @@ namespace SliderUnlocker
             foreach (var type in typeof(CvsAccessory).Assembly.GetTypes())
             {
                 if (type.Name.StartsWith("Cvs", StringComparison.OrdinalIgnoreCase) &&
-                    type != typeof(CvsDrawCtrl) &&
-                    type != typeof(CvsColor))
+                    type != typeof(CvsDrawCtrl) && type != typeof(CvsColor) && type != typeof(CvsBodyPaint) && type != typeof(CvsMakeup))
                 {
                     var fields = type.GetFields(AccessTools.all);
 
