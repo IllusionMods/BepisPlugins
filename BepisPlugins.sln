@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29306.81
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ColorCorrector", "KK_ColorCorrector\KK_ColorCorrector.csproj", "{6809B5DC-358C-45C5-B04C-0B7027596A8B}"
 EndProject
@@ -16,8 +16,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_Sideloader", "KK_Sideloader\KK_Sideloader.csproj", "{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared", "Shared\Shared.shproj", "{356EB041-D692-45B5-ACF6-0F393A62CB4B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationManager", "ConfigurationManager\ConfigurationManager.csproj", "{D56DD83D-7471-463F-B4FF-8910A335833C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_BGMLoader", "KK_BGMLoader\KK_BGMLoader.csproj", "{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}"
 EndProject
@@ -159,7 +157,6 @@ Global
 		Core_BGMLoader\Core_BGMLoader.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
 		Shared\Shared.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
 		Core_Sideloader\Core_Sideloader.projitems*{ce5a9fab-c188-4919-a296-d9b1422169e9}*SharedItemsImports = 13
-		Shared\Shared.projitems*{d56dd83d-7471-463f-b4ff-8910a335833c}*SharedItemsImports = 4
 		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		Shared\Shared.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		Core_InputUnlocker\Core_InputUnlocker.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
@@ -201,10 +198,6 @@ Global
 		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D56DD83D-7471-463F-B4FF-8910A335833C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D56DD83D-7471-463F-B4FF-8910A335833C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D56DD83D-7471-463F-B4FF-8910A335833C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D56DD83D-7471-463F-B4FF-8910A335833C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}.Release|Any CPU.ActiveCfg = Release|Any CPU
