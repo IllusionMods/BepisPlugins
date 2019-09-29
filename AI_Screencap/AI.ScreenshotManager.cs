@@ -112,12 +112,7 @@ namespace Screencap
             var scaledWidth = width * downScaling;
             var scaledHeight = height * downScaling;
 
-            var aos = DisableAmbientOcclusion();
-
             var colour = Capture(scaledWidth, scaledHeight, false);
-
-            foreach (var ao in aos)
-                ao.enabled.Override(true);
 
             ScaleTex(ref colour, width, height, downScaling);
 
@@ -138,12 +133,7 @@ namespace Screencap
             var scaledWidth = width * downScaling;
             var scaledHeight = height * downScaling;
 
-            var aos = DisableAmbientOcclusion();
-
             var colour = Capture(scaledWidth, scaledHeight, false);
-
-            foreach (var ao in aos)
-                ao.enabled.value = true;
 
             var ppl = Camera.main.gameObject.GetComponent<PostProcessLayer>();
             ppl.enabled = false;
@@ -227,10 +217,14 @@ namespace Screencap
 
         private RenderTexture Capture(int width, int height, bool alpha)
         {
+            // Setup postprocessing effects
+            var aos = DisableAmbientOcclusion();
+
             var lights = FindObjectsOfType<Light>();
             foreach (var l in lights)
                 l.shadowCustomResolution = CustomShadowResolution.Value;
 
+            // Do the capture
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
             var rt = RenderTexture.GetTemporary(width, height, 32, fmt, RenderTextureReadWrite.Default);
 
@@ -250,8 +244,12 @@ namespace Screencap
             cam.targetTexture = null;
             Camera.current.targetTexture = null;    //Well shit.
 
+            // Restore postprocessing settings
             foreach (var l in lights)
                 l.shadowCustomResolution = 0;
+
+            foreach (var ao in aos)
+                ao.enabled.value = true;
 
             return rt;
         }
