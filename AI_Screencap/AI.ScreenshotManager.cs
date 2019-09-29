@@ -89,15 +89,22 @@ namespace Screencap
             }
         }
 
-        private static IEnumerator WaitForEndOfFrameThen(Action a)
+        private IEnumerator WaitForEndOfFrameThen(Action a)
         {
             var sc = QualitySettings.shadowCascades;
             QualitySettings.shadowCascades = 0;
+
+            var lights = FindObjectsOfType<Light>();
+            foreach (var l in lights)
+                l.shadowCustomResolution = CustomShadowResolution.Value;
 
             yield return new WaitForEndOfFrame();
             a();
 
             QualitySettings.shadowCascades = sc;
+
+            foreach (var l in lights)
+                l.shadowCustomResolution = 0;
         }
 
         private void Opaque()
@@ -215,14 +222,10 @@ namespace Screencap
             }
         }
 
-        private RenderTexture Capture(int width, int height, bool alpha)
+        private static RenderTexture Capture(int width, int height, bool alpha)
         {
-            // Setup postprocessing effects
+            // Setup postprocessing effects to work with the capture
             var aos = DisableAmbientOcclusion();
-
-            var lights = FindObjectsOfType<Light>();
-            foreach (var l in lights)
-                l.shadowCustomResolution = CustomShadowResolution.Value;
 
             // Do the capture
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
@@ -245,9 +248,6 @@ namespace Screencap
             Camera.current.targetTexture = null;    //Well shit.
 
             // Restore postprocessing settings
-            foreach (var l in lights)
-                l.shadowCustomResolution = 0;
-
             foreach (var ao in aos)
                 ao.enabled.value = true;
 
