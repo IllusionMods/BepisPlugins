@@ -42,6 +42,7 @@ namespace Screencap
         private ConfigEntry<int> CaptureHeight { get; set; }
         private ConfigEntry<int> Downscaling { get; set; }
         private ConfigEntry<bool> Alpha { get; set; }
+        private ConfigEntry<int> CustomShadowResolution { get; set; }
 
         private ConfigEntry<KeyboardShortcut> KeyCaptureNormal { get; set; }
         private ConfigEntry<KeyboardShortcut> KeyCaptureRender { get; set; }
@@ -59,6 +60,8 @@ namespace Screencap
             CaptureHeight = Config.AddSetting("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
             Downscaling = Config.AddSetting("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
             Alpha = Config.AddSetting("Rendered screenshots", nameof(Alpha), true, new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
+
+            CustomShadowResolution = Config.AddSetting("Rendered screenshots", "Shadow resolution override", 8192, new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
 
             KeyCaptureNormal = Config.AddSetting("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), "Capture a screenshot \"as you see it\". Includes interface and such.");
             KeyCaptureRender = Config.AddSetting("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), "Capture a rendered screenshot with no interface. Controlled by other settings.");
@@ -222,8 +225,12 @@ namespace Screencap
             }
         }
 
-        private static RenderTexture Capture(int width, int height, bool alpha)
+        private RenderTexture Capture(int width, int height, bool alpha)
         {
+            var lights = FindObjectsOfType<Light>();
+            foreach (var l in lights)
+                l.shadowCustomResolution = CustomShadowResolution.Value;
+
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
             var rt = RenderTexture.GetTemporary(width, height, 32, fmt, RenderTextureReadWrite.Default);
 
@@ -242,6 +249,9 @@ namespace Screencap
             cam.backgroundColor = bg;
             cam.targetTexture = null;
             Camera.current.targetTexture = null;    //Well shit.
+
+            foreach (var l in lights)
+                l.shadowCustomResolution = 0;
 
             return rt;
         }
