@@ -288,6 +288,4 @@ __pycache__/
 *.xsd.cs
 
 # BepisPlugins
-lib/*
-/ConfigurationManager/ConfigurationManager.csproj.DotSettings
 PostBuild.bat
