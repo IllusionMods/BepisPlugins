@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Screencap</RootNamespace>
+    <AssemblyName>AI_Screencap</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\bin\BepInEx\plugins\AI_BepisPlugins\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>embedded</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\bin\BepInEx\plugins\AI_BepisPlugins\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>..\..\lib\BepInEx\BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="Unity.Postprocessing.Runtime">
+      <HintPath>..\..\lib\AIGirl\Unity.Postprocessing.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\lib\AIGirl\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\..\lib\AIGirl\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\lib\AIGirl\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ScreenCaptureModule">
+      <HintPath>..\..\lib\AIGirl\UnityEngine.ScreenCaptureModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AI.ScreenshotManager.cs" />
+    <Compile Include="Pngcs\Chunks\ChunkCopyBehaviour.cs" />
+    <Compile Include="Pngcs\Chunks\ChunkHelper.cs" />
+    <Compile Include="Pngcs\Chunks\ChunkLoadBehaviour.cs" />
+    <Compile Include="Pngcs\Chunks\ChunkPredicate.cs" />
+    <Compile Include="Pngcs\Chunks\ChunkPredicateEquiv.cs" />
+    <Compile Include="Pngcs\Chunks\ChunkPredicateId.cs" />
+    <Compile Include="Pngcs\Chunks\ChunkPredicateId2.cs" />
+    <Compile Include="Pngcs\Chunks\ChunkRaw.cs" />
+    <Compile Include="Pngcs\Chunks\ChunksList.cs" />
+    <Compile Include="Pngcs\Chunks\ChunksListForWrite.cs" />
+    <Compile Include="Pngcs\Chunks\PngChunk.cs" />
+    <Compile Include="Pngcs\Chunks\PngChunkIDAT.cs" />
+    <Compile Include="Pngcs\Chunks\PngChunkIEND.cs" />
+    <Compile Include="Pngcs\Chunks\PngChunkIHDR.cs" />
+    <Compile Include="Pngcs\Chunks\PngChunkMultiple.cs" />
+    <Compile Include="Pngcs\Chunks\PngChunkSingle.cs" />
+    <Compile Include="Pngcs\Chunks\PngMetadata.cs" />
+    <Compile Include="Pngcs\FileHelper.cs" />
+    <Compile Include="Pngcs\FilterType.cs" />
+    <Compile Include="Pngcs\FilterWriteStrategy.cs" />
+    <Compile Include="Pngcs\ImageInfo.cs" />
+    <Compile Include="Pngcs\ImageLine.cs" />
+    <Compile Include="Pngcs\ImageLineHelper.cs" />
+    <Compile Include="Pngcs\ImageLines.cs" />
+    <Compile Include="Pngcs\PngCsUtils.cs" />
+    <Compile Include="Pngcs\PngHelperInternal.cs" />
+    <Compile Include="Pngcs\PngIDatChunkOutputStream.cs" />
+    <Compile Include="Pngcs\PngjException.cs" />
+    <Compile Include="Pngcs\PngjExceptionInternal.cs" />
+    <Compile Include="Pngcs\PngjOutputException.cs" />
+    <Compile Include="Pngcs\PngjUnsupportedException.cs" />
+    <Compile Include="Pngcs\PngWriter.cs" />
+    <Compile Include="Pngcs\ProgressiveOutputStream.cs" />
+    <Compile Include="Pngcs\Unity\Unity.cs" />
+    <Compile Include="Pngcs\Zlib\Adler32.cs" />
+    <Compile Include="Pngcs\Zlib\AZlibInputStream.cs" />
+    <Compile Include="Pngcs\Zlib\AZlibOutputStream.cs" />
+    <Compile Include="Pngcs\Zlib\CRC32.cs" />
+    <Compile Include="Pngcs\Zlib\DeflateCompressLevel.cs" />
+    <Compile Include="Pngcs\Zlib\EDeflateCompressStrategy.cs" />
+    <Compile Include="Pngcs\Zlib\ZlibInputStreamIs.cs" />
+    <Compile Include="Pngcs\Zlib\ZlibInputStreamMs.cs" />
+    <Compile Include="Pngcs\Zlib\ZlibOutputStreamIs.cs" />
+    <Compile Include="Pngcs\Zlib\ZlibOutputStreamMs.cs" />
+    <Compile Include="Pngcs\Zlib\ZlibStreamFactory.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\composite.unity3d" />
+  </ItemGroup>
+  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) AI</PostBuildEvent>
+  </PropertyGroup>
+</Project>

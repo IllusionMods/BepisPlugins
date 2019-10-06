@@ -3,171 +3,171 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ColorCorrector", "KK_ColorCorrector\KK_ColorCorrector.csproj", "{6809B5DC-358C-45C5-B04C-0B7027596A8B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ColorCorrector", "src\KK_ColorCorrector\KK_ColorCorrector.csproj", "{6809B5DC-358C-45C5-B04C-0B7027596A8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ExtensibleSaveFormat", "KK_ExtensibleSaveFormat\KK_ExtensibleSaveFormat.csproj", "{8EBE81B9-9ED9-466D-864A-4C644BFD8827}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ExtensibleSaveFormat", "src\KK_ExtensibleSaveFormat\KK_ExtensibleSaveFormat.csproj", "{8EBE81B9-9ED9-466D-864A-4C644BFD8827}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_InputUnlocker", "KK_InputUnlocker\KK_InputUnlocker.csproj", "{379BA41B-9944-4B5A-8732-EEBAA7F05B04}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_InputUnlocker", "src\KK_InputUnlocker\KK_InputUnlocker.csproj", "{379BA41B-9944-4B5A-8732-EEBAA7F05B04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_Screencap", "KK_Screencap\KK_Screencap.csproj", "{6A9D08C0-4482-4D1A-9368-9F41B7126F9E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_Screencap", "src\KK_Screencap\KK_Screencap.csproj", "{6A9D08C0-4482-4D1A-9368-9F41B7126F9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_SliderUnlocker", "KK_SliderUnlocker\KK_SliderUnlocker.csproj", "{9DB058D4-CF5A-4280-9150-A62C22FC3CB0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_SliderUnlocker", "src\KK_SliderUnlocker\KK_SliderUnlocker.csproj", "{9DB058D4-CF5A-4280-9150-A62C22FC3CB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_Sideloader", "KK_Sideloader\KK_Sideloader.csproj", "{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_Sideloader", "src\KK_Sideloader\KK_Sideloader.csproj", "{384E98F6-C66A-4280-B7FF-AE5BB594DAE3}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared", "Shared\Shared.shproj", "{356EB041-D692-45B5-ACF6-0F393A62CB4B}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared", "src\Shared\Shared.shproj", "{356EB041-D692-45B5-ACF6-0F393A62CB4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_BGMLoader", "KK_BGMLoader\KK_BGMLoader.csproj", "{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_BGMLoader", "src\KK_BGMLoader\KK_BGMLoader.csproj", "{4BEF27B4-5AAC-4AB1-B43F-E85C484FC326}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ConfigurationManager", "KK_ConfigurationManager\KK_ConfigurationManager.csproj", "{8589072C-44CB-4F6E-92E7-D73A42C31D69}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ConfigurationManager", "src\KK_ConfigurationManager\KK_ConfigurationManager.csproj", "{8589072C-44CB-4F6E-92E7-D73A42C31D69}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SliderUnlocker", "SliderUnlocker", "{4A1808A4-FEA9-4BC9-A93A-9F41D457569A}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_SliderUnlocker", "Core_SliderUnlocker\Core_SliderUnlocker.shproj", "{7CBA15AB-52D1-4506-A7BF-9D23060ECF5D}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_SliderUnlocker", "src\Core_SliderUnlocker\Core_SliderUnlocker.shproj", "{7CBA15AB-52D1-4506-A7BF-9D23060ECF5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS_SliderUnlocker", "HS_SliderUnlocker\HS_SliderUnlocker.csproj", "{8AF4399E-0D5A-418E-8178-E81192C56213}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS_SliderUnlocker", "src\HS_SliderUnlocker\HS_SliderUnlocker.csproj", "{8AF4399E-0D5A-418E-8178-E81192C56213}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_SliderUnlocker", "EC_SliderUnlocker\EC_SliderUnlocker.csproj", "{C4188EB1-8DC5-47C7-A966-8AA38B6CFB55}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_SliderUnlocker", "src\EC_SliderUnlocker\EC_SliderUnlocker.csproj", "{C4188EB1-8DC5-47C7-A966-8AA38B6CFB55}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Screencap", "Screencap", "{408D8BC2-DF6B-4ABA-A90F-D79616019BF4}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Screencap", "Core_Screencap\Core_Screencap.shproj", "{EABCCA02-EA25-4451-935B-B293D8BD02DD}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Screencap", "src\Core_Screencap\Core_Screencap.shproj", "{EABCCA02-EA25-4451-935B-B293D8BD02DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_Screencap", "EC_Screencap\EC_Screencap.csproj", "{A16C8DE3-1851-46A9-8866-9D8663E0A76F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_Screencap", "src\EC_Screencap\EC_Screencap.csproj", "{A16C8DE3-1851-46A9-8866-9D8663E0A76F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExtensibleSaveFormat", "ExtensibleSaveFormat", "{72E9352E-2BEB-493C-9F75-1C12AFA67D6B}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ExtensibleSaveFormat", "Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.shproj", "{61E63B45-1D21-44F7-9B01-F5209C05FFB4}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ExtensibleSaveFormat", "src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.shproj", "{61E63B45-1D21-44F7-9B01-F5209C05FFB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ExtensibleSaveFormat", "EC_ExtensibleSaveFormat\EC_ExtensibleSaveFormat.csproj", "{747A4E61-34F4-4790-A418-BB2CB03450E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ExtensibleSaveFormat", "src\EC_ExtensibleSaveFormat\EC_ExtensibleSaveFormat.csproj", "{747A4E61-34F4-4790-A418-BB2CB03450E3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sideloader", "Sideloader", "{41D78233-6980-465F-BAC5-45FCA6E0562F}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Sideloader", "Core_Sideloader\Core_Sideloader.shproj", "{CE5A9FAB-C188-4919-A296-D9B1422169E9}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Sideloader", "src\Core_Sideloader\Core_Sideloader.shproj", "{CE5A9FAB-C188-4919-A296-D9B1422169E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_Sideloader", "EC_Sideloader\EC_Sideloader.csproj", "{68BDAB7C-92F1-41D8-A0AB-F8F4A98C44EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_Sideloader", "src\EC_Sideloader\EC_Sideloader.csproj", "{68BDAB7C-92F1-41D8-A0AB-F8F4A98C44EC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InputUnlocker", "InputUnlocker", "{CE8AB915-8694-4892-BD38-05CBB1AAA418}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_InputUnlocker", "Core_InputUnlocker\Core_InputUnlocker.shproj", "{134E383F-6E78-460D-B76A-3BAAB8EBF54B}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_InputUnlocker", "src\Core_InputUnlocker\Core_InputUnlocker.shproj", "{134E383F-6E78-460D-B76A-3BAAB8EBF54B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_InputUnlocker", "EC_InputUnlocker\EC_InputUnlocker.csproj", "{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_InputUnlocker", "src\EC_InputUnlocker\EC_InputUnlocker.csproj", "{DD2B2EDC-224A-487D-93FA-A71FCCC5433E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ColorCorrector", "ColorCorrector", "{C9731CBE-A60E-4BA8-8B52-C7952DB3BC06}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ColorCorrector", "Core_ColorCorrector\Core_ColorCorrector.shproj", "{C9F5729A-C6E2-4E2F-A68D-4FDF757B2E58}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ColorCorrector", "src\Core_ColorCorrector\Core_ColorCorrector.shproj", "{C9F5729A-C6E2-4E2F-A68D-4FDF757B2E58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ColorCorrector", "EC_ColorCorrector\EC_ColorCorrector.csproj", "{C1F8FEEB-09E9-4FD0-A9B1-B4A323ED2177}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ColorCorrector", "src\EC_ColorCorrector\EC_ColorCorrector.csproj", "{C1F8FEEB-09E9-4FD0-A9B1-B4A323ED2177}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BGMLoader", "BGMLoader", "{BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_BGMLoader", "Core_BGMLoader\Core_BGMLoader.shproj", "{E1074DCD-CC19-4C67-B799-EB534C885018}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_BGMLoader", "src\Core_BGMLoader\Core_BGMLoader.shproj", "{E1074DCD-CC19-4C67-B799-EB534C885018}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_BGMLoader", "EC_BGMLoader\EC_BGMLoader.csproj", "{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_BGMLoader", "src\EC_BGMLoader\EC_BGMLoader.csproj", "{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared.AssetLoader", "Shared.AssetLoader\Shared.AssetLoader.shproj", "{ACB2EB7F-0782-4E7C-8F92-FAAAE1B632A3}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared.AssetLoader", "src\Shared.AssetLoader\Shared.AssetLoader.shproj", "{ACB2EB7F-0782-4E7C-8F92-FAAAE1B632A3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConfigurationManagerWrapper", "ConfigurationManagerWrapper", "{66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ConfigurationManager", "EC_ConfigurationManager\EC_ConfigurationManager.csproj", "{6979C7C4-91FE-4FD5-8F74-101CC533B238}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ConfigurationManager", "src\EC_ConfigurationManager\EC_ConfigurationManager.csproj", "{6979C7C4-91FE-4FD5-8F74-101CC533B238}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ConfigurationManager", "Core_ConfigurationManager\Core_ConfigurationManager.shproj", "{348F6441-9510-47D8-9F7F-547E8655CBB5}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ConfigurationManager", "src\Core_ConfigurationManager\Core_ConfigurationManager.shproj", "{348F6441-9510-47D8-9F7F-547E8655CBB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS_ConfigurationManager", "HS_ConfigurationManager\HS_ConfigurationManager.csproj", "{FA7D93C6-05C2-42A9-B82B-C544898F26AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS_ConfigurationManager", "src\HS_ConfigurationManager\HS_ConfigurationManager.csproj", "{FA7D93C6-05C2-42A9-B82B-C544898F26AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_SliderUnlocker", "AI_SliderUnlocker\AI_SliderUnlocker.csproj", "{D78D6B25-E644-4CFE-9031-A05DFBDC683D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_SliderUnlocker", "src\AI_SliderUnlocker\AI_SliderUnlocker.csproj", "{D78D6B25-E644-4CFE-9031-A05DFBDC683D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_InputUnlocker", "AI_InputUnlocker\AI_InputUnlocker.csproj", "{3590476D-CE82-4B96-AB71-6DCC4B481B17}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_InputUnlocker", "src\AI_InputUnlocker\AI_InputUnlocker.csproj", "{3590476D-CE82-4B96-AB71-6DCC4B481B17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_BGMLoader", "AI_BGMLoader\AI_BGMLoader.csproj", "{CD6453F6-DCDE-44D4-B1DB-B0B7CDF9BCC9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_BGMLoader", "src\AI_BGMLoader\AI_BGMLoader.csproj", "{CD6453F6-DCDE-44D4-B1DB-B0B7CDF9BCC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ExtensibleSaveFormat", "AI_ExtensibleSaveFormat\AI_ExtensibleSaveFormat.csproj", "{303C404B-9D91-4622-9B8B-8415E0DE6A8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ExtensibleSaveFormat", "src\AI_ExtensibleSaveFormat\AI_ExtensibleSaveFormat.csproj", "{303C404B-9D91-4622-9B8B-8415E0DE6A8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Sideloader", "AI_Sideloader\AI_Sideloader.csproj", "{737A4054-4A2B-48E9-842A-A38D24361435}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Sideloader", "src\AI_Sideloader\AI_Sideloader.csproj", "{737A4054-4A2B-48E9-842A-A38D24361435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_EnableResize", "AI_EnableResize\AI_EnableResize.csproj", "{FB216E7E-ABA8-47EE-A293-D6C6F57A37D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_EnableResize", "src\AI_EnableResize\AI_EnableResize.csproj", "{FB216E7E-ABA8-47EE-A293-D6C6F57A37D4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EnableResize", "EnableResize", "{52ED49EF-1F5F-4FBE-B83C-4B2551AFF08C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_EnableResize", "KK_EnableResize\KK_EnableResize.csproj", "{9273C8DA-3AD0-4785-946F-2ED7C07A4FED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_EnableResize", "src\KK_EnableResize\KK_EnableResize.csproj", "{9273C8DA-3AD0-4785-946F-2ED7C07A4FED}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_EnableResize", "Core_EnableResize\Core_EnableResize.shproj", "{63217F63-C086-40BC-B189-CFAF459020ED}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_EnableResize", "src\Core_EnableResize\Core_EnableResize.shproj", "{63217F63-C086-40BC-B189-CFAF459020ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_EnableResize", "EC_EnableResize\EC_EnableResize.csproj", "{ACC81EF3-37E0-499F-A32C-E399E097E34A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_EnableResize", "src\EC_EnableResize\EC_EnableResize.csproj", "{ACC81EF3-37E0-499F-A32C-E399E097E34A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Screencap", "AI_Screencap\AI_Screencap.csproj", "{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Screencap", "src\AI_Screencap\AI_Screencap.csproj", "{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_SliderUnlocker", "PH_SliderUnlocker\PH_SliderUnlocker.csproj", "{2DF3121A-62DE-451B-9854-BCDA34B200F2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_SliderUnlocker", "src\PH_SliderUnlocker\PH_SliderUnlocker.csproj", "{2DF3121A-62DE-451B-9854-BCDA34B200F2}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
-		Shared\Shared.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
-		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
-		Shared\Shared.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
-		Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
-		Shared\Shared.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
-		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{348f6441-9510-47d8-9f7f-547e8655cbb5}*SharedItemsImports = 13
-		Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
-		Core_InputUnlocker\Core_InputUnlocker.projitems*{3590476d-ce82-4b96-ab71-6dcc4b481b17}*SharedItemsImports = 4
-		Shared\Shared.projitems*{3590476d-ce82-4b96-ab71-6dcc4b481b17}*SharedItemsImports = 4
-		Core_InputUnlocker\Core_InputUnlocker.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
-		Shared\Shared.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
-		Core_Sideloader\Core_Sideloader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
-		Shared.AssetLoader\Shared.AssetLoader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
-		Shared\Shared.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
-		Core_BGMLoader\Core_BGMLoader.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
-		Shared\Shared.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
-		Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{61e63b45-1d21-44f7-9b01-f5209c05ffb4}*SharedItemsImports = 13
-		Core_EnableResize\Core_EnableResize.projitems*{63217f63-c086-40bc-b189-cfaf459020ed}*SharedItemsImports = 13
-		Core_ColorCorrector\Core_ColorCorrector.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
-		Shared\Shared.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
-		Core_Sideloader\Core_Sideloader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
-		Shared.AssetLoader\Shared.AssetLoader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
-		Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
-		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
-		Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
-		Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
-		Core_Sideloader\Core_Sideloader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
-		Shared.AssetLoader\Shared.AssetLoader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
-		Shared\Shared.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
-		Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
-		Shared\Shared.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
-		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7cba15ab-52d1-4506-a7bf-9d23060ecf5d}*SharedItemsImports = 13
-		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
-		Shared\Shared.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
-		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
-		Shared\Shared.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
-		Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
-		Shared\Shared.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
-		Core_EnableResize\Core_EnableResize.projitems*{9273c8da-3ad0-4785-946f-2ed7c07a4fed}*SharedItemsImports = 4
-		Shared\Shared.projitems*{9273c8da-3ad0-4785-946f-2ed7c07a4fed}*SharedItemsImports = 4
-		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
-		Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
-		Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
-		Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
-		Shared.AssetLoader\Shared.AssetLoader.projitems*{acb2eb7f-0782-4e7c-8f92-faaae1b632a3}*SharedItemsImports = 13
-		Core_EnableResize\Core_EnableResize.projitems*{acc81ef3-37e0-499f-a32c-e399e097e34a}*SharedItemsImports = 4
-		Shared\Shared.projitems*{acc81ef3-37e0-499f-a32c-e399e097e34a}*SharedItemsImports = 4
-		Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
-		Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
-		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{c4188eb1-8dc5-47c7-a966-8aa38b6cfb55}*SharedItemsImports = 4
-		Shared\Shared.projitems*{c4188eb1-8dc5-47c7-a966-8aa38b6cfb55}*SharedItemsImports = 4
-		Core_ColorCorrector\Core_ColorCorrector.projitems*{c9f5729a-c6e2-4e2f-a68d-4fdf757b2e58}*SharedItemsImports = 13
-		Core_BGMLoader\Core_BGMLoader.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
-		Shared\Shared.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
-		Core_Sideloader\Core_Sideloader.projitems*{ce5a9fab-c188-4919-a296-d9b1422169e9}*SharedItemsImports = 13
-		Core_SliderUnlocker\Core_SliderUnlocker.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
-		Shared\Shared.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
-		Core_InputUnlocker\Core_InputUnlocker.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
-		Shared\Shared.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
-		Core_BGMLoader\Core_BGMLoader.projitems*{e1074dcd-cc19-4c67-b799-eb534c885018}*SharedItemsImports = 13
-		Core_BGMLoader\Core_BGMLoader.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
-		Shared\Shared.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
-		Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
-		Core_ConfigurationManager\Core_ConfigurationManager.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
-		Core_EnableResize\Core_EnableResize.projitems*{fb216e7e-aba8-47ee-a293-d6c6f57a37d4}*SharedItemsImports = 4
-		Shared\Shared.projitems*{fb216e7e-aba8-47ee-a293-d6c6f57a37d4}*SharedItemsImports = 4
+		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
+		src\Shared\Shared.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
+		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
+		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{348f6441-9510-47d8-9f7f-547e8655cbb5}*SharedItemsImports = 13
+		src\Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
+		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{3590476d-ce82-4b96-ab71-6dcc4b481b17}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{3590476d-ce82-4b96-ab71-6dcc4b481b17}*SharedItemsImports = 4
+		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
+		src\Core_Sideloader\Core_Sideloader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
+		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
+		src\Core_BGMLoader\Core_BGMLoader.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{61e63b45-1d21-44f7-9b01-f5209c05ffb4}*SharedItemsImports = 13
+		src\Core_EnableResize\Core_EnableResize.projitems*{63217f63-c086-40bc-b189-cfaf459020ed}*SharedItemsImports = 13
+		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
+		src\Core_Sideloader\Core_Sideloader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
+		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
+		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
+		src\Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
+		src\Core_Sideloader\Core_Sideloader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
+		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
+		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7cba15ab-52d1-4506-a7bf-9d23060ecf5d}*SharedItemsImports = 13
+		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
+		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
+		src\Core_EnableResize\Core_EnableResize.projitems*{9273c8da-3ad0-4785-946f-2ed7c07a4fed}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{9273c8da-3ad0-4785-946f-2ed7c07a4fed}*SharedItemsImports = 4
+		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
+		src\Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
+		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{acb2eb7f-0782-4e7c-8f92-faaae1b632a3}*SharedItemsImports = 13
+		src\Core_EnableResize\Core_EnableResize.projitems*{acc81ef3-37e0-499f-a32c-e399e097e34a}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{acc81ef3-37e0-499f-a32c-e399e097e34a}*SharedItemsImports = 4
+		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
+		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{c4188eb1-8dc5-47c7-a966-8aa38b6cfb55}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{c4188eb1-8dc5-47c7-a966-8aa38b6cfb55}*SharedItemsImports = 4
+		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{c9f5729a-c6e2-4e2f-a68d-4fdf757b2e58}*SharedItemsImports = 13
+		src\Core_BGMLoader\Core_BGMLoader.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
+		src\Core_Sideloader\Core_Sideloader.projitems*{ce5a9fab-c188-4919-a296-d9b1422169e9}*SharedItemsImports = 13
+		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
+		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
+		src\Core_BGMLoader\Core_BGMLoader.projitems*{e1074dcd-cc19-4c67-b799-eb534c885018}*SharedItemsImports = 13
+		src\Core_BGMLoader\Core_BGMLoader.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
+		src\Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
+		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
+		src\Core_EnableResize\Core_EnableResize.projitems*{fb216e7e-aba8-47ee-a293-d6c6f57a37d4}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{fb216e7e-aba8-47ee-a293-d6c6f57a37d4}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
