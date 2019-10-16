@@ -109,7 +109,8 @@ namespace Screencap
 
         private void Opaque()
         {
-            OnPreCapture?.Invoke();
+            try { OnPreCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
 
             Config.Reload();
             var width = CaptureWidth.Value;
@@ -124,13 +125,15 @@ namespace Screencap
             ScaleTex(ref colour, width, height, downScaling);
 
             StartCoroutine(WriteTex(colour, false));
-
-            OnPostCapture?.Invoke();
+            
+            try { OnPostCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
         }
 
         private void Transparent()
         {
-            OnPreCapture?.Invoke();
+            try { OnPreCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
 
             Config.Reload();
             var width = CaptureWidth.Value;
@@ -167,7 +170,8 @@ namespace Screencap
 
             StartCoroutine(WriteTex(alpha, true));
 
-            OnPostCapture?.Invoke();
+            try { OnPostCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
         }
 
         private static IEnumerable<AmbientOcclusion> DisableAmbientOcclusion()
