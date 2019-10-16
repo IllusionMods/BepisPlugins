@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_SliderUnlocker", "EC_Sli
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Screencap", "Screencap", "{408D8BC2-DF6B-4ABA-A90F-D79616019BF4}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Screencap", "Core_Screencap\Core_Screencap.shproj", "{EABCCA02-EA25-4451-935B-B293D8BD02DD}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "KKEC_Core_Screencap", "Core_Screencap\KKEC_Core_Screencap.shproj", "{EABCCA02-EA25-4451-935B-B293D8BD02DD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_Screencap", "EC_Screencap\EC_Screencap.csproj", "{A16C8DE3-1851-46A9-8866-9D8663E0A76F}"
 EndProject
