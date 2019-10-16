@@ -33,6 +33,15 @@ namespace Screencap
         private readonly string screenshotDir = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
         internal AlphaShot2 currentAlphaShot;
 
+        /// <summary>
+        /// Triggered before a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
+        /// </summary>
+        public static event Action OnPreCapture;
+        /// <summary>
+        /// Triggered after a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
+        /// </summary>
+        public static event Action OnPostCapture;
+
         #region Config properties
 
         public static ConfigEntry<KeyboardShortcut> KeyCapture { get; private set; }
@@ -268,6 +277,9 @@ namespace Screencap
                 yield break;
             }
 
+            try { OnPreCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
+
             if (!in3D)
             {
                 yield return new WaitForEndOfFrame();
@@ -313,11 +325,17 @@ namespace Screencap
                 Destroy(result);
             }
 
+            try { OnPostCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
+            
             Utils.Sound.Play(SystemSE.photo);
         }
 
         private IEnumerator Take360Screenshot(bool in3D)
         {
+            try { OnPreCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
+
             yield return new WaitForEndOfFrame();
 
             if (!in3D)
@@ -368,6 +386,9 @@ namespace Screencap
                 Destroy(capture);
                 Destroy(capture2);
             }
+
+            try { OnPostCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
 
             Utils.Sound.Play(SystemSE.photo);
         }
