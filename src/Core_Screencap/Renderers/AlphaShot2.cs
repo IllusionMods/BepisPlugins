@@ -17,10 +17,9 @@ namespace alphaShot
         {
             var abd = Screencap.Properties.Resources.blackout;
             var ab = AssetBundle.LoadFromMemory(abd);
-            matBlackout = new Material(ab.LoadAsset<Shader>("assets/shaders/blackout.shader"));
-            matBlackout.SetColor("_TargetColour", Color.black);
-            matMask = new Material(ab.LoadAsset<Shader>("assets/shaders/alphamask.shader"));
-            matScale = new Material(ab.LoadAsset<Shader>("assets/shaders/resize.shader"));
+            matBlackout = new Material(ab.LoadAsset<Shader>("blackout.shader"));
+            matMask = new Material(ab.LoadAsset<Shader>("alphamask.shader"));
+            matScale = new Material(ab.LoadAsset<Shader>("resize.shader"));
             ab.Unload(false);
 
             InStudio = SceneManager.GetActiveScene().name == "Studio";
@@ -60,9 +59,10 @@ namespace alphaShot
         }
 
         public Texture2D CaptureTex(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
-        {   
+        {
             Shader.SetGlobalTexture("_AlphaMask", Texture2D.whiteTexture);
             Shader.SetGlobalInt("_alpha_a", 1);
+            Shader.SetGlobalInt("_alpha_b", 1);
             Texture2D fullSizeCapture = null;
             int newWidth = ResolutionX * DownscalingRate;
             int newHeight = ResolutionY * DownscalingRate;

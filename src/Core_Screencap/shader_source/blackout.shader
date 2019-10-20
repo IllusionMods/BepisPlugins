@@ -1,6 +1,7 @@
 Shader "" {
     Properties {
         _linewidthG ("linewidthG", Float ) = 0
+        _MainTex ("MainTex", 2D) = "white" {}
         //_AlphaMask ("AlphaMask", 2D) = "white" {} //Same as below
         //_alpha_a ("alpha_a", int ) = 1    //by fetching a global (default: 1) we can enforce a default value of 1 when unspecified.
         _alpha_b ("alpha_b", int ) = 1
@@ -22,6 +23,7 @@ Shader "" {
             #pragma target 3.0
 
             uniform float _linewidthG;
+            uniform sampler2D _MainTex; uniform float4 _MainTex_ST;
             uniform sampler2D _AlphaMask; uniform float4 _AlphaMask_ST;
             uniform int _alpha_a;
             uniform int _alpha_b;
@@ -47,6 +49,9 @@ Shader "" {
                 float aa = step(_alpha_a, am.r);
                 float ab = step(_alpha_b, am.g);
                 float bm = min(aa, ab);
+
+                float4 mt = tex2D(_MainTex, i.uv0);
+                bm *= mt.a;
 
                 //Exactly 1, 0 combo equals 1, else 0
                 float alt_mask = step(0.5, _alpha_a) * step(_alpha_b, 0.5);
