@@ -19,12 +19,6 @@ namespace ConfigurationManagerWrapper
         private ConfigurationManager.ConfigurationManager _manager;
         private bool _insideConfigScreen;
 
-        private static void SetGameCanvasInputsEnabled(bool mouseInputEnabled)
-        {
-            foreach (var c in FindObjectsOfType<GraphicRaycaster>())
-                c.enabled = mouseInputEnabled;
-        }
-
         private void OnGUI()
         {
             if (!_insideConfigScreen) return;
@@ -40,7 +34,6 @@ namespace ConfigurationManagerWrapper
 
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.OverrideHotkey = true;
-            _manager.DisplayingWindowChanged += (sender, args) => SetGameCanvasInputsEnabled(!args.NewValue);
 
             if (!_isStudio)
             {
@@ -68,9 +61,6 @@ namespace ConfigurationManagerWrapper
 
                 _manager.DisplayingWindow = _previousWindowState;
 
-                if (_manager.DisplayingWindow)
-                    SetGameCanvasInputsEnabled(false);
-
                 // Button size fix for Koikatsu Party
                 var rootNode = GameObject.Find("ConfigScene/Canvas/Node ShortCut");
                 if (rootNode != null)
@@ -88,7 +78,6 @@ namespace ConfigurationManagerWrapper
             }
             else
             {
-                SetGameCanvasInputsEnabled(true);
                 _previousWindowState = _manager.DisplayingWindow;
                 _manager.DisplayingWindow = false;
             }
