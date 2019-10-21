@@ -1,8 +1,6 @@
 # BepisPlugins
 A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins for Koikatu. Most importantly this collection includes a screenshot plugin, slider and input field unlockers. This collection also includes Sideloader for loading mods.
 
-[Frequently asked questions.](https://github.com/bbepis/BepisPlugins/wiki/FAQ)
-
 ## Releases
 [![GitHub release](https://img.shields.io/github/release/bbepis/BepisPlugins.svg?style=for-the-badge)](https://github.com/bbepis/BepisPlugins/releases)
 [![Github Releases](https://img.shields.io/github/downloads/bbepis/BepisPlugins/latest/total.svg?style=for-the-badge)](https://github.com/bbepis/BepisPlugins/releases)
