@@ -5,7 +5,7 @@ A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins 
 [![GitHub release](https://img.shields.io/github/release/bbepis/BepisPlugins.svg?style=for-the-badge)](https://github.com/bbepis/BepisPlugins/releases)
 [![Github Releases](https://img.shields.io/github/downloads/bbepis/BepisPlugins/latest/total.svg?style=for-the-badge)](https://github.com/bbepis/BepisPlugins/releases)
 
-These plugins require the latest build of [BepInEx](https://builds.bepis.io/projects/bepinex_be). The latest release versions of BepInEx will not work.
+These plugins require the latest bleeding edge build of [BepInEx](https://builds.bepis.io/projects/bepinex_be). The latest release versions of BepInEx will not work.
 
 ## Plugin descriptions
 ### BGMLoader
