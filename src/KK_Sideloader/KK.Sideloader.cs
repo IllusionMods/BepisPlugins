@@ -4,6 +4,7 @@ namespace Sideloader
 {
     [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier)]
     [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
+    [BepInIncompatibility("com.bepis.bepinex.resourceredirector")]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin
     {
