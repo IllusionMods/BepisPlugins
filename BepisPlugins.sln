@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.757
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ColorCorrector", "src\KK_ColorCorrector\KK_ColorCorrector.csproj", "{6809B5DC-358C-45C5-B04C-0B7027596A8B}"
 EndProject
@@ -85,16 +85,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ExtensibleSaveFormat", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Sideloader", "src\AI_Sideloader\AI_Sideloader.csproj", "{737A4054-4A2B-48E9-842A-A38D24361435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_EnableResize", "src\AI_EnableResize\AI_EnableResize.csproj", "{FB216E7E-ABA8-47EE-A293-D6C6F57A37D4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EnableResize", "EnableResize", "{52ED49EF-1F5F-4FBE-B83C-4B2551AFF08C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_EnableResize", "src\KK_EnableResize\KK_EnableResize.csproj", "{9273C8DA-3AD0-4785-946F-2ED7C07A4FED}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_EnableResize", "src\Core_EnableResize\Core_EnableResize.shproj", "{63217F63-C086-40BC-B189-CFAF459020ED}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_EnableResize", "src\EC_EnableResize\EC_EnableResize.csproj", "{ACC81EF3-37E0-499F-A32C-E399E097E34A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Screencap", "src\AI_Screencap\AI_Screencap.csproj", "{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_SliderUnlocker", "src\PH_SliderUnlocker\PH_SliderUnlocker.csproj", "{2DF3121A-62DE-451B-9854-BCDA34B200F2}"
@@ -123,7 +113,6 @@ Global
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{61e63b45-1d21-44f7-9b01-f5209c05ffb4}*SharedItemsImports = 13
-		src\Core_EnableResize\Core_EnableResize.projitems*{63217f63-c086-40bc-b189-cfaf459020ed}*SharedItemsImports = 13
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
@@ -145,15 +134,11 @@ Global
 		Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
-		src\Core_EnableResize\Core_EnableResize.projitems*{9273c8da-3ad0-4785-946f-2ed7c07a4fed}*SharedItemsImports = 4
-		src\Shared\Shared.projitems*{9273c8da-3ad0-4785-946f-2ed7c07a4fed}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{acb2eb7f-0782-4e7c-8f92-faaae1b632a3}*SharedItemsImports = 13
-		src\Core_EnableResize\Core_EnableResize.projitems*{acc81ef3-37e0-499f-a32c-e399e097e34a}*SharedItemsImports = 4
-		src\Shared\Shared.projitems*{acc81ef3-37e0-499f-a32c-e399e097e34a}*SharedItemsImports = 4
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{c4188eb1-8dc5-47c7-a966-8aa38b6cfb55}*SharedItemsImports = 4
@@ -171,8 +156,6 @@ Global
 		src\Shared\Shared.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
 		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
-		src\Core_EnableResize\Core_EnableResize.projitems*{fb216e7e-aba8-47ee-a293-d6c6f57a37d4}*SharedItemsImports = 4
-		src\Shared\Shared.projitems*{fb216e7e-aba8-47ee-a293-d6c6f57a37d4}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -271,18 +254,6 @@ Global
 		{737A4054-4A2B-48E9-842A-A38D24361435}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{737A4054-4A2B-48E9-842A-A38D24361435}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{737A4054-4A2B-48E9-842A-A38D24361435}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FB216E7E-ABA8-47EE-A293-D6C6F57A37D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FB216E7E-ABA8-47EE-A293-D6C6F57A37D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FB216E7E-ABA8-47EE-A293-D6C6F57A37D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FB216E7E-ABA8-47EE-A293-D6C6F57A37D4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9273C8DA-3AD0-4785-946F-2ED7C07A4FED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9273C8DA-3AD0-4785-946F-2ED7C07A4FED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9273C8DA-3AD0-4785-946F-2ED7C07A4FED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9273C8DA-3AD0-4785-946F-2ED7C07A4FED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ACC81EF3-37E0-499F-A32C-E399E097E34A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ACC81EF3-37E0-499F-A32C-E399E097E34A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ACC81EF3-37E0-499F-A32C-E399E097E34A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ACC81EF3-37E0-499F-A32C-E399E097E34A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -327,10 +298,6 @@ Global
 		{CD6453F6-DCDE-44D4-B1DB-B0B7CDF9BCC9} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 		{303C404B-9D91-4622-9B8B-8415E0DE6A8F} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 		{737A4054-4A2B-48E9-842A-A38D24361435} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
-		{FB216E7E-ABA8-47EE-A293-D6C6F57A37D4} = {52ED49EF-1F5F-4FBE-B83C-4B2551AFF08C}
-		{9273C8DA-3AD0-4785-946F-2ED7C07A4FED} = {52ED49EF-1F5F-4FBE-B83C-4B2551AFF08C}
-		{63217F63-C086-40BC-B189-CFAF459020ED} = {52ED49EF-1F5F-4FBE-B83C-4B2551AFF08C}
-		{ACC81EF3-37E0-499F-A32C-E399E097E34A} = {52ED49EF-1F5F-4FBE-B83C-4B2551AFF08C}
 		{2C5BCF22-76B1-42D5-B078-FA8BD529BFD5} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
 		{2DF3121A-62DE-451B-9854-BCDA34B200F2} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
 		{20FD60F3-3086-4A25-876B-E977BDA46687} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
