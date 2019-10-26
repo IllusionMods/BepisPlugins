@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using System;
+﻿using System;
 
 namespace ExtensibleSaveFormat
 {
@@ -28,7 +27,7 @@ namespace ExtensibleSaveFormat
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingSaved)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingSaved)} - {ex}");
                 }
             }
         }
@@ -47,7 +46,7 @@ namespace ExtensibleSaveFormat
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingLoaded)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingLoaded)} - {ex}");
                 }
             }
         }
@@ -66,7 +65,7 @@ namespace ExtensibleSaveFormat
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingImported)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingImported)} - {ex}");
                 }
             }
         }

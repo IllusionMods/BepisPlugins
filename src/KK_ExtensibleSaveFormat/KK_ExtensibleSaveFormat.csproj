@@ -63,11 +63,11 @@
   <ItemGroup>
     <Compile Include="KK.ExtendedSave.cs" />
     <Compile Include="KK.ExtendedSave.Hooks.cs" />
-    <Compile Include="KK.ExtendedSave.Events.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="..\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems" Label="Shared" />
+  <Import Project="..\..\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) KK</PostBuildEvent>

@@ -75,6 +75,7 @@
   </ItemGroup>
   <Import Project="..\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+  <Import Project="..\..\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) AI</PostBuildEvent>
