@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29411.108
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ColorCorrector", "src\KK_ColorCorrector\KK_ColorCorrector.csproj", "{6809B5DC-358C-45C5-B04C-0B7027596A8B}"
 EndProject
@@ -89,17 +89,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Screencap", "src\AI_Scre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_SliderUnlocker", "src\PH_SliderUnlocker\PH_SliderUnlocker.csproj", "{2DF3121A-62DE-451B-9854-BCDA34B200F2}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ExtensibleSaveFormat_CharaStudio", "Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.shproj", "{20FD60F3-3086-4A25-876B-E977BDA46687}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ExtensibleSaveFormat_CharaStudio", "src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.shproj", "{20FD60F3-3086-4A25-876B-E977BDA46687}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
-		Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{20fd60f3-3086-4a25-876b-e977bda46687}*SharedItemsImports = 13
+		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{20fd60f3-3086-4a25-876b-e977bda46687}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
-		Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{348f6441-9510-47d8-9f7f-547e8655cbb5}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
@@ -131,8 +131,8 @@ Global
 		src\Shared\Shared.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
-		Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
