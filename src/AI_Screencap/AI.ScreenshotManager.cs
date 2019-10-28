@@ -82,7 +82,8 @@ namespace Screencap
             }
             else if (KeyCaptureRender.Value.IsDown())
             {
-                if (Alpha.Value)
+                var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Application.productName == "StudioNEOV2";
+                if (Alpha.Value && alphaAllowed)
                     StartCoroutine(WaitForEndOfFrameThen(Transparent));
                 else
                     StartCoroutine(WaitForEndOfFrameThen(Opaque));
@@ -125,7 +126,7 @@ namespace Screencap
             ScaleTex(ref colour, width, height, downScaling);
 
             StartCoroutine(WriteTex(colour, false));
-            
+
             try { OnPostCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
         }
@@ -146,16 +147,16 @@ namespace Screencap
             var colour = Capture(scaledWidth, scaledHeight, false);
 
             var ppl = Camera.main.gameObject.GetComponent<PostProcessLayer>();
-            ppl.enabled = false;
+            if (ppl != null) ppl.enabled = false;
 
-            var m3D = SceneManager.GetActiveScene().GetRootGameObjects()[0].transform.Find("CustomControl/Map3D/p_ai_mi_createBG00_00").gameObject; //Disable background. Sinful, truly.
-            m3D.SetActive(false);
+            var m3D = SceneManager.GetActiveScene().GetRootGameObjects()[0].transform.Find("CustomControl/Map3D/p_ai_mi_createBG00_00")?.gameObject; //Disable background. Sinful, truly.
+            m3D?.SetActive(false);
 
             var mask = Capture(scaledWidth, scaledHeight, true);
 
-            ppl.enabled = true;
+            if (ppl != null) ppl.enabled = true;
 
-            m3D.SetActive(true);
+            m3D?.SetActive(true);
 
             var alpha = RenderTexture.GetTemporary(scaledWidth, scaledHeight, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 
