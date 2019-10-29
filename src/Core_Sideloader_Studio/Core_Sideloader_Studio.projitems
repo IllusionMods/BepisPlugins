@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>66214bd2-6da6-49cd-8c74-63da9e643259</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Core_Sideloader_Studio</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.Studio.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.Studio.Hooks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.Studio.ListLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.Hooks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.StudioObjectSearch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.StudioResolveInfo.cs" />
+  </ItemGroup>
+</Project>

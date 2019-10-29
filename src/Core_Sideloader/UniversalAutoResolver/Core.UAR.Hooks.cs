@@ -34,10 +34,12 @@ namespace Sideloader.AutoResolver
 #if EC
                 ExtendedSave.CardBeingImported += ExtendedCardImport;
                 ExtendedSave.CoordinateBeingImported += ExtendedCoordinateImport;
-#elif KK
+#else
                 ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
                 ExtendedSave.SceneBeingImported += ExtendedSceneImport;
+#endif
 
+#if KK
                 harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnValueChangedLutPrefix), AccessTools.all)), null);
                 harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,

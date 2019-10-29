@@ -85,14 +85,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UniversalAutoResolver\KK.UAR.Hooks.cs" />
-    <Compile Include="UniversalAutoResolver\KK.UAR.StudioResolveInfo.cs" />
-    <Compile Include="UniversalAutoResolver\KK.UAR.StudioObjectSearch.cs" />
-    <Compile Include="UniversalAutoResolver\KK.UAR.cs" />
     <Compile Include="KK.Sideloader.ListLoader.cs" />
     <Compile Include="KK.Sideloader.Hooks.cs" />
     <Compile Include="KK.Sideloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UniversalAutoResolver\KK.UAR.Hooks.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KK_ExtensibleSaveFormat\KK_ExtensibleSaveFormat.csproj">
@@ -104,6 +101,7 @@
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="..\Core_Sideloader\Core_Sideloader.projitems" Label="Shared" />
   <Import Project="..\Shared.AssetLoader\Shared.AssetLoader.projitems" Label="Shared" />
+  <Import Project="..\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST $(SolutionDir)PostBuild.bat CALL "$(SolutionDir)PostBuild.bat" $(TargetPath) KK

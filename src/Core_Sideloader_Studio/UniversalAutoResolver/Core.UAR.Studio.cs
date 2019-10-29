@@ -45,7 +45,7 @@ namespace Sideloader.AutoResolver
                     entry[0] = newSlot.ToString();
                 }
             }
-            else if (CategoryAndGroupList.Contains(StudioListType))
+            else if (Sideloader.CategoryAndGroupList.Contains(StudioListType))
             {
                 foreach (List<string> entry in data.Entries)
                 {
@@ -77,11 +77,11 @@ namespace Sideloader.AutoResolver
 
                     if (Sideloader.DebugResolveInfoLogging.Value)
                     {
-                        Sideloader.Logger.Log(LogLevel.Info, $"StudioResolveInfo - " +
-                                                             $"GUID: {manifest.GUID} " +
-                                                             $"Slot: {int.Parse(entry[0])} " +
-                                                             $"LocalSlot: {newSlot} " +
-                                                             $"Count: {LoadedStudioResolutionInfo.Count}");
+                        Sideloader.Logger.LogInfo($"StudioResolveInfo - " +
+                                                  $"GUID: {manifest.GUID} " +
+                                                  $"Slot: {int.Parse(entry[0])} " +
+                                                  $"LocalSlot: {newSlot} " +
+                                                  $"Count: {LoadedStudioResolutionInfo.Count}");
                     }
 
                     entry[0] = newSlot.ToString();
@@ -132,7 +132,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.LogDebug($"Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
                     Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
                 }
                 else if (resolveType == ResolveType.Load)
@@ -144,7 +144,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.LogDebug($"Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
                     Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
                 }
                 else if (resolveType == ResolveType.Load)
@@ -164,13 +164,13 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a match
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
                         Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
                     }
                     else
                     {
                         //No match was found
-                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Item) failed, no match found for ID {Item.no}");
+                        Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Item) failed, no match found for ID {Item.no}");
                     }
                 }
             }
@@ -183,13 +183,13 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a match
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
                         Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
                     }
                     else
                     {
                         //No match was found
-                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Light) failed, no match found for ID {Light.no}");
+                        Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Light) failed, no match found for ID {Light.no}");
                     }
                 }
             }
@@ -211,7 +211,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.LogDebug($"Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
                     Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                 }
                 else
@@ -227,12 +227,12 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
                         Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
                     }
                     else
                     {
-                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Map) failed, no match found for ID {MapID}");
+                        Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Map) failed, no match found for ID {MapID}");
                     }
                 }
             }
@@ -240,6 +240,7 @@ namespace Sideloader.AutoResolver
 
         internal static void ResolveStudioFilter(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
         {
+#if KK
             //Set filter ID to the resolved ID
             int filterID = Studio.Studio.Instance.sceneInfo.aceNo;
 
@@ -251,7 +252,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"Resolving (Studio Filter) [{filterGUID}] {filterID}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.LogDebug($"Resolving (Studio Filter) [{filterGUID}] {filterID}->{intResolve.LocalSlot}");
                     Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
                 }
                 else
@@ -267,19 +268,21 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving (Studio Filter) {filterID}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Filter) {filterID}->{intResolve.LocalSlot}");
                         Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
                     }
                     else
                     {
-                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Filter) failed, no match found for ID {filterID}");
+                        Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Filter) failed, no match found for ID {filterID}");
                     }
                 }
             }
+#endif
         }
 
         internal static void ResolveStudioRamp(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
         {
+#if KK
             //Set ramp ID to the resolved ID
             int rampID = Studio.Studio.Instance.sceneInfo.rampG;
 
@@ -291,7 +294,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"Resolving (Studio Ramp) [{rampID}] {rampID}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.LogDebug($"Resolving (Studio Ramp) [{rampID}] {rampID}->{intResolve.LocalSlot}");
 
                     Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
                 }
@@ -308,15 +311,16 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving (Studio Ramp) {rampID}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Ramp) {rampID}->{intResolve.LocalSlot}");
                         Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
                     }
                     else
                     {
-                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio Ramp) failed, no match found for ID {rampID}");
+                        Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Ramp) failed, no match found for ID {rampID}");
                     }
                 }
             }
+#endif
         }
 
         internal static void ResolveStudioBGM(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
@@ -335,7 +339,7 @@ namespace Sideloader.AutoResolver
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                        Sideloader.Logger.Log(LogLevel.Debug, $"Resolving (Studio BGM) [{bgmGUID}] {bgmID}->{intResolve.LocalSlot}");
+                        Sideloader.Logger.LogDebug($"Resolving (Studio BGM) [{bgmGUID}] {bgmID}->{intResolve.LocalSlot}");
                     Singleton<Studio.Studio>.Instance.sceneInfo.bgmCtrl.no = intResolve.LocalSlot;
                 }
                 else
@@ -351,25 +355,15 @@ namespace Sideloader.AutoResolver
                     {
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.Log(LogLevel.Debug, $"Compatibility resolving (Studio BGM) {bgmID}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Compatibility resolving (Studio BGM) {bgmID}->{intResolve.LocalSlot}");
                         Singleton<Studio.Studio>.Instance.sceneInfo.bgmCtrl.no = intResolve.LocalSlot;
                     }
                     else
                     {
-                        Sideloader.Logger.Log(LogLevel.Warning | LogLevel.Message, $"[UAR] Compatibility resolving (Studio BGM) failed, no match found for ID {bgmID}");
+                        Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio BGM) failed, no match found for ID {bgmID}");
                     }
                 }
             }
         }
-
-        private static readonly HashSet<string> CategoryAndGroupList = new HashSet<string>()
-        {
-            "itemcategory",
-            "animecategory",
-            "voicecategory",
-            "itemgroup",
-            "animegroup",
-            "voicegroup"
-        };
     }
 }

@@ -218,7 +218,7 @@ namespace Sideloader
                         Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                     }
                 }
-#if KK
+#if KK || AI
                 else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
@@ -235,10 +235,11 @@ namespace Sideloader
                         }
                         catch (Exception ex)
                         {
-                            Logger.Log(LogLevel.Error, $"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
+                            Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                         }
                     }
                 }
+#if KK
                 else if (entry.Name.StartsWith("abdata/map/list/mapinfo/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     try
@@ -250,13 +251,14 @@ namespace Sideloader
                     }
                     catch (Exception ex)
                     {
-                        Logger.Log(LogLevel.Error, $"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
+                        Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                     }
                 }
 #endif
+#endif
             }
 
-#if KK
+#if KK || AI
             //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
             foreach (ZipEntry entry in BoneList)
             {
@@ -270,7 +272,7 @@ namespace Sideloader
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
+                    Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                 }
             }
 #endif
