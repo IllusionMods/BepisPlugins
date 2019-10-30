@@ -90,7 +90,7 @@ namespace ExtensibleSaveFormat
                 }
             }
 
-            public static void SceneInfoImportHook(string path, BinaryReader br)
+            public static void SceneInfoImportHook(string path, BinaryReader br, Version _)
             {
                 internalSceneDictionary.Clear();
 
