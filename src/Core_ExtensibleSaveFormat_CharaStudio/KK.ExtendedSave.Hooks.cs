@@ -92,171 +92,38 @@ namespace ExtensibleSaveFormat
 
             public static void SceneInfoImportHook(string path, BinaryReader br, Version version)
             {
-                //Reading useless data
-                br.ReadInt32();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadInt32();
-                br.ReadBoolean();
-                br.ReadInt32();
-                if (version.CompareTo(new Version(0, 0, 2)) >= 0)
-                    br.ReadSingle();
-                if (version.CompareTo(new Version(0, 0, 1)) <= 0)
-                {
-                    br.ReadBoolean();
-                    br.ReadSingle();
-                    br.ReadString();
-                }
-
-                if (version.CompareTo(new Version(0, 0, 2)) >= 0)
-                {
-                    br.ReadBoolean();
-                    br.ReadString();
-                    br.ReadSingle();
-                }
-
-                br.ReadBoolean();
-                br.ReadSingle();
-                br.ReadSingle();
-                if (version.CompareTo(new Version(0, 0, 2)) >= 0)
-                    br.ReadSingle();
-                if (version.CompareTo(new Version(0, 0, 1)) <= 0)
-                    br.ReadBoolean();
-                br.ReadBoolean();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadBoolean();
-                if (version.CompareTo(new Version(0, 0, 1)) <= 0)
-                    br.ReadSingle();
-                br.ReadBoolean();
-                if (version.CompareTo(new Version(0, 0, 2)) >= 0)
-                {
-                    br.ReadString();
-                    br.ReadSingle();
-                    br.ReadSingle();
-                }
-
-                br.ReadBoolean();
-                if (version.CompareTo(new Version(0, 0, 2)) >= 0)
-                {
-                    br.ReadString();
-                    br.ReadString();
-                }
-
-                if (version.CompareTo(new Version(0, 0, 4)) >= 0)
-                    br.ReadInt32();
-                if (version.CompareTo(new Version(0, 0, 2)) >= 0)
-                    br.ReadBoolean();
-                if (version.CompareTo(new Version(0, 0, 4)) >= 0)
-                {
-                    br.ReadBoolean();
-                    br.ReadBoolean();
-                    br.ReadSingle();
-                    br.ReadString();
-                }
-
-                if (version.CompareTo(new Version(0, 0, 5)) >= 0)
-                {
-                    br.ReadSingle();
-                    br.ReadInt32();
-                    br.ReadSingle();
-                }
-
-                int num = br.ReadInt32();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                if (num == 1)
-                    br.ReadSingle();
-                else
-                {
-                    br.ReadSingle();
-                    br.ReadSingle();
-                    br.ReadSingle();
-                }
-
-                br.ReadSingle();
-                for (int j = 0; j < 10; j++)
-                {
-                    num = br.ReadInt32();
-                    br.ReadSingle();
-                    br.ReadSingle();
-                    br.ReadSingle();
-                    br.ReadSingle();
-                    br.ReadSingle();
-                    br.ReadSingle();
-                    if (num == 1)
-                        br.ReadSingle();
-                    else
-                    {
-                        br.ReadSingle();
-                        br.ReadSingle();
-                        br.ReadSingle();
-                    }
-
-                    br.ReadSingle();
-                }
-
-                br.ReadString();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadBoolean();
-
-                br.ReadString();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadSingle();
-                br.ReadBoolean();
-
-                br.ReadInt32();
-                br.ReadInt32();
-                br.ReadBoolean();
-
-                br.ReadInt32();
-                br.ReadInt32();
-                br.ReadBoolean();
-
-                br.ReadInt32();
-                br.ReadString();
-                br.ReadBoolean();
-                br.ReadString();
-                br.ReadString();
-                br.ReadString();
-                br.ReadBytes(16);
-
                 ExtendedSave.internalSceneDictionary.Clear();
 
-                try
+                while (true)
                 {
-                    string marker = br.ReadString();
-                    int ver = br.ReadInt32();
-
-                    int length = br.ReadInt32();
-
-                    if (marker.Equals(Marker) && length > 0)
+                    try
                     {
-                        byte[] bytes = br.ReadBytes(length);
-                        ExtendedSave.internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                        // -1 to go back to the length specifier of the string
+                        var result = br.BaseStream.FindPosition(Marker.Select(c => (byte)c).ToArray()) - 1;
+                        if (result < 0) break;
+
+                        br.BaseStream.Position = result;
+
+                        string marker = br.ReadString();
+                        int ver = br.ReadInt32();
+                        int length = br.ReadInt32();
+
+                        if (marker.Equals(Marker) && length > 0)
+                        {
+                            byte[] bytes = br.ReadBytes(length);
+                            ExtendedSave.internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                        }
                     }
-                }
-                catch (EndOfStreamException)
-                {
-                    /* Incomplete/non-existant data */
-                }
-                catch (InvalidOperationException)
-                {
-                    /* Invalid/unexpected deserialized data */
+                    catch (EndOfStreamException)
+                    {
+                        /* Incomplete/non-existant data */
+                        break;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        /* Invalid/unexpected deserialized data */
+                        // Keep looking for the extended data until we hit the end of the stream in case the marker happens to appear in the data randomly
+                    }
                 }
 
                 ExtendedSave.SceneImportEvent(path);
@@ -294,8 +161,8 @@ namespace ExtensibleSaveFormat
                     return;
                 byte[] data = MessagePackSerializer.Serialize(extendedData);
 
-                bw.Write(Marker);    //Not super useful
-                bw.Write(DataVersion);   //but kept for consistency
+                bw.Write(Marker);
+                bw.Write(DataVersion);
                 bw.Write(data.Length);
                 bw.Write(data);
             }

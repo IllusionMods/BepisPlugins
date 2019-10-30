@@ -1,13 +1,14 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 using System.Text;
 
 internal static class Extensions
 {
-    //stolen from https://stackoverflow.com/a/45756981
-
     /// <summary>
     /// Returns a new string in which all occurrences of a specified string in the current instance are replaced with another 
     /// specified string according the type of search to use for the specified string.
+    /// Stolen from https://stackoverflow.com/a/45756981
     /// </summary>
     /// <param name="str">The string performing the replace method.</param>
     /// <param name="oldValue">The string to be replaced.</param>
@@ -74,5 +75,48 @@ internal static class Extensions
         resultStringBuilder.Append(str, startSearchFromIndex, charsUntilStringEnd);
 
         return resultStringBuilder.ToString();
+    }
+
+    /// <summary>
+    /// Find first position of the byte sequence in the stream starting at current position.
+    /// Returns position of first byte of the sequence.
+    /// https://stackoverflow.com/questions/1550560/encoding-an-integer-in-7-bit-format-of-c-sharp-binaryreader-readstring
+    /// </summary>
+    internal static long FindPosition(this Stream stream, byte[] byteSequence)
+    {
+        int PadLeftSequence(byte[] bytes, byte[] seqBytes)
+        {
+            int i = 1;
+            while (i < bytes.Length)
+            {
+                int n = bytes.Length - i;
+                byte[] aux1 = new byte[n];
+                byte[] aux2 = new byte[n];
+                Array.Copy(bytes, i, aux1, 0, n);
+                Array.Copy(seqBytes, aux2, n);
+                if (aux1.SequenceEqual(aux2))
+                    return i;
+                i++;
+            }
+            return i;
+        }
+
+        if (byteSequence.Length > stream.Length)
+            return -1;
+
+        byte[] buffer = new byte[byteSequence.Length];
+
+        // Do not dispose this stream or we'll dispose the base stream too
+        var bufStream = new BufferedStream(stream, byteSequence.Length);
+
+        while (bufStream.Read(buffer, 0, byteSequence.Length) == byteSequence.Length)
+        {
+            if (byteSequence.SequenceEqual(buffer))
+                return bufStream.Position - byteSequence.Length;
+
+            bufStream.Position -= byteSequence.Length - PadLeftSequence(buffer, byteSequence);
+        }
+
+        return -1;
     }
 }
