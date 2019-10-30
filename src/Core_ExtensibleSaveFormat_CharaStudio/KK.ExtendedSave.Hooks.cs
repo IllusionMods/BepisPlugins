@@ -41,7 +41,7 @@ namespace ExtensibleSaveFormat
 
             public static void SceneInfoLoadHook(string path, BinaryReader br)
             {
-                ExtendedSave.internalSceneDictionary.Clear();
+                internalSceneDictionary.Clear();
 
                 try
                 {
@@ -55,7 +55,7 @@ namespace ExtensibleSaveFormat
                     if (marker.Equals(Marker) && length > 0)
                     {
                         byte[] bytes = br.ReadBytes(length);
-                        ExtendedSave.internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                        internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
                     }
                 }
                 catch (EndOfStreamException)
@@ -67,7 +67,7 @@ namespace ExtensibleSaveFormat
                     /* Invalid/unexpected deserialized data */
                 }
 
-                ExtendedSave.SceneReadEvent(path);
+                SceneReadEvent(path);
             }
 
             [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Import", typeof(string))]
@@ -90,9 +90,9 @@ namespace ExtensibleSaveFormat
                 }
             }
 
-            public static void SceneInfoImportHook(string path, BinaryReader br, Version version)
+            public static void SceneInfoImportHook(string path, BinaryReader br)
             {
-                ExtendedSave.internalSceneDictionary.Clear();
+                internalSceneDictionary.Clear();
 
                 while (true)
                 {
@@ -111,7 +111,7 @@ namespace ExtensibleSaveFormat
                         if (marker.Equals(Marker) && length > 0)
                         {
                             byte[] bytes = br.ReadBytes(length);
-                            ExtendedSave.internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                            internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
                         }
                     }
                     catch (EndOfStreamException)
@@ -126,7 +126,7 @@ namespace ExtensibleSaveFormat
                     }
                 }
 
-                ExtendedSave.SceneImportEvent(path);
+                SceneImportEvent(path);
             }
 
             #endregion
@@ -154,9 +154,9 @@ namespace ExtensibleSaveFormat
 
             public static void SceneInfoSaveHook(string path, BinaryWriter bw)
             {
-                ExtendedSave.SceneWriteEvent(path);
+                SceneWriteEvent(path);
 
-                Dictionary<string, PluginData> extendedData = ExtendedSave.internalSceneDictionary;
+                Dictionary<string, PluginData> extendedData = internalSceneDictionary;
                 if (extendedData == null)
                     return;
                 byte[] data = MessagePackSerializer.Serialize(extendedData);
@@ -174,17 +174,17 @@ namespace ExtensibleSaveFormat
             #region Extended Data Override Hooks
             //Prevent loading extended data when loading the list of characters in Studio since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
-            public static void StudioFemaleListPreHook() => ExtendedSave.LoadEventsEnabled = false;
+            public static void StudioFemaleListPreHook() => LoadEventsEnabled = false;
             [HarmonyPostfix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
-            public static void StudioFemaleListPostHook() => ExtendedSave.LoadEventsEnabled = true;
+            public static void StudioFemaleListPostHook() => LoadEventsEnabled = true;
             [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitMaleList")]
-            public static void StudioMaleListPreHook() => ExtendedSave.LoadEventsEnabled = false;
+            public static void StudioMaleListPreHook() => LoadEventsEnabled = false;
             [HarmonyPostfix, HarmonyPatch(typeof(CharaList), "InitMaleList")]
-            public static void StudioMaleListPostHook() => ExtendedSave.LoadEventsEnabled = true;
+            public static void StudioMaleListPostHook() => LoadEventsEnabled = true;
 
             //Prevent loading extended data when loading the list of coordinates in Studio since it is irrelevant here
-            public static void StudioCoordinateListPreHook() => ExtendedSave.LoadEventsEnabled = false;
-            public static void StudioCoordinateListPostHook() => ExtendedSave.LoadEventsEnabled = true;
+            public static void StudioCoordinateListPreHook() => LoadEventsEnabled = false;
+            public static void StudioCoordinateListPostHook() => LoadEventsEnabled = true;
             #endregion
         }
     }

@@ -1,20 +1,9 @@
-﻿using BepInEx.Logging;
-using ExtensibleSaveFormat;
+﻿using ExtensibleSaveFormat;
 using HarmonyLib;
-using Illusion.Elements.Xml;
-using Sideloader.ListLoader;
 using Studio;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
-using UnityEngine.UI;
 using static Sideloader.AutoResolver.StudioObjectSearch;
-using Manager;
-using Studio.Sound;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 
 namespace Sideloader.AutoResolver
@@ -25,7 +14,6 @@ namespace Sideloader.AutoResolver
         {
             internal static void ExtendedSceneLoad(string path)
             {
-                
                 PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UARExtID);
 
                 ResolveStudioObjects(ExtendedData, ResolveType.Load);
