@@ -33,17 +33,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BepInEx">
-      <HintPath>..\..\lib\BepInEx\BepInEx.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\BepInEx\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\Koikatsu\UnityEngine.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\Koikatu\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\lib\Koikatsu\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\Koikatu\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

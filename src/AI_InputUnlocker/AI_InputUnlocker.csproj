@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BepInEx">
-      <HintPath>..\..\lib\BepInEx\BepInEx.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\BepInEx\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -44,15 +44,15 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\lib\AIGirl\UnityEngine.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\AISyoujyo\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\lib\AIGirl\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\AISyoujyo\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\lib\AIGirl\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\AISyoujyo\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

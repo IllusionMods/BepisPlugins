@@ -32,16 +32,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\lib\HoneySelect\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\HoneySelect\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx, Version=4.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\BepInEx\BepInEx.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ConfigurationManager">
-      <HintPath>..\..\lib\ConfigurationManager.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\BepInEx\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -51,17 +47,24 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\lib\HoneySelect\UnityEngine.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\HoneySelect\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\lib\HoneySelect\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\HoneySelect\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HS.ConfigurationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionDir)paket-files\BepInEx\BepInEx.ConfigurationManager\ConfigurationManager\ConfigurationManager.csproj">
+      <Project>{22edd399-1cc6-47c8-b8b8-a95ff2999901}</Project>
+      <Name>ConfigurationManager</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Core_ConfigurationManager\Core_ConfigurationManager.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

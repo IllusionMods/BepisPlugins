@@ -32,19 +32,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\lib\EmotionCreators\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\EmotionCreators\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\lib\BepInEx\BepInEx.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ConfigurationManager">
-      <HintPath>..\..\lib\ConfigurationManager.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\BepInEx\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="IL">
-      <HintPath>..\..\lib\EmotionCreators\IL.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\EmotionCreators\IL.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -56,25 +52,32 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\lib\EmotionCreators\UnityEngine.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\EmotionCreators\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\lib\EmotionCreators\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\EmotionCreators\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\lib\EmotionCreators\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\EmotionCreators\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\lib\EmotionCreators\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\EmotionCreators\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EC.ConfigurationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionDir)paket-files\BepInEx\BepInEx.ConfigurationManager\ConfigurationManager\ConfigurationManager.csproj">
+      <Project>{22edd399-1cc6-47c8-b8b8-a95ff2999901}</Project>
+      <Name>ConfigurationManager</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Core_ConfigurationManager\Core_ConfigurationManager.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

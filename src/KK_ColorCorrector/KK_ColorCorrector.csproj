@@ -33,21 +33,21 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\lib\Koikatsu\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\Koikatu\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\lib\Koikatsu\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\Koikatu\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\lib\BepInEx\BepInEx.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\BepInEx\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\lib\Koikatsu\UnityEngine.dll</HintPath>
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\Koikatu\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

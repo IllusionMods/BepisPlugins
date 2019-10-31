@@ -1,0 +1,12 @@
+
+GITHUB
+  remote: IllusionMods/IllusionLibs
+    FULLPROJECT (20481468e9d574ce6528e8775f2c2426b89c3e5a)
+    FULLPROJECT (20481468e9d574ce6528e8775f2c2426b89c3e5a)
+    FULLPROJECT (20481468e9d574ce6528e8775f2c2426b89c3e5a)
+  remote: Keelhauled/KKAPI
+    FULLPROJECT (5c07d2ed3712ed8c7db407cc499fa356ccfa43a3)
+  remote: IllusionMods/BepisPlugins
+    FULLPROJECT (68824389ab3ce3627479e6cbf316ffc80f3d4a73)
+  remote: BepInEx/BepInEx.ConfigurationManager
+    FULLPROJECT (bee5c44f8dd545e58b9a46d6b9d15e4c0b7feeab)
