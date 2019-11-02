@@ -7,6 +7,12 @@ A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins 
 
 These plugins require the latest bleeding edge build of [BepInEx](https://builds.bepis.io/projects/bepinex_be). The latest release versions of BepInEx will not work.
 
+## How to compile
+1. Clone/download the repo
+2. Run `Paket-Restore.bat` to restore dependencies
+   * On linux you need to [add paket to bash](https://fsprojects.github.io/Paket/installation.html#Installation-on-Linux) and use the [restore command](https://fsprojects.github.io/Paket/paket-restore.html)
+3. Compile using your preferred IDE
+
 ## Plugin descriptions
 ### BGMLoader
 Loads custom BGMs and clips played on game startup. Stock audio is replaced during runtime by custom clips from BepInEx\BGM and BepInEx\IntroClips directories.
