@@ -43,6 +43,7 @@ namespace Screencap
         private ConfigEntry<int> Downscaling { get; set; }
         private ConfigEntry<bool> Alpha { get; set; }
         private ConfigEntry<int> CustomShadowResolution { get; set; }
+        public ConfigEntry<bool> ScreenshotMessage { get; private set; }
 
         private ConfigEntry<KeyboardShortcut> KeyCaptureNormal { get; set; }
         private ConfigEntry<KeyboardShortcut> KeyCaptureRender { get; set; }
@@ -60,6 +61,7 @@ namespace Screencap
             CaptureHeight = Config.AddSetting("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
             Downscaling = Config.AddSetting("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
             Alpha = Config.AddSetting("Rendered screenshots", nameof(Alpha), true, new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
+            ScreenshotMessage = Config.AddSetting("General", "Show messages on screen", true, new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
 
             CustomShadowResolution = Config.AddSetting("Rendered screenshots", "Shadow resolution override", 8192, new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
 
@@ -78,7 +80,7 @@ namespace Screencap
             {
                 var path = GetCaptureFilename();
                 ScreenCapture.CaptureScreenshot(path);
-                StartCoroutine(WaitForEndOfFrameThen(() => Logger.LogMessage("Writing normal screenshot to " + path.Substring(Paths.GameRootPath.Length))));
+                StartCoroutine(WaitForEndOfFrameThen(() => LogScreenshotMessage("Writing normal screenshot to " + path.Substring(Paths.GameRootPath.Length))));
             }
             else if (KeyCaptureRender.Value.IsDown())
             {
@@ -211,7 +213,7 @@ namespace Screencap
             RenderTexture.ReleaseTemporary(rt);
             string path = GetCaptureFilename();
 
-            Logger.LogMessage("Writing rendered screenshot to " + path.Substring(Paths.GameRootPath.Length));
+            LogScreenshotMessage("Writing rendered screenshot to " + path.Substring(Paths.GameRootPath.Length));
 
             //Write raw pixel data to a file
             //Uses pngcs Unity fork: https://github.com/andrew-raphael-lukasik/pngcs
@@ -257,6 +259,14 @@ namespace Screencap
                 ao.enabled.value = true;
 
             return rt;
+        }
+
+        private void LogScreenshotMessage(string text)
+        {
+            if (ScreenshotMessage.Value)
+                Logger.LogMessage(text);
+            else
+                Logger.LogInfo(text);
         }
     }
 }
