@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI.ExtendedSave.cs" />
+    <Compile Include="AI.ExtendedSave.Hooks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="..\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems" Label="Shared" />

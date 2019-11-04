@@ -391,11 +391,6 @@ namespace ExtensibleSaveFormat
             //Prevent loading extended data when loading the list of coordinates in Chara Maker since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCoordinateFile), "Initialize")]
             internal static void CustomCoordinatePreHook() => LoadEventsEnabled = false;
-#elif AI
-            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
-            internal static void LoadCharacterListPrefix() => ExtendedSave.LoadEventsEnabled = false;
-            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
-            internal static void LoadCharacterListPostfix() => ExtendedSave.LoadEventsEnabled = true;
 #endif
             #endregion
         }
