@@ -200,6 +200,20 @@ namespace Sideloader.AutoResolver
                     //Set the extended data if any has been added
                     ExtendedSave.SetSceneExtendedDataById(UARExtID, new PluginData { data = ExtendedData });
             }
+
+            /// <summary>
+            /// Set item IDs back to the resolved ID
+            /// </summary>
+            [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+            public static void SavePostfix()
+            {
+                PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UARExtID);
+
+                ResolveStudioObjects(ExtendedData, ResolveType.Save);
+                ResolveStudioMap(ExtendedData, ResolveType.Save);
+                ResolveStudioFilter(ExtendedData, ResolveType.Save);
+                ResolveStudioRamp(ExtendedData, ResolveType.Save);
+            }
         }
     }
 }
