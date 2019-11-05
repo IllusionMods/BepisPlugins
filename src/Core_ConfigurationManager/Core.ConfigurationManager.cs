@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
+using BepisPlugins;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -8,7 +9,7 @@ namespace ConfigurationManagerWrapper
 {
     public partial class ConfigurationManagerWrapper
     {
-        public const string Version = ConfigurationManager.ConfigurationManager.Version;
+        public const string Version = Metadata.PluginsVersion;
 
         private static Texture2D _buttonBackground;
         private Rect _buttonRect;
