@@ -99,6 +99,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "reference", "reference", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationManager", "paket-files\BepInEx\BepInEx.ConfigurationManager\ConfigurationManager\ConfigurationManager.csproj", "{22EDD399-1CC6-47C8-B8B8-A95FF2999901}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ConfigurationManager", "src\AI_ConfigurationManager\AI_ConfigurationManager.csproj", "{B0903672-629B-4C21-BAE3-6FBE587F4344}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
@@ -129,6 +131,7 @@ Global
 		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
@@ -150,6 +153,7 @@ Global
 		src\Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{acb2eb7f-0782-4e7c-8f92-faaae1b632a3}*SharedItemsImports = 13
+		src\Shared\Shared.projitems*{b0903672-629b-4c21-bae3-6fbe587f4344}*SharedItemsImports = 4
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{c4188eb1-8dc5-47c7-a966-8aa38b6cfb55}*SharedItemsImports = 4
@@ -167,6 +171,7 @@ Global
 		src\Shared\Shared.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
 		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -277,6 +282,10 @@ Global
 		{22EDD399-1CC6-47C8-B8B8-A95FF2999901}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22EDD399-1CC6-47C8-B8B8-A95FF2999901}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22EDD399-1CC6-47C8-B8B8-A95FF2999901}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -328,6 +337,7 @@ Global
 		{20FD60F3-3086-4A25-876B-E977BDA46687} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 		{66214BD2-6DA6-49CD-8C74-63DA9E643259} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
 		{22EDD399-1CC6-47C8-B8B8-A95FF2999901} = {A05390B0-951B-4787-BA74-5FE5A78BA9D6}
+		{B0903672-629B-4C21-BAE3-6FBE587F4344} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
