@@ -35,7 +35,7 @@ namespace Sideloader.ListLoader
 
             bool CategoryOrGroup = false;
             if (fileNameStripped.Contains("_"))
-                if (Sideloader.CategoryAndGroupList.Contains(fileNameStripped.Split('_')[0].ToLower()))
+                if (Sideloader.StudioListResolveBlacklist.Contains(fileNameStripped.Split('_')[0].ToLower()))
                     CategoryOrGroup = true;
 
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))

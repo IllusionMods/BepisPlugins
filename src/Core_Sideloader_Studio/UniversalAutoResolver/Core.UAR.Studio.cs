@@ -45,7 +45,7 @@ namespace Sideloader.AutoResolver
                     entry[0] = newSlot.ToString();
                 }
             }
-            else if (Sideloader.CategoryAndGroupList.Contains(StudioListType))
+            else if (Sideloader.StudioListResolveBlacklist.Contains(StudioListType))
             {
                 foreach (List<string> entry in data.Entries)
                 {
