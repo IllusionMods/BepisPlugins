@@ -4,14 +4,15 @@ namespace Sideloader
 {
     public partial class Sideloader
     {
-        internal static readonly HashSet<string> CategoryAndGroupList = new HashSet<string>()
+        internal static readonly HashSet<string> StudioListResolveBlacklist = new HashSet<string>()
         {
             "itemcategory",
             "animecategory",
             "voicecategory",
             "itemgroup",
             "animegroup",
-            "voicegroup"
+            "voicegroup",
+            "bone"
         };
     }
 }
