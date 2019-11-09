@@ -66,11 +66,29 @@ namespace alphaShot
             Texture2D fullSizeCapture = null;
             int newWidth = ResolutionX * DownscalingRate;
             int newHeight = ResolutionY * DownscalingRate;
+            float orgBlurSize = 0.0f;
 
-            if (Transparent && (InStudio || SceneManager.GetActiveScene().name == "CustomScene"))
+            // Fix depth of field
+            DepthOfField dof = (DepthOfField)Camera.main.gameObject.GetComponent(typeof(DepthOfField));
+            if (dof != null)
+            {
+                orgBlurSize = dof.maxBlurSize;
+                dof.maxBlurSize = newWidth * orgBlurSize / Screen.width;
+            }
+
+            if (Transparent && (InStudio
+                || SceneManager.GetActiveScene().name == "CustomScene"
+                || SceneManager.GetActiveScene().name == "HEditScene"
+                || SceneManager.GetActiveScene().name == "HPlayScene"))
                 fullSizeCapture = CaptureAlpha(newWidth, newHeight);
             else
                 fullSizeCapture = CaptureOpaque(newWidth, newHeight);
+
+            // Recover depth of field
+            if (dof != null)
+            {
+                dof.maxBlurSize = orgBlurSize;
+            }
 
             if (DownscalingRate > 1)
                 return LanczosTex(fullSizeCapture, ResolutionX, ResolutionY);
