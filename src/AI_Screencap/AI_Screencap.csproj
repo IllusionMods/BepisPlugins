@@ -58,6 +58,10 @@
       <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\AISyoujyo\UnityEngine.ScreenCaptureModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>$(SolutionDir)paket-files\IllusionMods\IllusionLibs\lib\AISyoujyo\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\Resources.Designer.cs">

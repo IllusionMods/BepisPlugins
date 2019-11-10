@@ -146,17 +146,34 @@ namespace Screencap
             var scaledWidth = width * downScaling;
             var scaledHeight = height * downScaling;
 
+            var cam = Camera.main.gameObject;
+            var dof = cam.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
+            var dof_prevBlurSize = dof?.maxBlurSize;
+            if (dof != null)
+            {
+                var ratio = Screen.height / (float)scaledHeight; //Use larger of width/height?
+                dof.maxBlurSize *= ratio * downScaling;
+            }
+
             var colour = Capture(scaledWidth, scaledHeight, false);
 
-            var ppl = Camera.main.gameObject.GetComponent<PostProcessLayer>();
+            var ppl = cam.GetComponent<PostProcessLayer>();
             if (ppl != null) ppl.enabled = false;
 
             var m3D = SceneManager.GetActiveScene().GetRootGameObjects()[0].transform.Find("CustomControl/Map3D/p_ai_mi_createBG00_00")?.gameObject; //Disable background. Sinful, truly.
             m3D?.SetActive(false);
 
+            if (dof != null)
+            {
+                dof.maxBlurSize = dof_prevBlurSize.Value;
+                if (dof.enabled) dof.enabled = false;
+                else dof = null;
+            }
+
             var mask = Capture(scaledWidth, scaledHeight, true);
 
             if (ppl != null) ppl.enabled = true;
+            if (dof != null) dof.enabled = true;
 
             m3D?.SetActive(true);
 
