@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Sideloader.Koikatu</id>
+    <id>ExtensibleSaveFormat.Koikatu</id>
     <version>$version$</version>
     <authors>IllusionMods</authors>
     <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
