@@ -1,0 +1,33 @@
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: nuget
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+
+- task: VSBuild@1
+  inputs:
+    solution: '**\*.sln'
+    vsVersion: '16.0'
+    configuration: 'Release'
+    msbuildArchitecture: 'x64'
+
+- task: NuGetToolInstaller@1
+  inputs:
+    versionSpec: '5.3.1'
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    versioningScheme: 'off'
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: '72df59bb-d986-4a33-932b-238f447a9f90/8077541d-3418-4857-81be-291566ae313c'

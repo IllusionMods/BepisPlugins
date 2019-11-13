@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Sideloader</id>
+    <version>$version$</version>
+    <authors>IllusionMods</authors>
+    <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>description</description>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+</package>
