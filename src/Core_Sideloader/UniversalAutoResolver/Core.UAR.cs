@@ -29,6 +29,7 @@ namespace Sideloader.AutoResolver
         private static ILookup<int, ResolveInfo> _resolveInfoLookupLocalSlot;
         private static ILookup<string, MigrationInfo> _migrationInfoLookupGUID;
         private static ILookup<int, MigrationInfo> _migrationInfoLookupID;
+        private static ILookup<int, HeadPresetInfo> _headPresetInfoLookupID;
         /// <summary>
         /// The starting point for UAR IDs
         /// </summary>
@@ -48,6 +49,14 @@ namespace Sideloader.AutoResolver
         public static ResolveInfo TryGetResolutionInfo(string property, int localSlot) =>
             _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.Property == property);
         /// <summary>
+        /// Get the ResolveInfo for an item
+        /// </summary>
+        /// <param name="categoryNo">Category number of the item</param>
+        /// <param name="localSlot">Current (resolved) ID of the item</param>
+        /// <returns>ResolveInfo</returns>
+        public static ResolveInfo TryGetResolutionInfo(ChaListDefine.CategoryNo categoryNo, int localSlot) =>
+            _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.CategoryNo == categoryNo);
+        /// <summary>
         /// Get the ResolveInfo for an item. Used for compatibility resolving in cases where GUID is not known (hard mods).
         /// </summary>
         /// <param name="slot">Original ID as defined in the list file</param>
@@ -56,6 +65,14 @@ namespace Sideloader.AutoResolver
         /// <returns>ResolveInfo</returns>
         public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo) =>
             _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
+        /// <summary>
+        /// Get the ResolveInfo for an item. Used for compatibility resolving in cases where GUID is not known (hard mods).
+        /// </summary>
+        /// <param name="slot">Original ID as defined in the list file</param>
+        /// <param name="categoryNo">Category number of the item</param>
+        /// <returns>ResolveInfo</returns>
+        internal static ResolveInfo TryGetResolutionInfo(int slot, ChaListDefine.CategoryNo categoryNo) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.CategoryNo == categoryNo);
         /// <summary>
         /// Get the ResolveInfo for an item
         /// </summary>
@@ -97,6 +114,12 @@ namespace Sideloader.AutoResolver
         {
             _migrationInfoLookupGUID = results.ToLookup(info => info.GUIDOld);
             _migrationInfoLookupID = results.ToLookup(info => info.IDOld);
+        }
+        internal static HeadPresetInfo TryGetHeadPresetInfo(int id, string guid, string preset) =>
+            _headPresetInfoLookupID?[id].FirstOrDefault(x => x.HeadGUID == guid && x.Preset == preset);
+        internal static void SetHeadPresetInfos(ICollection<HeadPresetInfo> results)
+        {
+            _headPresetInfoLookupID = results.ToLookup(info => info.HeadID);
         }
 
         /// <summary>
@@ -374,6 +397,12 @@ namespace Sideloader.AutoResolver
         {
             manifest.LoadMigrationInfo();
             results.AddRange(manifest.MigrationList);
+        }
+
+        internal static void GenerateHeadPresetInfo(Manifest manifest, List<HeadPresetInfo> results)
+        {
+            manifest.LoadHeadPresetInfo();
+            results.AddRange(manifest.HeadPresetList);
         }
 
         internal static void ShowGUIDError(string guid)

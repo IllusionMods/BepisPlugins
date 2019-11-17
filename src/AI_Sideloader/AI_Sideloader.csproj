@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI.Sideloader.cs" />
+    <Compile Include="AI.UAR.Hooks.cs" />
     <Compile Include="AI.UAR.StructReference.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
