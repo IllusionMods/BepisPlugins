@@ -393,9 +393,13 @@ namespace Sideloader
 
                 if (entry != null)
                 {
+                    // Load png byte data from the archive and load it into a new texture
                     var stream = archive.GetInputStream(entry);
-
-                    var tex = Shared.AssetLoader.LoadTexture(stream, (int)entry.Size, format, mipmap);
+                    var fileLength = (int)entry.Size;
+                    var buffer = new byte[fileLength];
+                    stream.Read(buffer, 0, fileLength);
+                    var tex = new Texture2D(2, 2, format, mipmap);
+                    tex.LoadImage(buffer);
 
                     if (pngPath.Contains("clamp"))
                         tex.wrapMode = TextureWrapMode.Clamp;
