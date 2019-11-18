@@ -205,6 +205,18 @@ namespace Sideloader.AutoResolver
                     (obj, value) => { ((ChaFileFace.MakeupInfo)obj).paintInfo[1].id = value; },
                     (obj) => ((ChaFileFace.MakeupInfo)obj).paintInfo[1].id));
 
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.facepaint_layout, "PaintLayoutID1", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileFace.MakeupInfo)obj).paintInfo[0].layoutId = value; },
+                    (obj) => ((ChaFileFace.MakeupInfo)obj).paintInfo[0].layoutId));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.facepaint_layout, "PaintLayoutID2", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileFace.MakeupInfo)obj).paintInfo[1].layoutId = value; },
+                    (obj) => ((ChaFileFace.MakeupInfo)obj).paintInfo[1].layoutId));
+
             return generatedProperties;
         }
 

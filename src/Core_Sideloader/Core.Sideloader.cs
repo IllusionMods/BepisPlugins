@@ -49,6 +49,7 @@ namespace Sideloader
         private static readonly HashSet<string> PngFolderOnlyList = new HashSet<string>();
         private readonly List<ResolveInfo> _gatheredResolutionInfos = new List<ResolveInfo>();
         private readonly List<MigrationInfo> _gatheredMigrationInfos = new List<MigrationInfo>();
+        private readonly List<HeadPresetInfo> _gatheredHeadPresetInfos = new List<HeadPresetInfo>();
 
         internal static ConfigEntry<bool> MissingModWarning { get; private set; }
         internal static ConfigEntry<bool> DebugLogging { get; private set; }
@@ -170,6 +171,7 @@ namespace Sideloader
                     BuildPngFolderList(archive);
 
                     UniversalAutoResolver.GenerateMigrationInfo(manifest, _gatheredMigrationInfos);
+                    UniversalAutoResolver.GenerateHeadPresetInfo(manifest, _gatheredHeadPresetInfos);
 
                     var trimmedName = manifest.Name?.Trim();
                     var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
@@ -189,6 +191,7 @@ namespace Sideloader
 
             UniversalAutoResolver.SetResolveInfos(_gatheredResolutionInfos);
             UniversalAutoResolver.SetMigrationInfos(_gatheredMigrationInfos);
+            UniversalAutoResolver.SetHeadPresetInfos(_gatheredHeadPresetInfos);
 
             BuildPngOnlyFolderList();
 
