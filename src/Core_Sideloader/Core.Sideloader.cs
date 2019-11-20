@@ -71,13 +71,13 @@ namespace Sideloader
             ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(RedirectHook);
             ResourceRedirection.RegisterAssetBundleLoadingHook(AssetBundleLoadingHook);
 
-            MissingModWarning = Config.AddSetting("Settings", "Show missing mod warnings", true, new ConfigDescription("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log."));
-            DebugLogging = Config.AddSetting("Settings", "Debug logging", false, new ConfigDescription("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes."));
-            DebugResolveInfoLogging = Config.AddSetting("Settings", "Debug resolve info logging", false, new ConfigDescription("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes."));
-            ModLoadingLogging = Config.AddSetting("Settings", "Mod loading logging", true, new ConfigDescription("Enable verbose logging when loading mods.", tags: "Advanced"));
-            KeepMissingAccessories = Config.AddSetting("Settings", "Keep missing accessories", false, new ConfigDescription("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker."));
-            MigrationEnabled = Config.AddSetting("Settings", "Migration enabled", true, new ConfigDescription("Attempt to change the GUID and or ID of mods based on the data configured in the manifest.xml."));
-            AdditionalModsDirectory = Config.AddSetting("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
+            MissingModWarning = Config.Bind("Settings", "Show missing mod warnings", true, new ConfigDescription("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log."));
+            DebugLogging = Config.Bind("Settings", "Debug logging", false, new ConfigDescription("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes."));
+            DebugResolveInfoLogging = Config.Bind("Settings", "Debug resolve info logging", false, new ConfigDescription("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes."));
+            ModLoadingLogging = Config.Bind("Settings", "Mod loading logging", true, new ConfigDescription("Enable verbose logging when loading mods.", tags: "Advanced"));
+            KeepMissingAccessories = Config.Bind("Settings", "Keep missing accessories", false, new ConfigDescription("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker."));
+            MigrationEnabled = Config.Bind("Settings", "Migration enabled", true, new ConfigDescription("Attempt to change the GUID and or ID of mods based on the data configured in the manifest.xml."));
+            AdditionalModsDirectory = Config.Bind("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
 
             if (!Directory.Exists(ModsDirectory))
                 Logger.LogWarning("Could not find the mods directory: " + ModsDirectory);
