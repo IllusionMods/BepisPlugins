@@ -95,8 +95,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI.Sideloader.cs" />
+    <Compile Include="AI.Sideloader.Manifest.cs" />
+    <Compile Include="AI.UAR.cs" />
     <Compile Include="AI.UAR.Hooks.cs" />
     <Compile Include="AI.UAR.StructReference.cs" />
+    <Compile Include="AI.UAR.FaceSkinInfo.cs" />
+    <Compile Include="AI.UAR.HeadPresetInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

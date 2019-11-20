@@ -10,24 +10,6 @@ namespace Sideloader.AutoResolver
         internal static partial class Hooks
         {
             /// <summary>
-            /// Set the head ID for face skin types to the resolved head ID
-            /// </summary>
-            [HarmonyPrefix, HarmonyPatch(typeof(ListInfoBase), nameof(ListInfoBase.Set))]
-            internal static void ListInfoBaseSet(int _cateNo, List<string> lstKey, List<string> lstData)
-            {
-                if (_cateNo == 211)
-                {
-                    int headIDIndex = lstKey.IndexOf("HeadID");
-
-                    if (headIDIndex == -1) return;
-                    if (!int.TryParse(lstData[headIDIndex], out int headID)) return;
-
-                    var resolveInfo = TryGetResolutionInfo(headID, ChaListDefine.CategoryNo.fo_head);
-                    if (resolveInfo != null)
-                        lstData[headIDIndex] = resolveInfo.LocalSlot.ToString();
-                }
-            }
-            /// <summary>
             /// Find the head preset data
             /// </summary>
             [HarmonyPrefix, HarmonyPatch(typeof(ChaFileControl), nameof(ChaFileControl.LoadFacePreset))]

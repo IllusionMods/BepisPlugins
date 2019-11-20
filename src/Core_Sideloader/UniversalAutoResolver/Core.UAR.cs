@@ -28,8 +28,8 @@ namespace Sideloader.AutoResolver
         private static ILookup<int, ResolveInfo> _resolveInfoLookupSlot;
         private static ILookup<int, ResolveInfo> _resolveInfoLookupLocalSlot;
         private static ILookup<string, MigrationInfo> _migrationInfoLookupGUID;
-        private static ILookup<int, MigrationInfo> _migrationInfoLookupID;
-        private static ILookup<int, HeadPresetInfo> _headPresetInfoLookupID;
+        private static ILookup<int, MigrationInfo> _migrationInfoLookupSlot;
+
         /// <summary>
         /// The starting point for UAR IDs
         /// </summary>
@@ -66,13 +66,14 @@ namespace Sideloader.AutoResolver
         public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo) =>
             _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
         /// <summary>
-        /// Get the ResolveInfo for an item. Used for compatibility resolving in cases where GUID is not known (hard mods).
+        /// Get the ResolveInfo for an item
         /// </summary>
         /// <param name="slot">Original ID as defined in the list file</param>
         /// <param name="categoryNo">Category number of the item</param>
+        /// <param name="guid"></param>
         /// <returns>ResolveInfo</returns>
-        internal static ResolveInfo TryGetResolutionInfo(int slot, ChaListDefine.CategoryNo categoryNo) =>
-            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.CategoryNo == categoryNo);
+        public static ResolveInfo TryGetResolutionInfo(int slot, ChaListDefine.CategoryNo categoryNo, string guid) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.CategoryNo == categoryNo && x.GUID == guid);
         /// <summary>
         /// Get the ResolveInfo for an item
         /// </summary>
@@ -103,7 +104,7 @@ namespace Sideloader.AutoResolver
         /// </summary>
         /// <param name="idOld">ID that will be migrated</param>
         /// <returns>A list of MigrationInfo</returns>
-        public static List<MigrationInfo> GetMigrationInfo(int idOld) => _migrationInfoLookupID?[idOld].ToList();
+        public static List<MigrationInfo> GetMigrationInfo(int idOld) => _migrationInfoLookupSlot?[idOld].ToList();
 
         internal static void SetResolveInfos(ICollection<ResolveInfo> results)
         {
@@ -113,13 +114,7 @@ namespace Sideloader.AutoResolver
         internal static void SetMigrationInfos(ICollection<MigrationInfo> results)
         {
             _migrationInfoLookupGUID = results.ToLookup(info => info.GUIDOld);
-            _migrationInfoLookupID = results.ToLookup(info => info.IDOld);
-        }
-        internal static HeadPresetInfo TryGetHeadPresetInfo(int id, string guid, string preset) =>
-            _headPresetInfoLookupID?[id].FirstOrDefault(x => x.HeadGUID == guid && x.Preset == preset);
-        internal static void SetHeadPresetInfos(ICollection<HeadPresetInfo> results)
-        {
-            _headPresetInfoLookupID = results.ToLookup(info => info.HeadID);
+            _migrationInfoLookupSlot = results.ToLookup(info => info.IDOld);
         }
 
         /// <summary>
@@ -397,12 +392,6 @@ namespace Sideloader.AutoResolver
         {
             manifest.LoadMigrationInfo();
             results.AddRange(manifest.MigrationList);
-        }
-
-        internal static void GenerateHeadPresetInfo(Manifest manifest, List<HeadPresetInfo> results)
-        {
-            manifest.LoadHeadPresetInfo();
-            results.AddRange(manifest.HeadPresetList);
         }
 
         internal static void ShowGUIDError(string guid)

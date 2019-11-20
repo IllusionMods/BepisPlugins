@@ -49,7 +49,6 @@ namespace Sideloader
         private static readonly HashSet<string> PngFolderOnlyList = new HashSet<string>();
         private readonly List<ResolveInfo> _gatheredResolutionInfos = new List<ResolveInfo>();
         private readonly List<MigrationInfo> _gatheredMigrationInfos = new List<MigrationInfo>();
-        private readonly List<HeadPresetInfo> _gatheredHeadPresetInfos = new List<HeadPresetInfo>();
 
         internal static ConfigEntry<bool> MissingModWarning { get; private set; }
         internal static ConfigEntry<bool> DebugLogging { get; private set; }
@@ -171,7 +170,10 @@ namespace Sideloader
                     BuildPngFolderList(archive);
 
                     UniversalAutoResolver.GenerateMigrationInfo(manifest, _gatheredMigrationInfos);
+#if AI
                     UniversalAutoResolver.GenerateHeadPresetInfo(manifest, _gatheredHeadPresetInfos);
+                    UniversalAutoResolver.GenerateFaceSkinInfo(manifest, _gatheredFaceSkinInfos);
+#endif
 
                     var trimmedName = manifest.Name?.Trim();
                     var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
@@ -184,20 +186,24 @@ namespace Sideloader
                 }
             }
 
-            stopWatch.Stop();
-            if (ModLoadingLogging.Value)
-                Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
-            Logger.LogInfo($"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
-
             UniversalAutoResolver.SetResolveInfos(_gatheredResolutionInfos);
             UniversalAutoResolver.SetMigrationInfos(_gatheredMigrationInfos);
+#if AI
             UniversalAutoResolver.SetHeadPresetInfos(_gatheredHeadPresetInfos);
+            UniversalAutoResolver.SetFaceSkinInfos(_gatheredFaceSkinInfos);
+            UniversalAutoResolver.ResolveFaceSkins();
+#endif
 
             BuildPngOnlyFolderList();
 
 #pragma warning disable CS0618 // Type or member is obsolete
             LoadedManifests = Manifests.Values.AsEnumerable().ToList();
 #pragma warning restore CS0618 // Type or member is obsolete
+
+            stopWatch.Stop();
+            if (ModLoadingLogging.Value)
+                Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
+            Logger.LogInfo($"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
         }
 
         private void LoadAllLists(ZipFile arc, Manifest manifest)
