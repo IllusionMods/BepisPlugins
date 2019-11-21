@@ -72,13 +72,6 @@
     <Compile Include="EC.ConfigurationManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="$(SolutionDir)paket-files\BepInEx\BepInEx.ConfigurationManager\ConfigurationManager\ConfigurationManager.csproj">
-      <Project>{22edd399-1cc6-47c8-b8b8-a95ff2999901}</Project>
-      <Name>ConfigurationManager</Name>
-      <Private>False</Private>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="..\Core_ConfigurationManager\Core_ConfigurationManager.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
