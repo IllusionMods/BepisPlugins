@@ -16,7 +16,7 @@ jobs:
       
     - name: Nuget pack
       run: |
-        nuget restore 
+        nuget restore
         gci -Path src -Recurse -Filter *.nuspec | foreach { nuget pack "$($_.DirectoryName)\$($_.BaseName).csproj" -build -properties Configuration=Release }
       
     - name: Nuget push
@@ -24,5 +24,5 @@ jobs:
         NUGET_URL: https://pkgs.dev.azure.com/IllusionMods/Nuget/_packaging/IllusionMods/nuget/v3/index.json
         NUGET_TOKEN: ${{ secrets.NUGET_TOKEN }}
       run: |
-        nuget sources add -name "IllusionMods" -src ${env:NUGET_URL} -username "token" -password ${env:NUGET_TOKEN}
+        nuget sources update -name "IllusionMods" -username "token" -password ${env:NUGET_TOKEN}
         nuget push *.nupkg -apikey key -noninteractive -skipduplicate -src ${env:NUGET_URL}
