@@ -16,7 +16,7 @@ jobs:
       
     - name: Nuget pack
       run: |
-        nuget restore
+        nuget restore 
         gci -Path src -Recurse -Filter *.nuspec | foreach { nuget pack "$($_.DirectoryName)\$($_.BaseName).csproj" -build -properties Configuration=Release }
       
     - name: Nuget push
