@@ -15,7 +15,9 @@ jobs:
       uses: warrenbuckley/Setup-Nuget@v1
       
     - name: Nuget pack
-      run: gci -Path src -Recurse -Filter *.nuspec | foreach { nuget pack "$($_.DirectoryName)\$($_.BaseName).csproj" -build -properties Configuration=Release }
+      run: |
+        nuget restore
+        gci -Path src -Recurse -Filter *.nuspec | foreach { nuget pack "$($_.DirectoryName)\$($_.BaseName).csproj" -build -properties Configuration=Release }
       
     - name: Nuget push
       env:
