@@ -6,7 +6,7 @@
     <authors>IllusionMods</authors>
     <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>description</description>
+    <description>Allows additional data to be saved to character, coordinate and scene cards</description>
     <developmentDependency>true</developmentDependency>
   </metadata>
 </package>

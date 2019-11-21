@@ -106,6 +106,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="AI_Sideloader.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\Core_Sideloader\Core_Sideloader.projitems" Label="Shared" />

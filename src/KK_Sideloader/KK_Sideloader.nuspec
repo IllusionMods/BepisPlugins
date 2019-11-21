@@ -6,7 +6,7 @@
     <authors>IllusionMods</authors>
     <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>description</description>
+    <description>Loads mods packaged in .zip archives from the Mods directory without modifying the game files at all</description>
     <developmentDependency>true</developmentDependency>
   </metadata>
 </package>
