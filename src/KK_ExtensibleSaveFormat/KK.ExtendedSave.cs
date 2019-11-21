@@ -6,6 +6,6 @@ namespace ExtensibleSaveFormat
     public partial class ExtendedSave : BaseUnityPlugin
     {
         /// <summary> Nuget version for this game specific plugin </summary>
-        public const string PluginNugetVersion = "1";
+        public const string PluginNugetVersion = "0";
     }
 }
