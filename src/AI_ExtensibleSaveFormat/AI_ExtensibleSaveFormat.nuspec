@@ -9,4 +9,7 @@
     <description>Allows additional data to be saved to character, coordinate and scene cards</description>
     <developmentDependency>true</developmentDependency>
   </metadata>
+  <files>
+    <file src="..\install.ps1" target="tools"/>
+  </files>
 </package>

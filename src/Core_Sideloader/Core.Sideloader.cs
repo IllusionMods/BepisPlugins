@@ -33,7 +33,7 @@ namespace Sideloader
         /// <summary> Plugin version </summary>
         public const string Version = BepisPlugins.Metadata.PluginsVersion;
         /// <summary> Plugin core nuget version </summary>
-        public const string CoreNugetVersion = "1";
+        public const string CoreNugetVersion = "2";
         internal static new ManualLogSource Logger;
 
         /// <summary> Directory from which to load mods </summary>

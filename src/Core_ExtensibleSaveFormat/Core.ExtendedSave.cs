@@ -22,7 +22,7 @@ namespace ExtensibleSaveFormat
         /// <summary> Plugin version </summary>
         public const string Version = Metadata.PluginsVersion;
         /// <summary> Plugin core nuget version </summary>
-        public const string CoreNugetVersion = "1";
+        public const string CoreNugetVersion = "2";
         internal static new ManualLogSource Logger;
         /// <summary> Marker that indicates the extended save region on cards </summary>
         public static string Marker = "KKEx";
