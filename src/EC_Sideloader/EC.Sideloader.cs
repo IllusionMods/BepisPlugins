@@ -10,9 +10,6 @@ namespace Sideloader
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin
     {
-        /// <summary> Nuget version for this game specific plugin </summary>
-        public const string PluginNugetVersion = "1";
-
         private static readonly string[] GameNameList = { "emotioncreators", "emotion creators" };
 
         private static string FindKoiZipmodDir()

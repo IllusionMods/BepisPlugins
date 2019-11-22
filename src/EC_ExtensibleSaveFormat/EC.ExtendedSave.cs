@@ -7,9 +7,6 @@ namespace ExtensibleSaveFormat
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class ExtendedSave : BaseUnityPlugin
     {
-        /// <summary> Nuget version for this game specific plugin </summary>
-        public const string PluginNugetVersion = "1";
-
         internal static readonly WeakKeyDictionary<KoikatsuCharaFile.ChaFile, Dictionary<string, PluginData>> _internalCharaImportDictionary =
             new WeakKeyDictionary<KoikatsuCharaFile.ChaFile, Dictionary<string, PluginData>>();
 
