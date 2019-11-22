@@ -1,6 +1,8 @@
 name: Push to nuget feed on release
 
-on: [push]
+on:
+  release:
+    types: [published]
 
 jobs:
   build:
