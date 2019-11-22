@@ -9,7 +9,7 @@ namespace Sideloader
     public partial class Sideloader : BaseUnityPlugin
     {
         /// <summary> Nuget version for this game specific plugin </summary>
-        public const string PluginNugetVersion = "0";
+        public const string PluginNugetVersion = "1";
 
         private static readonly string[] GameNameList = { "koikatsu", "koikatu", "コイカツ" };
 
