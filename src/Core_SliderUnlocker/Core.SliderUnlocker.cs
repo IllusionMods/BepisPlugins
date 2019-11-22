@@ -40,11 +40,10 @@ namespace SliderUnlocker
         public static ConfigEntry<int> Minimum { get; private set; }
         public static ConfigEntry<int> Maximum { get; private set; }
 
-
         protected void Awake()
         {
-            Minimum = Config.AddSetting("Slider Limits", "Minimum slider value", -100, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(-500, 0)));
-            Maximum = Config.AddSetting("Slider Limits", "Maximum slider value", 200, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(100, 500)));
+            Minimum = Config.Bind("Slider Limits", "Minimum slider value", -100, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(-500, 0)));
+            Maximum = Config.Bind("Slider Limits", "Maximum slider value", 200, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(100, 500)));
 
             Hooks.InstallHooks();
             Logger = base.Logger;

@@ -14,7 +14,7 @@ namespace Sideloader
     /// <summary>
     /// Contains data about the loaded manifest.xml
     /// </summary>
-    public class Manifest
+    public partial class Manifest
     {
         private readonly int SchemaVer = 1;
 

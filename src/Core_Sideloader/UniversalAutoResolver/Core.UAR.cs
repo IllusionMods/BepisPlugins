@@ -28,7 +28,8 @@ namespace Sideloader.AutoResolver
         private static ILookup<int, ResolveInfo> _resolveInfoLookupSlot;
         private static ILookup<int, ResolveInfo> _resolveInfoLookupLocalSlot;
         private static ILookup<string, MigrationInfo> _migrationInfoLookupGUID;
-        private static ILookup<int, MigrationInfo> _migrationInfoLookupID;
+        private static ILookup<int, MigrationInfo> _migrationInfoLookupSlot;
+
         /// <summary>
         /// The starting point for UAR IDs
         /// </summary>
@@ -48,6 +49,14 @@ namespace Sideloader.AutoResolver
         public static ResolveInfo TryGetResolutionInfo(string property, int localSlot) =>
             _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.Property == property);
         /// <summary>
+        /// Get the ResolveInfo for an item
+        /// </summary>
+        /// <param name="categoryNo">Category number of the item</param>
+        /// <param name="localSlot">Current (resolved) ID of the item</param>
+        /// <returns>ResolveInfo</returns>
+        public static ResolveInfo TryGetResolutionInfo(ChaListDefine.CategoryNo categoryNo, int localSlot) =>
+            _resolveInfoLookupLocalSlot?[localSlot].FirstOrDefault(x => x.CategoryNo == categoryNo);
+        /// <summary>
         /// Get the ResolveInfo for an item. Used for compatibility resolving in cases where GUID is not known (hard mods).
         /// </summary>
         /// <param name="slot">Original ID as defined in the list file</param>
@@ -56,6 +65,15 @@ namespace Sideloader.AutoResolver
         /// <returns>ResolveInfo</returns>
         public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo) =>
             _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo);
+        /// <summary>
+        /// Get the ResolveInfo for an item
+        /// </summary>
+        /// <param name="slot">Original ID as defined in the list file</param>
+        /// <param name="categoryNo">Category number of the item</param>
+        /// <param name="guid"></param>
+        /// <returns>ResolveInfo</returns>
+        public static ResolveInfo TryGetResolutionInfo(int slot, ChaListDefine.CategoryNo categoryNo, string guid) =>
+            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.CategoryNo == categoryNo && x.GUID == guid);
         /// <summary>
         /// Get the ResolveInfo for an item
         /// </summary>
@@ -86,7 +104,7 @@ namespace Sideloader.AutoResolver
         /// </summary>
         /// <param name="idOld">ID that will be migrated</param>
         /// <returns>A list of MigrationInfo</returns>
-        public static List<MigrationInfo> GetMigrationInfo(int idOld) => _migrationInfoLookupID?[idOld].ToList();
+        public static List<MigrationInfo> GetMigrationInfo(int idOld) => _migrationInfoLookupSlot?[idOld].ToList();
 
         internal static void SetResolveInfos(ICollection<ResolveInfo> results)
         {
@@ -96,7 +114,7 @@ namespace Sideloader.AutoResolver
         internal static void SetMigrationInfos(ICollection<MigrationInfo> results)
         {
             _migrationInfoLookupGUID = results.ToLookup(info => info.GUIDOld);
-            _migrationInfoLookupID = results.ToLookup(info => info.IDOld);
+            _migrationInfoLookupSlot = results.ToLookup(info => info.IDOld);
         }
 
         /// <summary>
