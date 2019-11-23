@@ -450,7 +450,7 @@ namespace Sideloader
                             if (DebugLogging.Value)
                                 Logger.LogDebug($"Streaming \"{entry.Name}\" ({GetRelativeArchiveDir(archiveFilename)}) unity3d file from disk, offset {index}");
 
-                            bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
+                            bundle = AssetBundleLoadingHelper.LoadFromFileWithRandomizedCabIfRequired(archiveFilename, 0, (ulong)index);
                         }
                         else
                         {
@@ -508,15 +508,23 @@ namespace Sideloader
 
         private void AssetBundleLoadingHook(AssetBundleLoadingContext context)
         {
-            if (!File.Exists(context.Parameters.Path))
-            {
-                string bundle = context.Parameters.Path.Substring(context.Parameters.Path.IndexOf("/abdata/")).Replace("/abdata/", "");
+            if (context.Parameters.LoadType != AssetBundleLoadType.LoadFromFile) return;
 
+            var path = context.Parameters.Path;
+            if (path == null) return;
+
+            var abdataIndex = path.IndexOf("/abdata/");
+            if (abdataIndex == -1) return;
+
+            string bundle = path.Substring(abdataIndex).Replace("/abdata/", "");
+            if (!File.Exists(path))
+            {
                 if (BundleManager.Bundles.TryGetValue(bundle, out List<LazyCustom<AssetBundle>> lazyList))
                 {
                     context.Bundle = lazyList[0].Instance;
                     context.Bundle.name = bundle;
                     context.Complete();
+                    return;
                 }
                 else
                 {
@@ -526,8 +534,17 @@ namespace Sideloader
                         context.Bundle = AssetBundleHelper.CreateEmptyAssetBundle();
                         context.Bundle.name = bundle;
                         context.Complete();
+                        return;
                     }
                 }
+            }
+
+            // override the default asset loading behavior for files, allowing for falling back to an in-memory asset with a randomized CAB
+            context.Bundle = AssetBundleLoadingHelper.LoadFromFileWithRandomizedCabIfRequired(path, context.Parameters.Crc, context.Parameters.Offset);
+            if (context.Bundle != null)
+            {
+                context.Bundle.name = bundle;
+                context.Complete();
             }
         }
     }
