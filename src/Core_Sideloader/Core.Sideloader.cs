@@ -90,18 +90,8 @@ namespace Sideloader
 
         private static string GetRelativeArchiveDir(string archiveDir) => archiveDir.Length < ModsDirectory.Length ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
 
-        private static IEnumerable<string> GetZipmodsFromDirectory(string modDirectory)
-        {
-            Logger.LogInfo("Loading mods from directory: " + modDirectory);
-            return Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories)
-                            .Where(x => x.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
-                                        x.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase));
-        }
-
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
-            Logger.LogInfo("Scanning the \"mods\" directory...");
-
             var stopWatch = Stopwatch.StartNew();
 
             // Look for mods, load their manifests
@@ -109,7 +99,15 @@ namespace Sideloader
             foreach (var modDirectory in modDirectories)
             {
                 if (!modDirectory.IsNullOrWhiteSpace() && Directory.Exists(modDirectory))
-                    allMods.AddRange(GetZipmodsFromDirectory(modDirectory));
+                {
+                    var prevCount = allMods.Count;
+
+                    allMods.AddRange(Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories)
+                        .Where(x => x.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
+                                    x.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase)));
+
+                    Logger.LogInfo("Found " + (allMods.Count - prevCount) + " zipmods in directory: " + modDirectory);
+                }
             }
 
             var archives = new Dictionary<ZipFile, Manifest>();
@@ -122,10 +120,12 @@ namespace Sideloader
                     archive = new ZipFile(archivePath);
 
                     if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                    {
                         if (manifest.Game.IsNullOrWhiteSpace() || GameNameList.Contains(manifest.Game.ToLower().Replace("!", "")))
                             archives.Add(archive, manifest);
                         else
                             Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {manifest.Game}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -203,7 +203,7 @@ namespace Sideloader
             stopWatch.Stop();
             if (ModLoadingLogging.Value)
                 Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
-            Logger.LogInfo($"Successfully loaded {Archives.Count} mods out of {allMods.Count()} archives in {stopWatch.ElapsedMilliseconds}ms");
+            Logger.LogInfo($"Successfully loaded {Archives.Count} mods out of {allMods.Count} archives in {stopWatch.ElapsedMilliseconds}ms");
         }
 
         private void LoadAllLists(ZipFile arc, Manifest manifest)
