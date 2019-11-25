@@ -24,6 +24,10 @@ namespace Sideloader
     /// <summary>
     /// Allows for loading mods in .zip format from the mods folder and automatically resolves ID conflicts.
     /// </summary>
+    [BepInPlugin(GUID, PluginName, Version)]
+    [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
+    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, "1.1.0")]
+    [BepInIncompatibility("com.bepis.bepinex.resourceredirector")]
     public partial class Sideloader
     {
         /// <summary> Plugin GUID </summary>

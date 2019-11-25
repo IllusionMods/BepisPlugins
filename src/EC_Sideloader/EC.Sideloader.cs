@@ -5,9 +5,6 @@ using System.IO;
 
 namespace Sideloader
 {
-    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier)]
-    [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
-    [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin
     {
         private static readonly string[] GameNameList = { "emotioncreators", "emotion creators" };
