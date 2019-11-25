@@ -8,5 +8,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: AssemblyVersion(BepisPlugins.Metadata.PluginsVersion)]
+[assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion(BepisPlugins.Metadata.PluginsVersion)]
