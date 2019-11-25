@@ -9,7 +9,6 @@
     <Import_RootNamespace>Core_Sideloader</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.AssetBundleLoadingHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.ListLoader.Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.MigrationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.ReflectionHelper.cs" />
