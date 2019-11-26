@@ -10,3 +10,4 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion(BepisPlugins.Metadata.PluginsVersion)]
+[assembly: AssemblyInformationalVersion(BepisPlugins.Metadata.PluginsVersion)]
