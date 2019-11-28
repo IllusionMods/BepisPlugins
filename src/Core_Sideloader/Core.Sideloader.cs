@@ -56,8 +56,8 @@ namespace Sideloader
 
         internal static ConfigEntry<bool> MissingModWarning { get; private set; }
         internal static ConfigEntry<bool> DebugLogging { get; private set; }
-        internal static ConfigEntry<bool> DebugResolveInfoLogging { get; private set; }
-        internal static ConfigEntry<bool> ModLoadingLogging { get; private set; }
+        internal static ConfigEntry<bool> DebugLoggingResolveInfo { get; private set; }
+        internal static ConfigEntry<bool> DebugLoggingModLoading { get; private set; }
         internal static ConfigEntry<bool> KeepMissingAccessories { get; private set; }
         internal static ConfigEntry<bool> MigrationEnabled { get; private set; }
         internal static ConfigEntry<string> AdditionalModsDirectory { get; private set; }
@@ -76,13 +76,21 @@ namespace Sideloader
             ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(RedirectHook);
             ResourceRedirection.RegisterAssetBundleLoadingHook(AssetBundleLoadingHook);
 
-            MissingModWarning = Config.Bind("Settings", "Show missing mod warnings", true, new ConfigDescription("Whether missing mod warnings will be displayed on screen. Messages will still be written to the log."));
-            DebugLogging = Config.Bind("Settings", "Debug logging", false, new ConfigDescription("Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes."));
-            DebugResolveInfoLogging = Config.Bind("Settings", "Debug resolve info logging", false, new ConfigDescription("Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes."));
-            ModLoadingLogging = Config.Bind("Settings", "Mod loading logging", false, new ConfigDescription("Enable verbose logging when loading mods."));
-            KeepMissingAccessories = Config.Bind("Settings", "Keep missing accessories", false, new ConfigDescription("Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker."));
-            MigrationEnabled = Config.Bind("Settings", "Migration enabled", true, new ConfigDescription("Attempt to change the GUID and or ID of mods based on the data configured in the manifest.xml."));
-            AdditionalModsDirectory = Config.Bind("General", "Additional mods directory", FindKoiZipmodDir(), new ConfigDescription("Additional directory to load zipmods from."));
+            MissingModWarning = Config.Bind("Logging", "Show missing mod warnings", true,
+                "Whether missing mod warnings will be displayed on screen. Messages will still be written to the log.");
+            DebugLogging = Config.Bind("Logging", "Debug logging", false,
+                "Enable additional logging useful for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase load and save times noticeably and will result in very large log sizes.");
+            DebugLoggingResolveInfo = Config.Bind("Logging", "Debug resolve info logging", false,
+                "Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes.");
+            DebugLoggingModLoading = Config.Bind("Logging", "Debug mod loading logging", false,
+                "Enable verbose logging when loading mods.");
+
+            KeepMissingAccessories = Config.Bind("General", "Keep missing accessories", false,
+                "Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.");
+            MigrationEnabled = Config.Bind("General", "Migration enabled", true,
+                "Attempt to change the GUID and/or ID of mods based on the data configured in the manifest.xml. Helps keep backwards compatibility when updating mods.");
+            AdditionalModsDirectory = Config.Bind("General", "Additional mods directory", FindKoiZipmodDir(),
+                "Additional directory to load zipmods from.");
 
             if (!Directory.Exists(ModsDirectory))
                 Logger.LogWarning("Could not find the mods directory: " + ModsDirectory);
@@ -115,9 +123,7 @@ namespace Sideloader
                 }
             }
 
-            var archives = new Dictionary<ZipFile, Manifest>();
-
-            foreach (var archivePath in allMods)
+            var archives = allMods.RunParallel(archivePath =>
             {
                 ZipFile archive = null;
                 try
@@ -126,10 +132,10 @@ namespace Sideloader
 
                     if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
                     {
-                        if (manifest.Game.IsNullOrWhiteSpace() || GameNameList.Contains(manifest.Game.ToLower().Replace("!", "")))
-                            archives.Add(archive, manifest);
-                        else
+                        if (!manifest.Game.IsNullOrWhiteSpace() && !GameNameList.Contains(manifest.Game.ToLower().Replace("!", "")))
                             Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {manifest.Game}");
+                        else
+                            return new { archive, manifest };
                     }
                 }
                 catch (Exception ex)
@@ -137,34 +143,36 @@ namespace Sideloader
                     Logger.LogError($"Failed to load archive \"{GetRelativeArchiveDir(archivePath)}\" with error: {ex}");
                     archive?.Close();
                 }
-            }
+                return null;
+            }, 3).Where(x => x != null).ToList();
 
-            var modLoadInfoSb = new StringBuilder();
+            var enableModLoadingLogging = DebugLoggingModLoading.Value;
+            var modLoadInfoSb = enableModLoadingLogging ? new StringBuilder(1000) : null;
 
             // Handle duplicate GUIDs and load unique mods
-            foreach (var modGroup in archives.GroupBy(x => x.Value.GUID))
+            foreach (var modGroup in archives.GroupBy(x => x.manifest.GUID).OrderBy(x => x.Key))
             {
                 // Order by version if available, else use modified dates (less reliable)
                 // If versions match, prefer mods inside folders or with more descriptive names so modpacks are preferred
-                var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.Value.Version))
-                    ? modGroup.OrderByDescending(x => x.Value.Version, new ManifestVersionComparer()).ThenByDescending(x => x.Key.Name.Length)
-                    : modGroup.OrderByDescending(x => File.GetLastWriteTime(x.Key.Name));
+                var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.manifest.Version))
+                    ? modGroup.OrderByDescending(x => x.manifest.Version, new ManifestVersionComparer()).ThenByDescending(x => x.archive.Name.Length)
+                    : modGroup.OrderByDescending(x => File.GetLastWriteTime(x.archive.Name));
 
                 var orderedMods = orderedModsQuery.ToList();
 
                 if (orderedMods.Count > 1)
                 {
-                    var modList = string.Join(", ", orderedMods.Select(x => '"' + GetRelativeArchiveDir(x.Key.Name) + '"').ToArray());
-                    Logger.LogWarning($"Archives with identical GUIDs detected! Archives: {modList}; Only \"{GetRelativeArchiveDir(orderedMods[0].Key.Name)}\" will be loaded because it's the newest");
+                    var modList = string.Join(", ", orderedMods.Skip(1).Select(x => '"' + GetRelativeArchiveDir(x.archive.Name) + '"').ToArray());
+                    Logger.LogWarning($"Multiple versions detected, only \"{GetRelativeArchiveDir(orderedMods[0].archive.Name)}\" will be loaded. Skipped versions: {modList}");
 
                     // Don't keep the duplicate archives in memory
                     foreach (var dupeMod in orderedMods.Skip(1))
-                        dupeMod.Key.Close();
+                        dupeMod.archive.Close();
                 }
 
                 // Actually load the mods (only one per GUID, the newest one)
-                var archive = orderedMods[0].Key;
-                var manifest = orderedMods[0].Value;
+                var archive = orderedMods[0].archive;
+                var manifest = orderedMods[0].manifest;
                 try
                 {
                     Archives.Add(archive);
@@ -183,7 +191,8 @@ namespace Sideloader
                     var trimmedName = manifest.Name?.Trim();
                     var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
 
-                    modLoadInfoSb.AppendLine($"Loaded {displayName} {manifest.Version}");
+                    if (enableModLoadingLogging)
+                        modLoadInfoSb.AppendLine($"Loaded {displayName} {manifest.Version}");
                 }
                 catch (Exception ex)
                 {
@@ -206,9 +215,15 @@ namespace Sideloader
 #pragma warning restore CS0618 // Type or member is obsolete
 
             stopWatch.Stop();
-            if (ModLoadingLogging.Value)
+
+            if (enableModLoadingLogging)
                 Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
             Logger.LogInfo($"Successfully loaded {Archives.Count} mods out of {allMods.Count} archives in {stopWatch.ElapsedMilliseconds}ms");
+
+            var failedPaths = allMods.Except(Archives.Select(x => x.Name));
+            var failedStrings = failedPaths.Select(GetRelativeArchiveDir).ToArray();
+            if (failedStrings.Length > 0)
+                Logger.LogWarning("Could not load " + failedStrings.Length + " mods, see previous warnings for more information. File names of skipped archives:\n" + string.Join(" | ", failedStrings));
         }
 
         private void LoadAllLists(ZipFile arc, Manifest manifest)
@@ -321,7 +336,7 @@ namespace Sideloader
                     //Make a list of all the .png files and archive they come from
                     if (PngList.ContainsKey(entry.Name))
                     {
-                        if (ModLoadingLogging.Value)
+                        if (DebugLoggingModLoading.Value)
                             Logger.LogWarning($"Duplicate .png asset detected! {assetBundlePath} in \"{GetRelativeArchiveDir(arc.Name)}\"");
                     }
                     else
@@ -484,7 +499,7 @@ namespace Sideloader
 
                     BundleManager.AddBundleLoader(getBundleFunc, assetBundlePath, out string warning);
 
-                    if (!string.IsNullOrEmpty(warning) && ModLoadingLogging.Value)
+                    if (!string.IsNullOrEmpty(warning) && DebugLoggingModLoading.Value)
                         Logger.LogWarning($"{warning} in \"{GetRelativeArchiveDir(archiveFilename)}\"");
                 }
             }

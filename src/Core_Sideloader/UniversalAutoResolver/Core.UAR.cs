@@ -337,7 +337,7 @@ namespace Sideloader.AutoResolver
                 if (data.categoryNo == (int)ChaListDefine.CategoryNo.mt_ramp)
                 {
                     //Special handling for ramp stuff since it's the only thing that isn't saved to the character
-                    if (Sideloader.DebugResolveInfoLogging.Value)
+                    if (Sideloader.DebugLoggingResolveInfo.Value)
                     {
                         Sideloader.Logger.LogInfo($"ResolveInfo - " +
                                                   $"GUID: {manifest.GUID} " +
@@ -362,7 +362,7 @@ namespace Sideloader.AutoResolver
                 {
                     results.AddRange(propertyKeys.Select(propertyKey =>
                     {
-                        if (Sideloader.DebugResolveInfoLogging.Value)
+                        if (Sideloader.DebugLoggingResolveInfo.Value)
                         {
                             Sideloader.Logger.LogInfo($"ResolveInfo - " +
                                                       $"GUID: {manifest.GUID} " +

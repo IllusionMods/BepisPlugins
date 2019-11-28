@@ -70,7 +70,7 @@ namespace Sideloader.AutoResolver
                             continue;
                         }
 
-                        if (Sideloader.DebugResolveInfoLogging.Value)
+                        if (Sideloader.DebugLoggingResolveInfo.Value)
                             Sideloader.Logger.LogDebug($"Resolving face skin ({faceSkinInfo.SkinGUID}) head ID ({faceSkinInfo.HeadGUID}) from slot {faceSkinInfo.HeadSlot} to slot {resolveInfo.LocalSlot}");
 
                         x.Value[headIDIndex] = resolveInfo.LocalSlot.ToString();
