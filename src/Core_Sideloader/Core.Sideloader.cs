@@ -507,8 +507,8 @@ namespace Sideloader
 
         private void RedirectHook(IAssetLoadingContext context)
         {
-            if (context.Parameters.Name == null) return;
-
+            if (context.Parameters.Name == null || context.Bundle.name == null) return;
+            
             if (context.Parameters.Type == typeof(Texture2D))
             {
                 string zipPath = $"abdata/{context.Bundle.name.Replace(".unity3d", "", StringComparison.OrdinalIgnoreCase)}/{context.Parameters.Name}.png";
@@ -521,7 +521,7 @@ namespace Sideloader
                     return;
                 }
             }
-
+            
             if (BundleManager.TryGetObjectFromName(context.Parameters.Name, context.Bundle.name, context.Parameters.Type, out UnityEngine.Object obj))
             {
                 context.Asset = obj;
@@ -557,6 +557,16 @@ namespace Sideloader
                         context.Bundle.name = bundle;
                         context.Complete();
                     }
+                }
+            }
+            else
+            {
+                var ab = AssetBundle.LoadFromFile(context.Parameters.Path, context.Parameters.Crc, context.Parameters.Offset);
+                if (ab != null)
+                {
+                    context.Bundle = ab;
+                    context.Bundle.name = bundle;
+                    context.Complete();
                 }
             }
         }
