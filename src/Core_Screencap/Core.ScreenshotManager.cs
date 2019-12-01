@@ -25,7 +25,7 @@ namespace Screencap
         public const string PluginName = "Screenshot Manager";
         public const string Version = Metadata.PluginsVersion;
         internal static new ManualLogSource Logger;
-        private const int ScreenshotSizeMax = 4096;
+        private static int ScreenshotSizeMax => ResolutionAllowExtreme.Value ? 15000 : 4096;
         private const int ScreenshotSizeMin = 2;
 
         public static ScreenshotManager Instance { get; private set; }
@@ -53,6 +53,7 @@ namespace Screencap
 
         public static ConfigEntry<int> ResolutionX { get; private set; }
         public static ConfigEntry<int> ResolutionY { get; private set; }
+        public static ConfigEntry<bool> ResolutionAllowExtreme { get; private set; }
         public static ConfigEntry<int> Resolution360 { get; private set; }
         public static ConfigEntry<int> DownscalingRate { get; private set; }
         public static ConfigEntry<int> CardDownscalingRate { get; private set; }
@@ -122,6 +123,11 @@ namespace Screencap
                 "General", "Show messages on screen",
                 true,
                 new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
+
+            ResolutionAllowExtreme = Config.Bind(
+                "Render Output Resolution", "Allow extreme resolutions",
+                false,
+                new ConfigDescription("Raise maximum rendered screenshot resolution cap to 15k. Trying to take a screenshot too high above 4k WILL CRASH YOUR GAME. ALWAYS SAVE BEFORE ATTEMPTING A SCREENSHOT AND MONITOR RAM USAGE AT ALL TIMES. Changes take effect after restarting the game."));
 
             ResolutionX = Config.Bind(
                 "Render Output Resolution", "Horizontal",
