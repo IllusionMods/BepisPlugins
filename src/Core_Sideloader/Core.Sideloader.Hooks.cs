@@ -23,6 +23,9 @@ namespace Sideloader
                 harmony.Patch(typeof(GlobalMethod).GetMethod(nameof(GlobalMethod.LoadAllFolder), AccessTools.all).MakeGenericMethod(typeof(Object)),
                               null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));
 #endif
+
+                foreach (var x in typeof(AssetBundleData).GetMethods().Where(y => y.Name.Contains("get_isFile")))
+                    harmony.Patch(x, null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(IsFileHook2), AccessTools.all)));
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
@@ -37,9 +40,6 @@ namespace Sideloader
                 }
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(AssetBundleData))]
-            [HarmonyPatch(nameof(AssetBundleData.isFile), MethodType.Getter)]
             internal static void IsFileHook2(ref bool __result, AssetBundleData __instance)
             {
                 if (!__result)
