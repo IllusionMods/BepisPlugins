@@ -57,7 +57,10 @@ namespace Sideloader.AutoResolver
 
             internal static void ExtendedCardLoad(ChaFile file)
             {
-                Sideloader.Logger.LogDebug($"Loading card [{file.charaFileName}]");
+                string cardName = file.charaFileName;
+                if (cardName.IsNullOrEmpty())
+                    cardName = file.parameter?.fullname?.Trim();
+                Sideloader.Logger.LogDebug($"Loading card [{cardName}]");
 
                 var extData = ExtendedSave.GetExtendedDataById(file, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(file, UARExtID);
                 List<ResolveInfo> extInfo;
@@ -155,7 +158,10 @@ namespace Sideloader.AutoResolver
             {
                 if (DoingImport) return;
 
-                Sideloader.Logger.LogDebug($"Reloading card [{__instance.charaFileName}]");
+                string cardName = __instance.charaFileName;
+                if (cardName.IsNullOrEmpty())
+                    cardName = __instance.parameter?.fullname?.Trim();
+                Sideloader.Logger.LogDebug($"Reloading card [{cardName}]");
 
                 var extData = ExtendedSave.GetExtendedDataById(__instance, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UARExtID);
 
