@@ -74,7 +74,7 @@ namespace Sideloader
             ResourceRedirection.EnableRedirectMissingAssetBundlesToEmptyAssetBundle(-1000);
             ResourceRedirection.EnableRandomizeCabIfConflict(-2000, false);
             ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(RedirectHook);
-            ResourceRedirection.RegisterAssetBundleLoadingHook(AssetBundleLoadingHook);
+            ResourceRedirection.RegisterAsyncAndSyncAssetBundleLoadingHook(AssetBundleLoadingHook);
 
             MissingModWarning = Config.Bind("Logging", "Show missing mod warnings", true,
                 "Whether missing mod warnings will be displayed on screen. Messages will still be written to the log.");
@@ -529,7 +529,7 @@ namespace Sideloader
             }
         }
 
-        private void AssetBundleLoadingHook(AssetBundleLoadingContext context)
+        private void AssetBundleLoadingHook(IAssetBundleLoadingContext context)
         {
             if (context.Parameters.LoadType != AssetBundleLoadType.LoadFromFile) return;
 
