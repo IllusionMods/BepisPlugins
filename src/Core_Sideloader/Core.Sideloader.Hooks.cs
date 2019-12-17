@@ -23,9 +23,11 @@ namespace Sideloader
                 harmony.Patch(typeof(GlobalMethod).GetMethod(nameof(GlobalMethod.LoadAllFolder), AccessTools.all).MakeGenericMethod(typeof(Object)),
                               null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));
 #endif
-
-                foreach (var x in typeof(AssetBundleData).GetMethods().Where(y => y.Name.Contains("get_isFile")))
-                    harmony.Patch(x, null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(IsFileHook2), AccessTools.all)));
+                var isFileMethodInfo = typeof(AssetBundleData).GetProperty("isFile", AccessTools.all)?.GetGetMethod();
+                if (isFileMethodInfo == null)
+                    Logger.LogError($"Could not patch AssetBundleData.isFile");
+                else
+                    harmony.Patch(isFileMethodInfo, null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(IsFileHook2), AccessTools.all)));
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
@@ -35,7 +37,7 @@ namespace Sideloader
                 {
                     if (BundleManager.Bundles.ContainsKey(assetBundleName))
                         __result = true;
-                    if (Sideloader.IsPngFolderOnly(assetBundleName))
+                    if (IsPngFolderOnly(assetBundleName))
                         __result = true;
                 }
             }
@@ -46,7 +48,7 @@ namespace Sideloader
                 {
                     if (BundleManager.Bundles.ContainsKey(__instance.bundle))
                         __result = true;
-                    if (Sideloader.IsPngFolderOnly(__instance.bundle))
+                    if (IsPngFolderOnly(__instance.bundle))
                         __result = true;
                 }
             }
