@@ -85,6 +85,13 @@ namespace Sideloader.AutoResolver
                 }
 
                 IterateCardPrefixes(ResolveStructure, file, extInfo);
+
+#if AI
+                //Resolve the bundleID to the same ID as the hair
+                foreach (var hairPart in file.custom.hair.parts)
+                    if (hairPart.id > BaseSlotID)
+                        hairPart.bundleId = hairPart.id;
+#endif
             }
 
             internal static void ExtendedCardSave(ChaFile file)
@@ -147,6 +154,12 @@ namespace Sideloader.AutoResolver
                         ["info"] = resolutionInfo.Select(x => x.Serialize()).ToList()
                     }
                 });
+
+#if AI
+                //Resolve the bundleID to the same ID as the hair
+                foreach (var hairPart in file.custom.hair.parts)
+                    hairPart.bundleId = hairPart.id;
+#endif
             }
 
 #if KK
@@ -188,6 +201,13 @@ namespace Sideloader.AutoResolver
                 }
 
                 IterateCardPrefixes(ResetStructResolveStructure, __instance, extInfo);
+
+#if AI
+                //Resolve the bundleID to the same ID as the hair
+                foreach (var hairPart in __instance.custom.hair.parts)
+                    if (hairPart.id > BaseSlotID)
+                        hairPart.bundleId = hairPart.id;
+#endif
             }
 
             #endregion
