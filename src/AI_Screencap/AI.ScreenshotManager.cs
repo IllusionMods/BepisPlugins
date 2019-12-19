@@ -86,9 +86,9 @@ namespace Screencap
             {
                 var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Application.productName == "StudioNEOV2";
                 if (Alpha.Value && alphaAllowed)
-                    StartCoroutine(WaitForEndOfFrameThen(Transparent));
+                    StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true)));
                 else
-                    StartCoroutine(WaitForEndOfFrameThen(Opaque));
+                    StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(false)));
             }
         }
 
@@ -110,41 +110,55 @@ namespace Screencap
                 l.shadowCustomResolution = 0;
         }
 
-        private void Opaque()
+        private void CaptureAndWrite(bool alpha)
         {
-            try { OnPreCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
-
             Config.Reload();
-            var width = CaptureWidth.Value;
-            var height = CaptureHeight.Value;
-            var downScaling = Downscaling.Value;
-
-            var scaledWidth = width * downScaling;
-            var scaledHeight = height * downScaling;
-
-            var colour = Capture(scaledWidth, scaledHeight, false);
-
-            ScaleTex(ref colour, width, height, downScaling);
-
-            StartCoroutine(WriteTex(colour, false));
-
-            try { OnPostCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
+            var result = Capture(CaptureWidth.Value, CaptureHeight.Value, Downscaling.Value, alpha);
+            StartCoroutine(WriteTex(result, false));
         }
 
-        private void Transparent()
+        /// <summary>
+        /// Capture the screen into a texture based on supplied arguments. Remember to RenderTexture.ReleaseTemporary the texture when done with it.
+        /// </summary>
+        /// <param name="width">Width of the resulting capture, after downscaling</param>
+        /// <param name="height">Height of the resulting capture, after downscaling</param>
+        /// <param name="downscaling">How much to oversize and then downscale. 1 for none.</param>
+        /// <param name="transparent">Should the capture be transparent</param>
+        public RenderTexture Capture(int width, int height, int downscaling, bool transparent)
         {
             try { OnPreCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
 
-            Config.Reload();
-            var width = CaptureWidth.Value;
-            var height = CaptureHeight.Value;
-            var downScaling = Downscaling.Value;
+            try
+            {
+                if (!transparent)
+                    return CaptureOpaque(width, height, downscaling);
+                else
+                    return CaptureTransparent(width, height, downscaling);
+            }
+            finally
+            {
+                try { OnPostCapture?.Invoke(); }
+                catch (Exception ex) { Logger.LogError(ex); }
+            }
+        }
 
-            var scaledWidth = width * downScaling;
-            var scaledHeight = height * downScaling;
+        private RenderTexture CaptureOpaque(int width, int height, int downscaling)
+        {
+            var scaledWidth = width * downscaling;
+            var scaledHeight = height * downscaling;
+
+            var colour = CaptureScreen(scaledWidth, scaledHeight, false);
+
+            ScaleTex(ref colour, width, height, downscaling);
+
+            return colour;
+        }
+
+        private RenderTexture CaptureTransparent(int width, int height, int downscaling)
+        {
+            var scaledWidth = width * downscaling;
+            var scaledHeight = height * downscaling;
 
             var cam = Camera.main.gameObject;
             var dof = cam.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
@@ -152,10 +166,10 @@ namespace Screencap
             if (dof != null)
             {
                 var ratio = Screen.height / (float)scaledHeight; //Use larger of width/height?
-                dof.maxBlurSize *= ratio * downScaling;
+                dof.maxBlurSize *= ratio * downscaling;
             }
 
-            var colour = Capture(scaledWidth, scaledHeight, false);
+            var colour = CaptureScreen(scaledWidth, scaledHeight, false);
 
             var ppl = cam.GetComponent<PostProcessLayer>();
             if (ppl != null) ppl.enabled = false;
@@ -170,7 +184,7 @@ namespace Screencap
                 else dof = null;
             }
 
-            var mask = Capture(scaledWidth, scaledHeight, true);
+            var mask = CaptureScreen(scaledWidth, scaledHeight, true);
 
             if (ppl != null) ppl.enabled = true;
             if (dof != null) dof.enabled = true;
@@ -186,12 +200,9 @@ namespace Screencap
             RenderTexture.ReleaseTemporary(mask);
             RenderTexture.ReleaseTemporary(colour);
 
-            ScaleTex(ref alpha, width, height, downScaling);
+            ScaleTex(ref alpha, width, height, downscaling);
 
-            StartCoroutine(WriteTex(alpha, true));
-
-            try { OnPostCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
+            return alpha;
         }
 
         private static IEnumerable<AmbientOcclusion> DisableAmbientOcclusion()
@@ -246,7 +257,7 @@ namespace Screencap
             }
         }
 
-        private static RenderTexture Capture(int width, int height, bool alpha)
+        private static RenderTexture CaptureScreen(int width, int height, bool alpha)
         {
             // Setup postprocessing effects to work with the capture
             var aos = DisableAmbientOcclusion();
@@ -254,7 +265,7 @@ namespace Screencap
             // Do the capture
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
             var rt = RenderTexture.GetTemporary(width, height, 32, fmt, RenderTextureReadWrite.Default);
-
+            
             var cam = Camera.main;
 
             var cf = cam.clearFlags;
