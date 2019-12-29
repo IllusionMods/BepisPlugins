@@ -65,8 +65,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_BGMLoader", "src\Core_
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_BGMLoader", "src\EC_BGMLoader\EC_BGMLoader.csproj", "{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared.AssetLoader", "src\Shared.AssetLoader\Shared.AssetLoader.shproj", "{ACB2EB7F-0782-4E7C-8F92-FAAAE1B632A3}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConfigurationManagerWrapper", "ConfigurationManagerWrapper", "{66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ConfigurationManager", "src\EC_ConfigurationManager\EC_ConfigurationManager.csproj", "{6979C7C4-91FE-4FD5-8F74-101CC533B238}"
@@ -95,10 +93,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Sideloader_Studio", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2050CFE4-0FCC-4DFB-80A4-CFBE10C80D03}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "reference", "reference", "{A05390B0-951B-4787-BA74-5FE5A78BA9D6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigurationManager", "paket-files\BepInEx\BepInEx.ConfigurationManager\ConfigurationManager\ConfigurationManager.csproj", "{22EDD399-1CC6-47C8-B8B8-A95FF2999901}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ConfigurationManager", "src\AI_ConfigurationManager\AI_ConfigurationManager.csproj", "{B0903672-629B-4C21-BAE3-6FBE587F4344}"
 EndProject
 Global
@@ -119,7 +113,6 @@ Global
 		src\Shared\Shared.projitems*{379ba41b-9944-4b5a-8732-eebaa7f05b04}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
 		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
-		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
@@ -128,7 +121,6 @@ Global
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
-		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
@@ -136,7 +128,6 @@ Global
 		src\Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
 		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
-		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
@@ -152,7 +143,6 @@ Global
 		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
-		src\Shared.AssetLoader\Shared.AssetLoader.projitems*{acb2eb7f-0782-4e7c-8f92-faaae1b632a3}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{b0903672-629b-4c21-bae3-6fbe587f4344}*SharedItemsImports = 4
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
@@ -278,10 +268,6 @@ Global
 		{2DF3121A-62DE-451B-9854-BCDA34B200F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DF3121A-62DE-451B-9854-BCDA34B200F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DF3121A-62DE-451B-9854-BCDA34B200F2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{22EDD399-1CC6-47C8-B8B8-A95FF2999901}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{22EDD399-1CC6-47C8-B8B8-A95FF2999901}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{22EDD399-1CC6-47C8-B8B8-A95FF2999901}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{22EDD399-1CC6-47C8-B8B8-A95FF2999901}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -322,7 +308,6 @@ Global
 		{BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43} = {2050CFE4-0FCC-4DFB-80A4-CFBE10C80D03}
 		{E1074DCD-CC19-4C67-B799-EB534C885018} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 		{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
-		{ACB2EB7F-0782-4E7C-8F92-FAAAE1B632A3} = {2050CFE4-0FCC-4DFB-80A4-CFBE10C80D03}
 		{66C8608F-4585-4E2C-8E8C-F4FDCC2CE382} = {2050CFE4-0FCC-4DFB-80A4-CFBE10C80D03}
 		{6979C7C4-91FE-4FD5-8F74-101CC533B238} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{348F6441-9510-47D8-9F7F-547E8655CBB5} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
@@ -336,7 +321,6 @@ Global
 		{2DF3121A-62DE-451B-9854-BCDA34B200F2} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
 		{20FD60F3-3086-4A25-876B-E977BDA46687} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 		{66214BD2-6DA6-49CD-8C74-63DA9E643259} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
-		{22EDD399-1CC6-47C8-B8B8-A95FF2999901} = {A05390B0-951B-4787-BA74-5FE5A78BA9D6}
 		{B0903672-629B-4C21-BAE3-6FBE587F4344} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

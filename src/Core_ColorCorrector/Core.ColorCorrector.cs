@@ -29,8 +29,8 @@ namespace ColorCorrector
                 return;
             }
 
-            SaturationEnabled = Config.AddSetting("Post Processing Settings", "Enable saturation filter", true, new ConfigDescription("Whether default saturation filter will be applied to the game. This setting has no effect in Studio."));
-            BloomStrength = Config.AddSetting("Post Processing Settings", "Bloom strength", 1f, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, 1f)));
+            SaturationEnabled = Config.Bind("Post Processing Settings", "Enable saturation filter", true, new ConfigDescription("Whether default saturation filter will be applied to the game. This setting has no effect in Studio."));
+            BloomStrength = Config.Bind("Post Processing Settings", "Bloom strength", 1f, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, 1f)));
             SaturationEnabled.SettingChanged += OnSettingChanged;
             BloomStrength.SettingChanged += OnSettingChanged;
 

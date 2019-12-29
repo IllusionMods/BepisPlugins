@@ -57,16 +57,16 @@ namespace Screencap
 
         private void Awake()
         {
-            CaptureWidth = Config.AddSetting("Rendered screenshots", "Screenshot width", Screen.width, new ConfigDescription("Screenshot width in pixels", new AcceptableValueRange<int>(1, 10000)));
-            CaptureHeight = Config.AddSetting("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
-            Downscaling = Config.AddSetting("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
-            Alpha = Config.AddSetting("Rendered screenshots", nameof(Alpha), true, new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
-            ScreenshotMessage = Config.AddSetting("General", "Show messages on screen", true, new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
+            CaptureWidth = Config.Bind("Rendered screenshots", "Screenshot width", Screen.width, new ConfigDescription("Screenshot width in pixels", new AcceptableValueRange<int>(1, 10000)));
+            CaptureHeight = Config.Bind("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
+            Downscaling = Config.Bind("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
+            Alpha = Config.Bind("Rendered screenshots", nameof(Alpha), true, new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
+            ScreenshotMessage = Config.Bind("General", "Show messages on screen", true, new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
 
-            CustomShadowResolution = Config.AddSetting("Rendered screenshots", "Shadow resolution override", 8192, new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
+            CustomShadowResolution = Config.Bind("Rendered screenshots", "Shadow resolution override", 8192, new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
 
-            KeyCaptureNormal = Config.AddSetting("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), "Capture a screenshot \"as you see it\". Includes interface and such.");
-            KeyCaptureRender = Config.AddSetting("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), "Capture a rendered screenshot with no interface. Controlled by other settings.");
+            KeyCaptureNormal = Config.Bind("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), "Capture a screenshot \"as you see it\". Includes interface and such.");
+            KeyCaptureRender = Config.Bind("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), "Capture a rendered screenshot with no interface. Controlled by other settings.");
 
             var ab = AssetBundle.LoadFromMemory(Properties.Resources.composite);
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
@@ -86,9 +86,9 @@ namespace Screencap
             {
                 var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Application.productName == "StudioNEOV2";
                 if (Alpha.Value && alphaAllowed)
-                    StartCoroutine(WaitForEndOfFrameThen(Transparent));
+                    StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true)));
                 else
-                    StartCoroutine(WaitForEndOfFrameThen(Opaque));
+                    StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(false)));
             }
         }
 
@@ -110,53 +110,84 @@ namespace Screencap
                 l.shadowCustomResolution = 0;
         }
 
-        private void Opaque()
+        private void CaptureAndWrite(bool alpha)
         {
-            try { OnPreCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
-
             Config.Reload();
-            var width = CaptureWidth.Value;
-            var height = CaptureHeight.Value;
-            var downScaling = Downscaling.Value;
-
-            var scaledWidth = width * downScaling;
-            var scaledHeight = height * downScaling;
-
-            var colour = Capture(scaledWidth, scaledHeight, false);
-
-            ScaleTex(ref colour, width, height, downScaling);
-
-            StartCoroutine(WriteTex(colour, false));
-
-            try { OnPostCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
+            var result = Capture(CaptureWidth.Value, CaptureHeight.Value, Downscaling.Value, alpha);
+            StartCoroutine(WriteTex(result, false));
         }
 
-        private void Transparent()
+        /// <summary>
+        /// Capture the screen into a texture based on supplied arguments. Remember to RenderTexture.ReleaseTemporary the texture when done with it.
+        /// </summary>
+        /// <param name="width">Width of the resulting capture, after downscaling</param>
+        /// <param name="height">Height of the resulting capture, after downscaling</param>
+        /// <param name="downscaling">How much to oversize and then downscale. 1 for none.</param>
+        /// <param name="transparent">Should the capture be transparent</param>
+        public RenderTexture Capture(int width, int height, int downscaling, bool transparent)
         {
             try { OnPreCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
 
-            Config.Reload();
-            var width = CaptureWidth.Value;
-            var height = CaptureHeight.Value;
-            var downScaling = Downscaling.Value;
+            try
+            {
+                if (!transparent)
+                    return CaptureOpaque(width, height, downscaling);
+                else
+                    return CaptureTransparent(width, height, downscaling);
+            }
+            finally
+            {
+                try { OnPostCapture?.Invoke(); }
+                catch (Exception ex) { Logger.LogError(ex); }
+            }
+        }
 
-            var scaledWidth = width * downScaling;
-            var scaledHeight = height * downScaling;
+        private RenderTexture CaptureOpaque(int width, int height, int downscaling)
+        {
+            var scaledWidth = width * downscaling;
+            var scaledHeight = height * downscaling;
 
-            var colour = Capture(scaledWidth, scaledHeight, false);
+            var colour = CaptureScreen(scaledWidth, scaledHeight, false);
 
-            var ppl = Camera.main.gameObject.GetComponent<PostProcessLayer>();
+            ScaleTex(ref colour, width, height, downscaling);
+
+            return colour;
+        }
+
+        private RenderTexture CaptureTransparent(int width, int height, int downscaling)
+        {
+            var scaledWidth = width * downscaling;
+            var scaledHeight = height * downscaling;
+
+            var cam = Camera.main.gameObject;
+            var dof = cam.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
+            var dof_prevBlurSize = dof?.maxBlurSize;
+            if (dof != null)
+            {
+                var ratio = Screen.height / (float)scaledHeight; //Use larger of width/height?
+                dof.maxBlurSize *= ratio * downscaling;
+            }
+
+            var colour = CaptureScreen(scaledWidth, scaledHeight, false);
+
+            var ppl = cam.GetComponent<PostProcessLayer>();
             if (ppl != null) ppl.enabled = false;
 
             var m3D = SceneManager.GetActiveScene().GetRootGameObjects()[0].transform.Find("CustomControl/Map3D/p_ai_mi_createBG00_00")?.gameObject; //Disable background. Sinful, truly.
             m3D?.SetActive(false);
 
-            var mask = Capture(scaledWidth, scaledHeight, true);
+            if (dof != null)
+            {
+                dof.maxBlurSize = dof_prevBlurSize.Value;
+                if (dof.enabled) dof.enabled = false;
+                else dof = null;
+            }
+
+            var mask = CaptureScreen(scaledWidth, scaledHeight, true);
 
             if (ppl != null) ppl.enabled = true;
+            if (dof != null) dof.enabled = true;
 
             m3D?.SetActive(true);
 
@@ -169,12 +200,9 @@ namespace Screencap
             RenderTexture.ReleaseTemporary(mask);
             RenderTexture.ReleaseTemporary(colour);
 
-            ScaleTex(ref alpha, width, height, downScaling);
+            ScaleTex(ref alpha, width, height, downscaling);
 
-            StartCoroutine(WriteTex(alpha, true));
-
-            try { OnPostCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
+            return alpha;
         }
 
         private static IEnumerable<AmbientOcclusion> DisableAmbientOcclusion()
@@ -229,7 +257,7 @@ namespace Screencap
             }
         }
 
-        private static RenderTexture Capture(int width, int height, bool alpha)
+        private static RenderTexture CaptureScreen(int width, int height, bool alpha)
         {
             // Setup postprocessing effects to work with the capture
             var aos = DisableAmbientOcclusion();
@@ -237,7 +265,7 @@ namespace Screencap
             // Do the capture
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
             var rt = RenderTexture.GetTemporary(width, height, 32, fmt, RenderTextureReadWrite.Default);
-
+            
             var cam = Camera.main;
 
             var cf = cam.clearFlags;

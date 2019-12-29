@@ -32,21 +32,19 @@ namespace Sideloader
                 {
                     if (BundleManager.Bundles.ContainsKey(assetBundleName))
                         __result = true;
-                    if (Sideloader.IsPngFolderOnly(assetBundleName))
+                    if (IsPngFolderOnly(assetBundleName))
                         __result = true;
                 }
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(AssetBundleData))]
-            [HarmonyPatch(nameof(AssetBundleData.isFile), MethodType.Getter)]
+            [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleData), nameof(AssetBundleData.isFile), MethodType.Getter)]
             internal static void IsFileHook2(ref bool __result, AssetBundleData __instance)
             {
                 if (!__result)
                 {
                     if (BundleManager.Bundles.ContainsKey(__instance.bundle))
                         __result = true;
-                    if (Sideloader.IsPngFolderOnly(__instance.bundle))
+                    if (IsPngFolderOnly(__instance.bundle))
                         __result = true;
                 }
             }

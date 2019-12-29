@@ -75,7 +75,7 @@ namespace Sideloader.AutoResolver
                         ResolveItem = true
                     });
 
-                    if (Sideloader.DebugResolveInfoLogging.Value)
+                    if (Sideloader.DebugLoggingResolveInfo.Value)
                     {
                         Sideloader.Logger.LogInfo($"StudioResolveInfo - " +
                                                   $"GUID: {manifest.GUID} " +

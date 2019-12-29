@@ -25,7 +25,7 @@ namespace Screencap
         public const string PluginName = "Screenshot Manager";
         public const string Version = Metadata.PluginsVersion;
         internal static new ManualLogSource Logger;
-        private const int ScreenshotSizeMax = 4096;
+        private static int ScreenshotSizeMax => ResolutionAllowExtreme.Value ? 15000 : 4096;
         private const int ScreenshotSizeMin = 2;
 
         public static ScreenshotManager Instance { get; private set; }
@@ -53,6 +53,7 @@ namespace Screencap
 
         public static ConfigEntry<int> ResolutionX { get; private set; }
         public static ConfigEntry<int> ResolutionY { get; private set; }
+        public static ConfigEntry<bool> ResolutionAllowExtreme { get; private set; }
         public static ConfigEntry<int> Resolution360 { get; private set; }
         public static ConfigEntry<int> DownscalingRate { get; private set; }
         public static ConfigEntry<int> CardDownscalingRate { get; private set; }
@@ -67,98 +68,103 @@ namespace Screencap
 
         private void InitializeSettings()
         {
-            KeyCapture = Config.AddSetting(
+            KeyCapture = Config.Bind(
                 "Keyboard shortcuts", "Take UI screenshot",
                 new KeyboardShortcut(KeyCode.F9),
                 new ConfigDescription("Capture a simple \"as you see it\" screenshot of the game. Not affected by settings for rendered screenshots."));
 
-            KeyCaptureAlpha = Config.AddSetting(
+            KeyCaptureAlpha = Config.Bind(
                 "Keyboard shortcuts", "Take rendered screenshot",
                 new KeyboardShortcut(KeyCode.F11),
                 new ConfigDescription("Take a screenshot with no interface. Can be configured by other settings to increase quality and turn on transparency."));
 
-            KeyCapture360 = Config.AddSetting(
+            KeyCapture360 = Config.Bind(
                 "Keyboard shortcuts",
                 "Take 360 screenshot",
                 new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl),
                 new ConfigDescription("Captures a 360 screenshot around current camera. The created image is in equirectangular format and can be viewed by most 360 image viewers (e.g. Google Cardboard)."));
 
-            KeyGui = Config.AddSetting(
+            KeyGui = Config.Bind(
                 "Keyboard shortcuts", "Open settings window",
                 new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift),
                 new ConfigDescription("Open a quick access window with the most common settings."));
 
-            KeyCaptureAlphaIn3D = Config.AddSetting(
+            KeyCaptureAlphaIn3D = Config.Bind(
                 "Keyboard shortcuts", "Take rendered 3D screenshot",
                 new KeyboardShortcut(KeyCode.F11, KeyCode.LeftAlt),
                 new ConfigDescription("Capture a high quality screenshot without UI in stereoscopic 3D (2 captures for each eye in one image). These images can be viewed by crossing your eyes or any stereoscopic image viewer."));
 
-            KeyCapture360in3D = Config.AddSetting(
+            KeyCapture360in3D = Config.Bind(
                 "Keyboard shortcuts", "Take 360 3D screenshot",
                 new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl, KeyCode.LeftShift),
                 new ConfigDescription("Captures a 360 screenshot around current camera in stereoscopic 3D (2 captures for each eye in one image). These images can be viewed by image viewers supporting 3D stereo format (e.g. VR Media Player - 360° Viewer)."));
 
-            Resolution360 = Config.AddSetting(
+            Resolution360 = Config.Bind(
                 "360 Screenshots", "360 screenshot resolution",
                 4096,
                 new ConfigDescription("Horizontal resolution (width) of 360 degree/panorama screenshots. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", new AcceptableValueList<int>(1024, 2048, 4096, 8192)));
 
-            DownscalingRate = Config.AddSetting(
+            DownscalingRate = Config.Bind(
                 "Render Settings", "Screenshot upsampling ratio",
                 2,
                 new ConfigDescription("Capture screenshots in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4)));
 
-            CardDownscalingRate = Config.AddSetting(
+            CardDownscalingRate = Config.Bind(
                 "Render Settings", "Card image upsampling ratio",
                 3,
                 new ConfigDescription("Capture character card images in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4)));
 
-            CaptureAlpha = Config.AddSetting(
+            CaptureAlpha = Config.Bind(
                 "Render Settings", "Transparency in rendered screenshots",
                 true,
                 new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
 
-            ScreenshotMessage = Config.AddSetting(
+            ScreenshotMessage = Config.Bind(
                 "General", "Show messages on screen",
                 true,
                 new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
 
-            ResolutionX = Config.AddSetting(
+            ResolutionAllowExtreme = Config.Bind(
+                "Render Output Resolution", "Allow extreme resolutions",
+                false,
+                new ConfigDescription("Raise maximum rendered screenshot resolution cap to 15k. Trying to take a screenshot too high above 4k WILL CRASH YOUR GAME. ALWAYS SAVE BEFORE ATTEMPTING A SCREENSHOT AND MONITOR RAM USAGE AT ALL TIMES. Changes take effect after restarting the game."));
+
+            ResolutionX = Config.Bind(
                 "Render Output Resolution", "Horizontal",
                 Screen.width,
                 new ConfigDescription("Horizontal size (width) of rendered screenshots in pixels. Doesn't affect UI and 360 screenshots.", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax)));
 
-            ResolutionY = Config.AddSetting(
+            ResolutionY = Config.Bind(
                 "Render Output Resolution", "Vertical",
                 Screen.height,
                 new ConfigDescription("Vertical size (height) of rendered screenshots in pixels. Doesn't affect UI and 360 screenshots.", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax)));
 
-            EyeSeparation = Config.AddSetting(
+            EyeSeparation = Config.Bind(
                 "3D Settings", "3D screenshot eye separation",
                 0.18f,
                 new ConfigDescription("Distance between the two captured stereoscopic screenshots in arbitrary units.", new AcceptableValueRange<float>(0.01f, 0.5f)));
 
-            ImageSeparationOffset = Config.AddSetting(
+            ImageSeparationOffset = Config.Bind(
                 "3D Settings", "3D screenshot image separation offset",
                 0.25f,
                 new ConfigDescription("Move images in stereoscopic screenshots closer together by this percentage (discards overlapping parts). Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.", new AcceptableValueRange<float>(0f, 1f)));
 
-            UseJpg = Config.AddSetting(
+            UseJpg = Config.Bind(
                 "JPG Settings", "Save screenshots as .jpg instead of .png",
                 false,
                 new ConfigDescription("Save screenshots in lower quality in return for smaller file sizes. Transparency is NOT supported in .jpg screenshots. Strongly consider not using this option if you want to share your work."));
 
-            JpgQuality = Config.AddSetting(
+            JpgQuality = Config.Bind(
                 "3D Settings", "Quality of .jpg files",
                 100,
                 new ConfigDescription("Lower quality = lower file sizes. Even 100 is worse than a .png file.", new AcceptableValueRange<int>(1, 100)));
 
-            ScreenshotNameFormat = Config.AddSetting(
+            ScreenshotNameFormat = Config.Bind(
                 "General", "Screenshot filename format",
                 NameFormat.NameDateType,
                 new ConfigDescription("Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)"));
 
-            ScreenshotNameOverride = Config.AddSetting(
+            ScreenshotNameOverride = Config.Bind(
                 "General", "Screenshot filename Name override",
                 "",
                 new ConfigDescription("Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", null, "Advanced"));

@@ -11,8 +11,6 @@ namespace Sideloader
     {
         internal static Dictionary<string, List<LazyCustom<AssetBundle>>> Bundles = new Dictionary<string, List<LazyCustom<AssetBundle>>>();
 
-        internal static string DummyPath => "list/characustom/00.unity3d";
-
         private static long CABCounter;
 
         // Only ASCII chars or we'll explode
