@@ -32,7 +32,7 @@ namespace ExtensibleSaveFormat
             {
                 var info = header.SearchInfo(Marker);
 
-                if (info != null && info.version == Version.ToString())
+                if (info != null && info.version == DataVersion.ToString())
                 {
                     var originalPosition = reader.BaseStream.Position;
                     var basePosition = originalPosition - header.lstInfo.Sum(x => x.size);
