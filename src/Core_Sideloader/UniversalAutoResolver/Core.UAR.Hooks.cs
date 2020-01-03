@@ -178,8 +178,25 @@ namespace Sideloader.AutoResolver
 
                 var extData = ExtendedSave.GetExtendedDataById(__instance, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UARExtID);
 
-                var tmpExtInfo = (List<byte[]>)extData.data["info"];
-                var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
+                // Some old ChaFile cards has object[] for "info"
+
+                List<ResolveInfo> extInfo;
+
+                if (extData.data["info"] is List<byte[]> )
+                {
+                    var tmpExtInfo = (List<byte[]>)extData.data["info"];
+                    extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
+                }
+                else if (extData.data["info"] is object[])
+                {
+                    var tmpExtInfo = (object[])extData.data["info"];
+                    extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
+                }
+                else
+                {
+                    Sideloader.Logger.LogError("Unknown data type:" + (extData.data["info"]).GetType());
+                    return;
+                }
 
                 Sideloader.Logger.LogDebug($"External info count: {extInfo.Count}");
 
