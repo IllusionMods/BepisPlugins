@@ -1,9 +1,15 @@
 ﻿using BepInEx;
+using BepisPlugins;
 using System.ComponentModel;
 using UnityEngine;
 
 namespace ConfigurationManagerWrapper
 {
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.GameProcessNameSteam)]
+    [BepInProcess(Constants.VRProcessName)]
+    [BepInProcess(Constants.VRProcessNameSteam)]
+    [BepInProcess(Constants.StudioProcessName)]
     [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
     [Browsable(false)]
     [BepInPlugin(GUID, PluginName, Version)]

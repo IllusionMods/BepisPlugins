@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepisPlugins;
 using HarmonyLib;
 using System.Collections;
 using UnityEngine.SceneManagement;
@@ -6,6 +7,10 @@ using UnityEngine.UI;
 
 namespace SliderUnlocker
 {
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.GameProcessName32bit)]
+    [BepInProcess(Constants.StudioProcessName)]
+    [BepInProcess(Constants.StudioProcessName32bit)]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class SliderUnlocker : BaseUnityPlugin
     {

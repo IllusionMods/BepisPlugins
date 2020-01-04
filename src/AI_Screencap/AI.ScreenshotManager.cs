@@ -17,6 +17,8 @@ namespace Screencap
     /// Plugin for taking high quality screenshots with optional transparency.
     /// Brought to AI-Shoujo by essu - the local smug, benevolent modder.
     /// </summary>
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.StudioProcessName)]
     [BepInPlugin(GUID, PluginName, Version)]
     [BepInIncompatibility("Screencap")]
     [BepInIncompatibility("EdgeDestroyer")]
@@ -265,7 +267,7 @@ namespace Screencap
             // Do the capture
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
             var rt = RenderTexture.GetTemporary(width, height, 32, fmt, RenderTextureReadWrite.Default);
-            
+
             var cam = Camera.main;
 
             var cf = cam.clearFlags;

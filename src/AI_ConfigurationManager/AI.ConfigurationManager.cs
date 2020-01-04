@@ -1,16 +1,18 @@
-﻿using BepInEx;
-using System.ComponentModel;
-using AIProject;
-using BepisPlugins;
+﻿using AIProject;
+using BepInEx;
 using BepInEx.Harmony;
+using BepisPlugins;
 using ConfigScene;
 using HarmonyLib;
 using IllusionUtility.GetUtility;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace ConfigurationManagerWrapper
 {
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.StudioProcessName)]
     [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
     [Browsable(false)]
     [BepInPlugin(GUID, PluginName, Version)]
@@ -49,7 +51,7 @@ namespace ConfigurationManagerWrapper
             if (Input.GetKeyDown(KeyCode.F1) && !Manager.Scene.Instance.IsNowLoadingFade)
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
-        
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ConfigWindow), "Open")]
         private static void OnOpen(ConfigWindow __instance, ref Button[] ___buttons)
@@ -75,9 +77,6 @@ namespace ConfigurationManagerWrapper
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ConfigWindow), nameof(ConfigWindow.Unload))]
-        private static void OnClose()
-        {
-            _manager.DisplayingWindow = false;
-        }
+        private static void OnClose() => _manager.DisplayingWindow = false;
     }
 }

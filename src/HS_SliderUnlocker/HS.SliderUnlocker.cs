@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepisPlugins;
 using CustomMenu;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +7,12 @@ using UnityEngine.UI;
 
 namespace SliderUnlocker
 {
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.GameProcessName32bit)]
+    [BepInProcess(Constants.StudioProcessName)]
+    [BepInProcess(Constants.StudioProcessName32bit)]
+    [BepInProcess(Constants.BattleArenaProcessName)]
+    [BepInProcess(Constants.BattleArenaProcessName32bit)]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class SliderUnlocker : BaseUnityPlugin
     {

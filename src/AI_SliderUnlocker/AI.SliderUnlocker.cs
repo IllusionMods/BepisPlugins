@@ -1,10 +1,13 @@
 ﻿using BepInEx;
+using BepisPlugins;
 using CharaCustom;
 using System.Collections;
 using UnityEngine.SceneManagement;
 
 namespace SliderUnlocker
 {
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.StudioProcessName)]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class SliderUnlocker : BaseUnityPlugin
     {
