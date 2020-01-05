@@ -83,5 +83,15 @@ namespace SliderUnlocker
                 return original;
             }
         }
+        
+        public static float Lerp(float min, float max, float value)
+        {
+            return value * (max - min) + min;
+        }
+
+        public static float InverseLerp(float min, float max, float value)
+        {
+            return (value - min) / (max - min);
+        }
     }
 }

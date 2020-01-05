@@ -52,7 +52,7 @@ namespace SliderUnlocker
         /// <summary>
         /// Unlock or lock the slider depending on the entered value
         /// </summary>
-        private static void UnlockSlider(Slider _slider, float value, bool defaultRange = false)
+        public static void UnlockSlider(Slider _slider, float value, bool defaultRange = false)
         {
             var valueRoundedUp = (int)Math.Ceiling(Math.Abs(value));
             var max = defaultRange ? 1 : SliderMax;
@@ -273,7 +273,7 @@ namespace SliderUnlocker
         /// <summary>
         /// Make sure the entered value is within range
         /// </summary>
-        private static void UnlockSliderFromInput(Slider _slider, InputField _inputField)
+        public static void UnlockSliderFromInput(Slider _slider, InputField _inputField)
         {
             var value = float.TryParse(_inputField.text, out var num) ? num / 100 : 0;
 

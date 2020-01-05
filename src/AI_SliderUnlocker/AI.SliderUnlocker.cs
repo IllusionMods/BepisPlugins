@@ -11,7 +11,13 @@ namespace SliderUnlocker
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class SliderUnlocker : BaseUnityPlugin
     {
-        private void Main() => SceneManager.sceneLoaded += (s, lsm) => SetAllSliders();
+        private void Main()
+        {
+            VoicePitchUnlocker.Init();
+            HairUnlocker.Init();
+            
+            SceneManager.sceneLoaded += (s, lsm) => SetAllSliders();
+        }
 
         /// <summary>
         /// Set all sliders to their default min/max and set up events

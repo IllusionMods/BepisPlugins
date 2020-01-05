@@ -74,6 +74,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI.SliderUnlocker.cs" />
+    <Compile Include="AI.SliderUnlocker.Hair.cs" />
+    <Compile Include="AI.SliderUnlocker.VoicePitch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
