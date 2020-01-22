@@ -97,7 +97,7 @@ namespace Screencap
         private IEnumerator WaitForEndOfFrameThen(Action a)
         {
             var sc = QualitySettings.shadowCascades;
-            QualitySettings.shadowCascades = 0;
+            QualitySettings.shadowCascades = 4;
 
             var lights = FindObjectsOfType<Light>();
             foreach (var l in lights)
