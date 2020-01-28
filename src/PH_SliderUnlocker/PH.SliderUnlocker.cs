@@ -30,7 +30,6 @@ namespace SliderUnlocker
             {
                 CheckableSlider slider = Traverse.Create(x).Field("slider").GetValue() as CheckableSlider;
                 InputField inputField = Traverse.Create(x).Field("inputField").GetValue() as InputField;
-                Button defButton = Traverse.Create(x).Field("defButton").GetValue() as Button;
 
                 slider.minValue = SliderMin * 100;
                 slider.maxValue = SliderMax * 100;
@@ -52,9 +51,6 @@ namespace SliderUnlocker
 
                 //When the user types a value, unlock the sliders to accomodate
                 inputField.onEndEdit.AddListener(_ => UnlockSliderFromInput(slider, inputField));
-
-                //When the button is clicked set a flag used by InputFieldOnValueChanged
-                defButton.onClick.AddListener(() => buttonClicked = true);
             }
         }
         /// <summary>
