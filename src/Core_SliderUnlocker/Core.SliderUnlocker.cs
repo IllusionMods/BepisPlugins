@@ -32,10 +32,18 @@ namespace SliderUnlocker
         internal static float SliderAbsoluteMax => Math.Max(SliderMax, 5f);
         /// <summary> Minimum value sliders can possibly extend </summary>
         internal static float SliderAbsoluteMin => Math.Min(SliderMin, -5f);
+
+        #if !PH
         /// <summary> Maximum value of sliders when not dynamically unlocked </summary>
         internal static float SliderMax => (Maximum.Value < 100 ? 100 : Maximum.Value) / 100f;
         /// <summary> Minimum value of sliders when not dynamically unlocked </summary>
         internal static float SliderMin => (Minimum.Value > 0 ? 0 : Minimum.Value) / 100f;
+        #else 
+        /// <summary> Maximum value of sliders when not dynamically unlocked </summary>
+        internal static float SliderMax => (Maximum.Value < 100 ? 100 : Maximum.Value);
+        /// <summary> Minimum value of sliders when not dynamically unlocked </summary>
+        internal static float SliderMin => (Minimum.Value > 0 ? 0 : Minimum.Value);
+        #endif
 
         public static ConfigEntry<int> Minimum { get; private set; }
         public static ConfigEntry<int> Maximum { get; private set; }
@@ -249,7 +257,11 @@ namespace SliderUnlocker
         /// </summary>
         private static void UnlockSliderFromInput(Slider _slider, TMP_InputField _inputField, bool defaultRange)
         {
+            #if !PH
             var value = float.TryParse(_inputField.text, out var num) ? num / 100 : 0;
+            #else
+            var value = float.TryParse(_inputField.text, out var num) ? num : 0;
+            #endif
 
             if (value > SliderAbsoluteMax)
             {
