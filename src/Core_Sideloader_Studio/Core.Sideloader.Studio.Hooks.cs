@@ -94,7 +94,7 @@ namespace Sideloader
                         if (!__result.Contains(assetBundleName))
                             __result.Add(assetBundleName);
                 }
-                else if (path == "h/list/")
+                else if (path == "h/list/" || path == "map/list/mapinfo/")
                 {
                     foreach (var assetBundleName in BundleManager.Bundles.Keys.Where(x => x.StartsWith(path)))
                         if (!__result.Contains(assetBundleName))
