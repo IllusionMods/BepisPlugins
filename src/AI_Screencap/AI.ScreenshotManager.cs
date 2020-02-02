@@ -39,9 +39,9 @@ namespace Screencap
 
         private enum ShadowCascades
         {
-            Zero,
-            Two,
-            Four,
+            Zero = 0,
+            Two = 2,
+            Four = 4,
             Off
         }
 
