@@ -1,10 +1,16 @@
 ﻿using BepInEx;
+using BepisPlugins;
 using Microsoft.Win32;
 using System;
 using System.IO;
 
 namespace Sideloader
 {
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
+    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, "1.1.0")]
+    [BepInIncompatibility("com.bepis.bepinex.resourceredirector")]
+    [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin
     {
         private static readonly string[] GameNameList = { "emotioncreators", "emotion creators" };

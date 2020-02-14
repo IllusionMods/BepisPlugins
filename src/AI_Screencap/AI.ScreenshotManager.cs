@@ -17,6 +17,8 @@ namespace Screencap
     /// Plugin for taking high quality screenshots with optional transparency.
     /// Brought to AI-Shoujo by essu - the local smug, benevolent modder.
     /// </summary>
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.StudioProcessName)]
     [BepInPlugin(GUID, PluginName, Version)]
     [BepInIncompatibility("Screencap")]
     [BepInIncompatibility("EdgeDestroyer")]
@@ -35,14 +37,31 @@ namespace Screencap
         /// </summary>
         public static event Action OnPostCapture;
 
+        private enum ShadowCascades
+        {
+            Zero = 0,
+            Two = 2,
+            Four = 4,
+            Off
+        }
+
+        private enum DisableAOSetting
+        {
+            Always,
+            WhenUpsampling,
+            Never
+        }
+        
         private Material _matComposite;
         private Material _matScale;
 
         private ConfigEntry<int> CaptureWidth { get; set; }
         private ConfigEntry<int> CaptureHeight { get; set; }
-        private ConfigEntry<int> Downscaling { get; set; }
+        private static ConfigEntry<int> Downscaling { get; set; }
         private ConfigEntry<bool> Alpha { get; set; }
         private ConfigEntry<int> CustomShadowResolution { get; set; }
+        private ConfigEntry<ShadowCascades> ShadowCascadeOverride { get; set; }
+        private static ConfigEntry<DisableAOSetting> DisableAO { get; set; }
         public ConfigEntry<bool> ScreenshotMessage { get; private set; }
 
         private ConfigEntry<KeyboardShortcut> KeyCaptureNormal { get; set; }
@@ -64,6 +83,9 @@ namespace Screencap
             ScreenshotMessage = Config.Bind("General", "Show messages on screen", true, new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
 
             CustomShadowResolution = Config.Bind("Rendered screenshots", "Shadow resolution override", 8192, new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
+
+            ShadowCascadeOverride = Config.Bind("Rendered screenshots", "Shadow cascade override", ShadowCascades.Four, new ConfigDescription("When capturing screenshots, different shadow cascade values may look better. Override it or keep the current value."));
+            DisableAO = Config.Bind("Rendered screenshots", "Disable AO", DisableAOSetting.WhenUpsampling, new ConfigDescription("When capturing screenshots, upsampling can cause ambient occlusion to start banding and produce weird effects on the end image. Change this setting to disable AO when capturing the screenshot."));
 
             KeyCaptureNormal = Config.Bind("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), "Capture a screenshot \"as you see it\". Includes interface and such.");
             KeyCaptureRender = Config.Bind("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), "Capture a rendered screenshot with no interface. Controlled by other settings.");
@@ -95,7 +117,9 @@ namespace Screencap
         private IEnumerator WaitForEndOfFrameThen(Action a)
         {
             var sc = QualitySettings.shadowCascades;
-            QualitySettings.shadowCascades = 0;
+            
+            if(ShadowCascadeOverride.Value != ShadowCascades.Off)
+                QualitySettings.shadowCascades = (int)ShadowCascadeOverride.Value;
 
             var lights = FindObjectsOfType<Light>();
             foreach (var l in lights)
@@ -208,15 +232,18 @@ namespace Screencap
         private static IEnumerable<AmbientOcclusion> DisableAmbientOcclusion()
         {
             var aos = new List<AmbientOcclusion>();
-            foreach (var vol in FindObjectsOfType<PostProcessVolume>())
-            {
-                if (vol.profile.TryGetSettings(out AmbientOcclusion ao))
+            
+            if (DisableAO.Value == DisableAOSetting.Always || DisableAO.Value == DisableAOSetting.WhenUpsampling && Downscaling.Value > 1)
+                foreach (var vol in FindObjectsOfType<PostProcessVolume>())
                 {
-                    if (!ao.enabled.value) continue;
-                    ao.enabled.value = false;
-                    aos.Add(ao);
+                    if (vol.profile.TryGetSettings(out AmbientOcclusion ao))
+                    {
+                        if (!ao.enabled.value) continue;
+                        ao.enabled.value = false;
+                        aos.Add(ao);
+                    }
                 }
-            }
+            
             return aos;
         }
 
@@ -265,7 +292,7 @@ namespace Screencap
             // Do the capture
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
             var rt = RenderTexture.GetTemporary(width, height, 32, fmt, RenderTextureReadWrite.Default);
-            
+
             var cam = Camera.main;
 
             var cf = cam.clearFlags;
@@ -283,8 +310,9 @@ namespace Screencap
             Camera.current.targetTexture = null;    //Well shit.
 
             // Restore postprocessing settings
-            foreach (var ao in aos)
-                ao.enabled.value = true;
+            if (DisableAO.Value == DisableAOSetting.Always || DisableAO.Value == DisableAOSetting.WhenUpsampling && Downscaling.Value > 1)
+                foreach (var ao in aos)
+                    ao.enabled.value = true;
 
             return rt;
         }

@@ -24,10 +24,6 @@ namespace Sideloader
     /// <summary>
     /// Allows for loading mods in .zip format from the mods folder and automatically resolves ID conflicts.
     /// </summary>
-    [BepInPlugin(GUID, PluginName, Version)]
-    [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
-    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, "1.1.0")]
-    [BepInIncompatibility("com.bepis.bepinex.resourceredirector")]
     public partial class Sideloader
     {
         /// <summary> Plugin GUID </summary>
@@ -508,7 +504,7 @@ namespace Sideloader
         private void RedirectHook(IAssetLoadingContext context)
         {
             if (context.Parameters.Name == null || context.Bundle.name == null) return;
-            
+
             if (context.Parameters.Type == typeof(Texture2D))
             {
                 string zipPath = $"abdata/{context.Bundle.name.Replace(".unity3d", "", StringComparison.OrdinalIgnoreCase)}/{context.Parameters.Name}.png";
@@ -521,7 +517,7 @@ namespace Sideloader
                     return;
                 }
             }
-            
+
             if (BundleManager.TryGetObjectFromName(context.Parameters.Name, context.Bundle.name, context.Parameters.Type, out UnityEngine.Object obj))
             {
                 context.Asset = obj;

@@ -37,16 +37,6 @@ namespace SliderUnlocker
             return false;
         }
 
-        [HarmonyTranspiler, HarmonyPatch(typeof(CvsChara), "<Start>m__B")]
-        public static IEnumerable<CodeInstruction> mB(IEnumerable<CodeInstruction> _instructions)
-        {
-            // Changes constants in line this.inpPitchPow.text = CustomBase.ConvertTextFromRate(0, 100, this.sldPitchPow.value);
-            var instructions = new List<CodeInstruction>(_instructions).ToArray();
-            instructions[15].operand = (float)ExtendedRangeLower;
-            instructions[16].operand = (float)ExtendedRangeUpper;
-            return instructions;
-        }
-
         public static IEnumerable<CodeInstruction> voicePitchTpl(IEnumerable<CodeInstruction> _instructions)
         {
             // Changes constants in line this.inpPitchPow.text = CustomBase.ConvertTextFromRate(0, 100, this.param.voiceRate);

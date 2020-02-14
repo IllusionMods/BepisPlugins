@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using BepisPlugins;
 using HarmonyLib;
 using System.Collections;
 using UnityEngine.SceneManagement;
@@ -6,6 +7,10 @@ using UnityEngine.UI;
 
 namespace SliderUnlocker
 {
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.GameProcessName32bit)]
+    [BepInProcess(Constants.StudioProcessName)]
+    [BepInProcess(Constants.StudioProcessName32bit)]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class SliderUnlocker : BaseUnityPlugin
     {
@@ -27,29 +32,18 @@ namespace SliderUnlocker
                 InputField inputField = Traverse.Create(x).Field("inputField").GetValue() as InputField;
                 Button defButton = Traverse.Create(x).Field("defButton").GetValue() as Button;
 
-                slider.minValue = SliderMin * 100;
-                slider.maxValue = SliderMax * 100;
+                slider.minValue = SliderMin;
+                slider.maxValue = SliderMax;
 
                 bool buttonClicked = false;
 
                 inputField.characterLimit = 4;
 
-                //After reset button click, reset the slider unlock state
-                inputField.onValueChanged.AddListener(
-                    _ =>
-                    {
-                        if (buttonClicked)
-                        {
-                            buttonClicked = false;
-                            UnlockSliderFromInput(slider, inputField);
-                        }
-                    });
-
                 //When the user types a value, unlock the sliders to accomodate
                 inputField.onEndEdit.AddListener(_ => UnlockSliderFromInput(slider, inputField));
-
+                
                 //When the button is clicked set a flag used by InputFieldOnValueChanged
-                defButton.onClick.AddListener(() => buttonClicked = true);
+                defButton.onClick.AddListener(() => UnlockSliderFromInput(slider, inputField));
             }
         }
         /// <summary>
@@ -60,8 +54,8 @@ namespace SliderUnlocker
             foreach (var x in FindObjectsOfType<InputSliderUI>())
             {
                 CheckableSlider slider = Traverse.Create(x).Field("slider").GetValue() as CheckableSlider;
-                slider.maxValue = SliderAbsoluteMax;
-                slider.minValue = SliderAbsoluteMin;
+                slider.maxValue = SliderAbsoluteMax / 100;
+                slider.minValue = SliderAbsoluteMin / 100;
             }
         }
         /// <summary>

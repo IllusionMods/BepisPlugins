@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace ExtensibleSaveFormat
 {
+    [BepInProcess(Constants.GameProcessName)]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class ExtendedSave : BaseUnityPlugin
     {

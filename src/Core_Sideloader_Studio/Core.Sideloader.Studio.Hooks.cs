@@ -25,7 +25,7 @@ namespace Sideloader
                         __result = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
                     else //Adding to an existing ExcelData
                         didHeader = true;
-                                       
+
                     foreach (var studioListData in studioList)
                     {
                         if (!didHeader) //Write the headers. I think it's pointless and will be skipped when the ExcelData is read, but it's expected to be there.
@@ -91,6 +91,12 @@ namespace Sideloader
                 if (path == "studio/info/")
                 {
                     foreach (string assetBundleName in Lists.ExternalStudioDataList.Select(x => x.AssetBundleName).Distinct())
+                        if (!__result.Contains(assetBundleName))
+                            __result.Add(assetBundleName);
+                }
+                else if (path == "h/list/" || path == "map/list/mapinfo/")
+                {
+                    foreach (var assetBundleName in BundleManager.Bundles.Keys.Where(x => x.StartsWith(path)))
                         if (!__result.Contains(assetBundleName))
                             __result.Add(assetBundleName);
                 }

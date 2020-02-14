@@ -1,8 +1,10 @@
 ﻿using BepInEx;
+using BepisPlugins;
 using System.ComponentModel;
 
 namespace ConfigurationManagerWrapper
 {
+    [BepInProcess(Constants.GameProcessName)]
     [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
     [Browsable(false)]
     [BepInPlugin(GUID, PluginName, Version)]

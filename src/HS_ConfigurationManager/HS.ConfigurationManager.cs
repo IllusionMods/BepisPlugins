@@ -1,9 +1,16 @@
 ﻿using BepInEx;
+using BepisPlugins;
 using System.ComponentModel;
 using UnityEngine;
 
 namespace ConfigurationManagerWrapper
 {
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.GameProcessName32bit)]
+    [BepInProcess(Constants.StudioProcessName)]
+    [BepInProcess(Constants.StudioProcessName32bit)]
+    [BepInProcess(Constants.BattleArenaProcessName)]
+    [BepInProcess(Constants.BattleArenaProcessName32bit)]
     [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
     [Browsable(false)]
     [BepInPlugin(GUID, PluginName, Version)]
