@@ -151,5 +151,46 @@ namespace SliderUnlocker
         [HarmonyPrefix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.Reload))]
         public static void Reload(ChaControl __instance) => __instance.StartCoroutine(SliderUnlocker.ResetAllSliders());
 #endif
+
+#if KK  // Prevent slider values from getting clamped to 0.2 - 0.8 range in school mode
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.InitShapeBody))]
+        public static void InitShapeBodySliderFixPre(ChaControl __instance, out bool __state)
+        {
+            __state = __instance.hiPoly;
+            AccessTools.Property(typeof(ChaControl), nameof(ChaControl.hiPoly)).SetValue(__instance, true, null);
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.InitShapeBody))]
+        public static void InitShapeBodySliderFixPost(ChaControl __instance, bool __state)
+        {
+            AccessTools.Property(typeof(ChaControl), nameof(ChaControl.hiPoly)).SetValue(__instance, __state, null);
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.UpdateShapeBodyValueFromCustomInfo))]
+        public static void UpdateShapeBodyValueFromCustomInfoSliderFixPre(ChaControl __instance, out bool __state)
+        {
+            __state = __instance.hiPoly;
+            AccessTools.Property(typeof(ChaControl), nameof(ChaControl.hiPoly)).SetValue(__instance, true, null);
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.UpdateShapeBodyValueFromCustomInfo))]
+        public static void UpdateShapeBodyValueFromCustomInfoSliderFixPost(ChaControl __instance, bool __state)
+        {
+            AccessTools.Property(typeof(ChaControl), nameof(ChaControl.hiPoly)).SetValue(__instance, __state, null);
+        }
+
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetShapeBodyValue))]
+        public static void SetShapeBodyValueSliderFixPre(ChaControl __instance, out bool __state)
+        {
+            __state = __instance.hiPoly;
+            AccessTools.Property(typeof(ChaControl), nameof(ChaControl.hiPoly)).SetValue(__instance, true, null);
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetShapeBodyValue))]
+        public static void SetShapeBodyValueInfoSliderFixPost(ChaControl __instance, bool __state)
+        {
+            AccessTools.Property(typeof(ChaControl), nameof(ChaControl.hiPoly)).SetValue(__instance, __state, null);
+        }
+#endif
     }
 }
