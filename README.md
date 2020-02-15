@@ -1,13 +1,22 @@
-# BepisPlugins
-A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins for Koikatu. Most importantly this collection includes a screenshot plugin, slider and input field unlockers. This collection also includes Sideloader for loading mods.
 
-## Releases
+# BepisPlugins
+A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins for Koikatu / Koikatsu Party, EmotionCreators, AI-Shoujo / AI-Girl and other games by Illusion. Check plugin descriptions below for a full list of included plugins. 
+
+If you wish to contribute or need help, check the #help channel on the [Koikatsu discord server](https://discord.gg/hevygx6).
+
 [![GitHub release](https://img.shields.io/github/release/bbepis/BepisPlugins.svg?style=for-the-badge)](https://github.com/bbepis/BepisPlugins/releases)
 [![Github Releases](https://img.shields.io/github/downloads/bbepis/BepisPlugins/latest/total.svg?style=for-the-badge)](https://github.com/bbepis/BepisPlugins/releases)
 
-These plugins require the latest bleeding edge build of [BepInEx](https://builds.bepis.io/projects/bepinex_be). The latest release versions of BepInEx will not work.
+### How to install
+0. At least [BepInEx 5.0](https://builds.bepis.io/projects/bepinex_be) is required. Make sure it is installed and working before installing BepisPlugins.
+1. Download the latest release archive for your game (specified by the two letter prefix, e.g. AI for AI-Girl) from the releases page above (not the "Clone or download" button).
+2. Extract the archive into your game directory (where the game exe and BepInEx folder are located). Replace old files if asked.
 
 ## Plugin descriptions
+You can see more information about some of the plugins by checking their config files in `BepInEx\config` (or by using the in-game [ConfigurationManager plugin](https://github.com/BepInEx/BepInEx.ConfigurationManager)).
+
+Note: Not all plugins might be available for a given game (not yet ported by anyone, or technically infeasible).
+
 ### BGMLoader
 Loads custom BGMs and clips played on game startup. Stock audio is replaced during runtime by custom clips from BepInEx\BGM and BepInEx\IntroClips directories.
 
