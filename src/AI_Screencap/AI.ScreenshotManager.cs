@@ -138,7 +138,7 @@ namespace Screencap
         {
             Config.Reload();
             var result = Capture(CaptureWidth.Value, CaptureHeight.Value, Downscaling.Value, alpha);
-            StartCoroutine(WriteTex(result, false));
+            StartCoroutine(WriteTex(result, alpha));
         }
 
         /// <summary>
