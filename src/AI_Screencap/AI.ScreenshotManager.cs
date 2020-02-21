@@ -2,9 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using AIProject;
+using AIProject.Scene;
 using BepisPlugins;
 using BepInEx;
 using BepInEx.Configuration;
+using BepInEx.Harmony;
+using HarmonyLib;
 using Pngcs.Unity;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -51,7 +55,7 @@ namespace Screencap
             WhenUpsampling,
             Never
         }
-        
+
         private Material _matComposite;
         private Material _matScale;
 
@@ -94,18 +98,46 @@ namespace Screencap
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
             _matScale = new Material(ab.LoadAsset<Shader>("resize"));
             ab.Unload(false);
+
+            HarmonyWrapper.PatchAll(typeof(Hooks));
+        }
+
+        /// <summary>
+        /// Disable built-in screenshots
+        /// </summary>
+        private static class Hooks
+        {
+            // Hook here to prevent sound from playing and not affect the Photo object
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(MapScene), "CaptureSS")]
+            private static bool CaptureSSOverride()
+            {
+                return false;
+            }
+
+            // Separate screenshot class for the studio
+            [HarmonyPrefix]
+            [HarmonyPatch(typeof(Studio.GameScreenShot), nameof(Studio.GameScreenShot.Capture), typeof(string))]
+            private static bool StudioCaptureOverride()
+            {
+                return false;
+            }
         }
 
         private void Update()
         {
             if (KeyCaptureNormal.Value.IsDown())
             {
+                Singleton<Manager.Resources>.Instance.SoundPack.Play(SoundPack.SystemSE.Photo);
+
                 var path = GetCaptureFilename();
                 ScreenCapture.CaptureScreenshot(path);
                 StartCoroutine(WaitForEndOfFrameThen(() => LogScreenshotMessage("Writing normal screenshot to " + path.Substring(Paths.GameRootPath.Length))));
             }
             else if (KeyCaptureRender.Value.IsDown())
             {
+                Singleton<Manager.Resources>.Instance.SoundPack.Play(SoundPack.SystemSE.Photo);
+
                 var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Application.productName == "StudioNEOV2";
                 if (Alpha.Value && alphaAllowed)
                     StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true)));
@@ -117,8 +149,8 @@ namespace Screencap
         private IEnumerator WaitForEndOfFrameThen(Action a)
         {
             var sc = QualitySettings.shadowCascades;
-            
-            if(ShadowCascadeOverride.Value != ShadowCascades.Off)
+
+            if (ShadowCascadeOverride.Value != ShadowCascades.Off)
                 QualitySettings.shadowCascades = (int)ShadowCascadeOverride.Value;
 
             var lights = FindObjectsOfType<Light>();
@@ -232,7 +264,7 @@ namespace Screencap
         private static IEnumerable<AmbientOcclusion> DisableAmbientOcclusion()
         {
             var aos = new List<AmbientOcclusion>();
-            
+
             if (DisableAO.Value == DisableAOSetting.Always || DisableAO.Value == DisableAOSetting.WhenUpsampling && Downscaling.Value > 1)
                 foreach (var vol in FindObjectsOfType<PostProcessVolume>())
                 {
@@ -243,7 +275,7 @@ namespace Screencap
                         aos.Add(ao);
                     }
                 }
-            
+
             return aos;
         }
 
