@@ -14,6 +14,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
+using System.Reflection.Emit;
 
 namespace Screencap
 {
@@ -121,6 +122,23 @@ namespace Screencap
             private static bool StudioCaptureOverride()
             {
                 return false;
+            }
+
+            // Fix AO banding in downscaled screenshots
+            [HarmonyTranspiler, HarmonyPatch(typeof(MultiScaleVO), "PushAllocCommands")]
+            private static IEnumerable<CodeInstruction> AoBandingFix(IEnumerable<CodeInstruction> instructions)
+            {
+                foreach (var i in instructions)
+                {
+                    if (i.opcode == OpCodes.Ldc_I4_S)
+                    {
+                        if ((int)RenderTextureFormat.RHalf == Convert.ToInt32(i.operand))
+                            i.operand = (sbyte)RenderTextureFormat.RFloat;
+                        else if ((int)RenderTextureFormat.RGHalf == Convert.ToInt32(i.operand))
+                            i.operand = (sbyte)RenderTextureFormat.RGFloat;
+                    }
+                    yield return i;
+                }
             }
         }
 
