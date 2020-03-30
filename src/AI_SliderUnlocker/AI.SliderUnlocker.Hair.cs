@@ -16,14 +16,14 @@ namespace SliderUnlocker
         {
             HarmonyWrapper.PatchAll(typeof(HairUnlocker));
         }
-        
+
         // Fix first pos value limit
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaControl), "SetHairCorrectPosValue")]
         public static IEnumerable<CodeInstruction> SetHairCorrectPosValueHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.InverseLerp));
             var instructionsList = instructions.ToList();
-            
+
             foreach (var inst in instructionsList)
                 if (inst.opcode == OpCodes.Call && inst.operand is MethodInfo m && m.Name == "InverseLerp")
                     yield return new CodeInstruction(OpCodes.Call, methodInfo);
@@ -37,7 +37,7 @@ namespace SliderUnlocker
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.InverseLerp));
             var instructionsList = instructions.ToList();
-            
+
             foreach (var inst in instructionsList)
                 if (inst.opcode == OpCodes.Call && inst.operand is MethodInfo m && m.Name == "InverseLerp")
                     yield return new CodeInstruction(OpCodes.Call, methodInfo);
@@ -51,7 +51,7 @@ namespace SliderUnlocker
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.Lerp));
             var instructionsList = instructions.ToList();
-            
+
             foreach (var inst in instructionsList)
                 if (inst.opcode == OpCodes.Call && inst.operand is MethodInfo m && m.Name == "Lerp")
                     yield return new CodeInstruction(OpCodes.Call, methodInfo);
@@ -63,7 +63,7 @@ namespace SliderUnlocker
         [HarmonyPrefix, HarmonyPatch(typeof(CustomHairBundleSet), "LateUpdate")]
         public static bool LateUpdateHook(CustomHairBundleSet __instance)
         {
-            if (null == __instance.cmpGuid || !__instance.cmpGuid.gameObject.activeInHierarchy) 
+            if (null == __instance.cmpGuid || !__instance.cmpGuid.gameObject.activeInHierarchy)
                 return true;
 
             var o = __instance.cmpGuid.gameObject.GetComponentsInChildren<CustomGuideLimit>();
@@ -75,76 +75,60 @@ namespace SliderUnlocker
 
         // Fix the dynamic slider
         [HarmonyPrefix, HarmonyPatch(typeof(CustomHairBundleSet), "Initialize")]
-        public static bool InitializeHook()
+        public static void InitializeHook(CustomHairBundleSet __instance)
         {
-            foreach (var c in Object.FindObjectsOfType<CustomHairBundleSet>())
+            foreach (var x in __instance.GetComponentsInChildren<CustomSliderSet>())
             {
-                foreach (var x in c.GetComponentsInChildren<CustomSliderSet>())
-                {
-                    SliderUnlocker.UnlockSlider(x.slider, x.slider.value);
+                SliderUnlocker.UnlockSlider(x.slider, x.slider.value);
 
-                    bool buttonClicked = false;
+                bool buttonClicked = false;
 
-                    x.input.characterLimit = 4;
+                x.input.characterLimit = 4;
 
-                    //After reset button click, reset the slider unlock state
-                    x.input.onValueChanged.AddListener(
-                        _ =>
+                //After reset button click, reset the slider unlock state
+                x.input.onValueChanged.AddListener(
+                    _ =>
+                    {
+                        if (buttonClicked)
                         {
-                            if (buttonClicked)
-                            {
-                                buttonClicked = false;
-                                SliderUnlocker.UnlockSliderFromInput(x.slider, x.input);
-                            }
-                        });
+                            buttonClicked = false;
+                            SliderUnlocker.UnlockSliderFromInput(x.slider, x.input);
+                        }
+                    });
 
 
-                    //When the user types a value, unlock the sliders to accomodate
-                    x.input.onEndEdit.AddListener(_ => SliderUnlocker.UnlockSliderFromInput(x.slider, x.input));
+                //When the user types a value, unlock the sliders to accomodate
+                x.input.onEndEdit.AddListener(_ => SliderUnlocker.UnlockSliderFromInput(x.slider, x.input));
 
-                    //When the button is clicked set a flag used by InputFieldOnValueChanged
-                    x.button.onClick.AddListener(() => buttonClicked = true);
-                }
+                //When the button is clicked set a flag used by InputFieldOnValueChanged
+                x.button.onClick.AddListener(() => buttonClicked = true);
             }
-
-            return true;
         }
 
-        // Fix the random rollback of pos but rot still (dirty fix)
+        private static void UnlockAndSetSliderValue(CustomSliderSet slider, float value)
+        {
+            SliderUnlocker.UnlockSlider(slider.slider, value);
+            slider.SetSliderValue(value);
+        }
+
+        // Prevent reapplying slider limits in some situations
         [HarmonyTranspiler, HarmonyPatch(typeof(CustomHairBundleSet), "UpdateCustomUI")]
         public static IEnumerable<CodeInstruction> UpdateCustomUIHook(IEnumerable<CodeInstruction> instructions)
         {
-            var methodInfo1 = AccessTools.Method(typeof(CustomBase), "ConvertTextFromRate");
-            var methodInfo2 = AccessTools.Method(typeof(CustomSliderSet), "SetInputTextValue");
+            var methodInfo1 = AccessTools.Method(typeof(HairUnlocker), nameof(UnlockAndSetSliderValue));
 
             var instructionsList = instructions.ToList();
             foreach (var inst in instructionsList)
             {
-                //this.ssMove[0].SetSliderValue(bundleInfo.moveRate.x);
-                //this.ssMove[1].SetInputTextValue(CustomBase.ConvertTextFromRate(0, 100, bundleInfo.moveRate.y));
                 if (inst.opcode == OpCodes.Callvirt && inst.operand is MethodInfo m)
                 {
-                    switch (m.Name)
+                    if (m.Name == "SetSliderValue")
                     {
-                        case "SetSliderValue":
-                            yield return new CodeInstruction(OpCodes.Call, methodInfo1);
-                            yield return new CodeInstruction(OpCodes.Callvirt, methodInfo2);
-                            break;
-                        case "get_moveRate":
-                        case "get_rotRate":
-                            yield return new CodeInstruction(OpCodes.Pop);
-                            yield return new CodeInstruction(OpCodes.Ldc_I4_0);
-                            yield return new CodeInstruction(OpCodes.Ldc_I4_S, 100);
-                            yield return new CodeInstruction(OpCodes.Ldloc_0);
-                            yield return inst;
-                            break;
-                        default:
-                            yield return inst;
-                            break;
+                        inst.opcode = OpCodes.Call;
+                        inst.operand = methodInfo1;
                     }
                 }
-                else
-                    yield return inst;
+                yield return inst;
             }
         }
 
@@ -160,9 +144,9 @@ namespace SliderUnlocker
                 var inst = instructionsList[index];
                 yield return inst;
 
-                if (inst.opcode != OpCodes.Callvirt || !(inst.operand is MethodInfo m) || m.Name != "ChangeSettingHairCorrectRot") 
+                if (inst.opcode != OpCodes.Callvirt || !(inst.operand is MethodInfo m) || m.Name != "ChangeSettingHairCorrectRot")
                     continue;
-                
+
                 yield return instructionsList[++index];  //original pop
                 yield return new CodeInstruction(OpCodes.Ldarg_0);
                 yield return new CodeInstruction(OpCodes.Call, methodInfo);
