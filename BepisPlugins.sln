@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.852
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_ColorCorrector", "src\KK_ColorCorrector\KK_ColorCorrector.csproj", "{6809B5DC-358C-45C5-B04C-0B7027596A8B}"
 EndProject
@@ -95,6 +95,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2050CFE4-0FC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ConfigurationManager", "src\AI_ConfigurationManager\AI_ConfigurationManager.csproj", "{B0903672-629B-4C21-BAE3-6FBE587F4344}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_ExtensibleSaveFormat", "src\PH_ExtensibleSaveFormat\PH_ExtensibleSaveFormat.csproj", "{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
@@ -160,6 +162,7 @@ Global
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
+		src\Shared\Shared.projitems*{f7e5c653-eeae-44bc-84b3-b16021b13d9e}*SharedItemsImports = 4
 		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 	EndGlobalSection
@@ -272,6 +275,10 @@ Global
 		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0903672-629B-4C21-BAE3-6FBE587F4344}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -322,6 +329,7 @@ Global
 		{20FD60F3-3086-4A25-876B-E977BDA46687} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 		{66214BD2-6DA6-49CD-8C74-63DA9E643259} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
 		{B0903672-629B-4C21-BAE3-6FBE587F4344} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
+		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
