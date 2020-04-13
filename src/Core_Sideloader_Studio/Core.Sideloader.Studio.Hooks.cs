@@ -101,6 +101,19 @@ namespace Sideloader
                             __result.Add(assetBundleName);
                 }
             }
+
+            // Override the FileCheck to search asset bundles in zipmods as well
+            internal static void FileCheck(string _path, ref bool __result, Dictionary<string, bool> ___dicConfirmed)
+            {
+                if (__result == false)
+                {
+                    if (BundleManager.Bundles.TryGetValue(_path, out _))
+                    {
+                        __result = true;
+                        ___dicConfirmed[_path] = true;
+                    }
+                }
+            }
         }
     }
 }
