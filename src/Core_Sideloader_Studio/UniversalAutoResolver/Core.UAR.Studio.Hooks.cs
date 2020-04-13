@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using static Sideloader.AutoResolver.StudioObjectSearch;
 
-
 namespace Sideloader.AutoResolver
 {
     public static partial class UniversalAutoResolver
@@ -67,6 +66,75 @@ namespace Sideloader.AutoResolver
 
                 //Maps and filters are not imported
                 //UniversalAutoResolver.ResolveStudioMap(extData);
+            }
+
+            [HarmonyPrefix, HarmonyPatch(typeof(OICharInfo), nameof(OICharInfo.Save))]
+            internal static void OICharInfoSavePrefix(OICharInfo __instance, ref int __state)
+            {
+                var animationData = new PluginData();
+                animationData.data = new Dictionary<string, object>();
+
+                //Save the resolved ID to the passthrough state for use in postfix
+                __state = __instance.animeInfo.no;
+
+                if (__instance.animeInfo.no >= BaseSlotID)
+                {
+                    StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == __instance.animeInfo.no).FirstOrDefault();
+                    Sideloader.Logger.LogInfo($"extResolve: {extResolve.GUID}:{extResolve.LocalSlot}:{extResolve.Slot}");
+
+                    animationData.data["GUID"] = extResolve;
+                    animationData.data["Group"] = __instance.animeInfo.group;
+                    animationData.data["Category"] = __instance.animeInfo.category;
+
+                    ExtendedSave.SetExtendedDataById(__instance.charFile, UARExtIDStudioAnimation, animationData);
+
+                    //Set the ID back to the original ID
+                    __instance.animeInfo.no = extResolve.Slot;
+                }
+            }
+
+            [HarmonyPostfix, HarmonyPatch(typeof(OICharInfo), nameof(OICharInfo.Save))]
+            internal static void OICharInfoSavePostfix(OICharInfo __instance, ref int __state)
+            {
+                //Set the ID back to the resolved ID
+                if (__state >= BaseSlotID)
+                    __instance.animeInfo.no = __state;
+            }
+
+            [HarmonyPrefix, HarmonyPatch(typeof(AddObjectAssist), nameof(AddObjectAssist.LoadChild), typeof(ObjectInfo), typeof(ObjectCtrlInfo), typeof(TreeNodeObject))]
+            internal static void AddObjectAssistLoadChild(ObjectInfo _child)
+            {
+                if (_child.kind == 0)//character
+                {
+                    OICharInfo oICharInfo = _child as OICharInfo;
+
+                    var extData = ExtendedSave.GetExtendedDataById(oICharInfo.charFile, UARExtIDStudioAnimation);
+
+                    if (extData == null || !extData.data.ContainsKey("GUID") || !extData.data.ContainsKey("Group") || !extData.data.ContainsKey("Category"))
+                    {
+                        //Sideloader.Logger.LogDebug("No sideloader animation marker found");
+                    }
+                    else
+                    {
+                        string GUID = extData.data["GUID"].ToString();
+                        int Group = int.Parse(extData.data["Group"].ToString());
+                        int Category = int.Parse(extData.data["Category"].ToString());
+
+                        StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == oICharInfo.animeInfo.no && x.GUID == GUID && x.Group == Group && x.Category == Category);
+
+                        if (intResolve == null)
+                        {
+                            ShowGUIDError(GUID);
+
+                            //Set animation to T-pose
+                            oICharInfo.animeInfo.no = 0;
+                            oICharInfo.animeInfo.group = 0;
+                            oICharInfo.animeInfo.category = 0;
+                        }
+                        else
+                            oICharInfo.animeInfo.no = intResolve.LocalSlot;
+                    }
+                }
             }
 
             [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]

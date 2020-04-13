@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Sideloader.ListLoader;
 using Studio;
 using System.Collections.Generic;
@@ -10,6 +9,11 @@ namespace Sideloader.AutoResolver
 {
     public static partial class UniversalAutoResolver
     {
+        /// <summary>
+        /// Extended save ID for Studio animations saved to characters in scenes
+        /// </summary>
+        public const string UARExtIDStudioAnimation = UARExtID + ".studioanimation";
+
         /// <summary>
         /// All loaded StudioResolveInfo
         /// </summary>
@@ -67,13 +71,23 @@ namespace Sideloader.AutoResolver
                 {
                     int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                    LoadedStudioResolutionInfo.Add(new StudioResolveInfo
+                    StudioResolveInfo studioResolveInfo = new StudioResolveInfo
                     {
                         GUID = manifest.GUID,
                         Slot = int.Parse(entry[0]),
                         LocalSlot = newSlot,
                         ResolveItem = true
-                    });
+                    };
+
+                    //Group and category is important for animations since the same ID can be used in different groups and categories
+                    //...probably other item types too, but don't tell anyone or I'll have to add support for it
+                    if (StudioListType == "anime" || StudioListType == "hanime")
+                    {
+                        studioResolveInfo.Group = int.Parse(entry[1]);
+                        studioResolveInfo.Category = int.Parse(entry[2]);
+                    }
+
+                    LoadedStudioResolutionInfo.Add(studioResolveInfo);
 
                     if (Sideloader.DebugLoggingResolveInfo.Value)
                     {

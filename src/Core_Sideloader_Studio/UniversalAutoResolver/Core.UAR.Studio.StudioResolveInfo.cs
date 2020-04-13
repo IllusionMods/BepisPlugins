@@ -40,6 +40,16 @@ namespace Sideloader.AutoResolver
         /// </summary>
         [Key("ResolveItem")]
         public bool ResolveItem { get; set; }
+        /// <summary>
+        /// Group of the item, used by animations
+        /// </summary>
+        [Key("Group")]
+        public int Group { get; set; }
+        /// <summary>
+        /// Category of the item, used by animations
+        /// </summary>
+        [Key("Category")]
+        public int Category { get; set; }
 
         internal static StudioResolveInfo Deserialize(byte[] data) => MessagePackSerializer.Deserialize<StudioResolveInfo>(data);
 
