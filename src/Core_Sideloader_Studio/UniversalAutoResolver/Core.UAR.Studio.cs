@@ -83,8 +83,13 @@ namespace Sideloader.AutoResolver
                     //...probably other item types too, but don't tell anyone or I'll have to add support for it
                     if (StudioListType == "anime" || StudioListType == "hanime")
                     {
+#if KK
                         studioResolveInfo.Group = int.Parse(entry[1]);
                         studioResolveInfo.Category = int.Parse(entry[2]);
+#elif AI
+                        studioResolveInfo.Group = int.Parse(entry[2]);
+                        studioResolveInfo.Category = int.Parse(entry[3]);
+#endif
                     }
 
                     LoadedStudioResolutionInfo.Add(studioResolveInfo);
