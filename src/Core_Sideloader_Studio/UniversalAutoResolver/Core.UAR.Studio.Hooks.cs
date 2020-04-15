@@ -80,9 +80,8 @@ namespace Sideloader.AutoResolver
                 if (__instance.animeInfo.no >= BaseSlotID)
                 {
                     StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == __instance.animeInfo.no).FirstOrDefault();
-                    Sideloader.Logger.LogInfo($"extResolve: {extResolve.GUID}:{extResolve.LocalSlot}:{extResolve.Slot}");
 
-                    animationData.data["GUID"] = extResolve;
+                    animationData.data["GUID"] = extResolve.GUID;
                     animationData.data["Group"] = __instance.animeInfo.group;
                     animationData.data["Category"] = __instance.animeInfo.category;
 
