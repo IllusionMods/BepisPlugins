@@ -47,7 +47,7 @@ namespace Sideloader.AutoResolver
                         else
                         {
                             NewDicKey = LightImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
-                            if (ObjectList[extResolve.DicKey] is OILightInfo Light)
+                            if (ObjectList[NewDicKey] is OILightInfo Light)
                             {
                                 ResolveStudioObject(extResolve, Light);
                                 ObjectList.Remove(NewDicKey);
