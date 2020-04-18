@@ -33,6 +33,7 @@ namespace Sideloader.AutoResolver
                     List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Deserialize((byte[])x)).ToList();
                     Dictionary<int, int> ItemImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OIItemInfo));
                     Dictionary<int, int> LightImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OILightInfo));
+                    Dictionary<int, int> CharImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OICharInfo));
 
                     //Match objects from the StudioResolveInfo to objects in the scene based on the item order that was generated and saved to the scene data
                     foreach (StudioResolveInfo extResolve in extInfo)
@@ -51,6 +52,15 @@ namespace Sideloader.AutoResolver
                                 ResolveStudioObject(extResolve, Light);
                                 ObjectList.Remove(NewDicKey);
                             }
+                            else
+                            {
+                                NewDicKey = CharImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
+                                if (ObjectList[NewDicKey] is OICharInfo CharInfo)
+                                {
+                                    ResolveStudioObject(extResolve, CharInfo);
+                                    ObjectList.Remove(NewDicKey);
+                                }
+                            }
                         }
                     }
                 }
@@ -68,74 +78,10 @@ namespace Sideloader.AutoResolver
                 //UniversalAutoResolver.ResolveStudioMap(extData);
             }
 
-            [HarmonyPrefix, HarmonyPatch(typeof(OICharInfo), nameof(OICharInfo.Save))]
-            internal static void OICharInfoSavePrefix(OICharInfo __instance, ref int __state)
-            {
-                var animationData = new PluginData();
-                animationData.data = new Dictionary<string, object>();
-
-                //Save the resolved ID to the passthrough state for use in postfix
-                __state = __instance.animeInfo.no;
-
-                if (__instance.animeInfo.no >= BaseSlotID)
-                {
-                    StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == __instance.animeInfo.no).FirstOrDefault();
-
-                    animationData.data["GUID"] = extResolve.GUID;
-                    animationData.data["Group"] = __instance.animeInfo.group;
-                    animationData.data["Category"] = __instance.animeInfo.category;
-
-                    ExtendedSave.SetExtendedDataById(__instance.charFile, UARExtIDStudioAnimation, animationData);
-
-                    //Set the ID back to the original ID
-                    __instance.animeInfo.no = extResolve.Slot;
-                }
-            }
-
-            [HarmonyPostfix, HarmonyPatch(typeof(OICharInfo), nameof(OICharInfo.Save))]
-            internal static void OICharInfoSavePostfix(OICharInfo __instance, ref int __state)
-            {
-                //Set the ID back to the resolved ID
-                if (__state >= BaseSlotID)
-                    __instance.animeInfo.no = __state;
-            }
-
-            [HarmonyPrefix, HarmonyPatch(typeof(AddObjectAssist), nameof(AddObjectAssist.LoadChild), typeof(ObjectInfo), typeof(ObjectCtrlInfo), typeof(TreeNodeObject))]
-            internal static void AddObjectAssistLoadChild(ObjectInfo _child)
-            {
-                if (_child.kind == 0)//character
-                {
-                    OICharInfo oICharInfo = _child as OICharInfo;
-
-                    var extData = ExtendedSave.GetExtendedDataById(oICharInfo.charFile, UARExtIDStudioAnimation);
-
-                    if (extData == null || !extData.data.ContainsKey("GUID") || !extData.data.ContainsKey("Group") || !extData.data.ContainsKey("Category"))
-                    {
-                        //Sideloader.Logger.LogDebug("No sideloader animation marker found");
-                    }
-                    else
-                    {
-                        string GUID = extData.data["GUID"].ToString();
-                        int Group = int.Parse(extData.data["Group"].ToString());
-                        int Category = int.Parse(extData.data["Category"].ToString());
-
-                        StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == oICharInfo.animeInfo.no && x.GUID == GUID && x.Group == Group && x.Category == Category);
-
-                        if (intResolve == null)
-                        {
-                            ShowGUIDError(GUID);
-
-                            //Set animation to T-pose
-                            oICharInfo.animeInfo.no = 0;
-                            oICharInfo.animeInfo.group = 0;
-                            oICharInfo.animeInfo.category = 0;
-                        }
-                        else
-                            oICharInfo.animeInfo.no = intResolve.LocalSlot;
-                    }
-                }
-            }
-
+            /// <summary>
+            /// Before the scene saves, go through every item, map, BGM, etc. in the scene, create extended save data with the GUID and other relevant info,
+            /// and restore the IDs back to the original, non-resolved ID for hard mod compatibility
+            /// </summary>
             [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
             internal static void SavePrefix()
             {
@@ -143,8 +89,9 @@ namespace Sideloader.AutoResolver
                 List<StudioResolveInfo> ObjectResolutionInfo = new List<StudioResolveInfo>();
                 Dictionary<int, ObjectInfo> ObjectList = FindObjectInfoAndOrder(SearchType.All, typeof(OIItemInfo), out Dictionary<int, int> ItemOrder);
                 Dictionary<int, int> LightOrder = FindObjectInfoOrder(SearchType.All, typeof(OILightInfo));
+                Dictionary<int, int> CharOrder = FindObjectInfoOrder(SearchType.All, typeof(OICharInfo));
 
-                foreach (ObjectInfo oi in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
+                foreach (ObjectInfo oi in ObjectList.Select(x => x.Value))
                 {
                     if (oi is OIItemInfo Item && Item.no >= BaseSlotID)
                     {
@@ -161,7 +108,7 @@ namespace Sideloader.AutoResolver
                             };
                             ObjectResolutionInfo.Add(intResolve);
 
-                            //set item ID back to default
+                            //Set item ID back to original non-resolved ID
                             if (Sideloader.DebugLogging.Value)
                                 Sideloader.Logger.LogDebug($"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
                             Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
@@ -182,10 +129,34 @@ namespace Sideloader.AutoResolver
                             };
                             ObjectResolutionInfo.Add(intResolve);
 
-                            //Set item ID back to default
+                            //Set item ID back to original non-resolved ID
                             if (Sideloader.DebugLogging.Value)
                                 Sideloader.Logger.LogDebug($"Setting [{Light.dicKey}] ID:{Light.no}->{extResolve.Slot}");
                             Traverse.Create(Light).Property("no").SetValue(extResolve.Slot);
+                        }
+                    }
+                    else if (oi is OICharInfo CharInfo && CharInfo.animeInfo.no >= BaseSlotID)
+                    {
+                        //Save the animation data for the character
+                        StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == CharInfo.animeInfo.no).FirstOrDefault();
+                        if (extResolve != null)
+                        {
+                            StudioResolveInfo intResolve = new StudioResolveInfo
+                            {
+                                GUID = extResolve.GUID,
+                                Slot = extResolve.Slot,
+                                LocalSlot = extResolve.LocalSlot,
+                                Group = extResolve.Group,
+                                Category = extResolve.Category,
+                                DicKey = CharInfo.dicKey,
+                                ObjectOrder = CharOrder[CharInfo.dicKey]
+                            };
+                            ObjectResolutionInfo.Add(intResolve);
+
+                            //Set animation ID back to original non-resolved ID
+                            if (Sideloader.DebugLogging.Value)
+                                Sideloader.Logger.LogDebug($"Setting [{CharInfo.dicKey}] AnimationID:{CharInfo.animeInfo.no}->{extResolve.Slot}");
+                            CharInfo.animeInfo.no = extResolve.Slot;
                         }
                     }
                 }

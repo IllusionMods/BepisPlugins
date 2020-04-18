@@ -132,15 +132,8 @@ namespace Sideloader.AutoResolver
 
             //Resolve every item without extended data in case of hard mods
             if (resolveType == ResolveType.Load)
-            {
-                foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
-                {
-                    if (OI is OIItemInfo Item)
-                        ResolveStudioObject(Item);
-                    else if (OI is OILightInfo Light)
-                        ResolveStudioObject(Light);
-                }
-            }
+                foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo || x.Value is OICharInfo).Select(x => x.Value))
+                    ResolveStudioObject(OI);
         }
 
         internal static void ResolveStudioObject(StudioResolveInfo extResolve, ObjectInfo OI, ResolveType resolveType = ResolveType.Load)
@@ -169,8 +162,24 @@ namespace Sideloader.AutoResolver
                 else if (resolveType == ResolveType.Load)
                     ShowGUIDError(extResolve.GUID);
             }
+            else if (OI is OICharInfo CharInfo)
+            {
+                //Resolve the animation ID for the character
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == CharInfo.animeInfo.no && x.GUID == extResolve.GUID && x.Group == extResolve.Group && x.Category == extResolve.Category);
+                if (intResolve != null)
+                {
+                    if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
+                        Sideloader.Logger.LogDebug($"Resolving (Studio Animation) [{extResolve.GUID}] {CharInfo.animeInfo.group}:{CharInfo.animeInfo.category}:{CharInfo.animeInfo.no}->{intResolve.LocalSlot}");
+                    CharInfo.animeInfo.no = intResolve.LocalSlot;
+                }
+                else if (resolveType == ResolveType.Load)
+                    ShowGUIDError(extResolve.GUID);
+            }
         }
 
+        /// <summary>
+        /// Compatibility resolving for objects with no extended save data
+        /// </summary>
         internal static void ResolveStudioObject(ObjectInfo OI)
         {
             if (OI is OIItemInfo Item)
@@ -209,6 +218,32 @@ namespace Sideloader.AutoResolver
                     {
                         //No match was found
                         Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Light) failed, no match found for ID {Light.no}");
+                    }
+                }
+            }
+            else if (OI is OICharInfo CharInfo)
+            {
+                bool animationFound = false;
+                if (Singleton<Info>.Instance.dicAnimeLoadInfo.TryGetValue(CharInfo.animeInfo.group, out var animeLoadInfo1))
+                    if (animeLoadInfo1.TryGetValue(CharInfo.animeInfo.category, out var animeLoadInfo2))
+                        if (animeLoadInfo2.TryGetValue(CharInfo.animeInfo.no, out var animeLoadInfo3))
+                            animationFound = true;
+
+                //Animation does not exist in the animation list, probably a missing hard mod. See if we have a sideloader mod with the same ID, Group, and Category
+                if (!animationFound)
+                {
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == CharInfo.animeInfo.no && x.Group == CharInfo.animeInfo.group && x.Category == CharInfo.animeInfo.category);
+                    if (intResolve != null)
+                    {
+                        //Found a match
+                        if (Sideloader.DebugLogging.Value)
+                            Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Animation) {CharInfo.animeInfo.no}->{intResolve.LocalSlot} Group {CharInfo.animeInfo.group} Category {CharInfo.animeInfo.category}");
+                        CharInfo.animeInfo.no = intResolve.LocalSlot;
+                    }
+                    else
+                    {
+                        //No match was found
+                        Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Animation) failed, no match found for ID {CharInfo.animeInfo} Group {CharInfo.animeInfo.group} Category {CharInfo.animeInfo.category}");
                     }
                 }
             }
