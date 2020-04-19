@@ -302,7 +302,7 @@ namespace Sideloader.AutoResolver
 
                         //Set bgm ID back to default
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.LogDebug("Setting BGM ID:{bgmID}->{extResolve.Slot}");
+                            Sideloader.Logger.LogDebug($"Setting BGM ID:{bgmID}->{extResolve.Slot}");
                         Studio.Studio.Instance.sceneInfo.bgmCtrl.no = extResolve.Slot;
                     }
                 }
