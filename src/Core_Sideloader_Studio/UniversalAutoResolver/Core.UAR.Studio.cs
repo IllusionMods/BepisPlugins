@@ -134,6 +134,20 @@ namespace Sideloader.AutoResolver
             if (resolveType == ResolveType.Load)
                 foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo || x.Value is OICharInfo).Select(x => x.Value))
                     ResolveStudioObject(OI);
+
+            //Resolve all patterns for objects
+            if (extendedData != null && extendedData.data.ContainsKey("patternInfo"))
+            {
+                List<StudioPatternResolveInfo> extPatternInfo;
+
+                if (resolveType == ResolveType.Save)
+                    extPatternInfo = ((List<byte[]>)extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize(x)).ToList();
+                else
+                    extPatternInfo = ((object[])extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize((byte[])x)).ToList();
+
+                foreach (StudioPatternResolveInfo extPatternResolve in extPatternInfo)
+                    ResolveStudioObjectPattern(extPatternResolve, ObjectList[extPatternResolve.DicKey], resolveType);
+            }
         }
 
         internal static void ResolveStudioObject(StudioResolveInfo extResolve, ObjectInfo OI, ResolveType resolveType = ResolveType.Load)
@@ -246,6 +260,50 @@ namespace Sideloader.AutoResolver
                         Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Animation) failed, no match found for ID {CharInfo.animeInfo} Group {CharInfo.animeInfo.group} Category {CharInfo.animeInfo.category}");
                     }
                 }
+            }
+        }
+
+        internal static void ResolveStudioObjectPattern(StudioPatternResolveInfo extResolve, ObjectInfo OI, ResolveType resolveType = ResolveType.Load)
+        {
+            if (OI is OIItemInfo Item)
+            {
+#if KK
+                for (int i = 0; i < Item.pattern.Length; i++)
+                {
+                    if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;
+
+                    var intResolve = TryGetResolutionInfo(Item.pattern[i].key, ChaListDefine.CategoryNo.mt_pattern, patternInfo.GUID);
+                    if (intResolve != null)
+                    {
+                        if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
+                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{ patternInfo.GUID}] {Item.pattern[i].key}->{intResolve.LocalSlot}");
+                        Item.pattern[i].key = intResolve.LocalSlot;
+                    }
+                    else if (resolveType == ResolveType.Load)
+                    {
+                        ShowGUIDError(patternInfo.GUID);
+                        Item.pattern[i].key = BaseSlotID - 1;
+                    }
+                }
+#elif AI
+                for (int i = 0; i < Item.colors.Length; i++)
+                {
+                    if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;
+
+                    var intResolve = TryGetResolutionInfo(Item.colors[i].pattern.key, AIChara.ChaListDefine.CategoryNo.st_pattern, patternInfo.GUID);
+                    if (intResolve != null)
+                    {
+                        if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
+                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{ patternInfo.GUID}] {Item.colors[i].pattern.key}->{intResolve.LocalSlot}");
+                        Item.colors[i].pattern.key = intResolve.LocalSlot;
+                    }
+                    else if (resolveType == ResolveType.Load)
+                    {
+                        ShowGUIDError(patternInfo.GUID);
+                        Item.colors[i].pattern.key = BaseSlotID - 1;
+                    }
+                }
+#endif
             }
         }
 
