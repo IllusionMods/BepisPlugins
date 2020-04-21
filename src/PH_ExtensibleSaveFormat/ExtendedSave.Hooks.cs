@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using BepInEx.Harmony;
 using Character;
 using HarmonyLib;
 using MessagePack;
+using Debug = UnityEngine.Debug;
 
 namespace ExtensibleSaveFormat
 {
@@ -62,7 +64,7 @@ namespace ExtensibleSaveFormat
 
                     try
                     {
-                        if (reader.PeekChar() == Marker[0] && reader.ReadString() == Marker)
+                        if (reader.ReadString() == Marker)
                         {
                             var version = reader.ReadInt32();
                             if (version != DataVersion)
@@ -71,10 +73,19 @@ namespace ExtensibleSaveFormat
                             var length = reader.ReadInt32();
                             if (length > 0)
                             {
-                                var bytes = reader.ReadBytes(length);
-                                var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
-                                Logger.LogDebug($"Read extended data count {dictionary.Count}");
-                                return dictionary;
+                                try
+                                {
+                                    var bytes = reader.ReadBytes(length);
+                                    var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                                    Logger.LogDebug($"Read extended data count {dictionary.Count}");
+                                    return dictionary;
+                                }
+                                catch (Exception e)
+                                {
+                                    Debug.LogError("Failed to read extended data: " + e);
+                                    // Skipping the data has a better chance of preventing further crashes than rewinding
+                                    return null;
+                                }
                             }
                         }
                     }
@@ -100,12 +111,40 @@ namespace ExtensibleSaveFormat
 
                 var currentlySavingData = MessagePackSerializer.Serialize(extendedData);
 
-                var length = currentlySavingData.LongLength;
-
                 writer.Write(Marker);
                 writer.Write(DataVersion);
-                writer.Write(length);
+                writer.Write(currentlySavingData.Length);
                 writer.Write(currentlySavingData);
+            }
+
+            //public virtual void Copy(CustomParameter copy, int filter = -1)
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Copy), typeof(CustomParameter), typeof(int))]
+            internal static void CustomParameterCopyPostHook(CustomParameter __instance, CustomParameter copy)
+            {
+                var isCoordLoad = false;
+
+                // Detect if this is a coordinate or whole character parameter set
+                var st = new StackTrace();
+                for (int i = 0; i < 3; i++)
+                {
+                    if (st.GetFrame(i).GetMethod().Name.Contains("LoadCoordinate"))
+                    {
+                        isCoordLoad = true;
+                        break;
+                    }
+                }
+
+                if (isCoordLoad)
+                {
+                    var c = internalCoordinateDictionary.Get(copy);
+                    internalCoordinateDictionary.Set(__instance, c);
+                }
+                else
+                {
+                    var c = internalCharaDictionary.Get(copy);
+                    internalCharaDictionary.Set(__instance, c);
+                }
             }
         }
     }
