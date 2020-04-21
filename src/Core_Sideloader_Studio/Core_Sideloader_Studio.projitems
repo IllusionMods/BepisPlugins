@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.StudioObjectSearch.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.StudioPatternResolveInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.Studio.StudioResolveInfo.cs" />
   </ItemGroup>
 </Project>

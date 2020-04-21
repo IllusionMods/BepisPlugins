@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Sideloader.ListLoader;
 using Studio;
 using System.Collections.Generic;
@@ -10,6 +9,11 @@ namespace Sideloader.AutoResolver
 {
     public static partial class UniversalAutoResolver
     {
+        /// <summary>
+        /// Extended save ID for Studio animations saved to characters in scenes
+        /// </summary>
+        public const string UARExtIDStudioAnimation = UARExtID + ".studioanimation";
+
         /// <summary>
         /// All loaded StudioResolveInfo
         /// </summary>
@@ -67,13 +71,28 @@ namespace Sideloader.AutoResolver
                 {
                     int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-                    LoadedStudioResolutionInfo.Add(new StudioResolveInfo
+                    StudioResolveInfo studioResolveInfo = new StudioResolveInfo
                     {
                         GUID = manifest.GUID,
                         Slot = int.Parse(entry[0]),
                         LocalSlot = newSlot,
                         ResolveItem = true
-                    });
+                    };
+
+                    //Group and category is important for animations since the same ID can be used in different groups and categories
+                    //...probably other item types too, but don't tell anyone or I'll have to add support for it
+                    if (StudioListType == "anime" || StudioListType == "hanime")
+                    {
+#if KK
+                        studioResolveInfo.Group = int.Parse(entry[1]);
+                        studioResolveInfo.Category = int.Parse(entry[2]);
+#elif AI
+                        studioResolveInfo.Group = int.Parse(entry[2]);
+                        studioResolveInfo.Category = int.Parse(entry[3]);
+#endif
+                    }
+
+                    LoadedStudioResolutionInfo.Add(studioResolveInfo);
 
                     if (Sideloader.DebugLoggingResolveInfo.Value)
                     {
@@ -113,14 +132,21 @@ namespace Sideloader.AutoResolver
 
             //Resolve every item without extended data in case of hard mods
             if (resolveType == ResolveType.Load)
+                foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo || x.Value is OICharInfo).Select(x => x.Value))
+                    ResolveStudioObject(OI);
+
+            //Resolve all patterns for objects
+            if (extendedData != null && extendedData.data.ContainsKey("patternInfo"))
             {
-                foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
-                {
-                    if (OI is OIItemInfo Item)
-                        ResolveStudioObject(Item);
-                    else if (OI is OILightInfo Light)
-                        ResolveStudioObject(Light);
-                }
+                List<StudioPatternResolveInfo> extPatternInfo;
+
+                if (resolveType == ResolveType.Save)
+                    extPatternInfo = ((List<byte[]>)extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize(x)).ToList();
+                else
+                    extPatternInfo = ((object[])extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize((byte[])x)).ToList();
+
+                foreach (StudioPatternResolveInfo extPatternResolve in extPatternInfo)
+                    ResolveStudioObjectPattern(extPatternResolve, ObjectList[extPatternResolve.DicKey], resolveType);
             }
         }
 
@@ -150,8 +176,24 @@ namespace Sideloader.AutoResolver
                 else if (resolveType == ResolveType.Load)
                     ShowGUIDError(extResolve.GUID);
             }
+            else if (OI is OICharInfo CharInfo)
+            {
+                //Resolve the animation ID for the character
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == CharInfo.animeInfo.no && x.GUID == extResolve.GUID && x.Group == extResolve.Group && x.Category == extResolve.Category);
+                if (intResolve != null)
+                {
+                    if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
+                        Sideloader.Logger.LogDebug($"Resolving (Studio Animation) [{extResolve.GUID}] {CharInfo.animeInfo.group}:{CharInfo.animeInfo.category}:{CharInfo.animeInfo.no}->{intResolve.LocalSlot}");
+                    CharInfo.animeInfo.no = intResolve.LocalSlot;
+                }
+                else if (resolveType == ResolveType.Load)
+                    ShowGUIDError(extResolve.GUID);
+            }
         }
 
+        /// <summary>
+        /// Compatibility resolving for objects with no extended save data
+        /// </summary>
         internal static void ResolveStudioObject(ObjectInfo OI)
         {
             if (OI is OIItemInfo Item)
@@ -192,6 +234,76 @@ namespace Sideloader.AutoResolver
                         Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Light) failed, no match found for ID {Light.no}");
                     }
                 }
+            }
+            else if (OI is OICharInfo CharInfo)
+            {
+                bool animationFound = false;
+                if (Singleton<Info>.Instance.dicAnimeLoadInfo.TryGetValue(CharInfo.animeInfo.group, out var animeLoadInfo1))
+                    if (animeLoadInfo1.TryGetValue(CharInfo.animeInfo.category, out var animeLoadInfo2))
+                        if (animeLoadInfo2.TryGetValue(CharInfo.animeInfo.no, out var animeLoadInfo3))
+                            animationFound = true;
+
+                //Animation does not exist in the animation list, probably a missing hard mod. See if we have a sideloader mod with the same ID, Group, and Category
+                if (!animationFound)
+                {
+                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == CharInfo.animeInfo.no && x.Group == CharInfo.animeInfo.group && x.Category == CharInfo.animeInfo.category);
+                    if (intResolve != null)
+                    {
+                        //Found a match
+                        if (Sideloader.DebugLogging.Value)
+                            Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Animation) {CharInfo.animeInfo.no}->{intResolve.LocalSlot} Group {CharInfo.animeInfo.group} Category {CharInfo.animeInfo.category}");
+                        CharInfo.animeInfo.no = intResolve.LocalSlot;
+                    }
+                    else
+                    {
+                        //No match was found
+                        Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio Animation) failed, no match found for ID {CharInfo.animeInfo} Group {CharInfo.animeInfo.group} Category {CharInfo.animeInfo.category}");
+                    }
+                }
+            }
+        }
+
+        internal static void ResolveStudioObjectPattern(StudioPatternResolveInfo extResolve, ObjectInfo OI, ResolveType resolveType = ResolveType.Load)
+        {
+            if (OI is OIItemInfo Item)
+            {
+#if KK
+                for (int i = 0; i < Item.pattern.Length; i++)
+                {
+                    if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;
+
+                    var intResolve = TryGetResolutionInfo(Item.pattern[i].key, ChaListDefine.CategoryNo.mt_pattern, patternInfo.GUID);
+                    if (intResolve != null)
+                    {
+                        if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
+                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{ patternInfo.GUID}] {Item.pattern[i].key}->{intResolve.LocalSlot}");
+                        Item.pattern[i].key = intResolve.LocalSlot;
+                    }
+                    else if (resolveType == ResolveType.Load)
+                    {
+                        ShowGUIDError(patternInfo.GUID);
+                        Item.pattern[i].key = BaseSlotID - 1;
+                    }
+                }
+#elif AI
+                for (int i = 0; i < Item.colors.Length; i++)
+                {
+                    if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;
+
+                    var intResolve = TryGetResolutionInfo(Item.colors[i].pattern.key, AIChara.ChaListDefine.CategoryNo.st_pattern, patternInfo.GUID);
+                    if (intResolve != null)
+                    {
+                        if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
+                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{ patternInfo.GUID}] {Item.colors[i].pattern.key}->{intResolve.LocalSlot}");
+                        Item.colors[i].pattern.key = intResolve.LocalSlot;
+                    }
+                    else if (resolveType == ResolveType.Load)
+                    {
+                        ShowGUIDError(patternInfo.GUID);
+                        Item.colors[i].pattern.key = BaseSlotID - 1;
+                    }
+                }
+#endif
             }
         }
 

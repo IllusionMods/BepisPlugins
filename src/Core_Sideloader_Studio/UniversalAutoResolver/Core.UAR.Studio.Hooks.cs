@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using static Sideloader.AutoResolver.StudioObjectSearch;
 
-
 namespace Sideloader.AutoResolver
 {
     public static partial class UniversalAutoResolver
@@ -28,12 +27,26 @@ namespace Sideloader.AutoResolver
                 PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UARExtID);
                 Dictionary<int, ObjectInfo> ObjectList = FindObjectInfo(SearchType.All);
 
+                Dictionary<int, int> ItemImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OIItemInfo));
+
+                //Resolve patterns on items
+                if (ExtendedData != null && ExtendedData.data.ContainsKey("patternInfo"))
+                {
+                    List<StudioPatternResolveInfo> extPatternInfo = ((object[])ExtendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize((byte[])x)).ToList();
+
+                    foreach (StudioPatternResolveInfo extPatternResolve in extPatternInfo)
+                    {
+                        int NewDicKey = ItemImportOrder.Where(x => x.Value == extPatternResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
+                        if (ObjectList[NewDicKey] is OIItemInfo Item)
+                            ResolveStudioObjectPattern(extPatternResolve, Item);
+                    }
+                }
+
                 if (ExtendedData != null && ExtendedData.data.ContainsKey("itemInfo"))
                 {
-                    object[] tmpExtInfo = (object[])ExtendedData.data["itemInfo"];
-                    List<StudioResolveInfo> extInfo = tmpExtInfo.Select(x => StudioResolveInfo.Deserialize((byte[])x)).ToList();
-                    Dictionary<int, int> ItemImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OIItemInfo));
+                    List<StudioResolveInfo> extInfo = ((object[])ExtendedData.data["itemInfo"]).Select(x => StudioResolveInfo.Deserialize((byte[])x)).ToList();
                     Dictionary<int, int> LightImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OILightInfo));
+                    Dictionary<int, int> CharImportOrder = FindObjectInfoOrder(SearchType.Import, typeof(OICharInfo));
 
                     //Match objects from the StudioResolveInfo to objects in the scene based on the item order that was generated and saved to the scene data
                     foreach (StudioResolveInfo extResolve in extInfo)
@@ -47,10 +60,19 @@ namespace Sideloader.AutoResolver
                         else
                         {
                             NewDicKey = LightImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
-                            if (ObjectList[extResolve.DicKey] is OILightInfo Light)
+                            if (ObjectList[NewDicKey] is OILightInfo Light)
                             {
                                 ResolveStudioObject(extResolve, Light);
                                 ObjectList.Remove(NewDicKey);
+                            }
+                            else
+                            {
+                                NewDicKey = CharImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
+                                if (ObjectList[NewDicKey] is OICharInfo CharInfo)
+                                {
+                                    ResolveStudioObject(extResolve, CharInfo);
+                                    ObjectList.Remove(NewDicKey);
+                                }
                             }
                         }
                     }
@@ -69,35 +91,99 @@ namespace Sideloader.AutoResolver
                 //UniversalAutoResolver.ResolveStudioMap(extData);
             }
 
+            /// <summary>
+            /// Before the scene saves, go through every item, map, BGM, etc. in the scene, create extended save data with the GUID and other relevant info,
+            /// and restore the IDs back to the original, non-resolved ID for hard mod compatibility
+            /// </summary>
             [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
             internal static void SavePrefix()
             {
                 Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
                 List<StudioResolveInfo> ObjectResolutionInfo = new List<StudioResolveInfo>();
+                List<StudioPatternResolveInfo> PatternResolutionInfo = new List<StudioPatternResolveInfo>();
                 Dictionary<int, ObjectInfo> ObjectList = FindObjectInfoAndOrder(SearchType.All, typeof(OIItemInfo), out Dictionary<int, int> ItemOrder);
                 Dictionary<int, int> LightOrder = FindObjectInfoOrder(SearchType.All, typeof(OILightInfo));
+                Dictionary<int, int> CharOrder = FindObjectInfoOrder(SearchType.All, typeof(OICharInfo));
 
-                foreach (ObjectInfo oi in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo).Select(x => x.Value))
+                foreach (ObjectInfo oi in ObjectList.Select(x => x.Value))
                 {
-                    if (oi is OIItemInfo Item && Item.no >= BaseSlotID)
+                    if (oi is OIItemInfo Item)
                     {
-                        StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Item.no).FirstOrDefault();
-                        if (extResolve != null)
+                        //Resolve the IDs of any patterns applied to the item
+                        StudioPatternResolveInfo studioPatternResolveInfo = new StudioPatternResolveInfo();
+                        studioPatternResolveInfo.DicKey = Item.dicKey;
+                        studioPatternResolveInfo.ObjectOrder = ItemOrder[Item.dicKey];
+                        studioPatternResolveInfo.ObjectPatternInfo = new Dictionary<int, StudioPatternResolveInfo.PatternInfo>();
+#if KK
+                        for (int i = 0; i < Item.pattern.Length; i++)
                         {
-                            StudioResolveInfo intResolve = new StudioResolveInfo
+                            if (Item.pattern[i].key >= BaseSlotID)
                             {
-                                GUID = extResolve.GUID,
-                                Slot = extResolve.Slot,
-                                LocalSlot = extResolve.LocalSlot,
-                                DicKey = Item.dicKey,
-                                ObjectOrder = ItemOrder[Item.dicKey]
-                            };
-                            ObjectResolutionInfo.Add(intResolve);
+                                var intResolve = TryGetResolutionInfo(ChaListDefine.CategoryNo.mt_pattern, Item.pattern[i].key);
 
-                            //set item ID back to default
-                            if (Sideloader.DebugLogging.Value)
-                                Sideloader.Logger.LogDebug($"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
-                            Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
+                                if (intResolve != null)
+                                {
+                                    studioPatternResolveInfo.ObjectPatternInfo[i] = new StudioPatternResolveInfo.PatternInfo
+                                    {
+                                        GUID = intResolve.GUID,
+                                        Slot = intResolve.Slot,
+                                        LocalSlot = Item.pattern[i].key
+                                    };
+
+                                    //Set pattern ID back to original non-resolved ID
+                                    if (Sideloader.DebugLogging.Value)
+                                        Sideloader.Logger.LogDebug($"Setting [{Item.dicKey}] ID:{Item.pattern[i].key}->{intResolve.Slot}");
+                                    Item.pattern[i].key = intResolve.Slot;
+                                }
+                            }
+                        }
+#elif AI
+                        for (int i = 0; i < Item.colors.Length; i++)
+                        {
+                            if (Item.colors[i].pattern.key >= BaseSlotID)
+                            {
+                                var intResolve = TryGetResolutionInfo(AIChara.ChaListDefine.CategoryNo.st_pattern, Item.colors[i].pattern.key);
+
+                                if (intResolve != null)
+                                {
+                                    studioPatternResolveInfo.ObjectPatternInfo[i] = new StudioPatternResolveInfo.PatternInfo
+                                    {
+                                        GUID = intResolve.GUID,
+                                        Slot = intResolve.Slot,
+                                        LocalSlot = Item.colors[i].pattern.key
+                                    };
+
+                                    //Set pattern ID back to original non-resolved ID
+                                    if (Sideloader.DebugLogging.Value)
+                                        Sideloader.Logger.LogDebug($"Setting [{Item.dicKey}] ID:{Item.colors[i].pattern.key}->{intResolve.Slot}");
+                                    Item.colors[i].pattern.key = intResolve.Slot;
+                                }
+                            }
+                        }
+#endif
+                        if (studioPatternResolveInfo.ObjectPatternInfo.Count > 0)
+                            PatternResolutionInfo.Add(studioPatternResolveInfo);
+
+                        if (Item.no >= BaseSlotID)
+                        {
+                            StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == Item.no).FirstOrDefault();
+                            if (extResolve != null)
+                            {
+                                StudioResolveInfo intResolve = new StudioResolveInfo
+                                {
+                                    GUID = extResolve.GUID,
+                                    Slot = extResolve.Slot,
+                                    LocalSlot = extResolve.LocalSlot,
+                                    DicKey = Item.dicKey,
+                                    ObjectOrder = ItemOrder[Item.dicKey]
+                                };
+                                ObjectResolutionInfo.Add(intResolve);
+
+                                //Set item ID back to original non-resolved ID
+                                if (Sideloader.DebugLogging.Value)
+                                    Sideloader.Logger.LogDebug($"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
+                                Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
+                            }
                         }
                     }
                     else if (oi is OILightInfo Light && Light.no >= BaseSlotID)
@@ -115,10 +201,34 @@ namespace Sideloader.AutoResolver
                             };
                             ObjectResolutionInfo.Add(intResolve);
 
-                            //Set item ID back to default
+                            //Set item ID back to original non-resolved ID
                             if (Sideloader.DebugLogging.Value)
                                 Sideloader.Logger.LogDebug($"Setting [{Light.dicKey}] ID:{Light.no}->{extResolve.Slot}");
                             Traverse.Create(Light).Property("no").SetValue(extResolve.Slot);
+                        }
+                    }
+                    else if (oi is OICharInfo CharInfo && CharInfo.animeInfo.no >= BaseSlotID)
+                    {
+                        //Save the animation data for the character
+                        StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == CharInfo.animeInfo.no).FirstOrDefault();
+                        if (extResolve != null)
+                        {
+                            StudioResolveInfo intResolve = new StudioResolveInfo
+                            {
+                                GUID = extResolve.GUID,
+                                Slot = extResolve.Slot,
+                                LocalSlot = extResolve.LocalSlot,
+                                Group = extResolve.Group,
+                                Category = extResolve.Category,
+                                DicKey = CharInfo.dicKey,
+                                ObjectOrder = CharOrder[CharInfo.dicKey]
+                            };
+                            ObjectResolutionInfo.Add(intResolve);
+
+                            //Set animation ID back to original non-resolved ID
+                            if (Sideloader.DebugLogging.Value)
+                                Sideloader.Logger.LogDebug($"Setting [{CharInfo.dicKey}] AnimationID:{CharInfo.animeInfo.no}->{extResolve.Slot}");
+                            CharInfo.animeInfo.no = extResolve.Slot;
                         }
                     }
                 }
@@ -126,6 +236,10 @@ namespace Sideloader.AutoResolver
                 //Add the extended data for items and lights, if any
                 if (!ObjectResolutionInfo.IsNullOrEmpty())
                     ExtendedData.Add("itemInfo", ObjectResolutionInfo.Select(x => x.Serialize()).ToList());
+
+                //Add the extended data for patterns, if any
+                if (!PatternResolutionInfo.IsNullOrEmpty())
+                    ExtendedData.Add("patternInfo", PatternResolutionInfo.Select(x => x.Serialize()).ToList());
 
                 //Add the extended data for the map, if any
                 int mapID = Studio.Studio.Instance.sceneInfo.map;
@@ -188,7 +302,7 @@ namespace Sideloader.AutoResolver
 
                         //Set bgm ID back to default
                         if (Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.LogDebug("Setting BGM ID:{bgmID}->{extResolve.Slot}");
+                            Sideloader.Logger.LogDebug($"Setting BGM ID:{bgmID}->{extResolve.Slot}");
                         Studio.Studio.Instance.sceneInfo.bgmCtrl.no = extResolve.Slot;
                     }
                 }
