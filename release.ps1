@@ -11,11 +11,14 @@ $copy = $dir + "\copy\BepInEx"
 
 New-Item -ItemType Directory -Force -Path ($dir + "\out")
 
+Remove-Item -Force -Path ($copy) -Recurse -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force -Path ($copy + "\plugins")
+
 foreach ($element in $array) 
 {
     try
     {
-        Remove-Item -Force -Path ($dir + "\copy") -Recurse -ErrorAction SilentlyContinue
+        Remove-Item -Force -Path ($copy) -Recurse
         New-Item -ItemType Directory -Force -Path ($copy + "\plugins")
 
         Copy-Item -Path ($dir + "\BepInEx\plugins\" + $element + "_BepisPlugins") -Destination ($copy + "\plugins\" + $element + "_BepisPlugins") -Recurse -Force 
@@ -27,7 +30,6 @@ foreach ($element in $array)
     catch 
     {
         # retry
-        Remove-Item -Force -Path ($dir + "\copy") -Recurse -ErrorAction SilentlyContinue
         New-Item -ItemType Directory -Force -Path ($copy + "\plugins")
 
         Copy-Item -Path ($dir + "\BepInEx\plugins\" + $element + "_BepisPlugins") -Destination ($copy + "\plugins\" + $element + "_BepisPlugins") -Recurse -Force 
