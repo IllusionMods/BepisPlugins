@@ -1,3 +1,5 @@
+$array = @("KK", "EC", "AI", "HS", "PH")
+
 if ($PSScriptRoot -match '.+?\\bin\\?') {
     $dir = $PSScriptRoot + "\"
 }
@@ -5,38 +7,34 @@ else {
     $dir = $PSScriptRoot + "\bin\"
 }
 
-$array = @("KK", "EC", "AI", "HS", "PH")
-
 $copy = $dir + "\copy\BepInEx" 
+Remove-Item -Force -Path ($copy) -Recurse -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force -Path ($copy + "\plugins")
 
 New-Item -ItemType Directory -Force -Path ($dir + "\out")
 
-Remove-Item -Force -Path ($copy) -Recurse -ErrorAction SilentlyContinue
-New-Item -ItemType Directory -Force -Path ($copy + "\plugins")
+function CreateZip ($element)
+{
+    Remove-Item -Force -Path ($copy) -Recurse
+    New-Item -ItemType Directory -Force -Path ($copy + "\plugins")
+
+    Copy-Item -Path ($dir + "\BepInEx\plugins\" + $element + "_BepisPlugins") -Destination ($copy + "\plugins\" + $element + "_BepisPlugins") -Recurse -Force 
+
+    $ver = "r" + (Get-ChildItem -Path ($copy) -Filter "*.dll" -Recurse -Force)[0].VersionInfo.FileVersion.ToString()
+
+    Compress-Archive -Path $copy -Force -CompressionLevel "Optimal" -DestinationPath ($dir + "out\" + $element + "_BepisPlugins_" + $ver + ".zip")
+}
 
 foreach ($element in $array) 
 {
     try
     {
-        Remove-Item -Force -Path ($copy) -Recurse
-        New-Item -ItemType Directory -Force -Path ($copy + "\plugins")
-
-        Copy-Item -Path ($dir + "\BepInEx\plugins\" + $element + "_BepisPlugins") -Destination ($copy + "\plugins\" + $element + "_BepisPlugins") -Recurse -Force 
-
-        $ver = "r" + (Get-ChildItem -Path ($copy) -Filter "*.dll" -Recurse -Force)[0].VersionInfo.FileVersion.ToString()
-
-        Compress-Archive -Path $copy -Force -CompressionLevel "Optimal" -DestinationPath ($dir + "out\" + $element + "_BepisPlugins_" + $ver + ".zip")
+        CreateZip ($element)
     }
     catch 
     {
         # retry
-        New-Item -ItemType Directory -Force -Path ($copy + "\plugins")
-
-        Copy-Item -Path ($dir + "\BepInEx\plugins\" + $element + "_BepisPlugins") -Destination ($copy + "\plugins\" + $element + "_BepisPlugins") -Recurse -Force 
-
-        $ver = "r" + (Get-ChildItem -Path ($copy) -Filter "*.dll" -Recurse -Force)[0].VersionInfo.FileVersion.ToString()
-
-        Compress-Archive -Path $copy -Force -CompressionLevel "Optimal" -DestinationPath ($dir + "out\" + $element + "_BepisPlugins_" + $ver + ".zip")
+        CreateZip ($element)
     }
 }
 
