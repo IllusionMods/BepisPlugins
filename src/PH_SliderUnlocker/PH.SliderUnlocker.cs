@@ -1,8 +1,8 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepisPlugins;
 using HarmonyLib;
-using System.Collections;
-using UnityEngine.SceneManagement;
+using System.Globalization;
 using UnityEngine.UI;
 
 namespace SliderUnlocker
@@ -14,60 +14,90 @@ namespace SliderUnlocker
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class SliderUnlocker : BaseUnityPlugin
     {
-        internal void Main() => SceneManager.sceneLoaded += (s, lsm) => StartCoroutine(SetAllSliders());
-
         /// <summary>
         /// Set all sliders to their default min/max and set up events
         /// </summary>
-        private IEnumerator SetAllSliders()
+        internal static void SetAllSliders(EditMode editMode)
         {
-            yield return null;
-
-            var editMode = FindObjectOfType<EditMode>();
-            if (editMode == null) yield break;
-
             foreach (var x in editMode.GetComponentsInChildren<InputSliderUI>(true))
             {
-                CheckableSlider slider = Traverse.Create(x).Field("slider").GetValue() as CheckableSlider;
-                InputField inputField = Traverse.Create(x).Field("inputField").GetValue() as InputField;
-                Button defButton = Traverse.Create(x).Field("defButton").GetValue() as Button;
+                var slider = GetSlider(x);
+                var inputField = GetInputField(x);
+                var defButton = GetDefButton(x);
 
-                slider.minValue = SliderMin;
-                slider.maxValue = SliderMax;
-
-                bool buttonClicked = false;
+                UnlockSliderFromInputPH(slider, inputField, slider.value);
 
                 inputField.characterLimit = 4;
 
                 //When the user types a value, unlock the sliders to accomodate
-                inputField.onEndEdit.AddListener(_ => UnlockSliderFromInput(slider, inputField));
-                
+                inputField.onEndEdit.AddListener(newVal => UnlockSliderFromInputPH(slider, inputField, float.TryParse(newVal, out var num) ? num : 0));
+
                 //When the button is clicked set a flag used by InputFieldOnValueChanged
-                defButton.onClick.AddListener(() => UnlockSliderFromInput(slider, inputField));
+                defButton.onClick.AddListener(() => UnlockSliderFromInputPH(slider, inputField, x.Value));
             }
         }
-        /// <summary>
-        /// Unlock sliders to their maximum possible size
-        /// </summary>
-        internal static void MaximizeSliders()
+
+        internal static void UnlockSliderFromInputPH(Slider _slider, InputField _inputField, float value)
         {
-            foreach (var x in FindObjectsOfType<InputSliderUI>())
+            var absoluteMax = Math.Max(SliderMax, 500f);
+            var absoluteMin = Math.Min(SliderMin, -500f);
+            if (value > absoluteMax)
             {
-                CheckableSlider slider = Traverse.Create(x).Field("slider").GetValue() as CheckableSlider;
-                slider.maxValue = SliderAbsoluteMax / 100;
-                slider.minValue = SliderAbsoluteMin / 100;
+                _inputField.text = absoluteMax.ToString(CultureInfo.InvariantCulture);
+                value = absoluteMax;
+            }
+            else if (value < absoluteMin)
+            {
+                _inputField.text = absoluteMin.ToString(CultureInfo.InvariantCulture);
+                value = absoluteMin;
+            }
+
+            UnlockSliderPH(_slider, value);
+            _slider.value = value;
+        }
+
+        internal static void UnlockSliderPH(Slider _slider, float value, bool defaultRange = false)
+        {
+            var valueRoundedUp = (int) Math.Ceiling(Math.Abs(value));
+            var max = defaultRange ? 100 : SliderMax;
+            var min = defaultRange ? 0 : SliderMin;
+
+            if (value > max)
+            {
+                _slider.minValue = min;
+                _slider.maxValue = valueRoundedUp;
+            }
+            else if (value < min)
+            {
+                _slider.minValue = -valueRoundedUp;
+                _slider.maxValue = max;
+            }
+            else
+            {
+                _slider.minValue = min;
+                _slider.maxValue = max;
             }
         }
-        /// <summary>
-        /// Lock sliders down based on their current value
-        /// </summary>
-        internal static void UnlockSliders()
+
+        internal static Button GetDefButton(InputSliderUI x)
         {
-            foreach (var x in FindObjectsOfType<InputSliderUI>())
-            {
-                CheckableSlider slider = Traverse.Create(x).Field("slider").GetValue() as CheckableSlider;
-                UnlockSlider(slider, slider.value);
-            }
+            var defButton = Traverse.Create(x).Field("defButton").GetValue() as Button;
+            if (defButton == null) throw new ArgumentNullException(nameof(defButton));
+            return defButton;
+        }
+
+        internal static InputField GetInputField(InputSliderUI x)
+        {
+            var inputField = Traverse.Create(x).Field("inputField").GetValue() as InputField;
+            if (inputField == null) throw new ArgumentNullException(nameof(inputField));
+            return inputField;
+        }
+
+        internal static CheckableSlider GetSlider(InputSliderUI x)
+        {
+            var slider = Traverse.Create(x).Field("slider").GetValue() as CheckableSlider;
+            if (slider == null) throw new ArgumentNullException(nameof(slider));
+            return slider;
         }
     }
 }
