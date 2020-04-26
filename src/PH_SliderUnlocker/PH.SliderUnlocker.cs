@@ -21,62 +21,66 @@ namespace SliderUnlocker
         {
             foreach (var x in editMode.GetComponentsInChildren<InputSliderUI>(true))
             {
-                var slider = GetSlider(x);
-                var inputField = GetInputField(x);
-                var defButton = GetDefButton(x);
-
-                UnlockSliderFromInputPH(slider, inputField, slider.value);
-
-                inputField.characterLimit = 4;
+                UnlockSliderPH(x, x.Value);
 
                 //When the user types a value, unlock the sliders to accomodate
-                inputField.onEndEdit.AddListener(newVal => UnlockSliderFromInputPH(slider, inputField, float.TryParse(newVal, out var num) ? num : 0));
+                var inputField = GetInputField(x);
+                inputField.characterLimit = 4;
+                inputField.onEndEdit.AddListener(newVal => UnlockSliderFromInputPH(x, float.TryParse(newVal, out var num) ? num : 0));
 
-                //When the button is clicked set a flag used by InputFieldOnValueChanged
-                defButton.onClick.AddListener(() => UnlockSliderFromInputPH(slider, inputField, x.Value));
+                var defButton = GetDefButton(x);
+                defButton.onClick.AddListener(() => UnlockSliderFromInputPH(x, x.Value));
             }
         }
 
-        internal static void UnlockSliderFromInputPH(Slider _slider, InputField _inputField, float value)
+        internal static void UnlockSliderFromInputPH(InputSliderUI x, float value)
         {
+            var slider = GetSlider(x);
+            var inputField = GetInputField(x);
+
             var absoluteMax = Math.Max(SliderMax, 500f);
             var absoluteMin = Math.Min(SliderMin, -500f);
             if (value > absoluteMax)
             {
-                _inputField.text = absoluteMax.ToString(CultureInfo.InvariantCulture);
+                inputField.text = absoluteMax.ToString(CultureInfo.InvariantCulture);
                 value = absoluteMax;
             }
             else if (value < absoluteMin)
             {
-                _inputField.text = absoluteMin.ToString(CultureInfo.InvariantCulture);
+                inputField.text = absoluteMin.ToString(CultureInfo.InvariantCulture);
                 value = absoluteMin;
             }
 
-            UnlockSliderPH(_slider, value);
-            _slider.value = value;
+            UnlockSliderPH(x, value);
+            slider.value = value;
         }
 
-        internal static void UnlockSliderPH(Slider _slider, float value, bool defaultRange = false)
+        internal static void UnlockSliderPH(InputSliderUI x, float value, bool defaultRange = false)
         {
+            var slider = GetSlider(x);
+
             var valueRoundedUp = (int) Math.Ceiling(Math.Abs(value));
             var max = defaultRange ? 100 : SliderMax;
             var min = defaultRange ? 0 : SliderMin;
 
             if (value > max)
             {
-                _slider.minValue = min;
-                _slider.maxValue = valueRoundedUp;
+                slider.minValue = min;
+                slider.maxValue = valueRoundedUp;
             }
             else if (value < min)
             {
-                _slider.minValue = -valueRoundedUp;
-                _slider.maxValue = max;
+                slider.minValue = -valueRoundedUp;
+                slider.maxValue = max;
             }
             else
             {
-                _slider.minValue = min;
-                _slider.maxValue = max;
+                slider.minValue = min;
+                slider.maxValue = max;
             }
+
+            // Refresh default value marker position
+            Traverse.Create(x).Method("SetDefPos").GetValue();
         }
 
         internal static Button GetDefButton(InputSliderUI x)

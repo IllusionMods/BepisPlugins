@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PH.SliderUnlocker.Hooks.cs" />
     <Compile Include="PH.SliderUnlocker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

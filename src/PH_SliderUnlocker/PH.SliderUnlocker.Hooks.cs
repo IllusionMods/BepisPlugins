@@ -19,7 +19,7 @@ namespace SliderUnlocker
         {
             var slider = SliderUnlocker.GetSlider(__instance);
             if (slider.maxValue >= val) return;
-            SliderUnlocker.UnlockSliderPH(slider, val);
+            SliderUnlocker.UnlockSliderPH(__instance, val);
         }
     }
 }
