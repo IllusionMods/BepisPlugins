@@ -21,6 +21,9 @@ namespace SliderUnlocker
         {
             foreach (var x in editMode.GetComponentsInChildren<InputSliderUI>(true))
             {
+                // Skip modded sliders
+                if (x.name.EndsWith("(MakerAPI)", StringComparison.Ordinal)) continue;
+
                 UnlockSliderPH(x, x.Value);
 
                 //When the user types a value, unlock the sliders to accomodate
