@@ -41,7 +41,7 @@ namespace alphaShot
             RenderTexture.active = rt;
             GL.Clear(false, true, new Color(0, 0, 0, 0));
             Graphics.Blit(input, rt, matScale);
-            GameObject.DestroyImmediate(input);
+            DestroyImmediate(input);
             var t2d = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
             t2d.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0, false);
             t2d.Apply();
@@ -63,7 +63,8 @@ namespace alphaShot
             Shader.SetGlobalTexture("_AlphaMask", Texture2D.whiteTexture);
             Shader.SetGlobalInt("_alpha_a", 1);
             Shader.SetGlobalInt("_alpha_b", 1);
-            Texture2D fullSizeCapture = null;
+            Shader.SetGlobalInt("_LineWidthS", 1);
+            Texture2D fullSizeCapture;
             int newWidth = ResolutionX * DownscalingRate;
             int newHeight = ResolutionY * DownscalingRate;
             float orgBlurSize = 0.0f;
@@ -150,14 +151,13 @@ namespace alphaShot
             GL.Clear(false, true, new Color(0, 0, 0, 0));
             matMask.SetTexture("_Mask", texture2D);
             Graphics.Blit(texture2D2, rt, matMask);
-            GameObject.Destroy(texture2D);
-            GameObject.Destroy(texture2D2);
+            Destroy(texture2D);
+            Destroy(texture2D2);
             var texture2D3 = new Texture2D(rt.width, rt.height, TextureFormat.ARGB32, false);
             texture2D3.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0, false);
             texture2D3.Apply();
             RenderTexture.active = prev;
             RenderTexture.ReleaseTemporary(rt);
-
 
             return texture2D3;
         }
