@@ -72,9 +72,8 @@ Shader "" {
             float4 frag(VertexOutput i) : COLOR {
                 float4 am = tex2D(_AlphaMask, TRANSFORM_TEX(i.uv0,_AlphaMask));
                 
-                float aa = step(_alpha_a, am.r);
-                float ab = step(_alpha_b, am.g);
-                float bm = min(aa, ab);
+                float2 aa = max(1 - float2(_alpha_a, _alpha_b), am.xy);
+                float bm = min(aa.x, aa.y);
 
                 float4 mt = tex2D(_MainTex, TRANSFORM_TEX(i.uv0, _MainTex));
                 bm *= mt.a;
