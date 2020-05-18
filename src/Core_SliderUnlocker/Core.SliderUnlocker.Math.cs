@@ -73,19 +73,16 @@ namespace SliderUnlocker
 
         public static Vector3 SafeCalculateRotation(Vector3 original, string name, List<AnmKeyInfo> list, float rate)
         {
-#if PH
-            return original;
-#else
-            if (!(name.StartsWith("cf_a_bust") && name.EndsWith("_size")) && //breast fix
-                !(name.Contains("thigh") && name.Contains("01"))) //thigh fix
-            {
-                return CalculateRotation(list, rate);
-            }
-            else
-            {
+            // Fix rotation outside 0-100
+            if (name.Contains("cf_s_Mune") ||                                   // [AI, PH, HS] breasts
+                name.Contains("cf_s_Mouth") ||                                  // [AI, PH, HS] mouth corner
+                name.Contains("cf_s_LegLow") ||                                 // [AI, PH, HS] ankles, calves
+                name.Contains("cf_s_MayuTip") ||                                // [PH, HS] eyebrows
+                name.Contains("thigh") && name.Contains("01") ||                // [KK, EC] thighs
+                name.StartsWith("cf_a_bust") && name.EndsWith("_size"))         // [KK, EC] breasts
                 return original;
-            }
-#endif
+
+            return CalculateRotation(list, rate);
         }
         
         public static float Lerp(float min, float max, float value)
