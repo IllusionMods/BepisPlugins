@@ -97,6 +97,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ConfigurationManager", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_ExtensibleSaveFormat", "src\PH_ExtensibleSaveFormat\PH_ExtensibleSaveFormat.csproj", "{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_ConfigurationManager", "src\PH_ConfigurationManager\PH_ConfigurationManager.csproj", "{AC5E9B43-CBB4-4CB8-8411-5425576F2055}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
@@ -279,6 +281,10 @@ Global
 		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -330,6 +336,7 @@ Global
 		{66214BD2-6DA6-49CD-8C74-63DA9E643259} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
 		{B0903672-629B-4C21-BAE3-6FBE587F4344} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
