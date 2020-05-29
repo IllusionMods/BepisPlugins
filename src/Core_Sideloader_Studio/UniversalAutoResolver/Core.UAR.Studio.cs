@@ -310,7 +310,7 @@ namespace Sideloader.AutoResolver
         internal static void ResolveStudioMap(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
         {
             //Set map ID to the resolved ID
-            int MapID = Singleton<Studio.Studio>.Instance.sceneInfo.map;
+            int MapID = GetMapID();
 
             if (MapID == -1) //Loaded scene has no map
                 return;
@@ -324,7 +324,7 @@ namespace Sideloader.AutoResolver
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Sideloader.Logger.LogDebug($"Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
-                    Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
+                    SetMapID(intResolve.LocalSlot);
                 }
                 else
                     ShowGUIDError(MapGUID);
@@ -340,7 +340,7 @@ namespace Sideloader.AutoResolver
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
                             Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
-                        Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
+                        SetMapID(intResolve.LocalSlot);
                     }
                     else
                     {
@@ -476,6 +476,24 @@ namespace Sideloader.AutoResolver
                     }
                 }
             }
+        }
+
+        internal static int GetMapID()
+        {
+#if KK
+            return Singleton<Studio.Studio>.Instance.sceneInfo.map;
+#else
+            return Singleton<Studio.Studio>.Instance.sceneInfo.mapInfo.no;
+#endif
+        }
+
+        internal static void SetMapID(int id)
+        {
+#if KK
+            Singleton<Studio.Studio>.Instance.sceneInfo.map = id;
+#else
+            Singleton<Studio.Studio>.Instance.sceneInfo.mapInfo.no = id;
+#endif
         }
     }
 }
