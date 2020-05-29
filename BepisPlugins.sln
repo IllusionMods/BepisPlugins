@@ -147,6 +147,7 @@ Global
 		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{ac5e9b43-cbb4-4cb8-8411-5425576f2055}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{b0903672-629b-4c21-bae3-6fbe587f4344}*SharedItemsImports = 4
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
