@@ -86,7 +86,7 @@ namespace Sideloader.AutoResolver
 #if KK
                         studioResolveInfo.Group = int.Parse(entry[1]);
                         studioResolveInfo.Category = int.Parse(entry[2]);
-#elif AI
+#elif AI || HS2
                         studioResolveInfo.Group = int.Parse(entry[2]);
                         studioResolveInfo.Category = int.Parse(entry[3]);
 #endif
@@ -285,7 +285,7 @@ namespace Sideloader.AutoResolver
                         Item.pattern[i].key = BaseSlotID - 1;
                     }
                 }
-#elif AI
+#elif AI || HS2
                 for (int i = 0; i < Item.colors.Length; i++)
                 {
                     if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;

@@ -137,7 +137,7 @@ namespace Sideloader.AutoResolver
                                 }
                             }
                         }
-#elif AI
+#elif AI || HS2
                         for (int i = 0; i < Item.colors.Length; i++)
                         {
                             if (Item.colors[i].pattern.key >= BaseSlotID)

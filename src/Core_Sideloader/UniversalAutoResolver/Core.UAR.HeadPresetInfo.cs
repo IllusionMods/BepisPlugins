@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if AI || HS2
+using System.Collections.Generic;
 
 namespace Sideloader.AutoResolver
 {
@@ -55,3 +56,4 @@ namespace Sideloader.AutoResolver
         }
     }
 }
+#endif

@@ -1,8 +1,9 @@
-﻿using HarmonyLib;
+﻿#if AI || HS2
+using AIChara;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AIChara;
 using static AIChara.ChaFileDefine;
 using CategoryNo = AIChara.ChaListDefine.CategoryNo;
 
@@ -401,3 +402,4 @@ namespace Sideloader.AutoResolver
         #endregion
     }
 }
+#endif

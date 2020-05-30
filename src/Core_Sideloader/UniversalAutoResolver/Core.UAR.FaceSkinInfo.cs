@@ -1,4 +1,5 @@
-﻿namespace Sideloader.AutoResolver
+﻿#if AI || HS2
+namespace Sideloader.AutoResolver
 {
     internal class FaceSkinInfo
     {
@@ -17,3 +18,4 @@
         }
     }
 }
+#endif

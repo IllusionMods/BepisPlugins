@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
-#if AI
+#if AI || HS2
 using AIChara;
 #endif
 
@@ -18,7 +18,7 @@ namespace Sideloader.ListLoader
 
 #if KK || EC
         internal static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
-#elif AI
+#elif AI || HS2
         internal static Dictionary<int, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<int, Dictionary<int, ListInfoBase>>();
 #endif
 
@@ -30,7 +30,7 @@ namespace Sideloader.ListLoader
         {
 #if KK || EC
             InternalDataList = r_dictListInfo.GetValue<Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>>(instance);
-#elif AI
+#elif AI || HS2
             InternalDataList = r_dictListInfo.GetValue<Dictionary<int, Dictionary<int, ListInfoBase>>>(instance);
 #endif
 
@@ -52,7 +52,7 @@ namespace Sideloader.ListLoader
                 loadListInternal(instance, dictData, data);
             }
         }
-#elif AI
+#elif AI || HS2
         internal static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
         {
             var dictListInfo = r_dictListInfo.GetValue<Dictionary<int, Dictionary<int, ListInfoBase>>>(instance);
@@ -83,7 +83,7 @@ namespace Sideloader.ListLoader
                 }
             }
         }
-#elif AI
+#elif AI || HS2
         internal static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
         {
             foreach (KeyValuePair<int, List<string>> keyValuePair in chaListData.dictList)

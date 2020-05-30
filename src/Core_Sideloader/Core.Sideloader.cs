@@ -15,7 +15,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using XUnity.ResourceRedirector;
-#if AI
+#if AI || HS2
 using AIChara;
 #endif
 
@@ -179,7 +179,7 @@ namespace Sideloader
                     BuildPngFolderList(archive);
 
                     UniversalAutoResolver.GenerateMigrationInfo(manifest, _gatheredMigrationInfos);
-#if AI
+#if AI || HS2
                     UniversalAutoResolver.GenerateHeadPresetInfo(manifest, _gatheredHeadPresetInfos);
                     UniversalAutoResolver.GenerateFaceSkinInfo(manifest, _gatheredFaceSkinInfos);
 #endif
@@ -198,7 +198,7 @@ namespace Sideloader
 
             UniversalAutoResolver.SetResolveInfos(_gatheredResolutionInfos);
             UniversalAutoResolver.SetMigrationInfos(_gatheredMigrationInfos);
-#if AI
+#if AI || HS2
             UniversalAutoResolver.SetHeadPresetInfos(_gatheredHeadPresetInfos);
             UniversalAutoResolver.SetFaceSkinInfos(_gatheredFaceSkinInfos);
             UniversalAutoResolver.ResolveFaceSkins();
@@ -243,7 +243,7 @@ namespace Sideloader
                         Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                     }
                 }
-#if KK || AI
+#if KK || AI || HS2
                 else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
@@ -283,7 +283,7 @@ namespace Sideloader
 #endif
             }
 
-#if KK || AI
+#if KK || AI || HS2
             //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
             foreach (ZipEntry entry in BoneList)
             {

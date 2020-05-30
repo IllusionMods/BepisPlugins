@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine;
 #if KK || EC
 using ChaCustom;
-#elif AI
+#elif AI || HS2
 using CharaCustom;
 #endif
 
