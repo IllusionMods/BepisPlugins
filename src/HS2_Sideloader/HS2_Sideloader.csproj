@@ -94,9 +94,11 @@
     </Reference>
     <Reference Include="XUnity.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\XUnity.Common.1.0.0\lib\net35\XUnity.Common.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="XUnity.ResourceRedirector, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\XUnity.ResourceRedirector.1.1.0\lib\net35\XUnity.ResourceRedirector.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
