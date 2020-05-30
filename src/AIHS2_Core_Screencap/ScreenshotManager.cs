@@ -13,7 +13,6 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
-using Resources = Manager.Resources;
 
 namespace Screencap
 {
@@ -23,8 +22,13 @@ namespace Screencap
     /// </summary>
     public partial class ScreenshotManager : BaseUnityPlugin
     {
+        /// <summary>
+        /// GUID of the plugin, use with BepInDependency
+        /// </summary>
         public const string GUID = "com.bepis.bepinex.screenshotmanager";
-        public const string PluginName = "Screenshot Manager";
+        /// <summary>
+        /// Version of the plugin, use with BepInDependency
+        /// </summary>
         public const string Version = Metadata.PluginsVersion;
 
         /// <summary>
@@ -188,7 +192,7 @@ namespace Screencap
         private static void PlayCaptureSound()
         {
 #if AI
-            Singleton<Resources>.Instance.SoundPack.Play(AIProject.SoundPack.SystemSE.Photo);
+            Singleton<Manager.Resources>.Instance.SoundPack.Play(AIProject.SoundPack.SystemSE.Photo);
 #elif HS2
             if (Hooks.SoundWasPlayed)
                 Hooks.SoundWasPlayed = false;

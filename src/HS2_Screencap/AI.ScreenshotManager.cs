@@ -8,5 +8,8 @@ namespace Screencap
     [BepInPlugin(GUID, PluginName, Version)]
     [BepInIncompatibility("Screencap")]
     [BepInIncompatibility("EdgeDestroyer")]
-    public partial class ScreenshotManager { }
+    public partial class ScreenshotManager
+    {
+        private const string PluginName = "Screenshot Manager";
+    }
 }
