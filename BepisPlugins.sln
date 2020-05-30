@@ -109,7 +109,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_BGMLoader", "src\HS2_BG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_ConfigurationManager", "src\HS2_ConfigurationManager\HS2_ConfigurationManager.csproj", "{9EC1E476-6A6C-43DF-B6ED-3DFF94F446FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_Sideloader", "HS2_Sideloader\HS2_Sideloader.csproj", "{75C19265-0BA8-4373-9254-22FB6102788D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_Sideloader", "src\HS2_Sideloader\HS2_Sideloader.csproj", "{75C19265-0BA8-4373-9254-22FB6102788D}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
