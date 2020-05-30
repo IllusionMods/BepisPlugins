@@ -113,6 +113,20 @@ namespace Sideloader.AutoResolver
         {
             Dictionary<int, ObjectInfo> ObjectList = StudioObjectSearch.FindObjectInfo(StudioObjectSearch.SearchType.All);
 
+            //Resolve all patterns for objects
+            if (extendedData != null && extendedData.data.ContainsKey("patternInfo"))
+            {
+                List<StudioPatternResolveInfo> extPatternInfo;
+
+                if (resolveType == ResolveType.Save)
+                    extPatternInfo = ((List<byte[]>)extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize(x)).ToList();
+                else
+                    extPatternInfo = ((object[])extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize((byte[])x)).ToList();
+
+                foreach (StudioPatternResolveInfo extPatternResolve in extPatternInfo)
+                    ResolveStudioObjectPattern(extPatternResolve, ObjectList[extPatternResolve.DicKey], resolveType);
+            }
+
             //Resolve every item with extended data
             if (extendedData != null && extendedData.data.ContainsKey("itemInfo"))
             {
@@ -134,20 +148,6 @@ namespace Sideloader.AutoResolver
             if (resolveType == ResolveType.Load)
                 foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo || x.Value is OICharInfo).Select(x => x.Value))
                     ResolveStudioObject(OI);
-
-            //Resolve all patterns for objects
-            if (extendedData != null && extendedData.data.ContainsKey("patternInfo"))
-            {
-                List<StudioPatternResolveInfo> extPatternInfo;
-
-                if (resolveType == ResolveType.Save)
-                    extPatternInfo = ((List<byte[]>)extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize(x)).ToList();
-                else
-                    extPatternInfo = ((object[])extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize((byte[])x)).ToList();
-
-                foreach (StudioPatternResolveInfo extPatternResolve in extPatternInfo)
-                    ResolveStudioObjectPattern(extPatternResolve, ObjectList[extPatternResolve.DicKey], resolveType);
-            }
         }
 
         internal static void ResolveStudioObject(StudioResolveInfo extResolve, ObjectInfo OI, ResolveType resolveType = ResolveType.Load)
