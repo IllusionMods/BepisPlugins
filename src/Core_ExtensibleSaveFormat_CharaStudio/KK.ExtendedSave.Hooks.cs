@@ -29,7 +29,12 @@ namespace ExtensibleSaveFormat
                 {
                     CodeInstruction inst = instructionsList[i];
                     yield return inst;
+
+#if HS2
+                    if (set == false && inst.opcode == OpCodes.Stind_Ref && instructionsList[i + 1].opcode == OpCodes.Leave_S)
+#else
                     if (set == false && inst.opcode == OpCodes.Stind_Ref && instructionsList[i + 1].opcode == OpCodes.Leave)
+#endif
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_1);
                         yield return new CodeInstruction(OpCodes.Ldloc_1);
@@ -71,7 +76,7 @@ namespace ExtensibleSaveFormat
             }
 
             [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Import", typeof(string))]
-            public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            public static IEnumerable<CodeInstruction> SceneInfoImportTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 bool set = false;
                 List<CodeInstruction> instructionsList = instructions.ToList();
@@ -79,7 +84,12 @@ namespace ExtensibleSaveFormat
                 {
                     CodeInstruction inst = instructionsList[i];
                     yield return inst;
+
+#if HS2
+                    if (set == false && inst.opcode == OpCodes.Call && instructionsList[i + 1].opcode == OpCodes.Leave_S)
+#else
                     if (set == false && inst.opcode == OpCodes.Call && instructionsList[i + 1].opcode == OpCodes.Leave)
+#endif
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_1);
                         yield return new CodeInstruction(OpCodes.Ldloc_1);
@@ -129,9 +139,9 @@ namespace ExtensibleSaveFormat
                 SceneImportEvent(path);
             }
 
-            #endregion
+#endregion
 
-            #region Saving
+#region Saving
 
             [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
             public static IEnumerable<CodeInstruction> SceneInfoSaveTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -142,7 +152,12 @@ namespace ExtensibleSaveFormat
                 {
                     CodeInstruction inst = instructionsList[i];
                     yield return inst;
+
+#if HS2
+                    if (set == false && inst.opcode == OpCodes.Callvirt && instructionsList[i + 1].opcode == OpCodes.Leave_S)
+#else
                     if (set == false && inst.opcode == OpCodes.Callvirt && instructionsList[i + 1].opcode == OpCodes.Leave)
+#endif
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_1);
                         yield return new CodeInstruction(OpCodes.Ldloc_1);
@@ -167,11 +182,11 @@ namespace ExtensibleSaveFormat
                 bw.Write(data);
             }
 
-            #endregion
+#endregion
 
-            #endregion
+#endregion
 
-            #region Extended Data Override Hooks
+#region Extended Data Override Hooks
             //Prevent loading extended data when loading the list of characters in Studio since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
             public static void StudioFemaleListPreHook() => LoadEventsEnabled = false;
@@ -185,7 +200,7 @@ namespace ExtensibleSaveFormat
             //Prevent loading extended data when loading the list of coordinates in Studio since it is irrelevant here
             public static void StudioCoordinateListPreHook() => LoadEventsEnabled = false;
             public static void StudioCoordinateListPostHook() => LoadEventsEnabled = true;
-            #endregion
+#endregion
         }
     }
 }

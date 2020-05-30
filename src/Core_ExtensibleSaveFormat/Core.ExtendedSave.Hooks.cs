@@ -279,7 +279,11 @@ namespace ExtensibleSaveFormat
                 for (int i = 0; i < instructionsList.Count; i++)
                 {
                     CodeInstruction inst = instructionsList[i];
+#if HS2
+                    if (set == false && inst.opcode == OpCodes.Ldc_I4_1 && instructionsList[i + 1].opcode == OpCodes.Stloc_3 && instructionsList[i + 2].opcode == OpCodes.Leave_S)
+#else
                     if (set == false && inst.opcode == OpCodes.Ldc_I4_1 && instructionsList[i + 1].opcode == OpCodes.Stloc_1 && instructionsList[i + 2].opcode == OpCodes.Leave)
+#endif
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_0);
                         yield return new CodeInstruction(OpCodes.Ldloc_0);
@@ -326,9 +330,9 @@ namespace ExtensibleSaveFormat
                 CoordinateReadEvent(coordinate);
             }
 
-            #endregion
+#endregion
 
-            #region Saving
+#region Saving
 
 #if KK
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
@@ -343,7 +347,13 @@ namespace ExtensibleSaveFormat
                 {
                     CodeInstruction inst = instructionsList[i];
                     yield return inst;
-                    if (!hooked && inst.opcode == OpCodes.Callvirt && instructionsList[i + 1].opcode == OpCodes.Leave) //find the end of the using(BinaryWriter) block
+
+                    //find the end of the using(BinaryWriter) block
+#if HS2
+                    if (!hooked && inst.opcode == OpCodes.Callvirt && instructionsList[i + 1].opcode == OpCodes.Leave_S)
+#else
+                    if (!hooked && inst.opcode == OpCodes.Callvirt && instructionsList[i + 1].opcode == OpCodes.Leave)
+#endif
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_0); //push the ChaFileInstance
                         yield return new CodeInstruction(instructionsList[i - 2]); //push the BinaryWriter (copying the instruction to do so)
@@ -371,11 +381,11 @@ namespace ExtensibleSaveFormat
                 bw.Write(data);
             }
 
-            #endregion
+#endregion
 
-            #endregion
+#endregion
 
-            #region Helper
+#region Helper
 
             private static bool CheckCallVirtName(CodeInstruction instruction, string name) => instruction.opcode == OpCodes.Callvirt &&
                        //need to do reflection fuckery here because we can't access MonoMethod which is the operand type, not MehtodInfo like normal reflection
@@ -385,9 +395,9 @@ namespace ExtensibleSaveFormat
                        //need to do reflection fuckery here because we can't access MonoCMethod which is the operand type, not ConstructorInfo like normal reflection
                        instruction.operand.GetType().GetProperty("DeclaringType", AccessTools.all).GetGetMethod().Invoke(instruction.operand, null).ToString() == name;
 
-            #endregion
+#endregion
 
-            #region Extended Data Override Hooks
+#region Extended Data Override Hooks
 #if EC || KK
             //Prevent loading extended data when loading the list of characters in Chara Maker since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), "Initialize")]
@@ -413,7 +423,7 @@ namespace ExtensibleSaveFormat
             [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), "UpdateCharasList")]
             internal static void CvsO_CharaSaveUpdateCharasListPostfix() => LoadEventsEnabled = true;
 #endif
-            #endregion
+#endregion
         }
     }
 }
