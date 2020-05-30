@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>cfc6ee58-cd1b-4a21-b281-c6e9d5d0390d</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>AIHS2_Core_Screencap</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkCopyBehaviour.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkLoadBehaviour.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkPredicate.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkPredicateEquiv.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkPredicateId.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkPredicateId2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkRaw.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunksList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunksListForWrite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\PngChunk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\PngChunkIDAT.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\PngChunkIEND.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\PngChunkIHDR.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\PngChunkMultiple.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\PngChunkSingle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\PngMetadata.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\FileHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\FilterType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\FilterWriteStrategy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\ImageInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\ImageLine.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\ImageLineHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\ImageLines.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\PngCsUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\PngHelperInternal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\PngIDatChunkOutputStream.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\PngjException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\PngjExceptionInternal.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\PngjOutputException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\PngjUnsupportedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\PngWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\ProgressiveOutputStream.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Unity\Unity.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\Adler32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\AZlibInputStream.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\AZlibOutputStream.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\CRC32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\DeflateCompressLevel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\EDeflateCompressStrategy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibInputStreamIs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibInputStreamMs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibOutputStreamIs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibOutputStreamMs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibStreamFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScreenshotManager.cs" />
+  </ItemGroup>
+</Project>
