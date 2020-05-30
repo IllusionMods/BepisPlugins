@@ -489,7 +489,6 @@ namespace Sideloader.AutoResolver
         /// <param name="id"></param>
         internal static void SetMapID(int id) => MapIDField.SetValue(id);
 
-        private static Traverse _MapIDField;
         /// <summary>
         /// Find the field containing the map ID for cross version compatibility since this was changed in an update to AI Girl and is different between KK and AI/HS2
         /// </summary>
@@ -497,14 +496,10 @@ namespace Sideloader.AutoResolver
         {
             get
             {
-                if (_MapIDField == null)
-                {
-                    if (Traverse.Create(Singleton<Studio.Studio>.Instance.sceneInfo).Field("map").FieldExists())
-                        _MapIDField = Traverse.Create(Singleton<Studio.Studio>.Instance.sceneInfo).Field("map");
-                    else
-                        _MapIDField = Traverse.Create(Singleton<Studio.Studio>.Instance.sceneInfo).Field("mapInfo").Field("no");
-                }
-                return _MapIDField;
+                if (Traverse.Create(Studio.Studio.Instance.sceneInfo).Field("map").FieldExists())
+                    return Traverse.Create(Studio.Studio.Instance.sceneInfo).Field("map");
+                else
+                    return Traverse.Create(Studio.Studio.Instance.sceneInfo).Field("mapInfo").Field("no");
             }
         }
     }
