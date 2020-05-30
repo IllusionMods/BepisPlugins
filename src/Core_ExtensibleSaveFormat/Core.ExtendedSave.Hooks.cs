@@ -97,7 +97,11 @@ namespace ExtensibleSaveFormat
                 newInstructionSet.InsertRange(lastSeekIndex + 2, //we insert AFTER the NEXT instruction, which is right before the try block exit
                     new[] {
                     new CodeInstruction(OpCodes.Ldarg_0), //push the ChaFile instance
+#if HS2
+                    new CodeInstruction(OpCodes.Ldloc_2, blockHeaderLocalBuilder), //push the BlockHeader instance
+#else
                     new CodeInstruction(OpCodes.Ldloc_S, blockHeaderLocalBuilder), //push the BlockHeader instance
+#endif
                     new CodeInstruction(OpCodes.Ldarg_1, blockHeaderLocalBuilder), //push the binaryreader instance
                     new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(ChaFileLoadFileHook), AccessTools.all)), //call our hook
                     });
