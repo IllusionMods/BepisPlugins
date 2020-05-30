@@ -1,4 +1,4 @@
-$array = @("KK", "EC", "AI", "HS", "PH")
+$array = @("KK", "EC", "AI", "HS", "HS2", "PH")
 
 if ($PSScriptRoot -match '.+?\\bin\\?') {
     $dir = $PSScriptRoot + "\"
