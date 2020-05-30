@@ -378,8 +378,10 @@ namespace Screencap
 
             var cam = Camera.main;
 
-            var cf = cam.clearFlags;
-            var bg = cam.backgroundColor;
+            var oldCf = cam.clearFlags;
+            var oldBg = cam.backgroundColor;
+            var oldRt = cam.targetTexture;
+            var oldRtc = Camera.current.targetTexture;
 
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = alpha ? new Color(0, 0, 0, 0) : Color.black;
@@ -387,10 +389,10 @@ namespace Screencap
 
             cam.Render();
 
-            cam.clearFlags = cf;
-            cam.backgroundColor = bg;
-            cam.targetTexture = null;
-            Camera.current.targetTexture = null;    //Well shit.
+            cam.clearFlags = oldCf;
+            cam.backgroundColor = oldBg;
+            cam.targetTexture = oldRt;
+            Camera.current.targetTexture = oldRtc;
 
             // Restore postprocessing settings
             if (DisableAO.Value == DisableAOSetting.Always || DisableAO.Value == DisableAOSetting.WhenUpsampling && Downscaling.Value > 1)
