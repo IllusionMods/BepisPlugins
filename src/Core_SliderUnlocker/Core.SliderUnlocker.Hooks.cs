@@ -7,7 +7,7 @@ using System.Reflection;
 using UnityEngine;
 #if KK || EC
 using ChaCustom;
-#elif AI
+#elif AI || HS2
 using CharaCustom;
 using AIChara;
 #endif
@@ -116,7 +116,7 @@ namespace SliderUnlocker
             }
         }
 
-#if KK || EC || AI
+#if KK || EC || AI || HS2
         [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), "ConvertTextFromRate")]
         public static void ConvertTextFromRateHook(ref string __result, int min, int max, float value)
         {

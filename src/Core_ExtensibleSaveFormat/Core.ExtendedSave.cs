@@ -4,7 +4,7 @@ using MessagePack;
 using MessagePack.Resolvers;
 using System;
 using System.Collections.Generic;
-#if AI
+#if AI || HS2
 using AIChara;
 #endif
 

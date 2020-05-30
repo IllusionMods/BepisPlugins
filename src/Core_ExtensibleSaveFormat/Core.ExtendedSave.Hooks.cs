@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-#if AI
+#if AI || HS2
 using AIChara;
 #endif
 
@@ -223,7 +223,7 @@ namespace ExtensibleSaveFormat
             {
                 List<CodeInstruction> newInstructionSet = new List<CodeInstruction>(instructions);
 
-#if AI
+#if AI || HS2
                 string blockHeader = "AIChara.BlockHeader";
 #else
                 string blockHeader = "BlockHeader";
@@ -393,6 +393,21 @@ namespace ExtensibleSaveFormat
             //Prevent loading extended data when loading the list of coordinates in Chara Maker since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCoordinateFile), "Initialize")]
             internal static void CustomCoordinatePreHook() => LoadEventsEnabled = false;
+#else
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
+            internal static void LoadCharacterListPrefix() => LoadEventsEnabled = false;
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
+            internal static void LoadCharacterListPostfix() => LoadEventsEnabled = true;
+
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaLoad), "UpdateCharasList")]
+            internal static void CvsO_CharaLoadUpdateCharasListPrefix() => LoadEventsEnabled = false;
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaLoad), "UpdateCharasList")]
+            internal static void CvsO_CharaLoadUpdateCharasListPostfix() => LoadEventsEnabled = true;
+
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), "UpdateCharasList")]
+            internal static void CvsO_CharaSaveUpdateCharasListPrefix() => LoadEventsEnabled = false;
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), "UpdateCharasList")]
+            internal static void CvsO_CharaSaveUpdateCharasListPostfix() => LoadEventsEnabled = true;
 #endif
             #endregion
         }
