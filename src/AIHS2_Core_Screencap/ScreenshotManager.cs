@@ -74,7 +74,13 @@ namespace Screencap
         {
             var dir = Path.Combine(Paths.GameRootPath, "UserData", "cap");
             Directory.CreateDirectory(dir);
-            return Path.Combine(dir, $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png");
+            return Path.Combine(dir,
+#if AI
+                $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
+#elif HS2
+                $"HS2_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
+#endif
+                );
         }
 
         private void Awake()
