@@ -83,6 +83,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HS2.ExtendedSave.Hooks.cs" />
     <Compile Include="HS2.ExtendedSave.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -90,7 +91,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="..\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems" Label="Shared" />
-  <Import Project="..\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems" Label="Shared" />
+  <Import Project="..\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

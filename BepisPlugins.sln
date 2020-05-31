@@ -87,7 +87,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Screencap", "src\AI_Scre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_SliderUnlocker", "src\PH_SliderUnlocker\PH_SliderUnlocker.csproj", "{2DF3121A-62DE-451B-9854-BCDA34B200F2}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ExtensibleSaveFormat_CharaStudio", "src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.shproj", "{20FD60F3-3086-4A25-876B-E977BDA46687}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ExtensibleSaveFormat_Studio", "src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.shproj", "{20FD60F3-3086-4A25-876B-E977BDA46687}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Sideloader_Studio", "src\Core_Sideloader_Studio\Core_Sideloader_Studio.shproj", "{66214BD2-6DA6-49CD-8C74-63DA9E643259}"
 EndProject
@@ -120,13 +120,13 @@ Global
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
-		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{20fd60f3-3086-4a25-876b-e977bda46687}*SharedItemsImports = 13
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{20fd60f3-3086-4a25-876b-e977bda46687}*SharedItemsImports = 13
 		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
-		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{348f6441-9510-47d8-9f7f-547e8655cbb5}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
@@ -167,7 +167,7 @@ Global
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
-		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
@@ -177,7 +177,7 @@ Global
 		src\Shared\Shared.projitems*{ac5e9b43-cbb4-4cb8-8411-5425576f2055}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{b0903672-629b-4c21-bae3-6fbe587f4344}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
-		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
