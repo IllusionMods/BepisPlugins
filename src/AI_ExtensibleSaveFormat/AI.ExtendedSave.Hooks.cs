@@ -1,5 +1,5 @@
-﻿using CharaCustom;
-using CoordinateFileSystem;
+﻿using AIProject.UI;
+using CharaCustom;
 using HarmonyLib;
 
 namespace ExtensibleSaveFormat
@@ -10,16 +10,14 @@ namespace ExtensibleSaveFormat
         {
             //Override ExtSave for list loading at game startup
             [HarmonyPrefix]
-            [HarmonyPatch(typeof(Config.ConfigCharaSelectUI), "CreateList")]
             [HarmonyPatch(typeof(CustomCharaFileInfoAssist), nameof(CustomCharaFileInfoAssist.CreateCharaFileInfoList))]
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
-            [HarmonyPatch(typeof(CoordinateFileInfoAssist), nameof(CoordinateFileInfoAssist.CreateCharaFileInfoList))]
+            [HarmonyPatch(typeof(GameCoordinateFileInfoAssist), nameof(GameCoordinateFileInfoAssist.CreateCoordinateFileInfoList))]
             internal static void CreateListPrefix() => LoadEventsEnabled = false;
             [HarmonyPostfix]
-            [HarmonyPatch(typeof(Config.ConfigCharaSelectUI), "CreateList")]
             [HarmonyPatch(typeof(CustomCharaFileInfoAssist), nameof(CustomCharaFileInfoAssist.CreateCharaFileInfoList))]
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
-            [HarmonyPatch(typeof(CoordinateFileInfoAssist), nameof(CoordinateFileInfoAssist.CreateCharaFileInfoList))]
+            [HarmonyPatch(typeof(GameCoordinateFileInfoAssist), nameof(GameCoordinateFileInfoAssist.CreateCoordinateFileInfoList))]
             internal static void CreateListPostfix() => LoadEventsEnabled = true;
         }
     }
