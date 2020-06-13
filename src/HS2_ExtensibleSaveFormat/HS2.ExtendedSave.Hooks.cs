@@ -1,6 +1,8 @@
-﻿using CharaCustom;
+﻿using System.Collections;
+using CharaCustom;
 using CoordinateFileSystem;
 using HarmonyLib;
+using HS2;
 
 namespace ExtensibleSaveFormat
 {
@@ -21,6 +23,15 @@ namespace ExtensibleSaveFormat
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
             [HarmonyPatch(typeof(CoordinateFileInfoAssist), nameof(CoordinateFileInfoAssist.CreateCharaFileInfoList))]
             internal static void CreateListPostfix() => LoadEventsEnabled = true;
+
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(TitleScene), "LoadChara")]
+            internal static void FixTitleLoadCharaRace(ref IEnumerator __result)
+            {
+                // Title character gets loaded in Start and causes a race condition with extended data stuff. Delay the load 1 frame to avoid this
+                var orig = __result;
+                __result = new[] { null, orig }.GetEnumerator();
+            }
         }
     }
 }
