@@ -2,7 +2,6 @@
 using Sideloader.ListLoader;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Sideloader
@@ -24,7 +23,7 @@ namespace Sideloader
             /// </summary>
             internal static void LoadAllFolderPostfix(string _findFolder, string _strLoadFile, ref List<Object> __result)
             {
-                if (__result.Count() == 0 && _findFolder == "h/common/")
+                if (__result.Count() == 0 && (_findFolder == "h/common/" || _findFolder == "vr/common/"))
                     foreach (var kvp in BundleManager.Bundles.Where(x => x.Key.StartsWith(_findFolder)))
                         foreach (var lazyList in kvp.Value)
                             foreach (var assetName in lazyList.Instance.GetAllAssetNames())
