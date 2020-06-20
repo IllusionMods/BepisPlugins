@@ -6,6 +6,6 @@
         /// Version number used be all plugins. Must be convertible to <see cref="System.Version"/>
         /// Use ReleaseVersion.HotfixVersion format
         /// </summary>
-        public const string PluginsVersion = "15.1.1";
+        public const string PluginsVersion = "15.1.2";
     }
 }
