@@ -265,9 +265,24 @@ namespace Screencap
             var scaledWidth = width * downscaling;
             var scaledHeight = height * downscaling;
 
+            var cam = Camera.main.gameObject;
+            var dof = cam.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
+            float dofPrevBlurSize = 0;
+            if (dof != null)
+            {
+                dofPrevBlurSize = dof.maxBlurSize;
+                var ratio = Screen.height / (float)scaledHeight; //Use larger of width/height?
+                dof.maxBlurSize *= ratio * downscaling;
+            }
+
             var colour = CaptureScreen(scaledWidth, scaledHeight, false);
 
             ScaleTex(ref colour, width, height, downscaling);
+
+            if (dof != null)
+            {
+                dof.maxBlurSize = dofPrevBlurSize;
+            }
 
             return colour;
         }
@@ -279,9 +294,10 @@ namespace Screencap
 
             var cam = Camera.main.gameObject;
             var dof = cam.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
-            var dof_prevBlurSize = dof?.maxBlurSize;
+            float dofPrevBlurSize = 0;
             if (dof != null)
             {
+                dofPrevBlurSize = dof.maxBlurSize;
                 var ratio = Screen.height / (float)scaledHeight; //Use larger of width/height?
                 dof.maxBlurSize *= ratio * downscaling;
             }
@@ -296,7 +312,7 @@ namespace Screencap
 
             if (dof != null)
             {
-                dof.maxBlurSize = dof_prevBlurSize.Value;
+                dof.maxBlurSize = dofPrevBlurSize;
                 if (dof.enabled) dof.enabled = false;
                 else dof = null;
             }
