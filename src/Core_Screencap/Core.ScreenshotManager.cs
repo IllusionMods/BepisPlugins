@@ -65,6 +65,7 @@ namespace Screencap
         public static ConfigEntry<int> JpgQuality { get; private set; }
         public static ConfigEntry<NameFormat> ScreenshotNameFormat { get; private set; }
         public static ConfigEntry<string> ScreenshotNameOverride { get; private set; }
+        public static ConfigEntry<int> UIShotUpscale { get; private set; }
 
         private void InitializeSettings()
         {
@@ -168,6 +169,11 @@ namespace Screencap
                 "General", "Screenshot filename Name override",
                 "",
                 new ConfigDescription("Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", null, "Advanced"));
+
+            UIShotUpscale = Config.Bind(
+                "UI Screenshots", "Screenshot resolution multiplier",
+                1,
+                new ConfigDescription("Multiplies the UI screenshot resolution from the current game resolution by this amount.\nWarning: Some elements will still be rendered at the original resolution (most notably the interface).", new AcceptableValueRange<int>(1, 8), "Advanced"));
         }
 
         #endregion
@@ -260,9 +266,9 @@ namespace Screencap
         {
             var filename = GetUniqueFilename("UI");
 #if KK
-            Application.CaptureScreenshot(filename);
+            Application.CaptureScreenshot(filename, UIShotUpscale.Value);
 #elif EC
-            ScreenCapture.CaptureScreenshot(filename);
+            ScreenCapture.CaptureScreenshot(filename, UIShotUpscale.Value);
 #endif
 
             StartCoroutine(TakeScreenshotLog(filename));
