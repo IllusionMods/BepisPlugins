@@ -66,6 +66,7 @@ namespace Screencap
         private ConfigEntry<ShadowCascades> ShadowCascadeOverride { get; set; }
         private static ConfigEntry<DisableAOSetting> DisableAO { get; set; }
         public ConfigEntry<bool> ScreenshotMessage { get; private set; }
+        public static ConfigEntry<int> UIShotUpscale { get; private set; }
 
         private ConfigEntry<KeyboardShortcut> KeyCaptureNormal { get; set; }
         private ConfigEntry<KeyboardShortcut> KeyCaptureRender { get; set; }
@@ -98,6 +99,11 @@ namespace Screencap
 
             KeyCaptureNormal = Config.Bind("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), "Capture a screenshot \"as you see it\". Includes interface and such.");
             KeyCaptureRender = Config.Bind("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), "Capture a rendered screenshot with no interface. Controlled by other settings.");
+
+            UIShotUpscale = Config.Bind(
+                "UI Screenshots", "Screenshot resolution multiplier",
+                1,
+                new ConfigDescription("Multiplies the UI screenshot resolution from the current game resolution by this amount.\nWarning: Some elements will still be rendered at the original resolution (most notably the interface).", new AcceptableValueRange<int>(1, 8), "Advanced"));
 
             var ab = AssetBundle.LoadFromMemory(Properties.Resources.composite);
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
@@ -180,7 +186,7 @@ namespace Screencap
                 PlayCaptureSound();
 
                 var path = GetCaptureFilename();
-                ScreenCapture.CaptureScreenshot(path);
+                ScreenCapture.CaptureScreenshot(path, UIShotUpscale.Value);
                 StartCoroutine(WaitForEndOfFrameThen(() => LogScreenshotMessage("Writing normal screenshot to " + path.Substring(Paths.GameRootPath.Length))));
             }
             else if (KeyCaptureRender.Value.IsDown())
