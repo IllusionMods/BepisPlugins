@@ -286,8 +286,23 @@ namespace Sideloader.AutoResolver
 
         internal static void IterateCardPrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFile file, ICollection<ResolveInfo> extInfo)
         {
+#if AI || HS2
+            if (file.parameter.sex == 0)
+            {
+                action(StructReference.ChaFileFacePropertiesMale, file.custom.face, extInfo, "");
+                action(StructReference.ChaFileBodyPropertiesMale, file.custom.body, extInfo, "");
+            }
+            else
+            {
+                action(StructReference.ChaFileFacePropertiesFemale, file.custom.face, extInfo, "");
+                action(StructReference.ChaFileBodyPropertiesFemale, file.custom.body, extInfo, "");
+            }
+
+#else
             action(StructReference.ChaFileFaceProperties, file.custom.face, extInfo, "");
             action(StructReference.ChaFileBodyProperties, file.custom.body, extInfo, "");
+#endif
+
             action(StructReference.ChaFileHairProperties, file.custom.hair, extInfo, "");
 #if AI || HS2
             action(StructReference.ChaFileMakeupProperties, file.custom.face.makeup, extInfo, "");

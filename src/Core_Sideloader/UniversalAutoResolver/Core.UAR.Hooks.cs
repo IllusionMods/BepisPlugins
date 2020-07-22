@@ -404,8 +404,9 @@ namespace Sideloader.AutoResolver
 
                 List<ResolveInfo> faceResolveInfos = new List<ResolveInfo>();
                 List<ResolveInfo> makeupResolveInfos = new List<ResolveInfo>();
+                Dictionary<CategoryProperty, StructValue<int>> structref = __instance.parameter.sex == 0 ? StructReference.ChaFileFacePropertiesMale : StructReference.ChaFileFacePropertiesFemale;
 
-                foreach (var property in StructReference.ChaFileFaceProperties)
+                foreach (var property in structref)
                 {
                     if (__state.FaceData[property.Key.Property] == null) continue;
                     var resolveinfo = TryGetResolutionInfo(property.Value.GetMethod(__instance.custom.face), $"{property.Key.Prefix}.{property.Key.Property}", property.Key.Category, __state.FaceData[property.Key.Property]);
@@ -425,7 +426,7 @@ namespace Sideloader.AutoResolver
                         makeupResolveInfos.Add(resolveinfo);
                 }
 
-                ResolveStructure(StructReference.ChaFileFaceProperties, __instance.custom.face, faceResolveInfos);
+                ResolveStructure(structref, __instance.custom.face, faceResolveInfos);
                 ResolveStructure(StructReference.ChaFileMakeupProperties, __instance.custom.face.makeup, makeupResolveInfos);
             }
 #endif
