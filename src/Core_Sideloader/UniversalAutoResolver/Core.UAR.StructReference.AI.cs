@@ -57,12 +57,15 @@ namespace Sideloader.AutoResolver
             var baseProperties = new List<CategoryProperty>
             {
                 new CategoryProperty(CategoryNo.ft_detail_f, "detailId"),
+                new CategoryProperty(CategoryNo.mt_detail_f, "detailId"),
                 new CategoryProperty(CategoryNo.st_eyebrow, "eyebrowId"),
                 new CategoryProperty(CategoryNo.st_eyelash, "eyelashesId"),
                 new CategoryProperty(CategoryNo.fo_head, "headId"),
                 new CategoryProperty(CategoryNo.st_eye_hl, "hlId"),
                 new CategoryProperty(CategoryNo.st_mole, "moleId"),
-                new CategoryProperty(CategoryNo.ft_skin_f, "skinId")
+                new CategoryProperty(CategoryNo.ft_skin_f, "skinId"),
+                new CategoryProperty(CategoryNo.mt_skin_f, "skinId"),
+                new CategoryProperty(CategoryNo.mt_beard, "beardId"),
             };
 
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileFace), baseProperties, prefix);
@@ -105,9 +108,13 @@ namespace Sideloader.AutoResolver
             var baseProperties = new List<CategoryProperty>
             {
                 new CategoryProperty(CategoryNo.ft_detail_b, "detailId"),
+                new CategoryProperty(CategoryNo.mt_detail_b, "detailId"),
                 new CategoryProperty(CategoryNo.st_nip, "nipId"),
                 new CategoryProperty(CategoryNo.ft_skin_b, "skinId"),
+                new CategoryProperty(CategoryNo.mt_skin_b, "skinId"),
                 new CategoryProperty(CategoryNo.st_underhair, "underhairId"),
+                new CategoryProperty(CategoryNo.ft_sunburn, "sunburnId"),
+                new CategoryProperty(CategoryNo.mt_sunburn, "sunburnId"),
             };
 
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileBody), baseProperties, prefix);
