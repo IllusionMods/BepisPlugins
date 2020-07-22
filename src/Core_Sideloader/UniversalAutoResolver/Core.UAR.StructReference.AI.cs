@@ -104,7 +104,7 @@ namespace Sideloader.AutoResolver
 
             var baseProperties = new List<CategoryProperty>
             {
-                new CategoryProperty(CategoryNo.ft_detail_f, "detailId"),
+                new CategoryProperty(CategoryNo.ft_detail_b, "detailId"),
                 new CategoryProperty(CategoryNo.st_nip, "nipId"),
                 new CategoryProperty(CategoryNo.ft_skin_b, "skinId"),
                 new CategoryProperty(CategoryNo.st_underhair, "underhairId"),
