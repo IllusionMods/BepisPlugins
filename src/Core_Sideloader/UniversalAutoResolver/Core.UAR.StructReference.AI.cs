@@ -129,9 +129,9 @@ namespace Sideloader.AutoResolver
             }
             if (female)
             {
-                baseProperties.Add(new CategoryProperty(CategoryNo.ft_detail_b, "skinId"));
-                baseProperties.Add(new CategoryProperty(CategoryNo.ft_skin_b, "sunburnId"));
-                baseProperties.Add(new CategoryProperty(CategoryNo.ft_sunburn, "detailId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.ft_skin_b, "skinId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.ft_sunburn, "sunburnId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.ft_detail_b, "detailId"));
             }
 
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileBody), baseProperties, prefix);
