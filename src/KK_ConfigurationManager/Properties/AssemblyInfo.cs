@@ -1,4 +1,4 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyProduct("ConfigurationManagerKK")]
-[assembly: AssemblyTitle("BepisPlugins.ConfigurationManagerKK")]
+[assembly: AssemblyProduct("Configuration Manager Wrapper")]
+[assembly: AssemblyTitle(ConfigurationManagerWrapper.ConfigurationManagerWrapper.PluginName)]
