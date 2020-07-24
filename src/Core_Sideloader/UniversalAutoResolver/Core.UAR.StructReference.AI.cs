@@ -50,20 +50,31 @@ namespace Sideloader.AutoResolver
         #endregion
 
         #region ChaFileFace
-        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileFaceGenerator()
+        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileFaceGenerator(bool male, bool female)
         {
             const string prefix = nameof(ChaFileFace);
 
             var baseProperties = new List<CategoryProperty>
             {
-                new CategoryProperty(CategoryNo.ft_detail_f, "detailId"),
                 new CategoryProperty(CategoryNo.st_eyebrow, "eyebrowId"),
                 new CategoryProperty(CategoryNo.st_eyelash, "eyelashesId"),
-                new CategoryProperty(CategoryNo.fo_head, "headId"),
                 new CategoryProperty(CategoryNo.st_eye_hl, "hlId"),
                 new CategoryProperty(CategoryNo.st_mole, "moleId"),
-                new CategoryProperty(CategoryNo.ft_skin_f, "skinId")
             };
+
+            if (male)
+            {
+                baseProperties.Add(new CategoryProperty(CategoryNo.mo_head, "headId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.mt_detail_f, "detailId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.mt_skin_f, "skinId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.mt_beard, "beardId"));
+            }
+            if (female)
+            {
+                baseProperties.Add(new CategoryProperty(CategoryNo.fo_head, "headId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.ft_detail_f, "detailId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.ft_skin_f, "skinId"));
+            }
 
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileFace), baseProperties, prefix);
 
@@ -94,21 +105,34 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties { get; } = _chaFileFaceGenerator();
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties { get; } = _chaFileFaceGenerator(true, true);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFacePropertiesMale { get; } = _chaFileFaceGenerator(true, false);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFacePropertiesFemale { get; } = _chaFileFaceGenerator(false, true);
         #endregion
 
         #region ChaFileBody
-        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileBodyGenerator()
+        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileBodyGenerator(bool male, bool female)
         {
             const string prefix = nameof(ChaFileBody);
 
             var baseProperties = new List<CategoryProperty>
             {
-                new CategoryProperty(CategoryNo.ft_detail_f, "detailId"),
                 new CategoryProperty(CategoryNo.st_nip, "nipId"),
-                new CategoryProperty(CategoryNo.ft_skin_b, "skinId"),
                 new CategoryProperty(CategoryNo.st_underhair, "underhairId"),
             };
+
+            if (male)
+            {
+                baseProperties.Add(new CategoryProperty(CategoryNo.mt_skin_b, "skinId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.mt_sunburn, "sunburnId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.mt_detail_b, "detailId"));
+            }
+            if (female)
+            {
+                baseProperties.Add(new CategoryProperty(CategoryNo.ft_skin_b, "skinId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.ft_sunburn, "sunburnId"));
+                baseProperties.Add(new CategoryProperty(CategoryNo.ft_detail_b, "detailId"));
+            }
 
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileBody), baseProperties, prefix);
 
@@ -139,7 +163,9 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = _chaFileBodyGenerator();
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = _chaFileBodyGenerator(true, true);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyPropertiesMale { get; } = _chaFileBodyGenerator(true, false);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyPropertiesFemale { get; } = _chaFileBodyGenerator(false, true);
 
         #endregion
 
@@ -237,9 +263,19 @@ namespace Sideloader.AutoResolver
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].id = value; },
                     (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].id));
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mo_top, "ClothesTopM", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.top].id = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.top].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.fo_bot, "ClothesBot", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].id = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].id));
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mo_bot, "ClothesBotM", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].id = value; },
                     (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.bot].id));
@@ -261,6 +297,11 @@ namespace Sideloader.AutoResolver
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].id = value; },
                     (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].id));
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mo_gloves, "ClothesGlovesM", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].id = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.gloves].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.fo_panst, "ClothesPantyhose", prefix),
@@ -276,6 +317,11 @@ namespace Sideloader.AutoResolver
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.fo_shoes, "ClothesShoes", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes].id = value; },
+                    (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes].id));
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.mo_shoes, "ClothesShoesM", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes].id = value; },
                     (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.shoes].id));
