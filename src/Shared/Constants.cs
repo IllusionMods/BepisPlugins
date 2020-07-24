@@ -17,6 +17,7 @@
 #elif HS2
         internal const string StudioProcessName = "StudioNEOV2";
         internal const string GameProcessName = "HoneySelect2";
+        internal const string VRProcessName = "HoneySelect2VR";
 #elif KK
         internal const string StudioProcessName = "CharaStudio";
         internal const string GameProcessName = "Koikatu";

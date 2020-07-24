@@ -7,6 +7,7 @@ namespace Sideloader
 {
     [BepInProcess(Constants.GameProcessName)]
     [BepInProcess(Constants.StudioProcessName)]
+    [BepInProcess(Constants.VRProcessName)]
     [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
     [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, "1.1.0")]
     [BepInIncompatibility("com.bepis.bepinex.resourceredirector")]

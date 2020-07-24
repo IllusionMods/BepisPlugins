@@ -126,7 +126,6 @@ Global
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
-		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{348f6441-9510-47d8-9f7f-547e8655cbb5}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{3590476d-ce82-4b96-ab71-6dcc4b481b17}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{3590476d-ce82-4b96-ab71-6dcc4b481b17}*SharedItemsImports = 4
@@ -145,7 +144,6 @@ Global
 		src\Shared\Shared.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
-		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
@@ -160,7 +158,6 @@ Global
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7cba15ab-52d1-4506-a7bf-9d23060ecf5d}*SharedItemsImports = 13
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7e5e61f6-fd7d-4fe0-bfcd-c19346b7ef36}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{7e5e61f6-fd7d-4fe0-bfcd-c19346b7ef36}*SharedItemsImports = 4
-		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
@@ -197,7 +194,6 @@ Global
 		src\Shared\Shared.projitems*{e426eec2-98ca-4abd-804b-3c1bd20bee9c}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{f7e5c653-eeae-44bc-84b3-b16021b13d9e}*SharedItemsImports = 4
-		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

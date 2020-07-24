@@ -14,6 +14,7 @@ namespace ConfigurationManagerWrapper
 {
     [BepInProcess(Constants.GameProcessName)]
     [BepInProcess(Constants.StudioProcessName)]
+    [BepInProcess(Constants.VRProcessName)]
     [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
     [Browsable(false)]
     [BepInPlugin(GUID, PluginName, Version)]

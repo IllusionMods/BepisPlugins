@@ -5,6 +5,7 @@ namespace Screencap
 {
     [BepInProcess(Constants.GameProcessName)]
     [BepInProcess(Constants.StudioProcessName)]
+    [BepInProcess(Constants.VRProcessName)]
     [BepInPlugin(GUID, PluginName, Version)]
     [BepInIncompatibility("Screencap")]
     [BepInIncompatibility("EdgeDestroyer")]
