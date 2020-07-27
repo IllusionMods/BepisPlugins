@@ -95,7 +95,7 @@ namespace Sideloader
                             __result.Add(assetBundleName);
                 }
                 else if (path == "h/list/" || path == "map/list/mapinfo/" 
-#if HS2
+#if AI || HS2
                                            || path == "list/map/"
 #endif
                     )
