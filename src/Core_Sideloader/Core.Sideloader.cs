@@ -264,15 +264,22 @@ namespace Sideloader
                         }
                     }
                 }
-#if KK
-                else if (entry.Name.StartsWith("abdata/map/list/mapinfo/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+#if AI || HS2
+                else if (entry.Name.StartsWith("abdata/list/map/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     try
                     {
-                        var stream = arc.GetInputStream(entry);
-                        MapInfo mapListData = Lists.LoadMapCSV(stream);
+                        string assetBundleName = entry.Name;
+                        assetBundleName = assetBundleName.Remove(0, assetBundleName.IndexOf('/') + 1); //Remove "abdata/"
+                        assetBundleName = assetBundleName.Remove(assetBundleName.LastIndexOf('/')); //Remove the .csv filename
+                        assetBundleName += ".unity3d";
 
-                        Lists.ExternalMapList.Add(mapListData);
+                        string assetName = entry.Name;
+                        assetName = assetName.Remove(0, assetName.LastIndexOf('/') + 1); //Remove all but the filename
+                        assetName = assetName.Remove(assetName.LastIndexOf('.')); //Remove the .csv
+
+                        var stream = arc.GetInputStream(entry);
+                        Lists.LoadExcelDataCSV(assetBundleName, assetName, stream);
                     }
                     catch (Exception ex)
                     {
@@ -501,6 +508,22 @@ namespace Sideloader
             }
         }
 
+        /// <summary>
+        /// Try to get ExcelData that was originally in .csv form in the mod
+        /// </summary>
+        /// <param name="assetBundleName">Name of the folder containing the .csv file</param>
+        /// <param name="assetName">Name of the .csv file without the file extension</param>
+        /// <param name="excelData">ExcelData or null if none exists</param>
+        /// <returns>True if ExcelData was returned</returns>
+        public static bool TryGetExcelData(string assetBundleName, string assetName, out ExcelData excelData)
+        {
+            excelData = null;
+            if (Lists.ExternalExcelData.TryGetValue(assetBundleName, out var assets))
+                if (assets.TryGetValue(assetName, out excelData))
+                    return true;
+            return false;
+        }
+
         private void RedirectHook(IAssetLoadingContext context)
         {
             if (context.Parameters.Name == null || context.Bundle.name == null) return;
@@ -513,6 +536,15 @@ namespace Sideloader
                 if (tex != null)
                 {
                     context.Asset = tex;
+                    context.Complete();
+                    return;
+                }
+            }
+            if (context.Parameters.Type == typeof(ExcelData))
+            {
+                if (TryGetExcelData(context.Bundle.name, context.Parameters.Name, out var excelData))
+                {
+                    context.Asset = excelData;
                     context.Complete();
                     return;
                 }
@@ -548,6 +580,13 @@ namespace Sideloader
                 {
                     //Create a placeholder asset bundle for png files without a matching asset bundle
                     if (IsPngFolderOnly(bundle))
+                    {
+                        context.Bundle = AssetBundleHelper.CreateEmptyAssetBundle();
+                        context.Bundle.name = bundle;
+                        context.Complete();
+                    }
+                    //Placeholder for .csv excel data
+                    else if (Lists.ExternalExcelData.ContainsKey(bundle))
                     {
                         context.Bundle = AssetBundleHelper.CreateEmptyAssetBundle();
                         context.Bundle.name = bundle;

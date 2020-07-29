@@ -4,6 +4,7 @@ using Sideloader.AutoResolver;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Sideloader.ListLoader;
 #if KK || EC
 using ChaCustom;
 #elif AI || HS2
@@ -30,6 +31,15 @@ namespace Sideloader
 #endif
             }
 
+#if AI || HS2
+            [HarmonyPostfix, HarmonyPatch(typeof(GlobalMethod), nameof(GlobalMethod.AssetFileExist))]
+            internal static void AssetFileExist(string path, string targetName, ref bool __result)
+            {
+                if (TryGetExcelData(path, targetName, out _))
+                    __result = true;
+            }
+#endif
+
             [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
             internal static void IsFileHook(string assetBundleName, ref bool __result)
             {
@@ -38,6 +48,8 @@ namespace Sideloader
                     if (BundleManager.Bundles.ContainsKey(assetBundleName))
                         __result = true;
                     if (IsPngFolderOnly(assetBundleName))
+                        __result = true;
+                    if (Lists.ExternalExcelData.ContainsKey(assetBundleName))
                         __result = true;
                 }
             }
@@ -51,8 +63,30 @@ namespace Sideloader
                         __result = true;
                     if (IsPngFolderOnly(__instance.bundle))
                         __result = true;
+                    if (Lists.ExternalExcelData.ContainsKey(__instance.bundle))
+                        __result = true;
                 }
             }
+
+            [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
+            internal static void GetAssetBundleNameListFromPath(string path, List<string> __result)
+            {
+                if (path == "h/list/" || path == "map/list/mapinfo/")
+                {
+                    foreach (var assetBundleName in BundleManager.Bundles.Keys.Where(x => x.StartsWith(path)))
+                        if (!__result.Contains(assetBundleName))
+                            __result.Add(assetBundleName);
+                }
+#if AI || HS2
+                if (path == "list/map/")
+                {
+                    foreach (var assetBundleName in Lists.ExternalExcelData.Keys.Where(x => x.StartsWith(path)))
+                        if (!__result.Contains(assetBundleName))
+                            __result.Add(assetBundleName);
+                }
+#endif
+            }
+
 #if KK || EC
             /// <summary>
             /// The game gets from a list by index which will cause errors. Get them safely for sideloader items

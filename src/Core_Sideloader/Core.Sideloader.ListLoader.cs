@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
+using UnityEngine;
 #if AI || HS2
 using AIChara;
 #endif
@@ -23,6 +24,8 @@ namespace Sideloader.ListLoader
 #endif
 
         internal static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
+        //AssetBundle/AssetName/ExcelData
+        internal static Dictionary<string, Dictionary<string, ExcelData>> ExternalExcelData { get; private set; } = new Dictionary<string, Dictionary<string, ExcelData>>();
 
         internal static int CalculateGlobalID(int category, int ID) => (category * CategoryMultiplier) + ID;
 
@@ -130,6 +133,28 @@ namespace Sideloader.ListLoader
             }
 
             return chaListData;
+        }
+
+        internal static void LoadExcelDataCSV(string assetBundleName, string assetName, Stream stream)
+        {
+            ExcelData excelData = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
+            excelData.list = new List<ExcelData.Param>();
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+            {
+                while (!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine().Trim();
+
+                    ExcelData.Param param = new ExcelData.Param();
+                    param.list = line.Split(',').ToList();
+
+                    excelData.list.Add(param);
+                }
+            }
+
+            if (!ExternalExcelData.ContainsKey(assetBundleName))
+                ExternalExcelData[assetBundleName] = new Dictionary<string, ExcelData>();
+            ExternalExcelData[assetBundleName][assetName] = excelData;
         }
     }
 }

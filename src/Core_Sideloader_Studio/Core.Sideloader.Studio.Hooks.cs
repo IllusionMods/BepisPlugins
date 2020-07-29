@@ -86,21 +86,11 @@ namespace Sideloader
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
-            internal static void GetAssetBundleNameListFromPath(string path, List<string> __result)
+            internal static void GetAssetBundleNameListFromPathStudio(string path, List<string> __result)
             {
                 if (path == "studio/info/")
                 {
                     foreach (string assetBundleName in Lists.ExternalStudioDataList.Select(x => x.AssetBundleName).Distinct())
-                        if (!__result.Contains(assetBundleName))
-                            __result.Add(assetBundleName);
-                }
-                else if (path == "h/list/" || path == "map/list/mapinfo/" 
-#if AI || HS2
-                                           || path == "list/map/"
-#endif
-                    )
-                {
-                    foreach (var assetBundleName in BundleManager.Bundles.Keys.Where(x => x.StartsWith(path)))
                         if (!__result.Contains(assetBundleName))
                             __result.Add(assetBundleName);
                 }

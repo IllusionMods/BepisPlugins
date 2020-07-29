@@ -10,14 +10,6 @@ namespace Sideloader
     {
         internal static partial class Hooks
         {
-            [HarmonyPostfix, HarmonyPatch(typeof(BaseMap), "LoadMapInfo")]
-            internal static void LoadMapInfo(BaseMap __instance)
-            {
-                foreach (var mapInfo in Lists.ExternalMapList)
-                    foreach (var param in mapInfo.param)
-                        __instance.infoDic[param.No] = param;
-            }
-
             /// <summary>
             /// Patch for loading h/common/ stuff for Sideloader maps
             /// </summary>
