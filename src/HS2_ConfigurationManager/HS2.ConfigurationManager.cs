@@ -3,12 +3,12 @@ using BepInEx.Harmony;
 using BepisPlugins;
 using Config;
 using HarmonyLib;
+using Illusion.Game;
 using IllusionUtility.GetUtility;
 using System.ComponentModel;
+using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.UI;
-using Illusion.Game;
-using UniRx.Triggers;
 
 namespace ConfigurationManagerWrapper
 {
@@ -31,18 +31,18 @@ namespace ConfigurationManagerWrapper
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.OverrideHotkey = true;
 
-            var isStudio = Application.productName == "StudioNEOV2";
-            if (!isStudio)
+            bool mainGame = Application.productName == Constants.GameProcessName;
+            if (mainGame)
             {
                 HarmonyWrapper.PatchAll(typeof(ConfigurationManagerWrapper));
-                // Main game is handled by the hooks, Update is only for studio
+                //Main game is handled by the hooks, disable this plugin to prevent Update from running
                 enabled = false;
             }
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F1) && Singleton<Studio.Studio>.IsInstance() && !Manager.Scene.IsNowLoadingFade)
+            if (Input.GetKeyDown(KeyCode.F1) && !Manager.Scene.IsNowLoadingFade)
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
