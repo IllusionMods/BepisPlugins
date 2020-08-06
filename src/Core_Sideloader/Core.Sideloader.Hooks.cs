@@ -78,9 +78,17 @@ namespace Sideloader
                             __result.Add(assetBundleName);
                 }
 #if AI || HS2
-                if (path == "list/map/")
+                else if (path == "list/map/")
                 {
                     foreach (var assetBundleName in Lists.ExternalExcelData.Keys.Where(x => x.StartsWith(path)))
+                        if (!__result.Contains(assetBundleName))
+                            __result.Add(assetBundleName);
+                }
+#endif
+#if HS2
+                else if (path == "adv/eventcg/")
+                {
+                    foreach (var assetBundleName in BundleManager.Bundles.Keys.Where(x => x.StartsWith(path)))
                         if (!__result.Contains(assetBundleName))
                             __result.Add(assetBundleName);
                 }
