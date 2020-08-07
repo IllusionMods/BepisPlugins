@@ -524,6 +524,22 @@ namespace Sideloader
             return false;
         }
 
+        /// <summary>
+        /// Check whether the asset bundle at the specified path is one managed by Sideloader
+        /// </summary>
+        /// <param name="assetBundlePath">Path to the asset bundle without the leading abdata, i.e. map/list/mapinfo/mymap.unity3d</param>
+        /// <returns>True if the asset bundle is managed by Sideloader, false if not (doesn't exist, vanilla asset bundle, etc)</returns>
+        public static bool IsSideloaderAB(string assetBundlePath)
+        {
+            if (BundleManager.Bundles.ContainsKey(assetBundlePath))
+                return true;
+            if (Lists.ExternalExcelData.ContainsKey(assetBundlePath))
+                return true;
+            if (IsPngFolderOnly(assetBundlePath))
+                return true;
+            return false;
+        }
+
         private void RedirectHook(IAssetLoadingContext context)
         {
             if (context.Parameters.Name == null || context.Bundle.name == null) return;

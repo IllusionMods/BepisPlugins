@@ -40,32 +40,27 @@ namespace Sideloader
             }
 #endif
 
+#if HS2
+            [HarmonyPostfix, HarmonyPatch(typeof(Manager.GameSystem), "IsPathAdd50")]
+            public static void IsPathAdd50Hook(string _path, ref bool __result)
+            {
+                if (!__result)
+                    __result = IsSideloaderAB(_path);
+            }
+#endif
+
             [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
             internal static void IsFileHook(string assetBundleName, ref bool __result)
             {
                 if (!__result)
-                {
-                    if (BundleManager.Bundles.ContainsKey(assetBundleName))
-                        __result = true;
-                    if (IsPngFolderOnly(assetBundleName))
-                        __result = true;
-                    if (Lists.ExternalExcelData.ContainsKey(assetBundleName))
-                        __result = true;
-                }
+                    __result = IsSideloaderAB(assetBundleName);
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleData), nameof(AssetBundleData.isFile), MethodType.Getter)]
             internal static void IsFileHook2(ref bool __result, AssetBundleData __instance)
             {
                 if (!__result)
-                {
-                    if (BundleManager.Bundles.ContainsKey(__instance.bundle))
-                        __result = true;
-                    if (IsPngFolderOnly(__instance.bundle))
-                        __result = true;
-                    if (Lists.ExternalExcelData.ContainsKey(__instance.bundle))
-                        __result = true;
-                }
+                    __result = IsSideloaderAB(__instance.bundle);
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
