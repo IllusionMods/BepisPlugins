@@ -154,7 +154,20 @@ namespace Sideloader.AutoResolver
         {
             if (OI is OIItemInfo Item)
             {
+                #if AI || HS2
+                // 1 zipmod with Multi-category fix for AI/HS2. info dictionary is only confirmed in AI and HS2.
+                Dictionary<int, Dictionary<int, Dictionary<int, Info.ItemLoadInfo>>> itemInfoDict = Singleton<Info>.Instance.dicItemLoadInfo;
+                OIItemInfo itemInfo = (OIItemInfo) OI;
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => 
+                    x.ResolveItem && x.Slot == Item.no && x.GUID == extResolve.GUID &&
+                    itemInfoDict.TryGetValue(itemInfo.group, out var cateDict) &&
+                    cateDict.TryGetValue(itemInfo.category, out var slotDict) &&
+                    slotDict.ContainsKey(x.LocalSlot)
+                );
+                #else
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Item.no && x.GUID == extResolve.GUID);
+                #endif
+
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
@@ -319,7 +332,12 @@ namespace Sideloader.AutoResolver
             {
                 string MapGUID = (string)extData.data["mapInfoGUID"];
 
-                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID && x.GUID == MapGUID);
+                StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID && x.GUID == MapGUID
+                    #if AI || HS2 
+                        // Multi-category fix for map - only tested in AI/HS2
+                        && Singleton<Info>.Instance.dicMapLoadInfo.ContainsKey(x.LocalSlot)
+                    #endif                    
+                );
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
