@@ -65,7 +65,7 @@ namespace Sideloader.ListLoader
 
             List<string> FormatList(List<string> line, bool categoryOrGroup)
             {
-#if AI
+#if AI || HS2
                 //Convert group and category from KK to AI
                 if (CategoryOrGroup)
                 {

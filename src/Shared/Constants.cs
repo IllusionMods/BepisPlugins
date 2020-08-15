@@ -14,6 +14,10 @@
         internal const string GameProcessName32bit = "HoneySelect_32";
         internal const string BattleArenaProcessName = "BattleArena_64";
         internal const string BattleArenaProcessName32bit = "BattleArena_32";
+#elif HS2
+        internal const string StudioProcessName = "StudioNEOV2";
+        internal const string GameProcessName = "HoneySelect2";
+        internal const string VRProcessName = "HoneySelect2VR";
 #elif KK
         internal const string StudioProcessName = "CharaStudio";
         internal const string GameProcessName = "Koikatu";

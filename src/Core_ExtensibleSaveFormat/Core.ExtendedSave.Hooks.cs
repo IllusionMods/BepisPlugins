@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-#if AI
+#if AI || HS2
 using AIChara;
 #endif
 
@@ -97,7 +97,11 @@ namespace ExtensibleSaveFormat
                 newInstructionSet.InsertRange(lastSeekIndex + 2, //we insert AFTER the NEXT instruction, which is right before the try block exit
                     new[] {
                     new CodeInstruction(OpCodes.Ldarg_0), //push the ChaFile instance
+#if HS2
+                    new CodeInstruction(OpCodes.Ldloc_2, blockHeaderLocalBuilder), //push the BlockHeader instance
+#else
                     new CodeInstruction(OpCodes.Ldloc_S, blockHeaderLocalBuilder), //push the BlockHeader instance
+#endif
                     new CodeInstruction(OpCodes.Ldarg_1, blockHeaderLocalBuilder), //push the binaryreader instance
                     new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(ChaFileLoadFileHook), AccessTools.all)), //call our hook
                     });
@@ -223,7 +227,7 @@ namespace ExtensibleSaveFormat
             {
                 List<CodeInstruction> newInstructionSet = new List<CodeInstruction>(instructions);
 
-#if AI
+#if AI || HS2
                 string blockHeader = "AIChara.BlockHeader";
 #else
                 string blockHeader = "BlockHeader";
@@ -275,7 +279,11 @@ namespace ExtensibleSaveFormat
                 for (int i = 0; i < instructionsList.Count; i++)
                 {
                     CodeInstruction inst = instructionsList[i];
-                    if (set == false && inst.opcode == OpCodes.Ldc_I4_1 && instructionsList[i + 1].opcode == OpCodes.Stloc_1 && instructionsList[i + 2].opcode == OpCodes.Leave)
+#if HS2
+                    if (set == false && inst.opcode == OpCodes.Ldc_I4_1 && instructionsList[i + 1].opcode == OpCodes.Stloc_3 && (instructionsList[i + 2].opcode == OpCodes.Leave || instructionsList[i + 2].opcode == OpCodes.Leave_S))
+#else
+                    if (set == false && inst.opcode == OpCodes.Ldc_I4_1 && instructionsList[i + 1].opcode == OpCodes.Stloc_1 && (instructionsList[i + 2].opcode == OpCodes.Leave || instructionsList[i + 2].opcode == OpCodes.Leave_S))
+#endif
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_0);
                         yield return new CodeInstruction(OpCodes.Ldloc_0);
@@ -339,7 +347,9 @@ namespace ExtensibleSaveFormat
                 {
                     CodeInstruction inst = instructionsList[i];
                     yield return inst;
-                    if (!hooked && inst.opcode == OpCodes.Callvirt && instructionsList[i + 1].opcode == OpCodes.Leave) //find the end of the using(BinaryWriter) block
+
+                    //find the end of the using(BinaryWriter) block
+                    if (!hooked && inst.opcode == OpCodes.Callvirt && (instructionsList[i + 1].opcode == OpCodes.Leave || instructionsList[i + 1].opcode == OpCodes.Leave_S))
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_0); //push the ChaFileInstance
                         yield return new CodeInstruction(instructionsList[i - 2]); //push the BinaryWriter (copying the instruction to do so)
@@ -393,6 +403,21 @@ namespace ExtensibleSaveFormat
             //Prevent loading extended data when loading the list of coordinates in Chara Maker since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCoordinateFile), "Initialize")]
             internal static void CustomCoordinatePreHook() => LoadEventsEnabled = false;
+#else
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
+            internal static void LoadCharacterListPrefix() => LoadEventsEnabled = false;
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
+            internal static void LoadCharacterListPostfix() => LoadEventsEnabled = true;
+
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaLoad), "UpdateCharasList")]
+            internal static void CvsO_CharaLoadUpdateCharasListPrefix() => LoadEventsEnabled = false;
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaLoad), "UpdateCharasList")]
+            internal static void CvsO_CharaLoadUpdateCharasListPostfix() => LoadEventsEnabled = true;
+
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), "UpdateCharasList")]
+            internal static void CvsO_CharaSaveUpdateCharasListPrefix() => LoadEventsEnabled = false;
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), "UpdateCharasList")]
+            internal static void CvsO_CharaSaveUpdateCharasListPostfix() => LoadEventsEnabled = true;
 #endif
             #endregion
         }

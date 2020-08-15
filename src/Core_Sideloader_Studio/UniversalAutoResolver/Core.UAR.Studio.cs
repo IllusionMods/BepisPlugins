@@ -86,7 +86,7 @@ namespace Sideloader.AutoResolver
 #if KK
                         studioResolveInfo.Group = int.Parse(entry[1]);
                         studioResolveInfo.Category = int.Parse(entry[2]);
-#elif AI
+#elif AI || HS2
                         studioResolveInfo.Group = int.Parse(entry[2]);
                         studioResolveInfo.Category = int.Parse(entry[3]);
 #endif
@@ -113,6 +113,20 @@ namespace Sideloader.AutoResolver
         {
             Dictionary<int, ObjectInfo> ObjectList = StudioObjectSearch.FindObjectInfo(StudioObjectSearch.SearchType.All);
 
+            //Resolve all patterns for objects
+            if (extendedData != null && extendedData.data.ContainsKey("patternInfo"))
+            {
+                List<StudioPatternResolveInfo> extPatternInfo;
+
+                if (resolveType == ResolveType.Save)
+                    extPatternInfo = ((List<byte[]>)extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize(x)).ToList();
+                else
+                    extPatternInfo = ((object[])extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize((byte[])x)).ToList();
+
+                foreach (StudioPatternResolveInfo extPatternResolve in extPatternInfo)
+                    ResolveStudioObjectPattern(extPatternResolve, ObjectList[extPatternResolve.DicKey], resolveType);
+            }
+
             //Resolve every item with extended data
             if (extendedData != null && extendedData.data.ContainsKey("itemInfo"))
             {
@@ -134,20 +148,6 @@ namespace Sideloader.AutoResolver
             if (resolveType == ResolveType.Load)
                 foreach (ObjectInfo OI in ObjectList.Where(x => x.Value is OIItemInfo || x.Value is OILightInfo || x.Value is OICharInfo).Select(x => x.Value))
                     ResolveStudioObject(OI);
-
-            //Resolve all patterns for objects
-            if (extendedData != null && extendedData.data.ContainsKey("patternInfo"))
-            {
-                List<StudioPatternResolveInfo> extPatternInfo;
-
-                if (resolveType == ResolveType.Save)
-                    extPatternInfo = ((List<byte[]>)extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize(x)).ToList();
-                else
-                    extPatternInfo = ((object[])extendedData.data["patternInfo"]).Select(x => StudioPatternResolveInfo.Deserialize((byte[])x)).ToList();
-
-                foreach (StudioPatternResolveInfo extPatternResolve in extPatternInfo)
-                    ResolveStudioObjectPattern(extPatternResolve, ObjectList[extPatternResolve.DicKey], resolveType);
-            }
         }
 
         internal static void ResolveStudioObject(StudioResolveInfo extResolve, ObjectInfo OI, ResolveType resolveType = ResolveType.Load)
@@ -285,7 +285,7 @@ namespace Sideloader.AutoResolver
                         Item.pattern[i].key = BaseSlotID - 1;
                     }
                 }
-#elif AI
+#elif AI || HS2
                 for (int i = 0; i < Item.colors.Length; i++)
                 {
                     if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;
@@ -310,7 +310,7 @@ namespace Sideloader.AutoResolver
         internal static void ResolveStudioMap(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
         {
             //Set map ID to the resolved ID
-            int MapID = Singleton<Studio.Studio>.Instance.sceneInfo.map;
+            int MapID = GetMapID();
 
             if (MapID == -1) //Loaded scene has no map
                 return;
@@ -324,7 +324,7 @@ namespace Sideloader.AutoResolver
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Sideloader.Logger.LogDebug($"Resolving (Studio Map) [{MapGUID}] {MapID}->{intResolve.LocalSlot}");
-                    Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
+                    SetMapID(intResolve.LocalSlot);
                 }
                 else
                     ShowGUIDError(MapGUID);
@@ -340,7 +340,7 @@ namespace Sideloader.AutoResolver
                         //Found a matching sideloader mod
                         if (Sideloader.DebugLogging.Value)
                             Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Map) {MapID}->{intResolve.LocalSlot}");
-                        Singleton<Studio.Studio>.Instance.sceneInfo.map = intResolve.LocalSlot;
+                        SetMapID(intResolve.LocalSlot);
                     }
                     else
                     {
@@ -475,6 +475,31 @@ namespace Sideloader.AutoResolver
                         Sideloader.Logger.Log(BepInEx.Logging.LogLevel.Warning | BepInEx.Logging.LogLevel.Message, $"[UAR] Compatibility resolving (Studio BGM) failed, no match found for ID {bgmID}");
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Get the current map's ID
+        /// </summary>
+        /// <returns></returns>
+        internal static int GetMapID() => (int)MapIDField.GetValue();
+        /// <summary>
+        /// Set the current map's ID
+        /// </summary>
+        /// <param name="id"></param>
+        internal static void SetMapID(int id) => MapIDField.SetValue(id);
+
+        /// <summary>
+        /// Find the field containing the map ID for cross version compatibility since this was changed in an update to AI Girl and is different between KK and AI/HS2
+        /// </summary>
+        private static Traverse MapIDField
+        {
+            get
+            {
+                if (Traverse.Create(Studio.Studio.Instance.sceneInfo).Field("map").FieldExists())
+                    return Traverse.Create(Studio.Studio.Instance.sceneInfo).Field("map");
+                else
+                    return Traverse.Create(Studio.Studio.Instance.sceneInfo).Field("mapInfo").Field("no");
             }
         }
     }

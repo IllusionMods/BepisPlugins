@@ -69,8 +69,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConfigurationManagerWrapper
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EC_ConfigurationManager", "src\EC_ConfigurationManager\EC_ConfigurationManager.csproj", "{6979C7C4-91FE-4FD5-8F74-101CC533B238}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ConfigurationManager", "src\Core_ConfigurationManager\Core_ConfigurationManager.shproj", "{348F6441-9510-47D8-9F7F-547E8655CBB5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS_ConfigurationManager", "src\HS_ConfigurationManager\HS_ConfigurationManager.csproj", "{FA7D93C6-05C2-42A9-B82B-C544898F26AD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_SliderUnlocker", "src\AI_SliderUnlocker\AI_SliderUnlocker.csproj", "{D78D6B25-E644-4CFE-9031-A05DFBDC683D}"
@@ -87,7 +85,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_Screencap", "src\AI_Scre
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_SliderUnlocker", "src\PH_SliderUnlocker\PH_SliderUnlocker.csproj", "{2DF3121A-62DE-451B-9854-BCDA34B200F2}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ExtensibleSaveFormat_CharaStudio", "src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.shproj", "{20FD60F3-3086-4A25-876B-E977BDA46687}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_ExtensibleSaveFormat_Studio", "src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.shproj", "{20FD60F3-3086-4A25-876B-E977BDA46687}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Sideloader_Studio", "src\Core_Sideloader_Studio\Core_Sideloader_Studio.shproj", "{66214BD2-6DA6-49CD-8C74-63DA9E643259}"
 EndProject
@@ -97,17 +95,37 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AI_ConfigurationManager", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_ExtensibleSaveFormat", "src\PH_ExtensibleSaveFormat\PH_ExtensibleSaveFormat.csproj", "{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PH_ConfigurationManager", "src\PH_ConfigurationManager\PH_ConfigurationManager.csproj", "{AC5E9B43-CBB4-4CB8-8411-5425576F2055}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_ExtensibleSaveFormat", "src\HS2_ExtensibleSaveFormat\HS2_ExtensibleSaveFormat.csproj", "{B9EABBB2-4A92-4672-9B5A-658FDF8ACE3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_InputUnlocker", "src\HS2_InputUnlocker\HS2_InputUnlocker.csproj", "{4393D751-EFDD-4FE6-B93C-F17DDA20E77A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_SliderUnlocker", "src\HS2_SliderUnlocker\HS2_SliderUnlocker.csproj", "{7E5E61F6-FD7D-4FE0-BFCD-C19346B7EF36}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_BGMLoader", "src\HS2_BGMLoader\HS2_BGMLoader.csproj", "{0A11411E-7798-4303-8E65-97421A30CD1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_ConfigurationManager", "src\HS2_ConfigurationManager\HS2_ConfigurationManager.csproj", "{9EC1E476-6A6C-43DF-B6ED-3DFF94F446FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_Sideloader", "src\HS2_Sideloader\HS2_Sideloader.csproj", "{75C19265-0BA8-4373-9254-22FB6102788D}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AIHS2_Core_Screencap", "src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.shproj", "{CFC6EE58-CD1B-4A21-B281-C6E9D5D0390D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_Screencap", "src\HS2_Screencap\HS2_Screencap.csproj", "{E426EEC2-98CA-4ABD-804B-3C1BD20BEE9C}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Core_BGMLoader\Core_BGMLoader.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
-		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{20fd60f3-3086-4a25-876b-e977bda46687}*SharedItemsImports = 13
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{20fd60f3-3086-4a25-876b-e977bda46687}*SharedItemsImports = 13
+		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{2df3121a-62de-451b-9854-bcda34b200f2}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
-		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{303c404b-9d91-4622-9b8b-8415e0de6a8f}*SharedItemsImports = 4
-		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{348f6441-9510-47d8-9f7f-547e8655cbb5}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{356eb041-d692-45b5-acf6-0f393a62cb4b}*SharedItemsImports = 13
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{3590476d-ce82-4b96-ab71-6dcc4b481b17}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{3590476d-ce82-4b96-ab71-6dcc4b481b17}*SharedItemsImports = 4
@@ -116,6 +134,8 @@ Global
 		src\Core_Sideloader\Core_Sideloader.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
 		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{384e98f6-c66a-4280-b7ff-ae5bb594dae3}*SharedItemsImports = 4
+		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{4393d751-efdd-4fe6-b93c-f17dda20e77a}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{4393d751-efdd-4fe6-b93c-f17dda20e77a}*SharedItemsImports = 4
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{61e63b45-1d21-44f7-9b01-f5209c05ffb4}*SharedItemsImports = 13
@@ -124,7 +144,6 @@ Global
 		src\Shared\Shared.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
-		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
@@ -133,19 +152,28 @@ Global
 		src\Shared\Shared.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{747a4e61-34f4-4790-a418-bb2cb03450e3}*SharedItemsImports = 4
+		src\Core_Sideloader\Core_Sideloader.projitems*{75c19265-0ba8-4373-9254-22fb6102788d}*SharedItemsImports = 4
+		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{75c19265-0ba8-4373-9254-22fb6102788d}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{75c19265-0ba8-4373-9254-22fb6102788d}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7cba15ab-52d1-4506-a7bf-9d23060ecf5d}*SharedItemsImports = 13
-		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
+		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7e5e61f6-fd7d-4fe0-bfcd-c19346b7ef36}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{7e5e61f6-fd7d-4fe0-bfcd-c19346b7ef36}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8589072c-44cb-4f6e-92e7-d73a42c31d69}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8af4399e-0d5a-418e-8178-e81192c56213}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
-		src\Core_ExtensibleSaveFormat_CharaStudio\Core_ExtensibleSaveFormat_CharaStudio.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{9ec1e476-6a6c-43df-b6ed-3dff94f446fc}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{ac5e9b43-cbb4-4cb8-8411-5425576f2055}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{b0903672-629b-4c21-bae3-6fbe587f4344}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{c1f8feeb-09e9-4fd0-a9b1-b4a323ed2177}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{c4188eb1-8dc5-47c7-a966-8aa38b6cfb55}*SharedItemsImports = 4
@@ -154,6 +182,7 @@ Global
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{ce5a9fab-c188-4919-a296-d9b1422169e9}*SharedItemsImports = 13
+		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{cfc6ee58-cd1b-4a21-b281-c6e9d5d0390d}*SharedItemsImports = 13
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
@@ -161,9 +190,10 @@ Global
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{e1074dcd-cc19-4c67-b799-eb534c885018}*SharedItemsImports = 13
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
+		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{e426eec2-98ca-4abd-804b-3c1bd20bee9c}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{e426eec2-98ca-4abd-804b-3c1bd20bee9c}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{f7e5c653-eeae-44bc-84b3-b16021b13d9e}*SharedItemsImports = 4
-		src\Core_ConfigurationManager\Core_ConfigurationManager.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -279,6 +309,38 @@ Global
 		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9EABBB2-4A92-4672-9B5A-658FDF8ACE3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9EABBB2-4A92-4672-9B5A-658FDF8ACE3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9EABBB2-4A92-4672-9B5A-658FDF8ACE3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9EABBB2-4A92-4672-9B5A-658FDF8ACE3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4393D751-EFDD-4FE6-B93C-F17DDA20E77A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4393D751-EFDD-4FE6-B93C-F17DDA20E77A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4393D751-EFDD-4FE6-B93C-F17DDA20E77A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4393D751-EFDD-4FE6-B93C-F17DDA20E77A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E5E61F6-FD7D-4FE0-BFCD-C19346B7EF36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E5E61F6-FD7D-4FE0-BFCD-C19346B7EF36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E5E61F6-FD7D-4FE0-BFCD-C19346B7EF36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E5E61F6-FD7D-4FE0-BFCD-C19346B7EF36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A11411E-7798-4303-8E65-97421A30CD1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A11411E-7798-4303-8E65-97421A30CD1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A11411E-7798-4303-8E65-97421A30CD1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A11411E-7798-4303-8E65-97421A30CD1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EC1E476-6A6C-43DF-B6ED-3DFF94F446FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EC1E476-6A6C-43DF-B6ED-3DFF94F446FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EC1E476-6A6C-43DF-B6ED-3DFF94F446FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EC1E476-6A6C-43DF-B6ED-3DFF94F446FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75C19265-0BA8-4373-9254-22FB6102788D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75C19265-0BA8-4373-9254-22FB6102788D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75C19265-0BA8-4373-9254-22FB6102788D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75C19265-0BA8-4373-9254-22FB6102788D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E426EEC2-98CA-4ABD-804B-3C1BD20BEE9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E426EEC2-98CA-4ABD-804B-3C1BD20BEE9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E426EEC2-98CA-4ABD-804B-3C1BD20BEE9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E426EEC2-98CA-4ABD-804B-3C1BD20BEE9C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -317,7 +379,6 @@ Global
 		{E26EC117-EC2C-4B61-A2B8-C6D56230E6A9} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 		{66C8608F-4585-4E2C-8E8C-F4FDCC2CE382} = {2050CFE4-0FCC-4DFB-80A4-CFBE10C80D03}
 		{6979C7C4-91FE-4FD5-8F74-101CC533B238} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
-		{348F6441-9510-47D8-9F7F-547E8655CBB5} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{FA7D93C6-05C2-42A9-B82B-C544898F26AD} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{D78D6B25-E644-4CFE-9031-A05DFBDC683D} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
 		{3590476D-CE82-4B96-AB71-6DCC4B481B17} = {CE8AB915-8694-4892-BD38-05CBB1AAA418}
@@ -330,6 +391,15 @@ Global
 		{66214BD2-6DA6-49CD-8C74-63DA9E643259} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
 		{B0903672-629B-4C21-BAE3-6FBE587F4344} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{F7E5C653-EEAE-44BC-84B3-B16021B13D9E} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
+		{AC5E9B43-CBB4-4CB8-8411-5425576F2055} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
+		{B9EABBB2-4A92-4672-9B5A-658FDF8ACE3F} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
+		{4393D751-EFDD-4FE6-B93C-F17DDA20E77A} = {CE8AB915-8694-4892-BD38-05CBB1AAA418}
+		{7E5E61F6-FD7D-4FE0-BFCD-C19346B7EF36} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
+		{0A11411E-7798-4303-8E65-97421A30CD1A} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
+		{9EC1E476-6A6C-43DF-B6ED-3DFF94F446FC} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
+		{75C19265-0BA8-4373-9254-22FB6102788D} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
+		{CFC6EE58-CD1B-4A21-B281-C6E9D5D0390D} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
+		{E426EEC2-98CA-4ABD-804B-3C1BD20BEE9C} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}

@@ -137,7 +137,7 @@ namespace Sideloader.AutoResolver
                                 }
                             }
                         }
-#elif AI
+#elif AI || HS2
                         for (int i = 0; i < Item.colors.Length; i++)
                         {
                             if (Item.colors[i].pattern.key >= BaseSlotID)
@@ -242,7 +242,7 @@ namespace Sideloader.AutoResolver
                     ExtendedData.Add("patternInfo", PatternResolutionInfo.Select(x => x.Serialize()).ToList());
 
                 //Add the extended data for the map, if any
-                int mapID = Studio.Studio.Instance.sceneInfo.map;
+                int mapID = GetMapID();
                 if (mapID > BaseSlotID)
                 {
                     StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == mapID).FirstOrDefault();
@@ -253,7 +253,7 @@ namespace Sideloader.AutoResolver
                         //Set map ID back to default
                         if (Sideloader.DebugLogging.Value)
                             Sideloader.Logger.LogDebug($"Setting Map ID:{mapID}->{extResolve.Slot}");
-                        Studio.Studio.Instance.sceneInfo.map = extResolve.Slot;
+                        SetMapID(extResolve.Slot);
                     }
                 }
 

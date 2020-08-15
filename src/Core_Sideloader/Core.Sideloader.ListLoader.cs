@@ -4,7 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
-#if AI
+using UnityEngine;
+#if AI || HS2
 using AIChara;
 #endif
 
@@ -18,11 +19,13 @@ namespace Sideloader.ListLoader
 
 #if KK || EC
         internal static Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>();
-#elif AI
+#elif AI || HS2
         internal static Dictionary<int, Dictionary<int, ListInfoBase>> InternalDataList { get; private set; } = new Dictionary<int, Dictionary<int, ListInfoBase>>();
 #endif
 
         internal static List<ChaListData> ExternalDataList { get; private set; } = new List<ChaListData>();
+        //AssetBundle/AssetName/ExcelData
+        internal static Dictionary<string, Dictionary<string, ExcelData>> ExternalExcelData { get; private set; } = new Dictionary<string, Dictionary<string, ExcelData>>();
 
         internal static int CalculateGlobalID(int category, int ID) => (category * CategoryMultiplier) + ID;
 
@@ -30,7 +33,7 @@ namespace Sideloader.ListLoader
         {
 #if KK || EC
             InternalDataList = r_dictListInfo.GetValue<Dictionary<ChaListDefine.CategoryNo, Dictionary<int, ListInfoBase>>>(instance);
-#elif AI
+#elif AI || HS2
             InternalDataList = r_dictListInfo.GetValue<Dictionary<int, Dictionary<int, ListInfoBase>>>(instance);
 #endif
 
@@ -52,7 +55,7 @@ namespace Sideloader.ListLoader
                 loadListInternal(instance, dictData, data);
             }
         }
-#elif AI
+#elif AI || HS2
         internal static void LoadList(this ChaListControl instance, ChaListDefine.CategoryNo category, ChaListData data)
         {
             var dictListInfo = r_dictListInfo.GetValue<Dictionary<int, Dictionary<int, ListInfoBase>>>(instance);
@@ -83,7 +86,7 @@ namespace Sideloader.ListLoader
                 }
             }
         }
-#elif AI
+#elif AI || HS2
         internal static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
         {
             foreach (KeyValuePair<int, List<string>> keyValuePair in chaListData.dictList)
@@ -130,6 +133,28 @@ namespace Sideloader.ListLoader
             }
 
             return chaListData;
+        }
+
+        internal static void LoadExcelDataCSV(string assetBundleName, string assetName, Stream stream)
+        {
+            ExcelData excelData = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
+            excelData.list = new List<ExcelData.Param>();
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+            {
+                while (!reader.EndOfStream)
+                {
+                    string line = reader.ReadLine().Trim();
+
+                    ExcelData.Param param = new ExcelData.Param();
+                    param.list = line.Split(',').ToList();
+
+                    excelData.list.Add(param);
+                }
+            }
+
+            if (!ExternalExcelData.ContainsKey(assetBundleName))
+                ExternalExcelData[assetBundleName] = new Dictionary<string, ExcelData>();
+            ExternalExcelData[assetBundleName][assetName] = excelData;
         }
     }
 }

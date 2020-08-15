@@ -6,7 +6,8 @@ using Sideloader.ListLoader;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-#if AI
+using Manager;
+#if AI || HS2
 using AIChara;
 #endif
 
@@ -86,7 +87,7 @@ namespace Sideloader.AutoResolver
 
                 IterateCardPrefixes(ResolveStructure, file, extInfo);
 
-#if AI
+#if AI || HS2
                 //Resolve the bundleID to the same ID as the hair
                 foreach (var hairPart in file.custom.hair.parts)
                     if (hairPart.id > BaseSlotID)
@@ -114,7 +115,7 @@ namespace Sideloader.AutoResolver
                         if (slot < BaseSlotID)
 #if KK || EC
                             if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
-#elif AI
+#elif AI || HS2
                             if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
 #endif
                                 continue;
@@ -155,7 +156,7 @@ namespace Sideloader.AutoResolver
                     }
                 });
 
-#if AI
+#if AI || HS2
                 //Resolve the bundleID to the same ID as the hair
                 foreach (var hairPart in file.custom.hair.parts)
                     hairPart.bundleId = hairPart.id;
@@ -182,7 +183,7 @@ namespace Sideloader.AutoResolver
 
                 List<ResolveInfo> extInfo;
 
-                if (extData.data["info"] is List<byte[]> )
+                if (extData.data["info"] is List<byte[]>)
                 {
                     var tmpExtInfo = (List<byte[]>)extData.data["info"];
                     extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
@@ -219,7 +220,7 @@ namespace Sideloader.AutoResolver
 
                 IterateCardPrefixes(ResetStructResolveStructure, __instance, extInfo);
 
-#if AI
+#if AI || HS2
                 //Resolve the bundleID to the same ID as the hair
                 foreach (var hairPart in __instance.custom.hair.parts)
                     if (hairPart.id > BaseSlotID)
@@ -280,7 +281,7 @@ namespace Sideloader.AutoResolver
                         if (slot < BaseSlotID)
 #if KK || EC
                             if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
-#elif AI
+#elif AI || HS2
                             if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
 #endif
                                 continue;
@@ -362,6 +363,73 @@ namespace Sideloader.AutoResolver
 
             #endregion
 
+#if AI || HS2
+            /// <summary>
+            /// Find the head preset data
+            /// </summary>
+            [HarmonyPrefix, HarmonyPatch(typeof(ChaFileControl), nameof(ChaFileControl.LoadFacePreset))]
+            internal static void LoadFacePresetPrefix(ChaFileControl __instance, ref HeadPresetInfo __state)
+            {
+                __state = null;
+                int headID = __instance.custom.face.headId;
+                if (headID >= BaseSlotID)
+                {
+                    ChaListControl chaListCtrl = Singleton<Character>.Instance.chaListCtrl;
+                    ListInfoBase listInfo = chaListCtrl.GetListInfo(__instance.parameter.sex == 0 ? ChaListDefine.CategoryNo.mo_head : ChaListDefine.CategoryNo.fo_head, __instance.custom.face.headId);
+                    string preset = listInfo.GetInfo(ChaListDefine.KeyType.Preset);
+
+                    var resolveinfo = TryGetResolutionInfo(__instance.parameter.sex == 0 ? ChaListDefine.CategoryNo.mo_head : ChaListDefine.CategoryNo.fo_head, __instance.custom.face.headId);
+                    if (resolveinfo == null) return;
+
+                    var headPresetInfo = TryGetHeadPresetInfo(resolveinfo.Slot, resolveinfo.GUID, preset);
+                    __state = headPresetInfo;
+                }
+                else
+                {
+                    ChaListControl chaListCtrl = Singleton<Character>.Instance.chaListCtrl;
+                    ListInfoBase listInfo = chaListCtrl.GetListInfo(__instance.parameter.sex == 0 ? ChaListDefine.CategoryNo.mo_head : ChaListDefine.CategoryNo.fo_head, __instance.custom.face.headId);
+                    string preset = listInfo.GetInfo(ChaListDefine.KeyType.Preset);
+
+                    var headPresetInfo = TryGetHeadPresetInfo(headID, null, preset);
+                    __state = headPresetInfo;
+                }
+            }
+            /// <summary>
+            /// Use the head preset data to resolve the IDs
+            /// </summary>
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileControl), nameof(ChaFileControl.LoadFacePreset))]
+            internal static void LoadFacePresetPostfix(ChaFileControl __instance, ref HeadPresetInfo __state)
+            {
+                if (__state == null) return;
+
+                List<ResolveInfo> faceResolveInfos = new List<ResolveInfo>();
+                List<ResolveInfo> makeupResolveInfos = new List<ResolveInfo>();
+                Dictionary<CategoryProperty, StructValue<int>> structref = __instance.parameter.sex == 0 ? StructReference.ChaFileFacePropertiesMale : StructReference.ChaFileFacePropertiesFemale;
+
+                foreach (var property in structref)
+                {
+                    if (__state.FaceData[property.Key.Property] == null) continue;
+                    var resolveinfo = TryGetResolutionInfo(property.Value.GetMethod(__instance.custom.face), $"{property.Key.Prefix}.{property.Key.Property}", property.Key.Category, __state.FaceData[property.Key.Property]);
+                    if (resolveinfo == null)
+                        ShowGUIDError(__state.FaceData[property.Key.Property]);
+                    else
+                        faceResolveInfos.Add(resolveinfo);
+                }
+
+                foreach (var property in StructReference.ChaFileMakeupProperties)
+                {
+                    if (__state.MakeupData[property.Key.Property] == null) continue;
+                    var resolveinfo = TryGetResolutionInfo(property.Value.GetMethod(__instance.custom.face.makeup), $"{property.Key.Prefix}.{property.Key.Property}", property.Key.Category, __state.MakeupData[property.Key.Property]);
+                    if (resolveinfo == null)
+                        ShowGUIDError(__state.MakeupData[property.Key.Property]);
+                    else
+                        makeupResolveInfos.Add(resolveinfo);
+                }
+
+                ResolveStructure(structref, __instance.custom.face, faceResolveInfos);
+                ResolveStructure(StructReference.ChaFileMakeupProperties, __instance.custom.face.makeup, makeupResolveInfos);
+            }
+#endif
         }
     }
 }

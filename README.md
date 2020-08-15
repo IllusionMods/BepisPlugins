@@ -1,6 +1,6 @@
 
 # BepisPlugins
-A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins for Koikatu / Koikatsu Party, EmotionCreators, AI-Shoujo / AI-Girl and other games by Illusion. Check plugin descriptions below for a full list of included plugins. 
+A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins for Koikatu / Koikatsu Party, EmotionCreators, AI-Shoujo / AI-Girl, HoneySelect2 and other games by Illusion. Check plugin descriptions below for a full list of included plugins. 
 
 If you wish to contribute or need help, check the #help channel on the [Koikatsu discord server](https://discord.gg/hevygx6).
 

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>20fd60f3-3086-4a25-876b-e977bda46687</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Core_ExtensibleSaveFormat_Studio</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Core.ExtendedSave.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.ExtendedSave.Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.ExtendedSave.Hooks.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Sideloader.HoneySelect2</id>
+    <version>$version$</version>
+    <authors>IllusionMods</authors>
+    <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Loads mods packaged in .zip archives from the Mods directory without modifying the game files at all</description>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+  <files>
+    <file src="..\install.ps1" target="tools"/>
+  </files>
+</package>
