@@ -412,6 +412,7 @@ namespace Sideloader.AutoResolver
                 new CategoryProperty(CategoryNo.ao_face, "id", prefix),
                 new CategoryProperty(CategoryNo.ao_neck, "id", prefix),
                 new CategoryProperty(CategoryNo.ao_shoulder, "id", prefix),
+                new CategoryProperty(CategoryNo.ao_chest, "id", prefix),
                 new CategoryProperty(CategoryNo.ao_waist, "id", prefix),
                 new CategoryProperty(CategoryNo.ao_back, "id", prefix),
                 new CategoryProperty(CategoryNo.ao_arm, "id", prefix),
