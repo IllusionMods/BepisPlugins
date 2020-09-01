@@ -415,8 +415,8 @@ namespace Screencap
             var oldRt = cam.targetTexture;
             var oldRtc = Camera.current.targetTexture;
 
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = alpha ? new Color(0, 0, 0, 0) : Color.black;
+            cam.clearFlags = alpha ? CameraClearFlags.SolidColor : oldCf;
+            cam.backgroundColor = alpha ? new Color(0, 0, 0, 0) : oldBg;
             cam.targetTexture = rt;
 
             cam.Render();
