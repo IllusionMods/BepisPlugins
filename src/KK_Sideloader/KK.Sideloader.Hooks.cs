@@ -1,6 +1,5 @@
-﻿using HarmonyLib;
-using Sideloader.ListLoader;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -19,7 +18,7 @@ namespace Sideloader
                     foreach (var kvp in BundleManager.Bundles.Where(x => x.Key.StartsWith(_findFolder)))
                         foreach (var lazyList in kvp.Value)
                             foreach (var assetName in lazyList.Instance.GetAllAssetNames())
-                                if (assetName.ToLower().Contains(_strLoadFile.ToLower()))
+                                if (_strLoadFile.ToLower() == Path.GetFileNameWithoutExtension(assetName.ToLower()))
                                 {
                                     GameObject go = CommonLib.LoadAsset<GameObject>(kvp.Key, assetName);
                                     if (go)
