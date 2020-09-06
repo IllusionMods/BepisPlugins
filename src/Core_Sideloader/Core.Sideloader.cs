@@ -43,6 +43,8 @@ namespace Sideloader
         /// <summary> List of all loaded manifest files </summary>
         [Obsolete("Use Manifests or GetManifest")]
         public static List<Manifest> LoadedManifests;
+        /// <summary> List of blacklisted mods</summary>
+        public static List<Blacklist> Blacklists = new List<Blacklist>();
 
         private static readonly Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
         private static readonly HashSet<string> PngFolderList = new HashSet<string>();
@@ -94,10 +96,21 @@ namespace Sideloader
             if (!AdditionalModsDirectory.Value.IsNullOrWhiteSpace() && !Directory.Exists(AdditionalModsDirectory.Value))
                 Logger.LogWarning("Could not find the additional mods directory specified in config: " + AdditionalModsDirectory.Value);
 
+            LoadBlacklist();
             LoadModsFromDirectories(ModsDirectory, AdditionalModsDirectory.Value);
         }
 
         private static string GetRelativeArchiveDir(string archiveDir) => archiveDir.Length < ModsDirectory.Length ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
+
+        private void LoadBlacklist()
+        {
+            foreach (var xmlFile in Directory.GetFiles(Paths.ConfigPath, "*.xml", SearchOption.AllDirectories))
+            {
+                var blacklist = new Blacklist(xmlFile);
+                if (blacklist.BlacklistItems.Count > 0)
+                    Blacklists.Add(blacklist);
+            }
+        }
 
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
@@ -128,10 +141,21 @@ namespace Sideloader
 
                     if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
                     {
+                        //Skip the mod if it is not for this game
                         if (!manifest.Game.IsNullOrWhiteSpace() && !GameNameList.Contains(manifest.Game.ToLower().Replace("!", "")))
+                        {
                             Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {manifest.Game}");
-                        else
-                            return new { archive, manifest };
+                            return null;
+                        }
+
+                        //Skip the mod if it has been blacklisted
+                        foreach (var blacklist in Blacklists)
+                        {
+                            if (blacklist.BlacklistItems.TryGetValue(manifest.GUID, out var blacklistInfo))
+                                return null;
+                        }
+
+                        return new { archive, manifest };
                     }
                 }
                 catch (Exception ex)
