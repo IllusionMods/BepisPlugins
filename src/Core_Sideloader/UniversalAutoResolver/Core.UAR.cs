@@ -508,7 +508,7 @@ namespace Sideloader.AutoResolver
                 if (Sideloader._AllowModBlacklists)
                     foreach (var blacklist in Sideloader.Blacklists)
                     {
-                        if (blacklist.BlacklistItems.TryGetValue(guid, out var blacklistInfo))
+                        if (blacklist.BlacklistInfos.TryGetValue(guid, out var blacklistInfo))
                         {
                             string message = $"[UAR] WARNING! Blacklisted mod detected! [{guid}]";
                             if (!blacklistInfo.Reason.IsNullOrEmpty())

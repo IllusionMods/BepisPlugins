@@ -114,7 +114,7 @@ namespace Sideloader
             foreach (var xmlFile in Directory.GetFiles(Paths.ConfigPath, "*.xml", SearchOption.AllDirectories))
             {
                 var blacklist = new Blacklist(xmlFile);
-                if (blacklist.BlacklistItems.Count > 0)
+                if (blacklist.BlacklistInfos.Count > 0)
                     Blacklists.Add(blacklist);
             }
         }
@@ -160,8 +160,10 @@ namespace Sideloader
                         {
                             foreach (var blacklist in Blacklists)
                             {
-                                if (blacklist.BlacklistItems.TryGetValue(manifest.GUID, out var blacklistInfo))
-                                    return null;
+                                if (blacklist.BlacklistInfos.TryGetValue(manifest.GUID, out var blacklistInfo))
+                                    //Blacklists with individually blacklisted items are handled in ListLoader.LoadCSV and LoadStudioCSV
+                                    if (blacklistInfo.BlacklistItemInfos.Count == 0 && blacklistInfo.BlacklistStudioItemInfos.Count == 0)
+                                        return null;
                             }
                         }
 
@@ -266,7 +268,7 @@ namespace Sideloader
                     try
                     {
                         var stream = arc.GetInputStream(entry);
-                        var chaListData = Lists.LoadCSV(stream);
+                        var chaListData = Lists.LoadCSV(stream, manifest.GUID);
 
                         SetPossessNew(chaListData);
                         UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
@@ -287,7 +289,7 @@ namespace Sideloader
                         try
                         {
                             var stream = arc.GetInputStream(entry);
-                            var studioListData = Lists.LoadStudioCSV(stream, entry.Name);
+                            var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
 
                             UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
                             Lists.ExternalStudioDataList.Add(studioListData);
@@ -331,7 +333,7 @@ namespace Sideloader
                 try
                 {
                     var stream = arc.GetInputStream(entry);
-                    var studioListData = Lists.LoadStudioCSV(stream, entry.Name);
+                    var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
 
                     UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
                     Lists.ExternalStudioDataList.Add(studioListData);

@@ -20,7 +20,7 @@ namespace Sideloader
         /// <summary>
         /// Dictionary of blacklisted GUID and the associated blacklist info
         /// </summary>
-        public Dictionary<string, BlacklistInfo> BlacklistItems = new Dictionary<string, BlacklistInfo>();
+        public Dictionary<string, BlacklistInfo> BlacklistInfos = new Dictionary<string, BlacklistInfo>();
 
         internal Blacklist(string filePath)
         {
@@ -31,9 +31,9 @@ namespace Sideloader
 
             foreach (var element in BlacklistDocument.Element("sideloaderBlacklist").Elements("blacklist"))
             {
-                var blacklistItem = new BlacklistInfo(element);
-                if (!blacklistItem.GUID.IsNullOrEmpty())
-                    BlacklistItems[blacklistItem.GUID] = blacklistItem;
+                var blacklistInfo = new BlacklistInfo(element);
+                if (!blacklistInfo.GUID.IsNullOrEmpty())
+                    BlacklistInfos[blacklistInfo.GUID] = blacklistInfo;
             }
         }
     }
@@ -51,6 +51,14 @@ namespace Sideloader
         /// Reason for blacklisting the mod, optional
         /// </summary>
         public string Reason;
+        /// <summary>
+        /// List of individually blacklisted items, if any
+        /// </summary>
+        public List<BlacklistItemInfo> BlacklistItemInfos = new List<BlacklistItemInfo>();
+        /// <summary>
+        /// List of individually blacklisted studio items, if any
+        /// </summary>
+        public List<BlacklistItemInfo> BlacklistStudioItemInfos = new List<BlacklistItemInfo>();
 
         internal BlacklistInfo(XElement element)
         {
@@ -58,12 +66,61 @@ namespace Sideloader
             {
                 GUID = element.Attribute("guid")?.Value;
                 Reason = element.Attribute("reason")?.Value;
+
+                foreach (var blacklistItemElement in element.Elements("item"))
+                {
+                    var blacklistItemInfo = new BlacklistItemInfo(blacklistItemElement);
+                    if (blacklistItemInfo.ID == -1)
+                        Sideloader.Logger.LogWarning($"Invalid blacklist item ID for GUID {GUID}, skipping");
+                    else
+                        BlacklistItemInfos.Add(blacklistItemInfo);
+                }
+
+                foreach (var blacklistItemElement in element.Elements("studioItem"))
+                {
+                    var blacklistItemInfo = new BlacklistItemInfo(blacklistItemElement);
+                    if (blacklistItemInfo.ID == -1)
+                        Sideloader.Logger.LogWarning($"Invalid blacklist item ID for GUID {GUID}, skipping");
+                    else
+                        BlacklistStudioItemInfos.Add(blacklistItemInfo);
+                }
             }
             catch (Exception ex)
             {
-                Sideloader.Logger.LogError($"Could not load blacklist data, skipping line.");
+                Sideloader.Logger.LogError($"Could not load blacklist data, skipping entry.");
                 Sideloader.Logger.LogError(ex);
             }
+        }
+    }
+
+    /// <summary>
+    /// Contains data about individually blacklisted items
+    /// </summary>
+    public class BlacklistItemInfo
+    {
+        /// <summary>
+        /// Category number
+        /// </summary>
+        public int Category;
+        /// <summary>
+        /// Group number
+        /// </summary>
+        public int Group;
+        /// <summary>
+        /// ID number
+        /// </summary>
+        public int ID;
+
+        internal BlacklistItemInfo(XElement element)
+        {
+            int.TryParse(element.Attribute("category")?.Value, out int category);
+            Category = category;
+            int.TryParse(element.Attribute("group")?.Value, out int group);
+            Group = group;
+            if (int.TryParse(element.Attribute("id")?.Value, out int id))
+                ID = id;
+            else
+                ID = -1;
         }
     }
 }

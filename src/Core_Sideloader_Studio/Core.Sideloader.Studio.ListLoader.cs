@@ -27,15 +27,16 @@ namespace Sideloader.ListLoader
             }
         }
 
-        internal static StudioListData LoadStudioCSV(Stream stream, string fileName)
+        internal static StudioListData LoadStudioCSV(Stream stream, string fileName, string guid)
         {
             StudioListData data = new StudioListData(fileName);
 
             string fileNameStripped = fileName.Remove(0, fileName.LastIndexOf('/') + 1);
+            string listType = fileNameStripped.Split('_')[0].ToLower();
 
             bool CategoryOrGroup = false;
             if (fileNameStripped.Contains("_"))
-                if (Sideloader.StudioListResolveBlacklist.Contains(fileNameStripped.Split('_')[0].ToLower()))
+                if (Sideloader.StudioListResolveBlacklist.Contains(listType))
                     CategoryOrGroup = true;
 
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
@@ -55,8 +56,24 @@ namespace Sideloader.ListLoader
                 {
                     string line = reader.ReadLine().Trim();
 
-                    if (!line.Contains(','))
-                        break;
+                    if (!line.Contains(',')) break;
+                    var lineSplit = line.Split(',');
+
+                    //Skip blacklisted items
+                    if (Sideloader.AllowModBlacklists.Value)
+                        if (!CategoryOrGroup)
+                            if (int.TryParse(lineSplit[0], out int id))
+                            {
+                                //Animations are the only Studio items resolved based on ID, Group, and Category
+                                if ((listType == "anime" || listType == "hanime") && int.TryParse(lineSplit[1], out int group) && int.TryParse(lineSplit[2], out int category))
+                                {
+                                    if (CheckStudioBlacklist(guid, id, group, category))
+                                        continue;
+                                }
+                                else if (CheckStudioBlacklist(guid, id))
+                                    continue;
+
+                            }
 
                     data.Entries.Add(FormatList(line.Split(',').ToList(), CategoryOrGroup));
                 }
@@ -80,6 +97,25 @@ namespace Sideloader.ListLoader
 
                 return line;
             }
+        }
+
+        private static bool CheckStudioBlacklist(string guid, int id)
+        {
+            foreach (var blacklist in Sideloader.Blacklists)
+                if (blacklist.BlacklistInfos.TryGetValue(guid, out var blacklistInfo))
+                    foreach (var item in blacklistInfo.BlacklistStudioItemInfos)
+                        if (item.ID == id)
+                            return true;
+            return false;
+        }
+        private static bool CheckStudioBlacklist(string guid, int id, int group, int category)
+        {
+            foreach (var blacklist in Sideloader.Blacklists)
+                if (blacklist.BlacklistInfos.TryGetValue(guid, out var blacklistInfo))
+                    foreach (var item in blacklistInfo.BlacklistStudioItemInfos)
+                        if (item.ID == id && item.Group == group && item.Category == category)
+                            return true;
+            return false;
         }
 
         internal class StudioListData

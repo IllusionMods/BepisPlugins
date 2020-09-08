@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using HarmonyLib;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using HarmonyLib;
 using UnityEngine;
 #if AI || HS2
 using AIChara;
@@ -108,7 +108,7 @@ namespace Sideloader.ListLoader
         }
 #endif
 
-        internal static ChaListData LoadCSV(Stream stream)
+        internal static ChaListData LoadCSV(Stream stream, string guid)
         {
             ChaListData chaListData = new ChaListData();
 
@@ -125,10 +125,16 @@ namespace Sideloader.ListLoader
                 {
                     string line = reader.ReadLine().Trim();
 
-                    if (!line.Contains(','))
-                        break;
+                    if (!line.Contains(',')) break;
+                    var lineSplit = line.Split(',');
 
-                    chaListData.dictList.Add(i++, line.Split(',').ToList());
+                    //Skip blacklisted items
+                    if (Sideloader.AllowModBlacklists.Value)
+                        if (int.TryParse(lineSplit[0], out int id))
+                            if (CheckBlacklist(guid, chaListData.categoryNo, id))
+                                continue;
+
+                    chaListData.dictList.Add(i++, lineSplit.ToList());
                 }
             }
 
@@ -155,6 +161,16 @@ namespace Sideloader.ListLoader
             if (!ExternalExcelData.ContainsKey(assetBundleName))
                 ExternalExcelData[assetBundleName] = new Dictionary<string, ExcelData>();
             ExternalExcelData[assetBundleName][assetName] = excelData;
+        }
+
+        private static bool CheckBlacklist(string guid, int category, int id)
+        {
+            foreach (var blacklist in Sideloader.Blacklists)
+                if (blacklist.BlacklistInfos.TryGetValue(guid, out var blacklistInfo))
+                    foreach (var item in blacklistInfo.BlacklistItemInfos)
+                        if (item.Category == category && item.ID == id)
+                            return true;
+            return false;
         }
     }
 }
