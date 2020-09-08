@@ -505,17 +505,18 @@ namespace Sideloader.AutoResolver
 #endif
             else
             {
-                foreach (var blacklist in Sideloader.Blacklists)
-                {
-                    if (blacklist.BlacklistItems.TryGetValue(guid, out var blacklistInfo))
+                if (Sideloader._AllowModBlacklists)
+                    foreach (var blacklist in Sideloader.Blacklists)
                     {
-                        string message = $"[UAR] WARNING! Blacklisted mod detected! [{guid}]";
-                        if (!blacklistInfo.Reason.IsNullOrEmpty())
-                            message += $" reason: {blacklistInfo.Reason}";
-                        Sideloader.Logger.Log(loglevel, message);
-                        return;
+                        if (blacklist.BlacklistItems.TryGetValue(guid, out var blacklistInfo))
+                        {
+                            string message = $"[UAR] WARNING! Blacklisted mod detected! [{guid}]";
+                            if (!blacklistInfo.Reason.IsNullOrEmpty())
+                                message += $" reason: {blacklistInfo.Reason}";
+                            Sideloader.Logger.Log(loglevel, message);
+                            return;
+                        }
                     }
-                }
 
                 //did not find a match, we don't have the mod
                 Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Missing mod detected! [{guid}]");

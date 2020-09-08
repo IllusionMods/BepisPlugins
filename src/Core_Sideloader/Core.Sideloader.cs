@@ -59,6 +59,10 @@ namespace Sideloader
         internal static ConfigEntry<bool> KeepMissingAccessories { get; private set; }
         internal static ConfigEntry<bool> MigrationEnabled { get; private set; }
         internal static ConfigEntry<string> AdditionalModsDirectory { get; private set; }
+        /// <summary> Original value at game start, used for logging missing mod warnings </summary>
+        internal static bool _AllowModBlacklists;
+        internal static ConfigEntry<bool> AllowModBlacklists { get; private set; }
+
 
         internal void Awake()
         {
@@ -89,6 +93,9 @@ namespace Sideloader
                 "Attempt to change the GUID and/or ID of mods based on the data configured in the manifest.xml. Helps keep backwards compatibility when updating mods.");
             AdditionalModsDirectory = Config.Bind("General", "Additional mods directory", FindKoiZipmodDir(),
                 "Additional directory to load zipmods from.");
+            AllowModBlacklists = Config.Bind("General", "Allow mod blacklists", true,
+                "Allow blacklists to prevent mods from loading. Disable to allow all blacklisted mods to be loaded. Requires game restart.");
+            _AllowModBlacklists = AllowModBlacklists.Value;
 
             if (!Directory.Exists(ModsDirectory))
                 Logger.LogWarning("Could not find the mods directory: " + ModsDirectory);
@@ -149,10 +156,13 @@ namespace Sideloader
                         }
 
                         //Skip the mod if it has been blacklisted
-                        foreach (var blacklist in Blacklists)
+                        if (AllowModBlacklists.Value)
                         {
-                            if (blacklist.BlacklistItems.TryGetValue(manifest.GUID, out var blacklistInfo))
-                                return null;
+                            foreach (var blacklist in Blacklists)
+                            {
+                                if (blacklist.BlacklistItems.TryGetValue(manifest.GUID, out var blacklistInfo))
+                                    return null;
+                            }
                         }
 
                         return new { archive, manifest };
