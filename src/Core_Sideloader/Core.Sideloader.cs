@@ -111,7 +111,7 @@ namespace Sideloader
 
         private void LoadBlacklist()
         {
-            foreach (var xmlFile in Directory.GetFiles(Paths.ConfigPath, "*.xml", SearchOption.AllDirectories))
+            foreach (var xmlFile in Directory.GetFiles(ModsDirectory, "*.xml", SearchOption.AllDirectories))
             {
                 var blacklist = new Blacklist(xmlFile);
                 if (blacklist.BlacklistInfos.Count > 0)
