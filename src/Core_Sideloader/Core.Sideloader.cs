@@ -43,8 +43,6 @@ namespace Sideloader
         /// <summary> List of all loaded manifest files </summary>
         [Obsolete("Use Manifests or GetManifest")]
         public static List<Manifest> LoadedManifests;
-        /// <summary> List of blacklisted mods</summary>
-        public static List<Blacklist> Blacklists = new List<Blacklist>();
 
         private static readonly Dictionary<string, ZipFile> PngList = new Dictionary<string, ZipFile>();
         private static readonly HashSet<string> PngFolderList = new HashSet<string>();
@@ -59,10 +57,6 @@ namespace Sideloader
         internal static ConfigEntry<bool> KeepMissingAccessories { get; private set; }
         internal static ConfigEntry<bool> MigrationEnabled { get; private set; }
         internal static ConfigEntry<string> AdditionalModsDirectory { get; private set; }
-        /// <summary> Original value at game start, used for logging missing mod warnings </summary>
-        internal static bool _AllowModBlacklists;
-        internal static ConfigEntry<bool> AllowModBlacklists { get; private set; }
-
 
         internal void Awake()
         {
@@ -93,9 +87,6 @@ namespace Sideloader
                 "Attempt to change the GUID and/or ID of mods based on the data configured in the manifest.xml. Helps keep backwards compatibility when updating mods.");
             AdditionalModsDirectory = Config.Bind("General", "Additional mods directory", FindKoiZipmodDir(),
                 "Additional directory to load zipmods from.");
-            AllowModBlacklists = Config.Bind("General", "Allow mod blacklists", true,
-                "Allow blacklists to prevent mods from loading. Disable to allow all blacklisted mods to be loaded. Requires game restart.");
-            _AllowModBlacklists = AllowModBlacklists.Value;
 
             if (!Directory.Exists(ModsDirectory))
                 Logger.LogWarning("Could not find the mods directory: " + ModsDirectory);
@@ -103,21 +94,10 @@ namespace Sideloader
             if (!AdditionalModsDirectory.Value.IsNullOrWhiteSpace() && !Directory.Exists(AdditionalModsDirectory.Value))
                 Logger.LogWarning("Could not find the additional mods directory specified in config: " + AdditionalModsDirectory.Value);
 
-            LoadBlacklist();
             LoadModsFromDirectories(ModsDirectory, AdditionalModsDirectory.Value);
         }
 
         private static string GetRelativeArchiveDir(string archiveDir) => archiveDir.Length < ModsDirectory.Length ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
-
-        private void LoadBlacklist()
-        {
-            foreach (var xmlFile in Directory.GetFiles(ModsDirectory, "*.xml", SearchOption.AllDirectories))
-            {
-                var blacklist = new Blacklist(xmlFile);
-                if (blacklist.BlacklistInfos.Count > 0)
-                    Blacklists.Add(blacklist);
-            }
-        }
 
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
@@ -153,18 +133,6 @@ namespace Sideloader
                         {
                             Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {manifest.Game}");
                             return null;
-                        }
-
-                        //Skip the mod if it has been blacklisted
-                        if (AllowModBlacklists.Value)
-                        {
-                            foreach (var blacklist in Blacklists)
-                            {
-                                if (blacklist.BlacklistInfos.TryGetValue(manifest.GUID, out var blacklistInfo))
-                                    //Blacklists with individually blacklisted items are handled in ListLoader.LoadCSV and LoadStudioCSV
-                                    if (blacklistInfo.BlacklistItemInfos.Count == 0 && blacklistInfo.BlacklistStudioItemInfos.Count == 0)
-                                        return null;
-                            }
                         }
 
                         return new { archive, manifest };

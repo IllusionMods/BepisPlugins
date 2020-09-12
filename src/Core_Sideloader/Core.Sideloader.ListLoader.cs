@@ -128,12 +128,6 @@ namespace Sideloader.ListLoader
                     if (!line.Contains(',')) break;
                     var lineSplit = line.Split(',');
 
-                    //Skip blacklisted items
-                    if (Sideloader.AllowModBlacklists.Value)
-                        if (int.TryParse(lineSplit[0], out int id))
-                            if (CheckBlacklist(guid, chaListData.categoryNo, id))
-                                continue;
-
                     chaListData.dictList.Add(i++, lineSplit.ToList());
                 }
             }
@@ -161,16 +155,6 @@ namespace Sideloader.ListLoader
             if (!ExternalExcelData.ContainsKey(assetBundleName))
                 ExternalExcelData[assetBundleName] = new Dictionary<string, ExcelData>();
             ExternalExcelData[assetBundleName][assetName] = excelData;
-        }
-
-        private static bool CheckBlacklist(string guid, int category, int id)
-        {
-            foreach (var blacklist in Sideloader.Blacklists)
-                if (blacklist.BlacklistInfos.TryGetValue(guid, out var blacklistInfo))
-                    foreach (var item in blacklistInfo.BlacklistItemInfos)
-                        if (item.Category == category && item.ID == id)
-                            return true;
-            return false;
         }
     }
 }

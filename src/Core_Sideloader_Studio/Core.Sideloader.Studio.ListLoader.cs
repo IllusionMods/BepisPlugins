@@ -59,22 +59,6 @@ namespace Sideloader.ListLoader
                     if (!line.Contains(',')) break;
                     var lineSplit = line.Split(',');
 
-                    //Skip blacklisted items
-                    if (Sideloader.AllowModBlacklists.Value)
-                        if (!CategoryOrGroup)
-                            if (int.TryParse(lineSplit[0], out int id))
-                            {
-                                //Animations are the only Studio items resolved based on ID, Group, and Category
-                                if ((listType == "anime" || listType == "hanime") && int.TryParse(lineSplit[1], out int group) && int.TryParse(lineSplit[2], out int category))
-                                {
-                                    if (CheckStudioBlacklist(guid, id, group, category))
-                                        continue;
-                                }
-                                else if (CheckStudioBlacklist(guid, id))
-                                    continue;
-
-                            }
-
                     data.Entries.Add(FormatList(line.Split(',').ToList(), CategoryOrGroup));
                 }
             }
@@ -97,25 +81,6 @@ namespace Sideloader.ListLoader
 
                 return line;
             }
-        }
-
-        private static bool CheckStudioBlacklist(string guid, int id)
-        {
-            foreach (var blacklist in Sideloader.Blacklists)
-                if (blacklist.BlacklistInfos.TryGetValue(guid, out var blacklistInfo))
-                    foreach (var item in blacklistInfo.BlacklistStudioItemInfos)
-                        if (item.ID == id)
-                            return true;
-            return false;
-        }
-        private static bool CheckStudioBlacklist(string guid, int id, int group, int category)
-        {
-            foreach (var blacklist in Sideloader.Blacklists)
-                if (blacklist.BlacklistInfos.TryGetValue(guid, out var blacklistInfo))
-                    foreach (var item in blacklistInfo.BlacklistStudioItemInfos)
-                        if (item.ID == id && item.Group == group && item.Category == category)
-                            return true;
-            return false;
         }
 
         internal class StudioListData

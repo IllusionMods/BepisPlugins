@@ -504,23 +504,8 @@ namespace Sideloader.AutoResolver
                 Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]");
 #endif
             else
-            {
-                if (Sideloader._AllowModBlacklists)
-                    foreach (var blacklist in Sideloader.Blacklists)
-                    {
-                        if (blacklist.BlacklistInfos.TryGetValue(guid, out var blacklistInfo))
-                        {
-                            string message = $"[UAR] WARNING! Blacklisted mod detected! [{guid}]";
-                            if (!blacklistInfo.Reason.IsNullOrEmpty())
-                                message += $" reason: {blacklistInfo.Reason}";
-                            Sideloader.Logger.Log(loglevel, message);
-                            return;
-                        }
-                    }
-
                 //did not find a match, we don't have the mod
                 Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Missing mod detected! [{guid}]");
-            }
         }
 
         private static List<string> GetNowSceneNames()
