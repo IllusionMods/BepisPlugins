@@ -5,7 +5,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-#if AI || HS2
+using System.Xml.Linq;
+#if KK || EC
+using ChaCustom;
+#elif AI || HS2
 using AIChara;
 #endif
 
@@ -14,6 +17,7 @@ namespace Sideloader.ListLoader
     internal static partial class Lists
     {
         internal const int CategoryMultiplier = 1000000;
+        private const string CheckItemFile = "UserData/save/checkitem.xml";
 
         internal static readonly FieldInfo r_dictListInfo = typeof(ChaListControl).GetField("dictListInfo", AccessTools.all);
 
@@ -28,6 +32,8 @@ namespace Sideloader.ListLoader
         internal static Dictionary<string, Dictionary<string, ExcelData>> ExternalExcelData { get; private set; } = new Dictionary<string, Dictionary<string, ExcelData>>();
 
         internal static int CalculateGlobalID(int category, int ID) => (category * CategoryMultiplier) + ID;
+        //GUID/Category/ID
+        internal static Dictionary<string, Dictionary<int, HashSet<int>>> CheckItemList = new Dictionary<string, Dictionary<int, HashSet<int>>>();
 
         internal static void LoadAllLists(ChaListControl instance)
         {
@@ -155,6 +161,85 @@ namespace Sideloader.ListLoader
             if (!ExternalExcelData.ContainsKey(assetBundleName))
                 ExternalExcelData[assetBundleName] = new Dictionary<string, ExcelData>();
             ExternalExcelData[assetBundleName][assetName] = excelData;
+        }
+
+        internal static void LoadCheckItemList()
+        {
+            if (!File.Exists(CheckItemFile)) return;
+            if (CheckItemList.Count > 0) return;
+            try
+            {
+                XDocument checkItemListXML = XDocument.Load(CheckItemFile);
+
+                var checkItemList = checkItemListXML.Element("checkitem");
+                foreach (var modElement in checkItemList.Elements("mod"))
+                {
+                    string guid = modElement.Attribute("guid")?.Value;
+                    if (!guid.IsNullOrEmpty())
+                    {
+                        foreach (var categoryElement in modElement.Elements("category"))
+                        {
+                            if (int.TryParse(categoryElement.Attribute("number")?.Value, out int category))
+                            {
+                                foreach (var itemElement in categoryElement.Elements("item"))
+                                {
+                                    if (int.TryParse(itemElement.Attribute("id")?.Value, out int id))
+                                    {
+                                        if (!CheckItemList.ContainsKey(guid))
+                                            CheckItemList[guid] = new Dictionary<int, HashSet<int>>();
+                                        if (!CheckItemList[guid].ContainsKey(category))
+                                            CheckItemList[guid][category] = new HashSet<int>();
+                                        CheckItemList[guid][category].Add(id);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                File.Delete(CheckItemFile);
+            }
+        }
+
+        internal static void SaveCheckItemList()
+        {
+            File.Delete(CheckItemFile);
+
+            try
+            {
+                XDocument itemNewListXML = new XDocument();
+                XElement checkItemListElement = new XElement("checkitem");
+                itemNewListXML.Add(checkItemListElement);
+
+                foreach (var x in CheckItemList)
+                {
+                    XElement modElement = new XElement("mod");
+                    modElement.SetAttributeValue("guid", x.Key);
+                    checkItemListElement.Add(modElement);
+
+                    foreach (var y in x.Value)
+                    {
+                        XElement categoryElement = new XElement("category");
+                        categoryElement.SetAttributeValue("number", y.Key);
+                        modElement.Add(categoryElement);
+
+                        foreach (var z in y.Value)
+                        {
+                            XElement itemElement = new XElement("item");
+                            itemElement.SetAttributeValue("id", z);
+                            categoryElement.Add(itemElement);
+                        }
+                    }
+                }
+
+                itemNewListXML.Save(CheckItemFile);
+            }
+            catch
+            {
+                File.Delete(CheckItemFile);
+            }
         }
     }
 }
