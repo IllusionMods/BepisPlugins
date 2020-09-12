@@ -40,6 +40,8 @@ namespace Sideloader
 
         /// <summary> List of all loaded manifest files </summary>
         public static readonly Dictionary<string, Manifest> Manifests = new Dictionary<string, Manifest>();
+        /// <summary> Dictionary of GUID and loaded zip file name </summary>
+        public static readonly Dictionary<string, string> ZipArchives = new Dictionary<string, string>();
         /// <summary> List of all loaded manifest files </summary>
         [Obsolete("Use Manifests or GetManifest")]
         public static List<Manifest> LoadedManifests;
@@ -176,6 +178,7 @@ namespace Sideloader
                 try
                 {
                     Archives.Add(archive);
+                    ZipArchives[manifest.GUID] = archive.Name;
                     Manifests[manifest.GUID] = manifest;
 
                     LoadAllUnityArchives(archive, archive.Name);
