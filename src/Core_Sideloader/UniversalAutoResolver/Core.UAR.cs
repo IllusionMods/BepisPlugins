@@ -384,16 +384,6 @@ namespace Sideloader.AutoResolver
                 return;
             }
 
-            foreach (var migrationInfo in migrationInfoList.Where(x => x.MigrationType == MigrationType.MigrateAll))
-            {
-                if (Sideloader.GetManifest(migrationInfo.GUIDNew) != null)
-                {
-                    Sideloader.Logger.LogInfo($"Migrating GUID {migrationInfo.GUIDOld} -> {migrationInfo.GUIDNew}");
-                    extResolve.GUID = migrationInfo.GUIDNew;
-                    return;
-                }
-            }
-
             foreach (var migrationInfo in migrationInfoList.Where(x => x.IDOld == extResolve.Slot && categoryNo == extResolve.CategoryNo))
             {
                 if (Sideloader.GetManifest(migrationInfo.GUIDNew) != null)
@@ -401,6 +391,16 @@ namespace Sideloader.AutoResolver
                     Sideloader.Logger.LogInfo($"Migrating {migrationInfo.GUIDOld}:{migrationInfo.IDOld} -> {migrationInfo.GUIDNew}:{migrationInfo.IDNew}");
                     extResolve.GUID = migrationInfo.GUIDNew;
                     extResolve.Slot = migrationInfo.IDNew;
+                    return;
+                }
+            }
+
+            foreach (var migrationInfo in migrationInfoList.Where(x => x.MigrationType == MigrationType.MigrateAll))
+            {
+                if (Sideloader.GetManifest(migrationInfo.GUIDNew) != null)
+                {
+                    Sideloader.Logger.LogInfo($"Migrating GUID {migrationInfo.GUIDOld} -> {migrationInfo.GUIDNew}");
+                    extResolve.GUID = migrationInfo.GUIDNew;
                     return;
                 }
             }
