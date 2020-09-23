@@ -384,7 +384,7 @@ namespace Sideloader.AutoResolver
                 return;
             }
 
-            foreach (var migrationInfo in migrationInfoList.Where(x => x.IDOld == extResolve.Slot && categoryNo == extResolve.CategoryNo))
+            foreach (var migrationInfo in migrationInfoList.Where(x => x.IDOld == extResolve.Slot && x.Category == extResolve.CategoryNo))
             {
                 if (Sideloader.GetManifest(migrationInfo.GUIDNew) != null)
                 {
