@@ -149,7 +149,11 @@ namespace SliderUnlocker
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.Reload))]
-        public static void Reload(ChaControl __instance) => __instance.StartCoroutine(SliderUnlocker.ResetAllSliders());
+        public static void Reload(ChaControl __instance)
+        {
+            if (CustomBase.IsInstance())
+                __instance.StartCoroutine(SliderUnlocker.ResetAllSliders());
+        }
 #endif
 
 #if KK  // Prevent slider values from getting clamped to 0.2 - 0.8 range in school mode
