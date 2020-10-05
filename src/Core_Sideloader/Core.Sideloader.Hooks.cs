@@ -72,6 +72,14 @@ namespace Sideloader
                         if (!__result.Contains(assetBundleName))
                             __result.Add(assetBundleName);
                 }
+#if AI
+                else if (path == "housing/info/")
+                {
+                    foreach (var assetBundleName in Lists.ExternalExcelData.Keys.Where(x => x.StartsWith(path)))
+                        if (!__result.Contains(assetBundleName))
+                            __result.Add(assetBundleName);
+                }
+#endif
 #if AI || HS2
                 else if (path == "list/map/")
                 {

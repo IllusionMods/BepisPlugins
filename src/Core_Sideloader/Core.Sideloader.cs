@@ -272,6 +272,30 @@ namespace Sideloader
                     }
                 }
 #if AI || HS2
+#if AI
+                else if (entry.Name.StartsWith("abdata/housing/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                {
+                    // resolve id later.
+                    try
+                    {
+                        string assetBundleName = entry.Name;
+                        assetBundleName = assetBundleName.Remove(0, assetBundleName.IndexOf('/') + 1); //Remove "abdata/"
+                        assetBundleName = assetBundleName.Remove(assetBundleName.LastIndexOf('/')); //Remove the .csv filename
+                        assetBundleName += ".unity3d";
+
+                        string assetName = entry.Name;
+                        assetName = assetName.Remove(0, assetName.LastIndexOf('/') + 1); //Remove all but the filename
+                        assetName = assetName.Remove(assetName.LastIndexOf('.')); //Remove the .csv
+
+                        var stream = arc.GetInputStream(entry);
+                        Lists.LoadExcelDataCSV(assetBundleName, assetName, stream);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
+                    }
+                }
+#endif AI
                 else if (entry.Name.StartsWith("abdata/list/map/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     try
