@@ -200,6 +200,12 @@ namespace Sideloader.AutoResolver
                     (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.option].id = value; },
                     (obj) => ((ChaFileHair)obj).parts[(int)HairKind.option].id));
 
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.st_hairmeshptn, "HairMesh", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileHair.PartsInfo)obj).id = value; },
+                    (obj) => ((ChaFileHair.PartsInfo)obj).id));
+
             return generatedProperties;
         }
 
