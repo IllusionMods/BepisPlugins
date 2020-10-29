@@ -201,10 +201,28 @@ namespace Sideloader.AutoResolver
                     (obj) => ((ChaFileHair)obj).parts[(int)HairKind.option].id));
 
             generatedProperties.Add(
-                new CategoryProperty(CategoryNo.st_hairmeshptn, "HairMesh", prefix),
+                new CategoryProperty(CategoryNo.st_hairmeshptn, "HairBackMesh", prefix),
                 new StructValue<int>(
-                    (obj, value) => { ((ChaFileHair.PartsInfo)obj).id = value; },
-                    (obj) => ((ChaFileHair.PartsInfo)obj).id));
+                    (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.back].meshType = value; },
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.back].meshType));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.st_hairmeshptn, "HairFrontMesh", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.front].meshType = value; },
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.front].meshType));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.st_hairmeshptn, "HairSideMesh", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.side].meshType = value; },
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.side].meshType));
+
+            generatedProperties.Add(
+                new CategoryProperty(CategoryNo.st_hairmeshptn, "HairOptionMesh", prefix),
+                new StructValue<int>(
+                    (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.option].meshType = value; },
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.option].meshType));
 
             return generatedProperties;
         }
