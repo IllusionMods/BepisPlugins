@@ -64,8 +64,8 @@ namespace Screencap
         private ConfigEntry<int> CustomShadowResolution { get; set; }
         private ConfigEntry<ShadowCascades> ShadowCascadeOverride { get; set; }
         private static ConfigEntry<DisableAOSetting> DisableAO { get; set; }
-        public ConfigEntry<bool> ScreenshotMessage { get; private set; }
-        public static ConfigEntry<int> UIShotUpscale { get; private set; }
+        private ConfigEntry<bool> ScreenshotMessage { get; set; }
+        private static ConfigEntry<int> UIShotUpscale { get; set; }
 
         private ConfigEntry<KeyboardShortcut> KeyCaptureNormal { get; set; }
         private ConfigEntry<KeyboardShortcut> KeyCaptureRender { get; set; }
