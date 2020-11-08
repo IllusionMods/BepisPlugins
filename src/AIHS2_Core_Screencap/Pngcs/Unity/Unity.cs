@@ -1,10 +1,9 @@
 using System.Threading.Tasks;
-
 using UnityEngine;
 
 namespace Pngcs.Unity
 {
-    public static class PNG
+    internal static class PNG
     {
         public static async Task WriteAsync
         (
@@ -87,7 +86,7 @@ namespace Pngcs.Unity
             // open image for writing:
             PngWriter writer = FileHelper.CreatePngWriter(filePath, info, true);
             // add some optional metadata (chunks)
-            var meta = writer.GetMetadata();
+            writer.GetMetadata();
 
             int numRows = info.Rows;
             int numCols = info.Cols;
@@ -163,7 +162,7 @@ namespace Pngcs.Unity
             // open image for writing:
             PngWriter writer = FileHelper.CreatePngWriter(filePath, info, true);
             // add some optional metadata (chunks)
-            var meta = writer.GetMetadata();
+            writer.GetMetadata();
 
             int numRows = info.Rows;
             int numCols = info.Cols;
@@ -264,7 +263,5 @@ namespace Pngcs.Unity
         public struct RGB { public int r, g, b; }
 
         public struct RGBA { public int r, g, b, a; }
-
     }
-
 }

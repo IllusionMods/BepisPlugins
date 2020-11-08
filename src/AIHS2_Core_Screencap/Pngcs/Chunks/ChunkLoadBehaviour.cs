@@ -1,16 +1,10 @@
-namespace Pngcs.Chunks {
-
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Runtime.CompilerServices;
-
+namespace Pngcs.Chunks
+{
     /// <summary>
     /// Defines what to do with non critical chunks when reading
     /// </summary>
-    public enum ChunkLoadBehaviour {
+    internal enum ChunkLoadBehaviour
+    {
         /// <summary>
         /// all non-critical chunks are skippped
         /// </summary>
@@ -29,6 +23,5 @@ namespace Pngcs.Chunks {
         ///  Notice that other restrictions might apply, see PngReader.SkipChunkMaxSize PngReader.SkipChunkIds
         /// </summary>
         LOAD_CHUNK_ALWAYS,
-
     }
 }

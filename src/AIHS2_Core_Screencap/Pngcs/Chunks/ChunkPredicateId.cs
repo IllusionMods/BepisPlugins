@@ -1,18 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-
-using System.Text;
-
-namespace Pngcs.Chunks {
+﻿namespace Pngcs.Chunks
+{
     /// <summary>
     /// Match if have same Chunk Id
     /// </summary>
-    internal class ChunkPredicateId : ChunkPredicate {
+    internal class ChunkPredicateId : IChunkPredicate
+    {
         private readonly string id;
-        public ChunkPredicateId(String id) {
+        public ChunkPredicateId(string id)
+        {
             this.id = id;
         }
-        public bool Matches(PngChunk c) {
+        public bool Matches(PngChunk c)
+        {
             return c.Id.Equals(id);
         }
     }

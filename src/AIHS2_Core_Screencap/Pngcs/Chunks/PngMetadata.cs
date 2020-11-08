@@ -8,21 +8,21 @@
     /// This class provides a wrapper over the collection of chunks of a image (read or to write) and provides some high
     /// level methods to access them
     /// </remarks>
-    public class PngMetadata
+    internal class PngMetadata
     {
         readonly ChunksList chunkList;
         readonly bool ReadOnly;// readonly
 
-        internal PngMetadata ( ChunksList chunks )
+        internal PngMetadata(ChunksList chunks)
         {
-            this.chunkList = chunks;
-            if( chunks is ChunksListForWrite )
+            chunkList = chunks;
+            if (chunks is ChunksListForWrite)
             {
-                this.ReadOnly = false;
+                ReadOnly = false;
             }
             else
             {
-                this.ReadOnly = true;
+                ReadOnly = true;
             }
         }
 
@@ -32,23 +32,21 @@
         /// <remarks>Warning: the overwriting applies to equivalent chunks, see <c>ChunkPredicateEquiv</c>
         /// and will only make sense for queued (not yet writen) chunks
         /// </remarks>
-        public void QueueChunk ( PngChunk chunk , bool lazyOverwrite )
+        public void QueueChunk(PngChunk chunk, bool lazyOverwrite)
         {
-            ChunksListForWrite cl = getChunkListW();
-            if( ReadOnly ) { throw new PngjException( "cannot set chunk : readonly metadata" ); }
-            if( lazyOverwrite )
+            ChunksListForWrite cl = GetChunkListW();
+            if (ReadOnly) { throw new PngjException("cannot set chunk : readonly metadata"); }
+            if (lazyOverwrite)
             {
-                ChunkHelper.TrimList( cl.GetQueuedChunks() , new ChunkPredicateEquiv( chunk ) );
+                ChunkHelper.TrimList(cl.GetQueuedChunks(), new ChunkPredicateEquiv(chunk));
             }
-            cl.Queue( chunk );
+            cl.Queue(chunk);
         }
 
         /// <summary>Queues the chunk at the writer</summary>
         /// <param name="chunk">Chunk, ready for write</param>
-        public void QueueChunk ( PngChunk chunk ) => QueueChunk( chunk , true );
+        public void QueueChunk(PngChunk chunk) => QueueChunk(chunk, true);
 
-        ChunksListForWrite getChunkListW () => (ChunksListForWrite)chunkList;
-
-
+        ChunksListForWrite GetChunkListW() => (ChunksListForWrite)chunkList;
     }
 }

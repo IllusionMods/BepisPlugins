@@ -1,14 +1,9 @@
-namespace Pngcs.Chunks {
+using System;
+using System.Collections.Generic;
+using System.IO;
 
-    using Pngcs;
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Runtime.CompilerServices;
-
-
+namespace Pngcs.Chunks
+{
     /// <summary>
     /// Represents a instance of a PNG chunk
     /// </summary>
@@ -21,11 +16,12 @@ namespace Pngcs.Chunks {
     /// 
     /// Ref: http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
     /// </remarks>
-    public abstract class PngChunk {
+    internal abstract class PngChunk
+    {
         /// <summary>
         /// 4 letters. The Id almost determines the concrete type (except for PngUKNOWN)
         /// </summary>
-        public readonly String Id;
+        public readonly string Id;
         /// <summary>
         /// Standard basic properties, implicit in the Id
         /// </summary>
@@ -51,7 +47,8 @@ namespace Pngcs.Chunks {
         /// <summary>
         /// Restrictions for chunk ordering, for ancillary chunks
         /// </summary>
-        public enum ChunkOrderingConstraint {
+        public enum ChunkOrderingConstraint
+        {
             /// <summary>
             /// No constraint, the chunk can go anywhere
             /// </summary>
@@ -67,7 +64,7 @@ namespace Pngcs.Chunks {
             /// <summary>
             /// Before IDAT (before or after PLTE)
             /// </summary>
-            BEFORE_IDAT, 
+            BEFORE_IDAT,
             /// <summary>
             /// Does not apply
             /// </summary>
@@ -79,25 +76,29 @@ namespace Pngcs.Chunks {
         /// </summary>
         /// <param name="id"></param>
         /// <param name="imgInfo"></param>
-        protected PngChunk(String id, ImageInfo imgInfo) {
-            this.Id = id;
-            this.ImgInfo = imgInfo;
-            this.Crit = Pngcs.Chunks.ChunkHelper.IsCritical(id);
-            this.Pub = Pngcs.Chunks.ChunkHelper.IsPublic(id);
-            this.Safe = Pngcs.Chunks.ChunkHelper.IsSafeToCopy(id);
-            this.Priority = false;
-            this.ChunkGroup = -1;
-            this.Length = -1;
-            this.Offset = 0;
+        protected PngChunk(string id, ImageInfo imgInfo)
+        {
+            Id = id;
+            ImgInfo = imgInfo;
+            Crit = ChunkHelper.IsCritical(id);
+            Pub = ChunkHelper.IsPublic(id);
+            Safe = ChunkHelper.IsSafeToCopy(id);
+            Priority = false;
+            ChunkGroup = -1;
+            Length = -1;
+            Offset = 0;
         }
 
-        private static Dictionary<String, Type> factoryMap = initFactory();
+        private static readonly Dictionary<string, Type> factoryMap = InitFactory();
 
-        private static Dictionary<String, Type> initFactory() {
-            Dictionary<String, Type> f = new Dictionary<string, System.Type>();
-            f.Add(ChunkHelper.IDAT, typeof(PngChunkIDAT));
-            f.Add(ChunkHelper.IHDR, typeof(PngChunkIHDR));
-            f.Add(ChunkHelper.IEND, typeof(PngChunkIEND));
+        private static Dictionary<string, Type> InitFactory()
+        {
+            Dictionary<string, Type> f = new Dictionary<string, System.Type>
+            {
+                { ChunkHelper.IDAT, typeof(PngChunkIDAT) },
+                { ChunkHelper.IHDR, typeof(PngChunkIHDR) },
+                { ChunkHelper.IEND, typeof(PngChunkIEND) }
+            };
             return f;
         }
 
@@ -109,29 +110,35 @@ namespace Pngcs.Chunks {
         /// </remarks>
         /// <param name="chunkId"></param>
         /// <param name="type">should extend PngChunkSingle or PngChunkMultiple</param>
-        public static void FactoryRegister(String chunkId, Type type) {
+        public static void FactoryRegister(string chunkId, Type type)
+        {
             factoryMap.Add(chunkId, type);
         }
 
-        internal static bool isKnown(String id) {
+        internal static bool IsKnown(string id)
+        {
             return factoryMap.ContainsKey(id);
         }
 
-        internal bool mustGoBeforePLTE() {
+        internal bool MustGoBeforePLTE()
+        {
             return GetOrderingConstraint() == ChunkOrderingConstraint.BEFORE_PLTE_AND_IDAT;
         }
 
-        internal bool mustGoBeforeIDAT() {
+        internal bool MustGoBeforeIDAT()
+        {
             ChunkOrderingConstraint oc = GetOrderingConstraint();
             return oc == ChunkOrderingConstraint.BEFORE_IDAT || oc == ChunkOrderingConstraint.BEFORE_PLTE_AND_IDAT || oc == ChunkOrderingConstraint.AFTER_PLTE_BEFORE_IDAT;
         }
 
-        internal bool mustGoAfterPLTE() {
+        internal bool MustGoAfterPLTE()
+        {
             return GetOrderingConstraint() == ChunkOrderingConstraint.AFTER_PLTE_BEFORE_IDAT;
         }
 
-        internal static PngChunk Factory(ChunkRaw chunk, ImageInfo info) {
-            PngChunk c = FactoryFromId(Pngcs.Chunks.ChunkHelper.ToString(chunk.IdBytes), info);
+        internal static PngChunk Factory(ChunkRaw chunk, ImageInfo info)
+        {
+            PngChunk c = FactoryFromId(ChunkHelper.ToString(chunk.IdBytes), info);
             c.Length = chunk.Len;
             c.ParseFromRaw(chunk);
             return c;
@@ -142,10 +149,12 @@ namespace Pngcs.Chunks {
         /// <param name="cid">Chunk Id</param>
         /// <param name="info"></param>
         /// <returns></returns>
-        internal static PngChunk FactoryFromId(String cid, ImageInfo info) {
+        internal static PngChunk FactoryFromId(string cid, ImageInfo info)
+        {
             PngChunk chunk = null;
-            if (factoryMap == null) initFactory();
-            if (isKnown(cid)) {
+            if (factoryMap == null) InitFactory();
+            if (IsKnown(cid))
+            {
                 Type t = factoryMap[cid];
                 if (t == null) Console.Error.WriteLine("What?? " + cid);
                 System.Reflection.ConstructorInfo cons = t.GetConstructor(new Type[] { typeof(ImageInfo) });
@@ -156,22 +165,24 @@ namespace Pngcs.Chunks {
             return chunk;
         }
 
-        public ChunkRaw createEmptyChunk(int len, bool alloc) {
+        public ChunkRaw CreateEmptyChunk(int len, bool alloc)
+        {
             ChunkRaw c = new ChunkRaw(len, ChunkHelper.ToBytes(Id), alloc);
             return c;
         }
 
-        /* @SuppressWarnings("unchecked")*/
-        public static T CloneChunk<T>(T chunk, ImageInfo info) where T : PngChunk {
+        public static T CloneChunk<T>(T chunk, ImageInfo info) where T : PngChunk
+        {
             PngChunk cn = FactoryFromId(chunk.Id, info);
-            if ((Object)cn.GetType() != (Object)chunk.GetType())
+            if (cn.GetType() != (object)chunk.GetType())
                 throw new PngjException("bad class cloning chunk: " + cn.GetType() + " "
                         + chunk.GetType());
             cn.CloneDataFromRead(chunk);
             return (T)cn;
         }
 
-        internal void write(Stream os) {
+        internal void Write(Stream os)
+        {
             ChunkRaw c = CreateRawChunk();
             if (c == null)
                 throw new PngjException("null chunk ! creation failed for " + this);
@@ -181,8 +192,9 @@ namespace Pngcs.Chunks {
         /// Basic info: Id, length, Type name
         /// </summary>
         /// <returns></returns>
-        public override String ToString() {
-            return "chunk id= " + Id + " (len=" + Length + " off=" + Offset +") c=" + GetType().Name;
+        public override string ToString()
+        {
+            return "chunk id= " + Id + " (len=" + Length + " off=" + Offset + ") c=" + GetType().Name;
         }
 
         /// <summary>

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Pngcs.Chunks
+﻿namespace Pngcs.Chunks
 {
     /// <summary>
     /// match if have same id and, if Text (or SPLT) if have the asame key
@@ -11,16 +7,17 @@ namespace Pngcs.Chunks
     /// This is the same as ChunkPredicateEquivalent, the only difference is that does not requires
     /// a chunk at construction time
     /// </remarks>
-    internal class ChunkPredicateId2 : ChunkPredicate
+    internal class ChunkPredicateId2 : IChunkPredicate
     {
-
         private readonly string id;
-        private readonly string innerid;
+        internal readonly string innerid;
+
         public ChunkPredicateId2(string id, string inner)
         {
             this.id = id;
-            this.innerid = inner;
+            innerid = inner;
         }
+
         public bool Matches(PngChunk c)
         {
             if (!c.Id.Equals(id))
@@ -28,6 +25,5 @@ namespace Pngcs.Chunks
 
             return true;
         }
-
     }
 }
