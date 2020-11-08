@@ -119,6 +119,11 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.3\analyzers\dotnet\cs\BepInEx.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.3\analyzers\dotnet\cs\BepInEx.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.Unity.Analyzers.1.8.2\analyzers\dotnet\cs\Microsoft.Unity.Analyzers.dll" />
+  </ItemGroup>
   <Import Project="..\Core_BGMLoader\Core_BGMLoader.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
