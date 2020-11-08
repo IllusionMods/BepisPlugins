@@ -17,9 +17,9 @@ namespace ExtensibleSaveFormat
 
             #region Loading
 
-            [ParameterByRef(1)]
-            [HarmonyTranspiler]
-            [HarmonyPatch(typeof(SceneInfo), "Load", typeof(string), typeof(Version))]
+            [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), nameof(SceneInfo.Load),
+                new Type[] { typeof(string), typeof(Version) },
+                new ArgumentType[] { ArgumentType.Normal, ArgumentType.Out })]
             public static IEnumerable<CodeInstruction> SceneInfoLoadTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 bool set = false;

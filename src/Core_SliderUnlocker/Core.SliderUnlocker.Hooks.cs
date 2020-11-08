@@ -26,9 +26,9 @@ namespace SliderUnlocker
                 __result = value;
         }
 
-        [ParameterByRef(2)]
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", typeof(string), typeof(float), typeof(Vector3), typeof(byte))]
+        [HarmonyPrefix, HarmonyPatch(typeof(AnimationKeyInfo), nameof(AnimationKeyInfo.GetInfo),
+            new Type[] { typeof(string), typeof(float), typeof(Vector3), typeof(byte) },
+            new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Ref, ArgumentType.Normal })]
         public static void GetInfoSingularPreHook(ref float __state, string name, ref float rate, ref Vector3 value, byte type)
         {
             __state = rate;
@@ -41,9 +41,9 @@ namespace SliderUnlocker
                 rate = 0f;
         }
 
-        [ParameterByRef(2)]
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", typeof(string), typeof(float), typeof(Vector3), typeof(byte))]
+        [HarmonyPostfix, HarmonyPatch(typeof(AnimationKeyInfo), nameof(AnimationKeyInfo.GetInfo),
+            new Type[] { typeof(string), typeof(float), typeof(Vector3), typeof(byte) },
+            new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Ref, ArgumentType.Normal })]
         public static void GetInfoSingularPostHook(AnimationKeyInfo __instance, bool __result, float __state, string name, float rate, ref Vector3 value, byte type)
         {
             if (!__result)
@@ -72,9 +72,9 @@ namespace SliderUnlocker
             }
         }
 
-        [ParameterByRef(2)]
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", typeof(string), typeof(float), typeof(Vector3[]), typeof(bool[]))]
+        [HarmonyPrefix, HarmonyPatch(typeof(AnimationKeyInfo), nameof(AnimationKeyInfo.GetInfo),
+            new Type[] { typeof(string), typeof(float), typeof(Vector3[]), typeof(bool[]) },
+            new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Ref, ArgumentType.Normal })]
         public static void GetInfoPreHook(ref float __state, string name, ref float rate, ref Vector3[] value, bool[] flag)
         {
             __state = rate;
@@ -87,9 +87,9 @@ namespace SliderUnlocker
                 rate = 0f;
         }
 
-        [ParameterByRef(2)]
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(AnimationKeyInfo), "GetInfo", typeof(string), typeof(float), typeof(Vector3[]), typeof(bool[]))]
+        [HarmonyPostfix, HarmonyPatch(typeof(AnimationKeyInfo), nameof(AnimationKeyInfo.GetInfo),
+            new Type[] { typeof(string), typeof(float), typeof(Vector3[]), typeof(bool[]) },
+            new ArgumentType[] { ArgumentType.Normal, ArgumentType.Normal, ArgumentType.Ref, ArgumentType.Normal })]
         public static void GetInfoPostHook(AnimationKeyInfo __instance, bool __result, float __state, string name, float rate, ref Vector3[] value, bool[] flag)
         {
             if (!__result)
