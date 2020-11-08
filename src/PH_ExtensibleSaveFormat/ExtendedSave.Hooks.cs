@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Character;
+using HarmonyLib;
+using MessagePack;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using BepInEx.Harmony;
-using Character;
-using HarmonyLib;
-using MessagePack;
-using Debug = UnityEngine.Debug;
 
 namespace ExtensibleSaveFormat
 {
@@ -17,7 +15,7 @@ namespace ExtensibleSaveFormat
         {
             internal static void InstallHooks()
             {
-                HarmonyWrapper.PatchAll(typeof(Hooks));
+                Harmony.CreateAndPatchAll(typeof(Hooks));
             }
 
             [HarmonyPostfix]
@@ -82,7 +80,7 @@ namespace ExtensibleSaveFormat
                                 }
                                 catch (Exception e)
                                 {
-                                    Debug.LogError("Failed to read extended data: " + e);
+                                    UnityEngine.Debug.LogError("Failed to read extended data: " + e);
                                     // Skipping the data has a better chance of preventing further crashes than rewinding
                                     return null;
                                 }

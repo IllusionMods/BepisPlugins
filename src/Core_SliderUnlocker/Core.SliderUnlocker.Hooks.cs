@@ -1,5 +1,4 @@
-﻿using BepInEx.Harmony;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +15,7 @@ namespace SliderUnlocker
 {
     public static partial class Hooks
     {
-        public static void InstallHooks() => HarmonyWrapper.PatchAll(typeof(Hooks));
+        public static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks));
 
         private static readonly FieldInfo akf_dictInfo = typeof(AnimationKeyInfo).GetField("dictInfo", AccessTools.all);
 

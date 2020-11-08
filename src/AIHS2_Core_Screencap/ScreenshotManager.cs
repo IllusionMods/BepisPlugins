@@ -1,14 +1,13 @@
-﻿using System;
+﻿using BepInEx;
+using BepInEx.Configuration;
+using BepisPlugins;
+using HarmonyLib;
+using Pngcs.Unity;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Emit;
-using BepInEx;
-using BepInEx.Configuration;
-using BepInEx.Harmony;
-using BepisPlugins;
-using HarmonyLib;
-using Pngcs.Unity;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
@@ -120,7 +119,7 @@ namespace Screencap
         {
             public static void Apply()
             {
-                var h = HarmonyWrapper.PatchAll(typeof(Hooks));
+                var h = Harmony.CreateAndPatchAll(typeof(Hooks));
 
                 var msvoType = Type.GetType("UnityEngine.Rendering.PostProcessing.MultiScaleVO, Unity.Postprocessing.Runtime");
                 h.Patch(AccessTools.Method(msvoType, "PushAllocCommands"), transpiler: new HarmonyMethod(typeof(Hooks), nameof(AoBandingFix)));

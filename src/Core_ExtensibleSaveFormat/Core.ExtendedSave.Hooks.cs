@@ -1,5 +1,4 @@
-﻿using BepInEx.Harmony;
-using HarmonyLib;
+﻿using HarmonyLib;
 using MessagePack;
 using System;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace ExtensibleSaveFormat
 
             internal static void InstallHooks()
             {
-                var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
+                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
 #if KK
                 harmony.Patch(typeof(Studio.MPCharCtrl).GetNestedType("CostumeInfo", BindingFlags.NonPublic).GetMethod("InitFileList", AccessTools.all),
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPreHook), BindingFlags.Static | BindingFlags.Public)),

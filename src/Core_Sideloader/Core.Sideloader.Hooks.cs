@@ -1,5 +1,4 @@
-﻿using BepInEx.Harmony;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Sideloader.AutoResolver;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +18,7 @@ namespace Sideloader
         {
             internal static void InstallHooks()
             {
-                var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
+                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
 #if KK
                 harmony.Patch(typeof(GlobalMethod).GetMethod(nameof(GlobalMethod.LoadAllFolder), AccessTools.all).MakeGenericMethod(typeof(Object)),
                               null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));

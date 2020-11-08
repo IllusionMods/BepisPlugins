@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Harmony;
 using BepisPlugins;
 using HarmonyLib;
 using Illusion.Game;
@@ -34,7 +33,7 @@ namespace ConfigurationManagerWrapper
             bool mainGame = Application.productName == Constants.GameProcessName || Application.productName == Constants.GameProcessNameSteam;
             if (mainGame)
             {
-                HarmonyWrapper.PatchAll(typeof(ConfigurationManagerWrapper));
+                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
                 //Main game is handled by the hooks, disable this plugin to prevent Update from running
                 enabled = false;
             }

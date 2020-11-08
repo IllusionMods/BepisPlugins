@@ -1,6 +1,5 @@
 ﻿using AIProject;
 using BepInEx;
-using BepInEx.Harmony;
 using BepisPlugins;
 using ConfigScene;
 using HarmonyLib;
@@ -32,7 +31,7 @@ namespace ConfigurationManagerWrapper
             var isStudio = Application.productName == "StudioNEOV2";
             if (!isStudio)
             {
-                HarmonyWrapper.PatchAll(typeof(ConfigurationManagerWrapper));
+                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
                 // Main game is handled by the hooks, Update is only for studio
                 enabled = false;
             }

@@ -1,5 +1,4 @@
-﻿using BepInEx.Harmony;
-using HarmonyLib;
+﻿using HarmonyLib;
 using Sideloader.AutoResolver;
 using System.Collections.Generic;
 #if AI || HS2
@@ -12,7 +11,7 @@ namespace Sideloader.ListLoader
     {
         internal static partial class Hooks
         {
-            internal static void InstallHooks() => HarmonyWrapper.PatchAll(typeof(Hooks));
+            internal static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks));
 
             [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.CheckItemID), typeof(int), typeof(int))]
             internal static bool CheckItemIDHook(int category, int id, ref byte __result, ChaListControl __instance)

@@ -1,11 +1,10 @@
+using AIChara;
+using CharaCustom;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using HarmonyLib;
-using BepInEx.Harmony;
-using AIChara;
-using CharaCustom;
 using UnityEngine;
 
 namespace SliderUnlocker
@@ -14,7 +13,7 @@ namespace SliderUnlocker
     {
         public static void Init()
         {
-            HarmonyWrapper.PatchAll(typeof(HairUnlocker));
+            Harmony.CreateAndPatchAll(typeof(HairUnlocker));
         }
 
         // Fix first pos value limit

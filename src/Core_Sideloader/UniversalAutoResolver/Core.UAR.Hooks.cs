@@ -1,5 +1,4 @@
-﻿using BepInEx.Harmony;
-using ExtensibleSaveFormat;
+﻿using ExtensibleSaveFormat;
 using HarmonyLib;
 using Illusion.Extensions;
 using Sideloader.ListLoader;
@@ -24,7 +23,7 @@ namespace Sideloader.AutoResolver
 
             internal static void InstallHooks()
             {
-                var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
+                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
 
                 ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
                 ExtendedSave.CardBeingSaved += ExtendedCardSave;

@@ -1,5 +1,4 @@
-﻿using BepInEx.Harmony;
-using BepInEx.Logging;
+﻿using BepInEx.Logging;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -30,7 +29,7 @@ namespace Screencap
             paddingX = Shader.PropertyToID("_PaddingX");
             ab.Unload(false);
 
-            HarmonyWrapper.PatchAll(typeof(I360Render));
+            Harmony.CreateAndPatchAll(typeof(I360Render));
         }
 
         // Fix mirrors messing up the capture by blindly inverting culling

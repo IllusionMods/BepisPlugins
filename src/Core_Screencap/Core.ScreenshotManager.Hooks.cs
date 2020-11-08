@@ -1,5 +1,4 @@
-﻿using BepInEx.Harmony;
-using ChaCustom;
+﻿using ChaCustom;
 using HarmonyLib;
 using UnityEngine;
 
@@ -10,7 +9,7 @@ namespace Screencap
         /// <summary> Chara card Render/Downsample rate.</summary>
         private static int CardRenderRate => ScreenshotManager.CardDownscalingRate.Value;
 
-        public static void InstallHooks() => HarmonyWrapper.PatchAll(typeof(Hooks));
+        public static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks));
         /// <summary>
         /// Cancel the vanilla screenshot
         /// </summary>

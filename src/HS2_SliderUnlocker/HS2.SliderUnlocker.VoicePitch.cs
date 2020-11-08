@@ -1,6 +1,5 @@
-using HarmonyLib;
-using BepInEx.Harmony;
 using AIChara;
+using HarmonyLib;
 
 namespace SliderUnlocker
 {
@@ -12,9 +11,9 @@ namespace SliderUnlocker
 
         public static void Init()
         {
-            HarmonyWrapper.PatchAll(typeof(VoicePitchUnlocker));
+            Harmony.CreateAndPatchAll(typeof(VoicePitchUnlocker));
         }
-        
+
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFileParameter), nameof(ChaFileParameter.voicePitch), MethodType.Getter)]
         public static bool VoicePitchHook(ChaFileParameter __instance, ref float __result)
         {

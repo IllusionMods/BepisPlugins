@@ -2,7 +2,6 @@
  * Code by essu
  * ~ can you hear me now? ~
  */
-using BepInEx.Harmony;
 using ChaCustom;
 using HarmonyLib;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace SliderUnlocker
 
         public static void Init()
         {
-            var harmony = HarmonyWrapper.PatchAll(typeof(VoicePitchUnlocker));
+            var harmony = Harmony.CreateAndPatchAll(typeof(VoicePitchUnlocker));
 
             var iteratorType = typeof(CvsChara).GetNestedType("<SetInputText>c__Iterator0", AccessTools.all);
             var iteratorMethod = AccessTools.Method(iteratorType, "MoveNext");
