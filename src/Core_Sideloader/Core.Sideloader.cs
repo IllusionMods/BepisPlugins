@@ -62,6 +62,9 @@ namespace Sideloader
 
         internal void Awake()
         {
+#if KK
+            ZipConstants.DefaultCodePage = 0;
+#endif
             Logger = base.Logger;
 
             Hooks.InstallHooks();
