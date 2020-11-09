@@ -12,8 +12,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)Core.BGMLoader.AudioLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.BGMLoader.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)lib\NAudio.dll" />
-    <None Include="$(MSBuildThisFileDirectory)lib\NVorbis.dll" />
-  </ItemGroup>
 </Project>

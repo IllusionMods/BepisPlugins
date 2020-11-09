@@ -69,14 +69,6 @@
       <HintPath>..\..\packages\MonoMod.Utils.20.11.5.1\lib\net40\MonoMod.Utils.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="NAudio">
-      <HintPath>..\Core_BGMLoader\lib\NAudio.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NVorbis">
-      <HintPath>..\Core_BGMLoader\lib\NVorbis.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -128,9 +120,7 @@
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(TargetPath)" EC
-IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(TargetDir)NAudio.dll" EC
-IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(TargetDir)NVorbis.dll" EC</PostBuildEvent>
+    <PostBuildEvent>IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(TargetPath)" EC</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\..\packages\BepInEx.Core.5.4.0\build\BepInEx.Core.targets" Condition="Exists('..\..\packages\BepInEx.Core.5.4.0\build\BepInEx.Core.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
