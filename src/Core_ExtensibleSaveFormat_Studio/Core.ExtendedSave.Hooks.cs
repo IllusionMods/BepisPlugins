@@ -20,7 +20,7 @@ namespace ExtensibleSaveFormat
             [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), nameof(SceneInfo.Load),
                 new Type[] { typeof(string), typeof(Version) },
                 new ArgumentType[] { ArgumentType.Normal, ArgumentType.Out })]
-            public static IEnumerable<CodeInstruction> SceneInfoLoadTranspiler(IEnumerable<CodeInstruction> instructions)
+            private static IEnumerable<CodeInstruction> SceneInfoLoadTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 bool set = false;
                 List<CodeInstruction> instructionsList = instructions.ToList();
@@ -71,7 +71,7 @@ namespace ExtensibleSaveFormat
             }
 
             [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Import", typeof(string))]
-            public static IEnumerable<CodeInstruction> SceneInfoImportTranspiler(IEnumerable<CodeInstruction> instructions)
+            private static IEnumerable<CodeInstruction> SceneInfoImportTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 bool set = false;
                 List<CodeInstruction> instructionsList = instructions.ToList();
@@ -135,7 +135,7 @@ namespace ExtensibleSaveFormat
             #region Saving
 
             [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
-            public static IEnumerable<CodeInstruction> SceneInfoSaveTranspiler(IEnumerable<CodeInstruction> instructions)
+            private static IEnumerable<CodeInstruction> SceneInfoSaveTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 bool set = false;
                 List<CodeInstruction> instructionsList = instructions.ToList();
@@ -175,17 +175,17 @@ namespace ExtensibleSaveFormat
             #region Extended Data Override Hooks
             //Prevent loading extended data when loading the list of characters in Studio since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
-            public static void StudioFemaleListPreHook() => LoadEventsEnabled = false;
+            private static void StudioFemaleListPreHook() => LoadEventsEnabled = false;
             [HarmonyPostfix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
-            public static void StudioFemaleListPostHook() => LoadEventsEnabled = true;
+            private static void StudioFemaleListPostHook() => LoadEventsEnabled = true;
             [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitMaleList")]
-            public static void StudioMaleListPreHook() => LoadEventsEnabled = false;
+            private static void StudioMaleListPreHook() => LoadEventsEnabled = false;
             [HarmonyPostfix, HarmonyPatch(typeof(CharaList), "InitMaleList")]
-            public static void StudioMaleListPostHook() => LoadEventsEnabled = true;
+            private static void StudioMaleListPostHook() => LoadEventsEnabled = true;
 
             //Prevent loading extended data when loading the list of coordinates in Studio since it is irrelevant here
-            public static void StudioCoordinateListPreHook() => LoadEventsEnabled = false;
-            public static void StudioCoordinateListPostHook() => LoadEventsEnabled = true;
+            private static void StudioCoordinateListPreHook() => LoadEventsEnabled = false;
+            private static void StudioCoordinateListPostHook() => LoadEventsEnabled = true;
             #endregion
         }
     }

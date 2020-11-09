@@ -24,19 +24,19 @@ namespace SliderUnlocker
 
             var iteratorType = typeof(CvsChara).GetNestedType("<SetInputText>c__Iterator0", AccessTools.all);
             var iteratorMethod = AccessTools.Method(iteratorType, "MoveNext");
-            var transpiler = new HarmonyMethod(typeof(VoicePitchUnlocker), nameof(voicePitchTpl));
+            var transpiler = new HarmonyMethod(typeof(VoicePitchUnlocker), nameof(VoicePitchTpl));
             harmony.Patch(iteratorMethod, null, null, transpiler);
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFileParameter), "voicePitch", MethodType.Getter)]
-        public static bool voicePitchHook(ChaFileParameter __instance, ref float __result)
+        private static bool VoicePitchHook(ChaFileParameter __instance, ref float __result)
         {
             // Replace line return Mathf.Lerp(0.94f, 1.06f, this.voiceRate);
             __result = VanillaPitchLower + __instance.voiceRate * VanillaPitchRange;
             return false;
         }
 
-        public static IEnumerable<CodeInstruction> voicePitchTpl(IEnumerable<CodeInstruction> _instructions)
+        public static IEnumerable<CodeInstruction> VoicePitchTpl(IEnumerable<CodeInstruction> _instructions)
         {
             // Changes constants in line this.inpPitchPow.text = CustomBase.ConvertTextFromRate(0, 100, this.param.voiceRate);
             var instructions = new List<CodeInstruction>(_instructions).ToArray();

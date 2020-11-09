@@ -115,7 +115,7 @@ namespace Pngcs
             Rown = -1;
         }
 
-        static internal void UnpackInplaceInt(ImageInfo iminfo, int[] src, int[] dst, bool Scale)
+        internal static void UnpackInplaceInt(ImageInfo iminfo, int[] src, int[] dst, bool Scale)
         {
             int bitDepth = iminfo.BitDepth;
             if (bitDepth >= 8) { return; }// nothing to do
@@ -149,7 +149,7 @@ namespace Pngcs
             }
         }
 
-        static internal void PackInplaceInt(ImageInfo iminfo, int[] src, int[] dst, bool scaled)
+        internal static void PackInplaceInt(ImageInfo iminfo, int[] src, int[] dst, bool scaled)
         {
             int bitDepth = iminfo.BitDepth;
             if (bitDepth >= 8) { return; }// nothing to do
@@ -178,7 +178,7 @@ namespace Pngcs
             dst[0] |= v0;
         }
 
-        static internal void UnpackInplaceByte(ImageInfo iminfo, byte[] src, byte[] dst, bool scale)
+        internal static void UnpackInplaceByte(ImageInfo iminfo, byte[] src, byte[] dst, bool scale)
         {
             int bitDepth = iminfo.BitDepth;
             if (bitDepth >= 8) return; // nothing to do
@@ -213,7 +213,7 @@ namespace Pngcs
         }
 
         /** size original: samplesPerRow sizeFinal: samplesPerRowPacked (trailing elements are trash!) **/
-        static internal void PackInplaceByte(ImageInfo iminfo, byte[] src, byte[] dst, bool scaled)
+        internal static void PackInplaceByte(ImageInfo iminfo, byte[] src, byte[] dst, bool scaled)
         {
             int bitDepth = iminfo.BitDepth;
             if (bitDepth >= 8) return;// nothing to do

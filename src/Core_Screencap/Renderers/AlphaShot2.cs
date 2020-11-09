@@ -126,21 +126,33 @@ namespace alphaShot
             var main = Camera.main;
 
             var baf = main.GetComponent<BloomAndFlares>();
-            var baf_e = baf?.enabled;
-            if (baf) baf.enabled = false;
+            bool baf_e = false;
+            if (baf)
+            {
+                baf_e = baf.enabled;
+                baf.enabled = false;
+            }
 
             var vig = main.GetComponent<VignetteAndChromaticAberration>();
-            var vig_e = vig?.enabled;
-            if (vig) vig.enabled = false;
+            bool vig_e = false;
+            if (vig)
+            {
+                vig_e = vig.enabled;
+                vig.enabled = false;
+            }
 
             var ace = main.GetComponent<AmplifyColorEffect>();
-            var ace_e = ace?.enabled;
-            if (ace) ace.enabled = false;
+            bool ace_e = false;
+            if (ace)
+            {
+                ace_e = ace.enabled;
+                ace.enabled = false;
+            }
 
             var texture2D = PerformCapture(ResolutionX, ResolutionY, true);
-            if (baf) baf.enabled = baf_e.Value;
-            if (vig) vig.enabled = vig_e.Value;
-            if (ace) ace.enabled = ace_e.Value;
+            if (baf) baf.enabled = baf_e;
+            if (vig) vig.enabled = vig_e;
+            if (ace) ace.enabled = ace_e;
 
             var texture2D2 = PerformCapture(ResolutionX, ResolutionY, false);
 

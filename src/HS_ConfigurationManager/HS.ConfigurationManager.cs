@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using BepInEx;
+﻿using BepInEx;
 using BepisPlugins;
+using System.Collections;
 using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
@@ -35,7 +35,7 @@ namespace ConfigurationManagerWrapper
 
         private ConfigurationManager.ConfigurationManager _manager;
         private bool _insideConfigScreen;
-        
+
         private void Start()
         {
             _isStudio = Application.productName == "StudioNEO";
@@ -51,7 +51,7 @@ namespace ConfigurationManagerWrapper
                 _buttonBackground = buttonBackground;
             }
         }
-        
+
         private void OnGUI()
         {
             if (!_insideConfigScreen) return;
@@ -60,7 +60,7 @@ namespace ConfigurationManagerWrapper
             if (GUI.Button(_buttonRect, new GUIContent("Plugin / mod settings", "Change settings of installed BepInEx plugins.")))
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
-        
+
         private void Update()
         {
             if (Manager.Scene.Instance.AddSceneName != AddSceneName)
@@ -82,7 +82,7 @@ namespace ConfigurationManagerWrapper
                 }
             }
         }
-        
+
         private IEnumerator SceneChanged()
         {
             // Wait until everything is initialized

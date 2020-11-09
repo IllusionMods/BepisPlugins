@@ -239,7 +239,7 @@ namespace Sideloader
                     try
                     {
                         var stream = arc.GetInputStream(entry);
-                        var chaListData = Lists.LoadCSV(stream, manifest.GUID);
+                        var chaListData = Lists.LoadCSV(stream);
 
                         SetPossessNew(chaListData);
                         UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);

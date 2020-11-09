@@ -5,8 +5,8 @@ namespace Pngcs.Zlib
 {
     internal abstract class AZlibInputStream : Stream
     {
-        readonly protected Stream rawStream;
-        readonly protected bool leaveOpen;
+        protected readonly Stream rawStream;
+        protected readonly bool leaveOpen;
 
         public AZlibInputStream(Stream st, bool leaveOpen)
         {

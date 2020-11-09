@@ -1,11 +1,11 @@
-﻿using BepInEx.Logging;
+﻿using BepInEx;
+using BepInEx.Logging;
 using BepisPlugins;
+using Character;
 using MessagePack;
 using MessagePack.Resolvers;
 using System;
 using System.Collections.Generic;
-using BepInEx;
-using Character;
 
 namespace ExtensibleSaveFormat
 {

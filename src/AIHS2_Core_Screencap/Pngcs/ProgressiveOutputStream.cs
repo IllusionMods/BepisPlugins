@@ -8,7 +8,7 @@ namespace Pngcs
     /// bytes to some other destination
     /// </summary>
     ///
-    abstract internal class ProgressiveOutputStream : MemoryStream
+    internal abstract class ProgressiveOutputStream : MemoryStream
     {
         private readonly int size;
         private long countFlushed = 0;

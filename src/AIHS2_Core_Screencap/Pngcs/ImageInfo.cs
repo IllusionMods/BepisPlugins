@@ -1,5 +1,3 @@
-using System;
-
 namespace Pngcs
 {
     /// <summary>
@@ -12,7 +10,7 @@ namespace Pngcs
     /// </remarks>
     internal class ImageInfo
     {
-        const int MAX_COLS_ROWS_VAL = 400000; // very big value, but no so ridiculous as 2^32
+        private const int MAX_COLS_ROWS_VAL = 400000; // very big value, but no so ridiculous as 2^32
 
         /// <summary>
         /// Image width, in pixels

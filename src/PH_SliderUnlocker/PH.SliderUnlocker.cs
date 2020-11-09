@@ -1,7 +1,7 @@
-﻿using System;
-using BepInEx;
+﻿using BepInEx;
 using BepisPlugins;
 using HarmonyLib;
+using System;
 using System.Globalization;
 using UnityEngine.UI;
 
@@ -62,7 +62,7 @@ namespace SliderUnlocker
         {
             var slider = GetSlider(x);
 
-            var valueRoundedUp = (int) Math.Ceiling(Math.Abs(value));
+            var valueRoundedUp = (int)Math.Ceiling(Math.Abs(value));
             var max = defaultRange ? 100 : SliderMax;
             var min = defaultRange ? 0 : SliderMin;
 

@@ -32,7 +32,7 @@ namespace Sideloader
 
 #if AI || HS2
             [HarmonyPostfix, HarmonyPatch(typeof(GlobalMethod), nameof(GlobalMethod.AssetFileExist))]
-            internal static void AssetFileExist(string path, string targetName, ref bool __result)
+            private static void AssetFileExist(string path, string targetName, ref bool __result)
             {
                 if (TryGetExcelData(path, targetName, out _))
                     __result = true;
@@ -41,7 +41,7 @@ namespace Sideloader
 
 #if HS2
             [HarmonyPostfix, HarmonyPatch(typeof(Manager.GameSystem), "IsPathAdd50")]
-            public static void IsPathAdd50Hook(string _path, ref bool __result)
+            private static void IsPathAdd50Hook(string _path, ref bool __result)
             {
                 if (!__result)
                     __result = IsSideloaderAB(_path);
@@ -49,21 +49,21 @@ namespace Sideloader
 #endif
 
             [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
-            internal static void IsFileHook(string assetBundleName, ref bool __result)
+            private static void IsFileHook(string assetBundleName, ref bool __result)
             {
                 if (!__result)
                     __result = IsSideloaderAB(assetBundleName);
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleData), nameof(AssetBundleData.isFile), MethodType.Getter)]
-            internal static void IsFileHook2(ref bool __result, AssetBundleData __instance)
+            private static void IsFileHook2(ref bool __result, AssetBundleData __instance)
             {
                 if (!__result)
                     __result = IsSideloaderAB(__instance.bundle);
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
-            internal static void GetAssetBundleNameListFromPath(string path, List<string> __result)
+            private static void GetAssetBundleNameListFromPath(string path, List<string> __result)
             {
                 if (path == "h/list/" || path == "map/list/mapinfo/")
                 {
@@ -94,7 +94,7 @@ namespace Sideloader
             /// The game gets from a list by index which will cause errors. Get them safely for sideloader items
             /// </summary>
             [HarmonyPrefix, HarmonyPatch(typeof(CustomFacePaintLayoutPreset), nameof(CustomFacePaintLayoutPreset.OnPush))]
-            internal static bool FacePaintOnPush(int index, CustomFacePaintLayoutPreset __instance)
+            private static bool FacePaintOnPush(int index, CustomFacePaintLayoutPreset __instance)
             {
                 if (index >= UniversalAutoResolver.BaseSlotID)
                 {
@@ -115,7 +115,7 @@ namespace Sideloader
             /// The game gets from a list by index which will cause errors. Get them safely for sideloader items
             /// </summary>
             [HarmonyPrefix, HarmonyPatch(typeof(CustomMoleLayoutPreset), nameof(CustomMoleLayoutPreset.OnPush))]
-            internal static bool OnPush(int index, CustomMoleLayoutPreset __instance)
+            private static bool OnPush(int index, CustomMoleLayoutPreset __instance)
             {
                 if (index >= UniversalAutoResolver.BaseSlotID)
                 {

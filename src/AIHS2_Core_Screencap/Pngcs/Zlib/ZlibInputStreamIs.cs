@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-
+﻿
 #if SHARPZIPLIB
 
 // ONLY IF SHARPZIPLIB IS AVAILABLE

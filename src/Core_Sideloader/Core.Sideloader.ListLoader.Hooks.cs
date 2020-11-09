@@ -14,7 +14,7 @@ namespace Sideloader.ListLoader
             internal static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks));
 
             [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.CheckItemID), typeof(int), typeof(int))]
-            internal static bool CheckItemIDHook(int category, int id, ref byte __result, ChaListControl __instance)
+            private static bool CheckItemIDHook(int category, int id, ref byte __result, ChaListControl __instance)
             {
                 int pid = CalculateGlobalID(category, id);
 
@@ -30,7 +30,7 @@ namespace Sideloader.ListLoader
             }
 
             [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.AddItemID), typeof(int), typeof(int), typeof(byte))]
-            internal static bool AddItemIDHook(int category, int id, byte flags, ChaListControl __instance)
+            private static bool AddItemIDHook(int category, int id, byte flags, ChaListControl __instance)
             {
                 int pid = CalculateGlobalID(category, id);
 
@@ -46,10 +46,10 @@ namespace Sideloader.ListLoader
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.LoadListInfoAll))]
-            internal static void LoadListInfoAllPostHook(ChaListControl __instance) => LoadAllLists(__instance);
+            private static void LoadListInfoAllPostHook(ChaListControl __instance) => LoadAllLists(__instance);
 
             [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.AddItemID), typeof(int), typeof(int), typeof(byte))]
-            internal static bool AddItemIDHook(int category, int id)
+            private static bool AddItemIDHook(int category, int id)
             {
                 if (id >= UniversalAutoResolver.BaseSlotID)
                 {
@@ -70,7 +70,7 @@ namespace Sideloader.ListLoader
             }
 
             [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.CheckItemID), typeof(int), typeof(int))]
-            internal static bool CheckItemIDHook(int category, int id, ref byte __result)
+            private static bool CheckItemIDHook(int category, int id, ref byte __result)
             {
                 if (id >= UniversalAutoResolver.BaseSlotID)
                 {
@@ -93,9 +93,9 @@ namespace Sideloader.ListLoader
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.LoadItemID))]
-            internal static void LoadItemIDHook() => LoadCheckItemList();
+            private static void LoadItemIDHook() => LoadCheckItemList();
             [HarmonyPostfix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.SaveItemID))]
-            internal static void SaveItemIDHook() => SaveCheckItemList();
+            private static void SaveItemIDHook() => SaveCheckItemList();
         }
     }
 }

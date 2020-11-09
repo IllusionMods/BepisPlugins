@@ -18,36 +18,32 @@ namespace ExtensibleSaveFormat
                 Harmony.CreateAndPatchAll(typeof(Hooks));
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Load), typeof(BinaryReader))]
-            internal static void CustomParameterLoadPostHook(CustomParameter __instance, BinaryReader reader)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Load), typeof(BinaryReader))]
+            private static void CustomParameterLoadPostHook(CustomParameter __instance, BinaryReader reader)
             {
                 var dictionary = ReadExtData(reader) ?? new Dictionary<string, PluginData>();
                 internalCharaDictionary.Set(__instance, dictionary);
                 CardReadEvent(__instance);
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Save), typeof(BinaryWriter))]
-            internal static void CustomParameterLoadPostHook(CustomParameter __instance, BinaryWriter writer)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Save), typeof(BinaryWriter))]
+            private static void CustomParameterLoadPostHook(CustomParameter __instance, BinaryWriter writer)
             {
                 CardWriteEvent(__instance);
                 var extendedData = GetAllExtendedData(__instance);
                 WriteExtData(writer, extendedData);
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.LoadCoordinate), typeof(BinaryReader))]
-            internal static void CustomParameterLoadCoordPostHook(CustomParameter __instance, BinaryReader reader)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.LoadCoordinate), typeof(BinaryReader))]
+            private static void CustomParameterLoadCoordPostHook(CustomParameter __instance, BinaryReader reader)
             {
                 var dictionary = ReadExtData(reader) ?? new Dictionary<string, PluginData>();
                 internalCoordinateDictionary.Set(__instance, dictionary);
                 CoordinateReadEvent(__instance);
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.SaveCoordinate), typeof(BinaryWriter))]
-            internal static void CustomParameterLoadCoordPostHook(CustomParameter __instance, BinaryWriter writer)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.SaveCoordinate), typeof(BinaryWriter))]
+            private static void CustomParameterLoadCoordPostHook(CustomParameter __instance, BinaryWriter writer)
             {
                 CoordinateWriteEvent(__instance);
                 var extendedData = GetAllExtendedCoordData(__instance);
@@ -115,10 +111,8 @@ namespace ExtensibleSaveFormat
                 writer.Write(currentlySavingData);
             }
 
-            //public virtual void Copy(CustomParameter copy, int filter = -1)
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Copy), typeof(CustomParameter), typeof(int))]
-            internal static void CustomParameterCopyPostHook(CustomParameter __instance, CustomParameter copy)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Copy), typeof(CustomParameter), typeof(int))]
+            private static void CustomParameterCopyPostHook(CustomParameter __instance, CustomParameter copy)
             {
                 var isCoordLoad = false;
 

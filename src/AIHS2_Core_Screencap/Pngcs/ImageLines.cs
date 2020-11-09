@@ -26,7 +26,7 @@
             this.ImgInfo = ImgInfo;
             channels = ImgInfo.Channels;
             bitDepth = ImgInfo.BitDepth;
-            this.SampleType = sampleType;
+            SampleType = sampleType;
             SamplesUnpacked = unpackedMode || !ImgInfo.Packed;
             RowOffset = rowOffset;
             Nrows = nRows;

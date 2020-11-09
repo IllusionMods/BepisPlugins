@@ -127,25 +127,19 @@ namespace Screencap
 
 #if AI
             // Hook here instead of hooking GameScreenShot.Capture to not affect the Photo functionality
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(AIProject.Scene.MapScene), "CaptureSS")]
-            private static bool CaptureSSOverride()
-            {
-                return false;
-            }
+            [HarmonyPrefix, HarmonyPatch(typeof(AIProject.Scene.MapScene), "CaptureSS")]
+            private static bool CaptureSSOverride() => false;
 #elif HS2
             public static bool SoundWasPlayed;
 
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(GameScreenShot), nameof(GameScreenShot.Capture), typeof(string))]
+            [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), nameof(GameScreenShot.Capture), typeof(string))]
             private static bool CaptureOverride()
             {
                 SoundWasPlayed = true;
                 return false;
             }
 
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(GameScreenShot), nameof(GameScreenShot.UnityCapture), typeof(string))]
+            [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), nameof(GameScreenShot.UnityCapture), typeof(string))]
             private static bool CaptureOverride2()
             {
                 SoundWasPlayed = true;
@@ -154,8 +148,7 @@ namespace Screencap
 #endif
 
             // Separate screenshot class for the studio
-            [HarmonyPrefix]
-            [HarmonyPatch(typeof(Studio.GameScreenShot), nameof(Studio.GameScreenShot.Capture), typeof(string))]
+            [HarmonyPrefix, HarmonyPatch(typeof(Studio.GameScreenShot), nameof(Studio.GameScreenShot.Capture), typeof(string))]
             private static bool StudioCaptureOverride()
             {
                 return false;
@@ -312,8 +305,12 @@ namespace Screencap
             var ppl = cam.GetComponent<PostProcessLayer>();
             if (ppl != null) ppl.enabled = false;
 
-            var m3D = SceneManager.GetActiveScene().GetRootGameObjects()[0].transform.Find("CustomControl/Map3D/p_ai_mi_createBG00_00")?.gameObject; //Disable background. Sinful, truly.
-            m3D?.SetActive(false);
+            //Disable background. Sinful, truly.
+            var bg = SceneManager.GetActiveScene().GetRootGameObjects()[0].transform.Find("CustomControl/Map3D/p_ai_mi_createBG00_00");
+            GameObject m3D = null;
+            if (bg != null) m3D = bg.gameObject;
+
+            if (m3D != null) m3D.SetActive(false);
 
             if (dof != null)
             {
@@ -326,8 +323,7 @@ namespace Screencap
 
             if (ppl != null) ppl.enabled = true;
             if (dof != null) dof.enabled = true;
-
-            m3D?.SetActive(true);
+            if (m3D != null) m3D.SetActive(true);
 
             var alpha = RenderTexture.GetTemporary(scaledWidth, scaledHeight, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 

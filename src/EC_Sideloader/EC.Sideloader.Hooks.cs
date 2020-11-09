@@ -10,7 +10,7 @@ namespace Sideloader
         internal static partial class Hooks
         {
             [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleCheck), nameof(AssetBundleCheck.IsFile))]
-            internal static void IsFileHookEC(string assetBundleName, string fileName, ref bool __result)
+            private static void IsFileHookEC(string assetBundleName, string fileName, ref bool __result)
             {
                 //Redirect KK vanilla assets to EC vanilla assets
                 if (__result == false && assetBundleName.EndsWith(".unity3d") && assetBundleName.StartsWith("chara/"))
@@ -36,10 +36,8 @@ namespace Sideloader
                 }
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(AssetBundleData))]
-            [HarmonyPatch(nameof(AssetBundleData.isFile), MethodType.Getter)]
-            internal static void IsFileHookEC2(ref bool __result, AssetBundleData __instance)
+            [HarmonyPostfix, HarmonyPatch(typeof(AssetBundleData), nameof(AssetBundleData.isFile), MethodType.Getter)]
+            private static void IsFileHookEC2(ref bool __result, AssetBundleData __instance)
             {
                 //Redirect KK vanilla assets to EC vanilla assets
                 if (__result == false && __instance.bundle.EndsWith(".unity3d") && __instance.bundle.StartsWith("chara/"))
@@ -65,8 +63,8 @@ namespace Sideloader
                 }
             }
 
-            [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAsset), new[] { typeof(string), typeof(string), typeof(Type), typeof(string) })]
-            internal static void LoadAssetPreHook(ref string assetBundleName)
+            [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAsset), typeof(string), typeof(string), typeof(Type), typeof(string))]
+            private static void LoadAssetPreHook(ref string assetBundleName)
             {
                 //Redirect KK vanilla assets to EC vanilla assets
                 if (!File.Exists($"{Paths.GameRootPath}/abdata/{assetBundleName}") && assetBundleName.EndsWith(".unity3d") && assetBundleName.StartsWith("chara/"))
@@ -94,8 +92,8 @@ namespace Sideloader
                 }
             }
 
-            [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), "LoadAssetAsync", new[] { typeof(string), typeof(string), typeof(Type), typeof(string) })]
-            internal static void LoadAssetAsyncPreHook(ref string assetBundleName)
+            [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), "LoadAssetAsync", typeof(string), typeof(string), typeof(Type), typeof(string))]
+            private static void LoadAssetAsyncPreHook(ref string assetBundleName)
             {
                 //Redirect KK vanilla assets to EC vanilla assets
                 if (!File.Exists($"{Paths.GameRootPath}/abdata/{assetBundleName}") && assetBundleName.EndsWith(".unity3d") && assetBundleName.StartsWith("chara/"))

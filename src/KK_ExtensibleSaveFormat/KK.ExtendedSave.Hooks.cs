@@ -9,7 +9,7 @@ namespace ExtensibleSaveFormat
         {
             #region Extended Data Override Hooks
             [HarmonyPostfix, HarmonyPatch(typeof(CustomCoordinateFile), "Initialize")]
-            public static void CustomCoordinatePostHook() => ExtendedSave.LoadEventsEnabled = true;
+            private static void CustomCoordinatePostHook() => LoadEventsEnabled = true;
             #endregion
         }
     }

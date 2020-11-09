@@ -14,7 +14,7 @@ namespace Sideloader.AutoResolver
             /// Re-enable sideloader card and coordinate saving once import is finished
             /// </summary>
             [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFileScene), "OnDestroy")]
-            internal static void ConvertChaFileSceneEnd() => DoingImport = false;
+            private static void ConvertChaFileSceneEnd() => DoingImport = false;
 
             internal static void ExtendedCardImport(Dictionary<string, PluginData> importedExtendedData)
             {

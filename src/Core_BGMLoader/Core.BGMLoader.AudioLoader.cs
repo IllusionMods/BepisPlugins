@@ -1,6 +1,5 @@
 ﻿using NAudio.Wave;
 using NVorbis;
-using System;
 using UnityEngine;
 
 namespace BGMLoader
@@ -39,8 +38,6 @@ namespace BGMLoader
                 return LoadInternal(filename, audioData, reader.WaveFormat.Channels, reader.WaveFormat.SampleRate);
             }
         }
-
-        public static AudioClip LoadMP3(string filename) => throw new NotImplementedException();
 
         public static AudioClip LoadVorbis(string filename)
         {

@@ -41,8 +41,7 @@ namespace ConfigurationManagerWrapper
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(Config), "Start")]
+        [HarmonyPostfix, HarmonyPatch(typeof(Config), "Start")]
         private static void Config_Start_CreateButton(ref Toggle[] ___tabs)
         {
             var original = ___tabs[1].transform;

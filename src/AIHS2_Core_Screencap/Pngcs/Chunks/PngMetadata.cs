@@ -10,8 +10,8 @@
     /// </remarks>
     internal class PngMetadata
     {
-        readonly ChunksList chunkList;
-        readonly bool ReadOnly;// readonly
+        private readonly ChunksList chunkList;
+        private readonly bool ReadOnly;// readonly
 
         internal PngMetadata(ChunksList chunks)
         {
@@ -47,6 +47,6 @@
         /// <param name="chunk">Chunk, ready for write</param>
         public void QueueChunk(PngChunk chunk) => QueueChunk(chunk, true);
 
-        ChunksListForWrite GetChunkListW() => (ChunksListForWrite)chunkList;
+        private ChunksListForWrite GetChunkListW() => (ChunksListForWrite)chunkList;
     }
 }

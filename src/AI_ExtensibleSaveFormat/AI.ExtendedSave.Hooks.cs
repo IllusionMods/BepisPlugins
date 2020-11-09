@@ -13,12 +13,12 @@ namespace ExtensibleSaveFormat
             [HarmonyPatch(typeof(CustomCharaFileInfoAssist), nameof(CustomCharaFileInfoAssist.CreateCharaFileInfoList))]
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
             [HarmonyPatch(typeof(GameCoordinateFileInfoAssist), nameof(GameCoordinateFileInfoAssist.CreateCoordinateFileInfoList))]
-            internal static void CreateListPrefix() => LoadEventsEnabled = false;
+            private static void CreateListPrefix() => LoadEventsEnabled = false;
             [HarmonyPostfix]
             [HarmonyPatch(typeof(CustomCharaFileInfoAssist), nameof(CustomCharaFileInfoAssist.CreateCharaFileInfoList))]
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
             [HarmonyPatch(typeof(GameCoordinateFileInfoAssist), nameof(GameCoordinateFileInfoAssist.CreateCoordinateFileInfoList))]
-            internal static void CreateListPostfix() => LoadEventsEnabled = true;
+            private static void CreateListPostfix() => LoadEventsEnabled = true;
         }
     }
 }

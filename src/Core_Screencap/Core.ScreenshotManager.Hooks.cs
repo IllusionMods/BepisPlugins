@@ -14,10 +14,10 @@ namespace Screencap
         /// Cancel the vanilla screenshot
         /// </summary>
         [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), "Capture")]
-        public static bool CapturePreHook() => false;
+        private static bool CapturePrefix() => false;
 
         [HarmonyPrefix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
-        public static bool pre_CreatePng(ref int createW, ref int createH)
+        private static bool CreatePngPrefix(ref int createW, ref int createH)
         {
             //Multiply up render resolution.
             createW *= CardRenderRate;
@@ -26,7 +26,7 @@ namespace Screencap
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
-        public static void post_CreatePng(ref byte[] pngData) => DownscaleEncoded(ref pngData);
+        private static void CreatePngPostfix(ref byte[] pngData) => DownscaleEncoded(ref pngData);
 
         private static void DownscaleEncoded(ref byte[] encoded)
         {
