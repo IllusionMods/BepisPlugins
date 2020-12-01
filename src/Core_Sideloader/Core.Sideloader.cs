@@ -554,7 +554,7 @@ namespace Sideloader
         {
             if (context.Parameters.Name == null || context.Bundle.name == null) return;
 
-            if (context.Parameters.Type == typeof(Texture2D))
+            if (typeof(Texture).IsAssignableFrom(context.Parameters.Type))
             {
                 string zipPath = $"abdata/{context.Bundle.name.Replace(".unity3d", "", StringComparison.OrdinalIgnoreCase)}/{context.Parameters.Name}.png";
 
