@@ -79,8 +79,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\packages\IllusionLibs.PlayHome.UnityEngine.5.5.5\lib\net35\UnityEngine.dll</HintPath>
       <Private>False</Private>
