@@ -11,11 +11,20 @@ namespace ExtensibleSaveFormat
 {
     public partial class ExtendedSave
     {
-        internal static class Hooks
+        internal static partial class Hooks
         {
             internal static void InstallHooks()
             {
-                Harmony.CreateAndPatchAll(typeof(Hooks));
+                var h = Harmony.CreateAndPatchAll(typeof(Hooks));
+
+                // Just some casual prefix patch overriding the whole method, if it exists we need to patch it instead of the original method
+                var phiblPatch = Type.GetType("PHIBL.Patch.SceneSavePatch, PHIBL", false);
+                if (phiblPatch != null)
+                {
+                    Logger.LogDebug("PHIBL.Patch.SceneSavePatch found, patching");
+                    h.Patch(AccessTools.Method(phiblPatch, "Prefix"),
+                        transpiler: new HarmonyMethod(typeof(Hooks), nameof(Hooks.SceneInfoSaveTranspiler)));
+                }
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Load), typeof(BinaryReader))]

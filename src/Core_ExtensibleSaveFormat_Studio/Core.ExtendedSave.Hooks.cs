@@ -29,7 +29,11 @@ namespace ExtensibleSaveFormat
                     CodeInstruction inst = instructionsList[i];
                     yield return inst;
 
+#if PH
+                    if (set == false && inst.opcode == OpCodes.Stfld && instructionsList[i + 1].opcode == OpCodes.Leave)
+#else
                     if (set == false && inst.opcode == OpCodes.Stind_Ref && (instructionsList[i + 1].opcode == OpCodes.Leave || instructionsList[i + 1].opcode == OpCodes.Leave_S))
+#endif
                     {
                         yield return new CodeInstruction(OpCodes.Ldarg_1);
                         yield return new CodeInstruction(OpCodes.Ldloc_1);
@@ -37,6 +41,9 @@ namespace ExtensibleSaveFormat
                         set = true;
                     }
                 }
+
+                if(!set)
+                    throw new Exception("Failed to patch SceneInfo.Load");
             }
 
             public static void SceneInfoLoadHook(string path, BinaryReader br)
@@ -89,6 +96,9 @@ namespace ExtensibleSaveFormat
                         set = true;
                     }
                 }
+                
+                if(!set)
+                    throw new Exception("Failed to patch SceneInfo.Import");
             }
 
             public static void SceneInfoImportHook(string path, BinaryReader br, Version _)
@@ -151,6 +161,9 @@ namespace ExtensibleSaveFormat
                         set = true;
                     }
                 }
+                
+                if(!set)
+                    throw new Exception("Failed to patch SceneInfo.Save");
             }
 
             public static void SceneInfoSaveHook(string path, BinaryWriter bw)
