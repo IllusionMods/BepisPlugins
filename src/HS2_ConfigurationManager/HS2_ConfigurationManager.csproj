@@ -34,16 +34,20 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\HarmonyX.2.1.1\lib\net45\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\lib\net35\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29\lib\net46\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.2\lib\net46\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="BepInEx, Version=5.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\BepInEx.BaseLib.5.4.0\lib\net35\BepInEx.dll</HintPath>
+    <Reference Include="BepInEx, Version=5.4.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.4\lib\net35\BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx.Harmony, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\lib\net35\BepInEx.Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ConfigurationManager, Version=16.1.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -51,61 +55,37 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="IL, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29\lib\net46\IL.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Mono.Cecil.0.11.3\lib\net40\Mono.Cecil.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Mono.Cecil.0.11.3\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Mono.Cecil.0.11.3\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Mono.Cecil.0.11.3\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoMod.RuntimeDetour, Version=20.11.5.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MonoMod.RuntimeDetour.20.11.5.1\lib\net40\MonoMod.RuntimeDetour.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="MonoMod.Utils, Version=20.11.5.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MonoMod.Utils.20.11.5.1\lib\net40\MonoMod.Utils.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.2\lib\net46\IL.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization, Version=2.0.13.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29\lib\net46\Sirenix.Serialization.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.2\lib\net46\Sirenix.Serialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="UniRx, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UniRx.2020.5.29\lib\net46\UniRx.dll</HintPath>
+    <Reference Include="UniRx, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UniRx.2020.5.29.2\lib\net46\UniRx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11\lib\net46\UnityEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11\lib\net46\UnityEngine.CoreModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.2\lib\net46\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11\lib\net46\UnityEngine.AudioModule.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.2\lib\net46\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.2\lib\net46\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.2\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11\lib\net46\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.2\lib\net46\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -119,18 +99,34 @@
   <ItemGroup>
     <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.3\analyzers\dotnet\cs\BepInEx.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.3\analyzers\dotnet\cs\BepInEx.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.Unity.Analyzers.1.8.2\analyzers\dotnet\cs\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.Unity.Analyzers.1.9.0\analyzers\dotnet\cs\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(TargetPath)" HS2</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\..\packages\BepInEx.Core.5.4.0\build\BepInEx.Core.targets" Condition="Exists('..\..\packages\BepInEx.Core.5.4.0\build\BepInEx.Core.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\BepInEx.Core.5.4.0\build\BepInEx.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\BepInEx.Core.5.4.0\build\BepInEx.Core.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.2\build\IllusionLibs.HoneySelect2.Assembly-CSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.2\build\IllusionLibs.HoneySelect2.Assembly-CSharp.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.2\build\IllusionLibs.HoneySelect2.IL.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.2\build\IllusionLibs.HoneySelect2.IL.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.2\build\IllusionLibs.HoneySelect2.Sirenix.Serialization.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.2\build\IllusionLibs.HoneySelect2.Sirenix.Serialization.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UniRx.2020.5.29.2\build\IllusionLibs.HoneySelect2.UniRx.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UniRx.2020.5.29.2\build\IllusionLibs.HoneySelect2.UniRx.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.UI.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.UI.targets'))" />
   </Target>
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.2\build\IllusionLibs.HoneySelect2.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.2\build\IllusionLibs.HoneySelect2.Assembly-CSharp.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.2\build\IllusionLibs.HoneySelect2.IL.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.2\build\IllusionLibs.HoneySelect2.IL.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.2\build\IllusionLibs.HoneySelect2.Sirenix.Serialization.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.2\build\IllusionLibs.HoneySelect2.Sirenix.Serialization.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UniRx.2020.5.29.2\build\IllusionLibs.HoneySelect2.UniRx.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UniRx.2020.5.29.2\build\IllusionLibs.HoneySelect2.UniRx.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.UI.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.2\build\IllusionLibs.HoneySelect2.UnityEngine.UI.targets')" />
 </Project>
