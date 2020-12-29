@@ -65,9 +65,11 @@
   <ItemGroup>
     <Compile Include="KK.ExtendedSave.cs" />
     <Compile Include="KK.ExtendedSave.Hooks.cs" />
+    <Compile Include="KK.ExtendedSave.SaveData.Hooks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KK.ExtendedSave.SaveData.cs" />
     <None Include="KK_ExtensibleSaveFormat.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
