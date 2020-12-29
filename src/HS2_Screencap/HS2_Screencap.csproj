@@ -110,8 +110,8 @@
     <None Include="Resources\composite.unity3d" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.3\analyzers\dotnet\cs\BepInEx.Analyzers.CodeFixes.dll" />
-    <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.3\analyzers\dotnet\cs\BepInEx.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.4\analyzers\dotnet\cs\BepInEx.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.4\analyzers\dotnet\cs\BepInEx.Analyzers.dll" />
     <Analyzer Include="..\..\packages\Microsoft.Unity.Analyzers.1.9.0\analyzers\dotnet\cs\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <Import Project="..\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems" Label="Shared" />
