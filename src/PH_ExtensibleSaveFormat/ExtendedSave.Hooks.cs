@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 
 namespace ExtensibleSaveFormat
 {
@@ -17,13 +18,19 @@ namespace ExtensibleSaveFormat
             {
                 var h = Harmony.CreateAndPatchAll(typeof(Hooks));
 
-                // Just some casual prefix patch overriding the whole method, if it exists we need to patch it instead of the original method
-                var phiblPatch = Type.GetType("PHIBL.Patch.SceneSavePatch, PHIBL", false);
-                if (phiblPatch != null)
+                // Just some casual prefix patches overriding the whole method, if it exists we need to patch it instead of the original method
+                foreach (var typeToPatch in new[]
                 {
-                    Logger.LogDebug("PHIBL.Patch.SceneSavePatch found, patching");
-                    h.Patch(AccessTools.Method(phiblPatch, "Prefix"),
-                        transpiler: new HarmonyMethod(typeof(Hooks), nameof(Hooks.SceneInfoSaveTranspiler)));
+                    Type.GetType("PHIBL.Patch.SceneSavePatch, PHIBL", false),
+                    Type.GetType("MoreStudioCameras.SavePatch, MoreStudioCameras", false)
+                })
+                {
+                    if (typeToPatch != null)
+                    {
+                        Logger.LogDebug(typeToPatch.FullName + " found, patching");
+                        h.Patch(AccessTools.Method(typeToPatch, "Prefix"),
+                            transpiler: new HarmonyMethod(typeof(Hooks), nameof(PhPluginSceneInfoSaveTranspiler)));
+                    }
                 }
             }
 
@@ -146,6 +153,23 @@ namespace ExtensibleSaveFormat
                     var c = internalCharaDictionary.Get(copy);
                     internalCharaDictionary.Set(__instance, c);
                 }
+            }
+
+            private static IEnumerable<CodeInstruction> PhPluginSceneInfoSaveTranspiler(IEnumerable<CodeInstruction> instructions)
+            {
+                var matcher = new CodeMatcher(instructions);
+                matcher.MatchForward(false, new CodeMatch(OpCodes.Ldstr, "【PHStudio】"));
+                var getWriterInstr = matcher.InstructionAt(-1);
+                matcher.Advance(2);
+                matcher.InsertAndAdvance(
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    getWriterInstr,
+                    CodeInstruction.Call(typeof(Hooks), nameof(SceneInfoSaveHook)));
+
+                if (matcher.Instruction.opcode != OpCodes.Leave && matcher.Instruction.opcode != OpCodes.Leave_S)
+                    throw new Exception("Failed to patch SceneInfo.Save");
+
+                return matcher.Instructions();
             }
         }
     }
