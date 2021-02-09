@@ -21,6 +21,7 @@ namespace ExtensibleSaveFormat
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
             [HarmonyPatch(typeof(GameCoordinateFileInfoAssist), nameof(GameCoordinateFileInfoAssist.CreateCoordinateFileInfoList))]
             private static void CreateListPrefix() => LoadEventsEnabled = false;
+
             [HarmonyPostfix]
             [HarmonyPatch(typeof(CustomCharaFileInfoAssist), nameof(CustomCharaFileInfoAssist.CreateCharaFileInfoList))]
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
@@ -34,15 +35,24 @@ namespace ExtensibleSaveFormat
             /// <param name="br"></param>
             public static void GameDataLoadHook(AIProject.SaveData.SaveData saveData, BinaryReader br)
             {
-                string marker = br.ReadString();
-                int version = br.ReadInt32();
-                int length = br.ReadInt32();
-                if (marker == Marker && version == DataVersion && length > 0)
+                try
                 {
-                    ReadWorldData(saveData, br);
-                    Logger.LogMessage("loaded game data extended");
+                    string marker = br.ReadString();
+                    int version = br.ReadInt32();
+                    int length = br.ReadInt32();
+                    if (marker == Marker && version == DataVersion && length > 0)
+                    {
+                        ReadWorldData(saveData, br);
+                        Logger.LogMessage("loaded game data extended");
+                    }
+                    else Logger.LogMessage("empty game data extended");
                 }
-                else Logger.LogMessage("empty game data extended");
+                catch (EndOfStreamException)
+                {
+                } //Incomplete/non-existant data
+                catch (System.SystemException)
+                {
+                } //Invalid/unexpected deserialized data
             }
 
             /// <summary>
@@ -124,15 +134,24 @@ namespace ExtensibleSaveFormat
 
             public static void HousingDataLoadHook(CraftInfo craftInfo, BinaryReader br)
             {
-                HousingReadEvent(craftInfo);
-                string marker = br.ReadString();
-                int version = br.ReadInt32();
-                int length = br.ReadInt32();
-                if (marker == Marker && version == DataVersion && length > 0)
+                try
                 {
-                    Logger.LogMessage("loaded game data extended");
+                    HousingReadEvent(craftInfo);
+                    string marker = br.ReadString();
+                    int version = br.ReadInt32();
+                    int length = br.ReadInt32();
+                    if (marker == Marker && version == DataVersion && length > 0)
+                    {
+                        Logger.LogMessage("loaded game data extended");
+                    }
+                    else Logger.LogMessage("empty game data extended");
                 }
-                else Logger.LogMessage("empty game data extended");
+                catch (EndOfStreamException)
+                {
+                } //Incomplete/non-existant data
+                catch (System.SystemException)
+                {
+                } //Invalid/unexpected deserialized data
             }
 
             public static void HousingDataSaveHook(CraftInfo craftInfo, BinaryWriter bw)
@@ -146,10 +165,9 @@ namespace ExtensibleSaveFormat
             [HarmonyPatch(typeof(SaveData), "Load", typeof(BinaryReader))]
             public static void OnLoadMainGame(SaveData __instance, BinaryReader reader, bool __result)
             {
-                if (__result)
-                {
-                    GameDataLoadHook(__instance, reader);
-                }
+                if (!__result) return;
+                Logger.LogMessage("Loaded the main game data");
+                GameDataLoadHook(__instance, reader);
             }
 
             [HarmonyPostfix]
