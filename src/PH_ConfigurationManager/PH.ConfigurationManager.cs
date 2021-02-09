@@ -1,13 +1,9 @@
-﻿using HarmonyLib;
-
-using BepInEx;
-using BepInEx.Harmony;
+﻿using BepInEx;
+using BepisPlugins;
+using HarmonyLib;
+using System.ComponentModel;
 using UnityEngine;
 using UnityEngine.UI;
-
-using BepisPlugins;
-
-using System.ComponentModel;
 
 namespace ConfigurationManagerWrapper
 {
@@ -25,32 +21,31 @@ namespace ConfigurationManagerWrapper
         public const string PluginName = "Configuration Manager wrapper for PlayHome";
 
         private static ConfigurationManager.ConfigurationManager _manager;
-        
+
         public void Start()
         {
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.OverrideHotkey = true;
-            
+
             var isStudio = Application.productName.Contains("PlayHomeStudio");
-            if (isStudio) 
+            if (isStudio)
                 return;
-            
-            HarmonyWrapper.PatchAll(typeof(ConfigurationManagerWrapper));
+
+            Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
             enabled = false;
         }
-        
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.F1) && Singleton<Studio.Studio>.IsInstance())
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
-        
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(Config), "Start")]
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Config), "Start")]
         private static void Config_Start_CreateButton(ref Toggle[] ___tabs)
         {
             var original = ___tabs[1].transform;
-            
+
             var copy = Instantiate(original, original.parent);
             copy.name = "Tab Plugin Settings";
             copy.GetComponentInChildren<Text>().text = "Plugin settings";
@@ -61,7 +56,7 @@ namespace ConfigurationManagerWrapper
             {
                 if (!selected)
                     return;
-                
+
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
                 Singleton<AudioControl>.Instance.Play2DSE(Singleton<AudioControl>.Instance.systemSE_choice);
 

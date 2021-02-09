@@ -15,9 +15,8 @@ namespace ExtensibleSaveFormat
         {
             #region Import KK Chara
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(ConvertChaFile), nameof(ConvertChaFile.ConvertCharaFile))]
-            internal static void ConvertChaFilePostHook(ChaFileControl cfc, KoikatsuCharaFile.ChaFile kkfile)
+            [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFile), nameof(ConvertChaFile.ConvertCharaFile))]
+            private static void ConvertChaFilePostHook(ChaFileControl cfc, KoikatsuCharaFile.ChaFile kkfile)
             {
                 // Move data from import dictionary to normal dictionary before the imported cards are saved so the imported data is written
                 var result = _internalCharaImportDictionary.Get(kkfile);
@@ -56,9 +55,8 @@ namespace ExtensibleSaveFormat
                 }
             }
 
-            [HarmonyTranspiler]
-            [HarmonyPatch(typeof(KoikatsuCharaFile.ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
-            internal static IEnumerable<CodeInstruction> KKChaFileLoadFileTranspiler(IEnumerable<CodeInstruction> instructions)
+            [HarmonyTranspiler, HarmonyPatch(typeof(KoikatsuCharaFile.ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
+            private static IEnumerable<CodeInstruction> KKChaFileLoadFileTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 var newInstructionSet = new List<CodeInstruction>(instructions);
 
@@ -84,9 +82,8 @@ namespace ExtensibleSaveFormat
                 return newInstructionSet;
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(KoikatsuCharaFile.ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
-            internal static void KKChaFileLoadFilePostHook(KoikatsuCharaFile.ChaFile __instance, bool __result, BinaryReader br)
+            [HarmonyPostfix, HarmonyPatch(typeof(KoikatsuCharaFile.ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
+            private static void KKChaFileLoadFilePostHook(KoikatsuCharaFile.ChaFile __instance, bool __result, BinaryReader br)
             {
                 if (!__result)
                     return;
@@ -135,9 +132,8 @@ namespace ExtensibleSaveFormat
 
             #region Import KK Coordinate
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(ConvertChaFile), nameof(ConvertChaFile.ConvertCoordinateFile))]
-            internal static void ConvertCoordinateFile(ChaFileCoordinate emcoorde, KoikatsuCharaFile.ChaFileCoordinate kkcoorde)
+            [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFile), nameof(ConvertChaFile.ConvertCoordinateFile))]
+            private static void ConvertCoordinateFile(ChaFileCoordinate emcoorde, KoikatsuCharaFile.ChaFileCoordinate kkcoorde)
             {
                 // Move data from import dictionary to normal dictionary before the imported cards are saved so the imported data is written
                 var result = _internalCoordinateImportDictionary.Get(kkcoorde);
@@ -148,9 +144,8 @@ namespace ExtensibleSaveFormat
                 }
             }
 
-            [HarmonyTranspiler]
-            [HarmonyPatch(typeof(KoikatsuCharaFile.ChaFileCoordinate), nameof(KoikatsuCharaFile.ChaFileCoordinate.LoadFile), typeof(Stream), typeof(bool))]
-            internal static IEnumerable<CodeInstruction> KKChaFileCoordinateLoadTranspiler(IEnumerable<CodeInstruction> instructions)
+            [HarmonyTranspiler, HarmonyPatch(typeof(KoikatsuCharaFile.ChaFileCoordinate), nameof(KoikatsuCharaFile.ChaFileCoordinate.LoadFile), typeof(Stream), typeof(bool))]
+            private static IEnumerable<CodeInstruction> KKChaFileCoordinateLoadTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 var instructionList = instructions.ToList();
 
@@ -208,9 +203,8 @@ namespace ExtensibleSaveFormat
 
             #region HEditData
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(HEditData), nameof(HEditData.Load), typeof(BinaryReader), typeof(int), typeof(YS_Node.NodeControl), typeof(HEditData.InfoData), typeof(bool))]
-            internal static bool HEditDataLoadHook(bool __result, HEditData __instance, ref BinaryReader _reader)
+            [HarmonyPostfix, HarmonyPatch(typeof(HEditData), nameof(HEditData.Load), typeof(BinaryReader), typeof(int), typeof(YS_Node.NodeControl), typeof(HEditData.InfoData), typeof(bool))]
+            private static bool HEditDataLoadHook(bool __result, HEditData __instance, ref BinaryReader _reader)
             {
                 var originalPosition = _reader.BaseStream.Position;
                 try
@@ -248,9 +242,8 @@ namespace ExtensibleSaveFormat
                 return __result;
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(HEditData), nameof(HEditData.Save), typeof(BinaryWriter), typeof(YS_Node.NodeControl), typeof(bool))]
-            internal static bool HEditDataSaveHook(bool __result, HEditData __instance, ref BinaryWriter _writer)
+            [HarmonyPostfix, HarmonyPatch(typeof(HEditData), nameof(HEditData.Save), typeof(BinaryWriter), typeof(YS_Node.NodeControl), typeof(bool))]
+            private static bool HEditDataSaveHook(bool __result, HEditData __instance, ref BinaryWriter _writer)
             {
                 HEditDataWriteEvent(__instance);
 
@@ -282,7 +275,6 @@ namespace ExtensibleSaveFormat
             }
 
             #endregion
-
         }
     }
 }

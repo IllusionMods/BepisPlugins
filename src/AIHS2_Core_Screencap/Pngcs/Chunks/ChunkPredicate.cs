@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Pngcs.Chunks {
+﻿namespace Pngcs.Chunks
+{
     /// <summary>
     /// Decides if another chunk "matches", according to some criterion
     /// </summary>
-    public interface ChunkPredicate {
+    internal interface IChunkPredicate
+    {
         /// <summary>
         /// The other chunk matches with this one
         /// </summary>

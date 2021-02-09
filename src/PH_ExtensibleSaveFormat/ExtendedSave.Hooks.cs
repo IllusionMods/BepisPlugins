@@ -1,55 +1,65 @@
-﻿using System;
+﻿using Character;
+using HarmonyLib;
+using MessagePack;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using BepInEx.Harmony;
-using Character;
-using HarmonyLib;
-using MessagePack;
-using Debug = UnityEngine.Debug;
+using System.Reflection.Emit;
 
 namespace ExtensibleSaveFormat
 {
     public partial class ExtendedSave
     {
-        internal static class Hooks
+        internal static partial class Hooks
         {
             internal static void InstallHooks()
             {
-                HarmonyWrapper.PatchAll(typeof(Hooks));
+                var h = Harmony.CreateAndPatchAll(typeof(Hooks));
+
+                // Just some casual prefix patches overriding the whole method, if it exists we need to patch it instead of the original method
+                foreach (var typeToPatch in new[]
+                {
+                    Type.GetType("PHIBL.Patch.SceneSavePatch, PHIBL", false),
+                    Type.GetType("MoreStudioCameras.SavePatch, MoreStudioCameras", false)
+                })
+                {
+                    if (typeToPatch != null)
+                    {
+                        Logger.LogDebug(typeToPatch.FullName + " found, patching");
+                        h.Patch(AccessTools.Method(typeToPatch, "Prefix"),
+                            transpiler: new HarmonyMethod(typeof(Hooks), nameof(PhPluginSceneInfoSaveTranspiler)));
+                    }
+                }
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Load), typeof(BinaryReader))]
-            internal static void CustomParameterLoadPostHook(CustomParameter __instance, BinaryReader reader)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Load), typeof(BinaryReader))]
+            private static void CustomParameterLoadPostHook(CustomParameter __instance, BinaryReader reader)
             {
                 var dictionary = ReadExtData(reader) ?? new Dictionary<string, PluginData>();
                 internalCharaDictionary.Set(__instance, dictionary);
                 CardReadEvent(__instance);
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Save), typeof(BinaryWriter))]
-            internal static void CustomParameterLoadPostHook(CustomParameter __instance, BinaryWriter writer)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Save), typeof(BinaryWriter))]
+            private static void CustomParameterLoadPostHook(CustomParameter __instance, BinaryWriter writer)
             {
                 CardWriteEvent(__instance);
                 var extendedData = GetAllExtendedData(__instance);
                 WriteExtData(writer, extendedData);
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.LoadCoordinate), typeof(BinaryReader))]
-            internal static void CustomParameterLoadCoordPostHook(CustomParameter __instance, BinaryReader reader)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.LoadCoordinate), typeof(BinaryReader))]
+            private static void CustomParameterLoadCoordPostHook(CustomParameter __instance, BinaryReader reader)
             {
                 var dictionary = ReadExtData(reader) ?? new Dictionary<string, PluginData>();
                 internalCoordinateDictionary.Set(__instance, dictionary);
                 CoordinateReadEvent(__instance);
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.SaveCoordinate), typeof(BinaryWriter))]
-            internal static void CustomParameterLoadCoordPostHook(CustomParameter __instance, BinaryWriter writer)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.SaveCoordinate), typeof(BinaryWriter))]
+            private static void CustomParameterLoadCoordPostHook(CustomParameter __instance, BinaryWriter writer)
             {
                 CoordinateWriteEvent(__instance);
                 var extendedData = GetAllExtendedCoordData(__instance);
@@ -82,7 +92,7 @@ namespace ExtensibleSaveFormat
                                 }
                                 catch (Exception e)
                                 {
-                                    Debug.LogError("Failed to read extended data: " + e);
+                                    UnityEngine.Debug.LogError("Failed to read extended data: " + e);
                                     // Skipping the data has a better chance of preventing further crashes than rewinding
                                     return null;
                                 }
@@ -117,10 +127,8 @@ namespace ExtensibleSaveFormat
                 writer.Write(currentlySavingData);
             }
 
-            //public virtual void Copy(CustomParameter copy, int filter = -1)
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Copy), typeof(CustomParameter), typeof(int))]
-            internal static void CustomParameterCopyPostHook(CustomParameter __instance, CustomParameter copy)
+            [HarmonyPostfix, HarmonyPatch(typeof(CustomParameter), nameof(CustomParameter.Copy), typeof(CustomParameter), typeof(int))]
+            private static void CustomParameterCopyPostHook(CustomParameter __instance, CustomParameter copy)
             {
                 var isCoordLoad = false;
 
@@ -145,6 +153,23 @@ namespace ExtensibleSaveFormat
                     var c = internalCharaDictionary.Get(copy);
                     internalCharaDictionary.Set(__instance, c);
                 }
+            }
+
+            private static IEnumerable<CodeInstruction> PhPluginSceneInfoSaveTranspiler(IEnumerable<CodeInstruction> instructions)
+            {
+                var matcher = new CodeMatcher(instructions);
+                matcher.MatchForward(false, new CodeMatch(OpCodes.Ldstr, "【PHStudio】"));
+                var getWriterInstr = matcher.InstructionAt(-1);
+                matcher.Advance(2);
+                matcher.InsertAndAdvance(
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    getWriterInstr,
+                    CodeInstruction.Call(typeof(Hooks), nameof(SceneInfoSaveHook)));
+
+                if (matcher.Instruction.opcode != OpCodes.Leave && matcher.Instruction.opcode != OpCodes.Leave_S)
+                    throw new Exception("Failed to patch SceneInfo.Save");
+
+                return matcher.Instructions();
             }
         }
     }

@@ -40,7 +40,7 @@ namespace BGMLoader
 
                 var path = files[Random.Range(0, files.Length - 1)];
 
-                context.Asset = AudioLoader.LoadAudioClip(path, AudioType.WAV);
+                context.Asset = AudioLoader.LoadAudioClip(path);
                 context.Complete();
             }
         }
@@ -63,7 +63,7 @@ namespace BGMLoader
                 {
                     Logger.LogDebug($"Loading BGM track \"{(BGM)bgmTrack}\" from {path}");
 
-                    context.Asset = AudioLoader.LoadVorbis(path);
+                    context.Asset = AudioLoader.LoadAudioClip(path);
                     context.Complete();
                 }
             }

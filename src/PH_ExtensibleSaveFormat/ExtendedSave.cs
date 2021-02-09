@@ -1,11 +1,12 @@
-﻿using BepInEx.Logging;
+﻿using BepInEx;
+using BepInEx.Logging;
 using BepisPlugins;
+using Character;
 using MessagePack;
 using MessagePack.Resolvers;
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using BepInEx;
-using Character;
 
 namespace ExtensibleSaveFormat
 {
@@ -38,8 +39,10 @@ namespace ExtensibleSaveFormat
 
         internal static WeakKeyDictionary<CustomParameter, Dictionary<string, PluginData>> internalCoordinateDictionary = new WeakKeyDictionary<CustomParameter, Dictionary<string, PluginData>>();
 
-        internal void Awake()
+        internal IEnumerator Start()
         {
+            // HACK: Wait for PHIBL to load so we can patch it if it exists
+            yield return null;
             Logger = base.Logger;
             Hooks.InstallHooks();
         }

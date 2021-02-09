@@ -62,6 +62,9 @@ namespace Sideloader
 
         internal void Awake()
         {
+#if KK
+            ZipConstants.DefaultCodePage = 0;
+#endif
             Logger = base.Logger;
 
             Hooks.InstallHooks();
@@ -239,7 +242,7 @@ namespace Sideloader
                     try
                     {
                         var stream = arc.GetInputStream(entry);
-                        var chaListData = Lists.LoadCSV(stream, manifest.GUID);
+                        var chaListData = Lists.LoadCSV(stream);
 
                         SetPossessNew(chaListData);
                         UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
@@ -575,7 +578,7 @@ namespace Sideloader
         {
             if (context.Parameters.Name == null || context.Bundle.name == null) return;
 
-            if (context.Parameters.Type == typeof(Texture2D))
+            if (typeof(Texture).IsAssignableFrom(context.Parameters.Type))
             {
                 string zipPath = $"abdata/{context.Bundle.name.Replace(".unity3d", "", StringComparison.OrdinalIgnoreCase)}/{context.Parameters.Name}.png";
 

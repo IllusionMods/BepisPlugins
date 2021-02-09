@@ -1,5 +1,5 @@
-﻿using System;
-using Character;
+﻿using Character;
+using System;
 
 namespace ExtensibleSaveFormat
 {

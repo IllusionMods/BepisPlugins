@@ -96,7 +96,7 @@ namespace Sideloader.AutoResolver
             /// and restore the IDs back to the original, non-resolved ID for hard mod compatibility
             /// </summary>
             [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
-            internal static void SavePrefix()
+            private static void SavePrefix()
             {
                 Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
                 List<StudioResolveInfo> ObjectResolutionInfo = new List<StudioResolveInfo>();
@@ -110,10 +110,12 @@ namespace Sideloader.AutoResolver
                     if (oi is OIItemInfo Item)
                     {
                         //Resolve the IDs of any patterns applied to the item
-                        StudioPatternResolveInfo studioPatternResolveInfo = new StudioPatternResolveInfo();
-                        studioPatternResolveInfo.DicKey = Item.dicKey;
-                        studioPatternResolveInfo.ObjectOrder = ItemOrder[Item.dicKey];
-                        studioPatternResolveInfo.ObjectPatternInfo = new Dictionary<int, StudioPatternResolveInfo.PatternInfo>();
+                        StudioPatternResolveInfo studioPatternResolveInfo = new StudioPatternResolveInfo
+                        {
+                            DicKey = Item.dicKey,
+                            ObjectOrder = ItemOrder[Item.dicKey],
+                            ObjectPatternInfo = new Dictionary<int, StudioPatternResolveInfo.PatternInfo>()
+                        };
 #if KK
                         for (int i = 0; i < Item.pattern.Length; i++)
                         {
@@ -319,7 +321,7 @@ namespace Sideloader.AutoResolver
             /// Set item IDs back to the resolved ID
             /// </summary>
             [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
-            public static void SavePostfix()
+            private static void SavePostfix()
             {
                 PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UARExtID);
 

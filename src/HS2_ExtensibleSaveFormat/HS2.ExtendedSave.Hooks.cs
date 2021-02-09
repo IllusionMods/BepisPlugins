@@ -1,8 +1,8 @@
-﻿using System.Collections;
-using CharaCustom;
+﻿using CharaCustom;
 using CoordinateFileSystem;
 using HarmonyLib;
 using HS2;
+using System.Collections;
 
 namespace ExtensibleSaveFormat
 {
@@ -16,17 +16,16 @@ namespace ExtensibleSaveFormat
             [HarmonyPatch(typeof(CustomCharaFileInfoAssist), nameof(CustomCharaFileInfoAssist.CreateCharaFileInfoList))]
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
             [HarmonyPatch(typeof(CoordinateFileInfoAssist), nameof(CoordinateFileInfoAssist.CreateCharaFileInfoList))]
-            internal static void CreateListPrefix() => LoadEventsEnabled = false;
+            private static void CreateListPrefix() => LoadEventsEnabled = false;
             [HarmonyPostfix]
             [HarmonyPatch(typeof(Config.ConfigCharaSelectUI), "CreateList")]
             [HarmonyPatch(typeof(CustomCharaFileInfoAssist), nameof(CustomCharaFileInfoAssist.CreateCharaFileInfoList))]
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
             [HarmonyPatch(typeof(CoordinateFileInfoAssist), nameof(CoordinateFileInfoAssist.CreateCharaFileInfoList))]
-            internal static void CreateListPostfix() => LoadEventsEnabled = true;
+            private static void CreateListPostfix() => LoadEventsEnabled = true;
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(TitleScene), "LoadChara")]
-            internal static void FixTitleLoadCharaRace(ref IEnumerator __result)
+            [HarmonyPostfix, HarmonyPatch(typeof(TitleScene), "LoadChara")]
+            private static void FixTitleLoadCharaRace(ref IEnumerator __result)
             {
                 // Title character gets loaded in Start and causes a race condition with extended data stuff. Delay the load 1 frame to avoid this
                 var orig = __result;

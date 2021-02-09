@@ -1,19 +1,15 @@
-namespace Pngcs {
+using Pngcs.Chunks;
+using Pngcs.Zlib;
+using System.Collections.Generic;
+using System.IO;
 
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-
-    using System.Runtime.CompilerServices;
-    using Chunks;
-    using Pngcs.Zlib;
-
+namespace Pngcs
+{
     /// <summary>
     ///  Writes a PNG image, line by line.
     /// </summary>
-    public class PngWriter {
+    internal class PngWriter
+    {
         /// <summary>
         /// Basic image info, inmutable
         /// </summary>
@@ -22,9 +18,8 @@ namespace Pngcs {
         /// <summary>
         /// filename, or description - merely informative, can be empty
         /// </summary>
-        protected readonly String filename;
-
-        FilterWriteStrategy filterStrat;
+        protected readonly string filename;
+        private FilterWriteStrategy filterStrat;
 
         /**
          * Deflate algortithm compression strategy
@@ -55,11 +50,12 @@ namespace Pngcs {
         /// <summary>
         /// A high level wrapper of a ChunksList : list of written/queued chunks
         /// </summary>
-        readonly PngMetadata metadata;
+        private readonly PngMetadata metadata;
+
         /// <summary>
         /// written/queued chunks
         /// </summary>
-        readonly ChunksListForWrite chunksList;
+        private readonly ChunksListForWrite chunksList;
 
         /// <summary>
         /// raw current row, as array of bytes,counting from 1 (index 0 is reserved for filter type)
@@ -80,26 +76,19 @@ namespace Pngcs {
         /// <remarks>see ChunksList.CHUNK_GROUP_NNN</remarks>
         public int CurrentChunkGroup { get; private set; }
 
-        int rowNum = -1; // current line number
-        readonly Stream outputStream;
-
-        PngIDatChunkOutputStream datStream;
-        AZlibOutputStream datStreamDeflated;
-
-        int[] histox = new int[256]; // auxiliar buffer, histogram, only used by reportResultsForFilter
-
-        // this only influences the 1-2-4 bitdepth format - and if we pass a ImageLine to writeRow, this is ignored
-        bool unpackedMode;
-        bool needsPack; // autocomputed
+        private int rowNum = -1; // current line number
+        private readonly Stream outputStream;
+        private PngIDatChunkOutputStream datStream;
+        private AZlibOutputStream datStreamDeflated;
+        private readonly int[] histox = new int[256]; // auxiliar buffer, histogram, only used by reportResultsForFilter
+        private bool needsPack; // autocomputed
 
         /// <summary>
         /// Constructs a PngWriter from a outputStream, with no filename information
         /// </summary>
         /// <param name="outputStream"></param>
         /// <param name="imgInfo"></param>
-        public PngWriter(Stream outputStream, ImageInfo imgInfo)
-            : this(outputStream, imgInfo, "[NO FILENAME AVAILABLE]") {
-        }
+        public PngWriter(Stream outputStream, ImageInfo imgInfo) : this(outputStream, imgInfo, "[NO FILENAME AVAILABLE]") { }
 
         /// <summary>
         /// Constructs a PngWriter from a outputStream, with optional filename or description
@@ -114,15 +103,16 @@ namespace Pngcs {
         /// <param name="imgInfo">Basic image parameters</param>
         /// <param name="filename">Optional, can be the filename or a description.</param>
         public PngWriter(Stream outputStream, ImageInfo imgInfo,
-                String filename) {
-            this.filename = (filename == null) ? "" : filename;
+                string filename)
+        {
+            this.filename = filename ?? "";
             this.outputStream = outputStream;
-            this.ImgInfo = imgInfo;
+            ImgInfo = imgInfo;
             // defaults settings
-            this.CompLevel = 6;
-            this.ShouldCloseStream = true;
-            this.IdatMaxSize = 0; // use default
-            this.CompressionStrategy = EDeflateCompressStrategy.Filtered;
+            CompLevel = 6;
+            ShouldCloseStream = true;
+            IdatMaxSize = 0; // use default
+            CompressionStrategy = EDeflateCompressStrategy.Filtered;
             // prealloc
             //scanline = new int[imgInfo.SamplesPerRowPacked];
             rowb = new byte[imgInfo.BytesPerRow + 1];
@@ -131,64 +121,64 @@ namespace Pngcs {
             chunksList = new ChunksListForWrite(ImgInfo);
             metadata = new PngMetadata(chunksList);
             filterStrat = new FilterWriteStrategy(ImgInfo, FilterType.FILTER_DEFAULT);
-            unpackedMode = false;
-            needsPack = unpackedMode && imgInfo.Packed;
+            IsUnpackedMode = false;
+            needsPack = IsUnpackedMode && imgInfo.Packed;
         }
 
         /// <summary>
         /// init: is called automatically before writing the first row
         /// </summary>
-        void init()
+        private void Init()
         {
-            datStream = new PngIDatChunkOutputStream( this.outputStream , this.IdatMaxSize );
-            datStreamDeflated = ZlibStreamFactory.createZlibOutputStream( datStream , this.CompLevel , this.CompressionStrategy , true );
+            datStream = new PngIDatChunkOutputStream(outputStream, IdatMaxSize);
+            datStreamDeflated = ZlibStreamFactory.CreateZlibOutputStream(datStream, CompLevel, CompressionStrategy, true);
             WriteSignatureAndIHDR();
             WriteFirstChunks();
         }
 
-        void reportResultsForFilter ( int rown , FilterType type , bool tentative )
+        private void ReportResultsForFilter(int rown, FilterType type, bool tentative)
         {
             for (int i = 0; i < histox.Length; i++)
                 histox[i] = 0;
             int s = 0, v;
-            for (int i = 1; i <= ImgInfo.BytesPerRow; i++) {
+            for (int i = 1; i <= ImgInfo.BytesPerRow; i++)
+            {
                 v = rowbfilter[i];
                 if (v < 0)
-                    s -= (int)v;
+                    s -= v;
                 else
-                    s += (int)v;
+                    s += v;
                 histox[v & 0xFF]++;
             }
-            filterStrat.fillResultsForFilter(rown, type, s, histox, tentative);
+            filterStrat.FillResultsForFilter(rown, type, s, histox, tentative);
         }
 
-        void WriteEndChunk ()
+        private void WriteEndChunk()
         {
             PngChunkIEND c = new PngChunkIEND(ImgInfo);
             c.CreateRawChunk().WriteChunk(outputStream);
         }
 
-        void WriteFirstChunks ()
+        private void WriteFirstChunks()
         {
-            int nw = 0;
             CurrentChunkGroup = ChunksList.CHUNK_GROUP_1_AFTERIDHR;
-            nw = chunksList.writeChunks(outputStream, CurrentChunkGroup);
+            chunksList.WriteChunks(outputStream, CurrentChunkGroup);
             CurrentChunkGroup = ChunksList.CHUNK_GROUP_2_PLTE;
-            nw = chunksList.writeChunks(outputStream, CurrentChunkGroup);
+            int nw = chunksList.WriteChunks(outputStream, CurrentChunkGroup);
             if (nw > 0 && ImgInfo.Greyscale)
                 throw new PngjOutputException("cannot write palette for this format");
             if (nw == 0 && ImgInfo.Indexed)
                 throw new PngjOutputException("missing palette");
             CurrentChunkGroup = ChunksList.CHUNK_GROUP_3_AFTERPLTE;
-            nw = chunksList.writeChunks(outputStream, CurrentChunkGroup);
+            chunksList.WriteChunks(outputStream, CurrentChunkGroup);
             CurrentChunkGroup = ChunksList.CHUNK_GROUP_4_IDAT;
         }
 
         // not including end
-        void WriteLastChunks ()
-        { 
+        private void WriteLastChunks()
+        {
             CurrentChunkGroup = ChunksList.CHUNK_GROUP_5_AFTERIDAT;
-            chunksList.writeChunks(outputStream, CurrentChunkGroup);
+            chunksList.WriteChunks(outputStream, CurrentChunkGroup);
             // should not be unwriten chunks
             List<PngChunk> pending = chunksList.GetQueuedChunks();
             if (pending.Count > 0)
@@ -201,15 +191,17 @@ namespace Pngcs {
         /// <summary>
         /// Write id signature and also "IHDR" chunk
         /// </summary>
-        void WriteSignatureAndIHDR ()
+        private void WriteSignatureAndIHDR()
         {
             CurrentChunkGroup = ChunksList.CHUNK_GROUP_0_IDHR;
-            PngHelperInternal.WriteBytes(outputStream, Pngcs.PngHelperInternal.PNG_ID_SIGNATURE); // signature
-            PngChunkIHDR ihdr = new PngChunkIHDR(ImgInfo);
-            // http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
-            ihdr.Cols = ImgInfo.Cols;
-            ihdr.Rows = ImgInfo.Rows;
-            ihdr.Bitspc = ImgInfo.BitDepth;
+            PngHelperInternal.WriteBytes(outputStream, PngHelperInternal.PNG_ID_SIGNATURE); // signature
+            PngChunkIHDR ihdr = new PngChunkIHDR(ImgInfo)
+            {
+                // http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+                Cols = ImgInfo.Cols,
+                Rows = ImgInfo.Rows,
+                Bitspc = ImgInfo.BitDepth
+            };
             int colormodel = 0;
             if (ImgInfo.Alpha)
                 colormodel += 0x04;
@@ -224,21 +216,23 @@ namespace Pngcs {
             ihdr.CreateRawChunk().WriteChunk(outputStream);
         }
 
-        protected void encodeRowFromByte ( byte[] row )
+        protected void EncodeRowFromByte(byte[] row)
         {
-            if( row.Length==ImgInfo.SamplesPerRowPacked && !needsPack )
+            if (row.Length == ImgInfo.SamplesPerRowPacked && !needsPack)
             {
                 // some duplication of code - because this case is typical and it works faster this way
                 int j = 1;
-                if( ImgInfo.BitDepth<=8 )
+                if (ImgInfo.BitDepth <= 8)
                 {
-                    foreach (byte x in row) { // optimized
+                    foreach (byte x in row)
+                    { // optimized
                         rowb[j++] = x;
                     }
                 }
                 else
                 { // 16 bitspc
-                    foreach (byte x in row) { // optimized
+                    foreach (byte x in row)
+                    { // optimized
                         rowb[j] = x;
                         j += 2;
                     }
@@ -248,13 +242,18 @@ namespace Pngcs {
             {
                 // perhaps we need to pack?
                 if (row.Length >= ImgInfo.SamplesPerRow && needsPack)
-                    ImageLine.packInplaceByte(ImgInfo, row, row, false); // row is packed in place!
-                if (ImgInfo.BitDepth <= 8) {
-                    for (int i = 0, j = 1; i < ImgInfo.SamplesPerRowPacked; i++) {
+                    ImageLine.PackInplaceByte(ImgInfo, row, row, false); // row is packed in place!
+                if (ImgInfo.BitDepth <= 8)
+                {
+                    for (int i = 0, j = 1; i < ImgInfo.SamplesPerRowPacked; i++)
+                    {
                         rowb[j++] = row[i];
                     }
-                } else { // 16 bitspc
-                    for (int i = 0, j = 1; i < ImgInfo.SamplesPerRowPacked; i++) {
+                }
+                else
+                { // 16 bitspc
+                    for (int i = 0, j = 1; i < ImgInfo.SamplesPerRowPacked; i++)
+                    {
                         rowb[j++] = row[i];
                         rowb[j++] = 0;
                     }
@@ -263,46 +262,47 @@ namespace Pngcs {
             }
         }
 
-
-        protected void encodeRowFromInt ( int[] row )
+        protected void EncodeRowFromInt(int[] row)
         {
-            if( row.Length==ImgInfo.SamplesPerRowPacked && !needsPack )
+            if (row.Length == ImgInfo.SamplesPerRowPacked && !needsPack)
             {
                 // some duplication of code - because this case is typical and it works faster this way
                 int j = 1;
-                if( ImgInfo.BitDepth<=8 )
+                if (ImgInfo.BitDepth <= 8)
                 {
-                    foreach (int x in row) { // optimized
+                    foreach (int x in row)
+                    { // optimized
                         rowb[j++] = (byte)x;
                     }
                 }
                 else
                 {// 16 bitspc
-                    foreach (int x in row) { // optimized
+                    foreach (int x in row)
+                    { // optimized
                         rowb[j++] = (byte)(x >> 8);
-                        rowb[j++] = (byte)(x); 
+                        rowb[j++] = (byte)(x);
                     }
                 }
             }
             else
             {
                 // perhaps we need to pack?
-                if( row.Length>=ImgInfo.SamplesPerRow && needsPack )
+                if (row.Length >= ImgInfo.SamplesPerRow && needsPack)
                 {
-                    ImageLine.packInplaceInt( ImgInfo , row , row , false ); // row is packed in place!
+                    ImageLine.PackInplaceInt(ImgInfo, row, row, false); // row is packed in place!
                 }
                 int samplesPerRowPacked = ImgInfo.SamplesPerRowPacked;
-                if( ImgInfo.BitDepth<=8 )
+                if (ImgInfo.BitDepth <= 8)
                 {
-                    for( int i=0 , j=1 ; i<samplesPerRowPacked ; i++ )
+                    for (int i = 0, j = 1; i < samplesPerRowPacked; i++)
                     {
-                        rowb[ j++ ] = (byte)row[ i ];
+                        rowb[j++] = (byte)row[i];
                     }
                 }
                 else
                 {
                     // 16 bitspc
-                    for( int i=0 , j=1 ; i<samplesPerRowPacked ; i++ )
+                    for (int i = 0, j = 1; i < samplesPerRowPacked; i++)
                     {
                         rowb[j++] = (byte)(row[i] >> 8);
                         rowb[j++] = (byte)(row[i]);
@@ -311,59 +311,58 @@ namespace Pngcs {
             }
         }
 
-
-        void FilterRow ( int rown )
+        private void FilterRow(int rown)
         {
             // warning: filters operation rely on: "previos row" (rowbprev) is
             // initialized to 0 the first time
-            if( filterStrat.shouldTestAll(rown) )
+            if (filterStrat.ShouldTestAll(rown))
             {
                 FilterRowNone();
-                reportResultsForFilter(rown, FilterType.FILTER_NONE, true);
+                ReportResultsForFilter(rown, FilterType.FILTER_NONE, true);
                 FilterRowSub();
-                reportResultsForFilter(rown, FilterType.FILTER_SUB, true);
+                ReportResultsForFilter(rown, FilterType.FILTER_SUB, true);
                 FilterRowUp();
-                reportResultsForFilter(rown, FilterType.FILTER_UP, true);
+                ReportResultsForFilter(rown, FilterType.FILTER_UP, true);
                 FilterRowAverage();
-                reportResultsForFilter(rown, FilterType.FILTER_AVERAGE, true);
+                ReportResultsForFilter(rown, FilterType.FILTER_AVERAGE, true);
                 FilterRowPaeth();
-                reportResultsForFilter(rown, FilterType.FILTER_PAETH, true);
+                ReportResultsForFilter(rown, FilterType.FILTER_PAETH, true);
             }
-            FilterType filterType = filterStrat.gimmeFilterType( rown , true );
+            FilterType filterType = filterStrat.GimmeFilterType(rown, true);
             rowbfilter[0] = (byte)(int)filterType;
-            switch( filterType )
+            switch (filterType)
             {
-                case Pngcs.FilterType.FILTER_NONE:
+                case FilterType.FILTER_NONE:
                     FilterRowNone();
                     break;
-                case Pngcs.FilterType.FILTER_SUB:
+                case FilterType.FILTER_SUB:
                     FilterRowSub();
                     break;
-                case Pngcs.FilterType.FILTER_UP:
+                case FilterType.FILTER_UP:
                     FilterRowUp();
                     break;
-                case Pngcs.FilterType.FILTER_AVERAGE:
+                case FilterType.FILTER_AVERAGE:
                     FilterRowAverage();
                     break;
-                case Pngcs.FilterType.FILTER_PAETH:
+                case FilterType.FILTER_PAETH:
                     FilterRowPaeth();
                     break;
                 default:
                     throw new PngjOutputException("Filter type " + filterType + " not implemented");
             }
-            reportResultsForFilter( rown , filterType , false );
+            ReportResultsForFilter(rown, filterType, false);
         }
 
-        void prepareEncodeRow ( int rown )
+        private void PrepareEncodeRow(int rown)
         {
-            if( datStream==null )
+            if (datStream == null)
             {
-                init();
+                Init();
             }
             rowNum++;
-            if( rown>=0 && rowNum!=rown )
+            if (rown >= 0 && rowNum != rown)
             {
-                throw new PngjOutputException( $"rows must be written in order: expected:{ rowNum } passed:{ rown }" );
+                throw new PngjOutputException($"rows must be written in order: expected:{ rowNum } passed:{ rown }");
             }
             // swap
             byte[] tmp = rowb;
@@ -371,91 +370,90 @@ namespace Pngcs {
             rowbprev = tmp;
         }
 
-        void filterAndSend ( int rown )
+        private void FilterAndSend(int rown)
         {
-            FilterRow( rown );
-            datStreamDeflated.Write( rowbfilter , 0 , ImgInfo.BytesPerRow + 1 );
+            FilterRow(rown);
+            datStreamDeflated.Write(rowbfilter, 0, ImgInfo.BytesPerRow + 1);
         }
 
-        void FilterRowAverage()
+        private void FilterRowAverage()
         {
             int i, j;
             int bytesPerRow = ImgInfo.BytesPerRow;
             int bytesPixel = ImgInfo.BytesPixel;
-            for( j=1-bytesPixel , i=1 ; i<=bytesPerRow ; i++ , j++ )
+            for (j = 1 - bytesPixel, i = 1; i <= bytesPerRow; i++, j++)
             {
                 rowbfilter[i] = (byte)(
-                    rowb[i] - ( (rowbprev[i]) + (j > 0 ? rowb[j] : (byte)0) )/2
+                    rowb[i] - ((rowbprev[i]) + (j > 0 ? rowb[j] : 0)) / 2
                 );
             }
         }
 
-        void FilterRowNone()
+        private void FilterRowNone()
         {
             var bytesPerRow = ImgInfo.BytesPerRow;
-            for( int i=1 ; i<=bytesPerRow ; i++ )
+            for (int i = 1; i <= bytesPerRow; i++)
             {
-                rowbfilter[i] = (byte)rowb[i];
+                rowbfilter[i] = rowb[i];
             }
         }
 
-
-        void FilterRowPaeth ()
+        private void FilterRowPaeth()
         {
             int i, j;
             int bytesPerRow = ImgInfo.BytesPerRow;
             int bytesPixel = ImgInfo.BytesPixel;
-            for( j=1-bytesPixel , i=1 ; i<=bytesPerRow ; i++ , j++ )
+            for (j = 1 - bytesPixel, i = 1; i <= bytesPerRow; i++, j++)
             {
                 rowbfilter[i] = (byte)(
                     rowb[i] - PngHelperInternal.FilterPaethPredictor(
-                        j>0
+                        j > 0
                         ? rowb[j]
-                        : (byte)0,rowbprev[i], j > 0 ? rowbprev[j] : (byte)0
+                        : 0, rowbprev[i], j > 0 ? rowbprev[j] : 0
                     )
                 );
             }
         }
 
-        void FilterRowSub ()
+        private void FilterRowSub()
         {
             int i, j;
             int bytesPixel = ImgInfo.BytesPixel;
-            for( i=1 ; i<=bytesPixel ; i++ )
+            for (i = 1; i <= bytesPixel; i++)
             {
-                rowbfilter[i] = (byte)rowb[i];
+                rowbfilter[i] = rowb[i];
             }
             int bytesPerRow = ImgInfo.BytesPerRow;
-            for( j=1 , i=bytesPixel+1 ; i<=bytesPerRow ; i++ , j++ )
+            for (j = 1, i = bytesPixel + 1; i <= bytesPerRow; i++, j++)
             {
-                rowbfilter[i] = (byte)( rowb[i] - rowb[j] );
+                rowbfilter[i] = (byte)(rowb[i] - rowb[j]);
             }
         }
 
-        void FilterRowUp ()
+        private void FilterRowUp()
         {
             int bytesPerRow = ImgInfo.BytesPerRow;
-            for( int i=1 ; i<=bytesPerRow ; i++ )
+            for (int i = 1; i <= bytesPerRow; i++)
             {
-                rowbfilter[ i ] = (byte)( rowb[i] - rowbprev[i] );
+                rowbfilter[i] = (byte)(rowb[i] - rowbprev[i]);
             }
         }
 
         /// <summary> Sums absolute value </summary>
-        long SumRowbfilter ()
+        internal long SumRowbfilter()
         {
             long s = 0;
             int bytesPerRow = ImgInfo.BytesPerRow;
-            for( int i=1 ; i<=bytesPerRow ; i++ )
+            for (int i = 1; i <= bytesPerRow; i++)
             {
                 var value = rowbfilter[i];
-                if( value<0 )
+                if (value < 0)
                 {
-                    s -= (long)value;
+                    s -= value;
                 }
                 else
                 {
-                    s += (long)value;
+                    s += value;
                 }
             }
             return s;
@@ -467,10 +465,10 @@ namespace Pngcs {
         /// <remarks>Actually: compressed size = total size of IDAT data , raw size = uncompressed pixel bytes = rows * (bytesPerRow + 1)
         /// </remarks>
         /// <returns></returns>
-        public double ComputeCompressionRatio ()
+        public double ComputeCompressionRatio()
         {
-            if( CurrentChunkGroup<ChunksList.CHUNK_GROUP_6_END ) { throw new PngjException( "must be called after End()" ); }
-            double compressed = (double)datStream.GetCountFlushed();
+            if (CurrentChunkGroup < ChunksList.CHUNK_GROUP_6_END) { throw new PngjException("must be called after End()"); }
+            double compressed = datStream.GetCountFlushed();
             double raw = (ImgInfo.BytesPerRow + 1) * ImgInfo.Rows;
             return compressed / raw;
         }
@@ -480,11 +478,11 @@ namespace Pngcs {
         /// Finalizes the image creation and closes the file stream.
         /// This MUST be called after writing the lines.
         /// </summary>  
-        public void End ()
+        public void End()
         {
-            if( rowNum!=ImgInfo.Rows - 1 )
+            if (rowNum != ImgInfo.Rows - 1)
             {
-                throw new PngjOutputException( "all rows have not been written" );
+                throw new PngjOutputException("all rows have not been written");
             }
             try
             {
@@ -492,36 +490,37 @@ namespace Pngcs {
                 datStream.Close();
                 WriteLastChunks();
                 WriteEndChunk();
-                if( this.ShouldCloseStream )
+                if (ShouldCloseStream)
                 {
                     outputStream.Close();
                 }
-            } catch( IOException ex ) { throw new PngjOutputException(ex); }
+            }
+            catch (IOException ex) { throw new PngjOutputException(ex); }
         }
 
         /// <summary>
         ///  Filename or description, from the optional constructor argument.
         /// </summary>
-        public String GetFilename() => filename;
+        public string GetFilename() => filename;
 
 
         /// <summary>
         /// this uses the row number from the imageline!
         /// </summary>
-        public void WriteRow ( ImageLine imgline , int rownumber )
+        public void WriteRow(ImageLine imgline, int rownumber)
         {
-            SetUseUnPackedMode( imgline.SamplesUnpacked );
-            if( imgline.SampleType==ImageLine.ESampleType.INT )
+            SetUseUnPackedMode(imgline.SamplesUnpacked);
+            if (imgline.SampleType == ImageLine.ESampleType.INT)
             {
-                WriteRowInt( imgline.Scanline , rownumber );
+                WriteRowInt(imgline.Scanline, rownumber);
             }
             else
             {
-                WriteRowByte( imgline.ScanlineB , rownumber );
+                WriteRowByte(imgline.ScanlineB, rownumber);
             }
         }
-        public void WriteRow ( int[] newrow ) => WriteRow( newrow , -1 );
-        public void WriteRow ( int[] newrow , int rown ) => WriteRowInt( newrow , rown );
+        public void WriteRow(int[] newrow) => WriteRow(newrow, -1);
+        public void WriteRow(int[] newrow, int rown) => WriteRowInt(newrow, rown);
         /// <summary>
         /// Writes a full image row.
         /// </summary>
@@ -534,41 +533,41 @@ namespace Pngcs {
         /// </remarks>
         /// <param name="newrow">Array of pixel values</param>
         /// <param name="rown">Number of row, from 0 (top) to rows-1 (bottom)</param>
-        public void WriteRowInt ( int[] newrow , int rown )
+        public void WriteRowInt(int[] newrow, int rown)
         {
-            prepareEncodeRow( rown );
-            encodeRowFromInt( newrow );
-            filterAndSend( rown );
+            PrepareEncodeRow(rown);
+            EncodeRowFromInt(newrow);
+            FilterAndSend(rown);
         }
 
-        public void WriteRowByte ( byte[] newrow , int rown )
+        public void WriteRowByte(byte[] newrow, int rown)
         {
-            prepareEncodeRow( rown );
-            encodeRowFromByte( newrow );
-            filterAndSend( rown );
+            PrepareEncodeRow(rown);
+            EncodeRowFromByte(newrow);
+            FilterAndSend(rown);
         }
 
         /// <summary>
         /// Writes all the pixels, calling writeRowInt() for each image row
         /// </summary>
-        public void WriteRowsInt ( int[][] image )
+        public void WriteRowsInt(int[][] image)
         {
             int numRows = ImgInfo.Rows;
-            for( int i=0 ; i<numRows ; i++ )
+            for (int i = 0; i < numRows; i++)
             {
-                WriteRowInt( image[i] , i );
+                WriteRowInt(image[i], i);
             }
         }
 
         /// <summary>
         /// Writes all the pixels, calling writeRowByte() for each image row
         /// </summary>
-        public void WriteRowsByte ( byte[][] image )
+        public void WriteRowsByte(byte[][] image)
         {
             int numRows = ImgInfo.Rows;
-            for( int i=0 ; i<numRows ; i++ )
+            for (int i = 0; i < numRows; i++)
             {
-                WriteRowByte( image[i] , i );
+                WriteRowByte(image[i], i);
             }
         }
 
@@ -585,17 +584,17 @@ namespace Pngcs {
         /// Recommended values: DEFAULT (default) or AGGRESIVE
         /// </remarks>
         /// <param name="filterType">One of the five prediction types or strategy to choose it</param>
-        public void SetFilterType ( FilterType filterType )
+        public void SetFilterType(FilterType filterType)
         {
-            filterStrat = new FilterWriteStrategy( ImgInfo , filterType );
+            filterStrat = new FilterWriteStrategy(ImgInfo, filterType);
         }
 
-        public bool IsUnpackedMode => unpackedMode;
+        public bool IsUnpackedMode { get; private set; }
 
-        public void SetUseUnPackedMode ( bool useUnpackedMode )
+        public void SetUseUnPackedMode(bool useUnpackedMode)
         {
-            this.unpackedMode = useUnpackedMode;
-            needsPack = unpackedMode && ImgInfo.Packed;
+            IsUnpackedMode = useUnpackedMode;
+            needsPack = IsUnpackedMode && ImgInfo.Packed;
         }
 
     }

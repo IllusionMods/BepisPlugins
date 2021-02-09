@@ -12,11 +12,11 @@ namespace SliderUnlocker
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class SliderUnlocker : BaseUnityPlugin
     {
-        private void Main()
+        internal void Main()
         {
             VoicePitchUnlocker.Init();
             HairUnlocker.Init();
-            
+
             SceneManager.sceneLoaded += (s, lsm) => SetAllSliders();
         }
 

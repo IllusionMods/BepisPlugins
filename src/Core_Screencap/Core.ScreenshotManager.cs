@@ -339,7 +339,7 @@ namespace Screencap
 
             try { OnPostCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
-            
+
             Utils.Sound.Play(SystemSE.photo);
         }
 

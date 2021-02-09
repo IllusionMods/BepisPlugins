@@ -62,7 +62,6 @@ namespace SliderUnlocker
                 vector2.z += 360f;
             }
 
-
             if (rate < 0f)
             {
                 return rot1 - vector2 * Mathf.Abs(rate);
@@ -84,7 +83,7 @@ namespace SliderUnlocker
 
             return CalculateRotation(list, rate);
         }
-        
+
         public static float Lerp(float min, float max, float value)
         {
             return value * (max - min) + min;

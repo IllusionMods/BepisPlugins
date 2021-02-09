@@ -177,7 +177,7 @@ namespace Sideloader.AutoResolver
                 }
 
                 if (Sideloader.MigrationEnabled.Value)
-                    MigrateData(extResolve, kv.Key.Category);
+                    MigrateData(extResolve);
 
                 //If the GUID is blank or has been made blank by migration do compatibility resolve
                 if (extResolve.GUID.IsNullOrWhiteSpace())
@@ -372,7 +372,7 @@ namespace Sideloader.AutoResolver
         }
 #endif
 
-        internal static void MigrateData(ResolveInfo extResolve, ChaListDefine.CategoryNo categoryNo)
+        internal static void MigrateData(ResolveInfo extResolve)
         {
             if (extResolve.GUID.IsNullOrWhiteSpace()) return;
 
@@ -451,7 +451,7 @@ namespace Sideloader.AutoResolver
                                                       $"GUID: {manifest.GUID} " +
                                                       $"Slot: {int.Parse(kv.Value[0])} " +
                                                       $"LocalSlot: {newSlot} " +
-                                                      $"Property: {propertyKey.ToString()} " +
+                                                      $"Property: {propertyKey} " +
                                                       $"CategoryNo: {category} " +
                                                       $"Count: {LoadedResolutionInfo.Count()}");
                         }

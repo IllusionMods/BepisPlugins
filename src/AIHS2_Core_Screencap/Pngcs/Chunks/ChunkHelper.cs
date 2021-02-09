@@ -1,50 +1,49 @@
-namespace Pngcs.Chunks {
+using Pngcs.Zlib;
+using System;
+using System.Collections.Generic;
+using System.IO;
 
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.IO;
-    using Pngcs.Zlib;
-    
+namespace Pngcs.Chunks
+{
     /// <summary>
     /// Static utility methods for CHunks
     /// </summary>
     /// <remarks>
     /// Client code should rarely need this, see PngMetada and ChunksList
     /// </remarks>
-    public class ChunkHelper {
-        internal const String IHDR = "IHDR";
-        internal const String PLTE = "PLTE";
-        internal const String IDAT = "IDAT";
-        internal const String IEND = "IEND";
-        internal const String cHRM = "cHRM";// No Before PLTE and IDAT
-        internal const String gAMA = "gAMA";// No Before PLTE and IDAT
-        internal const String iCCP = "iCCP";// No Before PLTE and IDAT
-        internal const String sBIT = "sBIT";// No Before PLTE and IDAT
-        internal const String sRGB = "sRGB";// No Before PLTE and IDAT
-        internal const String bKGD = "bKGD";// No After PLTE; before IDAT
-        internal const String hIST = "hIST";// No After PLTE; before IDAT
-        internal const String tRNS = "tRNS";// No After PLTE; before IDAT
-        internal const String pHYs = "pHYs";// No Before IDAT
-        internal const String sPLT = "sPLT";// Yes Before IDAT
-        internal const String tIME = "tIME";// No None
-        internal const String iTXt = "iTXt";// Yes None
-        internal const String tEXt = "tEXt";// Yes None
-        internal const String zTXt = "zTXt";// Yes None
+    internal class ChunkHelper
+    {
+        internal const string IHDR = "IHDR";
+        internal const string PLTE = "PLTE";
+        internal const string IDAT = "IDAT";
+        internal const string IEND = "IEND";
+        internal const string cHRM = "cHRM";// No Before PLTE and IDAT
+        internal const string gAMA = "gAMA";// No Before PLTE and IDAT
+        internal const string iCCP = "iCCP";// No Before PLTE and IDAT
+        internal const string sBIT = "sBIT";// No Before PLTE and IDAT
+        internal const string sRGB = "sRGB";// No Before PLTE and IDAT
+        internal const string bKGD = "bKGD";// No After PLTE; before IDAT
+        internal const string hIST = "hIST";// No After PLTE; before IDAT
+        internal const string tRNS = "tRNS";// No After PLTE; before IDAT
+        internal const string pHYs = "pHYs";// No Before IDAT
+        internal const string sPLT = "sPLT";// Yes Before IDAT
+        internal const string tIME = "tIME";// No None
+        internal const string iTXt = "iTXt";// Yes None
+        internal const string tEXt = "tEXt";// Yes None
+        internal const string zTXt = "zTXt";// Yes None
         internal static readonly byte[] b_IHDR = ToBytes(IHDR);
         internal static readonly byte[] b_PLTE = ToBytes(PLTE);
         internal static readonly byte[] b_IDAT = ToBytes(IDAT);
         internal static readonly byte[] b_IEND = ToBytes(IEND);
-
-
 
         /// <summary>
         /// Converts to bytes using Latin1 (ISO-8859-1)
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public static byte[] ToBytes(String x) {
-            return Pngcs.PngHelperInternal.charsetLatin1.GetBytes(x);
+        public static byte[] ToBytes(string x)
+        {
+            return PngHelperInternal.charsetLatin1.GetBytes(x);
         }
 
         /// <summary>
@@ -52,8 +51,9 @@ namespace Pngcs.Chunks {
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public static String ToString(byte[] x) {
-            return Pngcs.PngHelperInternal.charsetLatin1.GetString(x);
+        public static string ToString(byte[] x)
+        {
+            return PngHelperInternal.charsetLatin1.GetString(x);
         }
         /// <summary>
         ///  Converts to String using Latin1 (ISO-8859-1)
@@ -62,8 +62,9 @@ namespace Pngcs.Chunks {
         /// <param name="offset"></param>
         /// <param name="len"></param>
         /// <returns></returns>
-        public static String ToString(byte[] x, int offset, int len) {
-            return Pngcs.PngHelperInternal.charsetLatin1.GetString(x, offset, len);
+        public static string ToString(byte[] x, int offset, int len)
+        {
+            return PngHelperInternal.charsetLatin1.GetString(x, offset, len);
         }
 
         /// <summary>
@@ -71,8 +72,9 @@ namespace Pngcs.Chunks {
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public static byte[] ToBytesUTF8(String x) {
-            return Pngcs.PngHelperInternal.charsetUtf8.GetBytes(x);
+        public static byte[] ToBytesUTF8(string x)
+        {
+            return PngHelperInternal.charsetUtf8.GetBytes(x);
         }
 
         /// <summary>
@@ -80,8 +82,9 @@ namespace Pngcs.Chunks {
         /// </summary>
         /// <param name="x"></param>
         /// <returns></returns>
-        public static String ToStringUTF8(byte[] x) {
-            return Pngcs.PngHelperInternal.charsetUtf8.GetString(x);
+        public static string ToStringUTF8(byte[] x)
+        {
+            return PngHelperInternal.charsetUtf8.GetString(x);
         }
         /// <summary>
         /// Converts to string using UTF-8
@@ -90,15 +93,17 @@ namespace Pngcs.Chunks {
         /// <param name="offset"></param>
         /// <param name="len"></param>
         /// <returns></returns>
-        public static String ToStringUTF8(byte[] x, int offset, int len) {
-            return Pngcs.PngHelperInternal.charsetUtf8.GetString(x, offset, len);
+        public static string ToStringUTF8(byte[] x, int offset, int len)
+        {
+            return PngHelperInternal.charsetUtf8.GetString(x, offset, len);
         }
         /// <summary>
         /// Writes full array of bytes to stream
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="bytes"></param>
-        public static void WriteBytesToStream(Stream stream, byte[] bytes) {
+        public static void WriteBytesToStream(Stream stream, byte[] bytes)
+        {
             stream.Write(bytes, 0, bytes.Length);
         }
 
@@ -107,9 +112,10 @@ namespace Pngcs.Chunks {
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static bool IsCritical(String id) {
+        public static bool IsCritical(string id)
+        {
             // first letter is uppercase
-            return (Char.IsUpper(id[0]));
+            return (char.IsUpper(id[0]));
         }
 
         /// <summary>
@@ -117,17 +123,19 @@ namespace Pngcs.Chunks {
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static bool IsPublic(String id) { // public chunk?
-            return (Char.IsUpper(id[1]));
+        public static bool IsPublic(string id)
+        { // public chunk?
+            return (char.IsUpper(id[1]));
         }
         /// <summary>
         /// Safe to copy chunk: fourth letter is lower case
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static bool IsSafeToCopy(String id) { // safe to copy?
+        public static bool IsSafeToCopy(string id)
+        { // safe to copy?
             // fourth letter is lower case
-            return (!Char.IsUpper(id[3]));
+            return (!char.IsUpper(id[3]));
         }
 
         /// <summary>
@@ -135,7 +143,8 @@ namespace Pngcs.Chunks {
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns>-1 if not found</returns>
-        public static int PosNullByte(byte[] bytes) {
+        public static int PosNullByte(byte[] bytes)
+        {
             for (int i = 0; i < bytes.Length; i++)
                 if (bytes[i] == 0)
                     return i;
@@ -148,11 +157,13 @@ namespace Pngcs.Chunks {
         /// <param name="id"></param>
         /// <param name="behav"></param>
         /// <returns></returns>
-        public static bool ShouldLoad(String id, ChunkLoadBehaviour behav) {
+        public static bool ShouldLoad(string id, ChunkLoadBehaviour behav)
+        {
             if (IsCritical(id))
                 return true;
-            bool kwown = PngChunk.isKnown(id);
-            switch (behav) {
+            bool kwown = PngChunk.IsKnown(id);
+            switch (behav)
+            {
                 case ChunkLoadBehaviour.LOAD_CHUNK_ALWAYS:
                     return true;
                 case ChunkLoadBehaviour.LOAD_CHUNK_IF_SAFE:
@@ -165,37 +176,45 @@ namespace Pngcs.Chunks {
             return false; // should not reach here
         }
 
-        internal static byte[] compressBytes(byte[] ori, bool compress) {
-            return compressBytes(ori, 0, ori.Length, compress);
+        internal static byte[] CompressBytes(byte[] ori, bool compress)
+        {
+            return CompressBytes(ori, 0, ori.Length, compress);
         }
 
-        internal static byte[] compressBytes(byte[] ori, int offset, int len, bool compress) {
-            try {
+        internal static byte[] CompressBytes(byte[] ori, int offset, int len, bool compress)
+        {
+            try
+            {
                 MemoryStream inb = new MemoryStream(ori, offset, len);
                 Stream inx = inb;
-                if (!compress) inx = ZlibStreamFactory.createZlibInputStream(inb);
+                if (!compress) inx = ZlibStreamFactory.CreateZlibInputStream(inb);
                 MemoryStream outb = new MemoryStream();
                 Stream outx = outb;
-                if (compress) outx = ZlibStreamFactory.createZlibOutputStream(outb);
-                shovelInToOut(inx, outx);
+                if (compress) outx = ZlibStreamFactory.CreateZlibOutputStream(outb);
+                ShovelInToOut(inx, outx);
                 inx.Close();
                 outx.Close();
                 byte[] res = outb.ToArray();
                 return res;
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 throw new PngjException(e);
             }
         }
 
-        private static void shovelInToOut(Stream inx, Stream outx) {
+        private static void ShovelInToOut(Stream inx, Stream outx)
+        {
             byte[] buffer = new byte[1024];
             int len;
-            while ((len = inx.Read(buffer, 0, 1024)) > 0) {
+            while ((len = inx.Read(buffer, 0, 1024)) > 0)
+            {
                 outx.Write(buffer, 0, len);
             }
         }
 
-        internal static bool maskMatch(int v, int mask) {
+        internal static bool MaskMatch(int v, int mask)
+        {
             return (v & mask) != 0;
         }
 
@@ -206,10 +225,13 @@ namespace Pngcs.Chunks {
         /// <param name="list"></param>
         /// <param name="predicateKeep"></param>
         /// <returns></returns>
-        public static List<PngChunk> FilterList(List<PngChunk> list, ChunkPredicate predicateKeep) {
+        public static List<PngChunk> FilterList(List<PngChunk> list, IChunkPredicate predicateKeep)
+        {
             List<PngChunk> result = new List<PngChunk>();
-            foreach (PngChunk element in list) {
-                if (predicateKeep.Matches(element)) {
+            foreach (PngChunk element in list)
+            {
+                if (predicateKeep.Matches(element))
+                {
                     result.Add(element);
                 }
             }
@@ -222,10 +244,13 @@ namespace Pngcs.Chunks {
         /// <param name="list"></param>
         /// <param name="predicateRemove"></param>
         /// <returns></returns>
-        public static int TrimList(List<PngChunk> list, ChunkPredicate predicateRemove) {
+        public static int TrimList(List<PngChunk> list, IChunkPredicate predicateRemove)
+        {
             int cont = 0;
-            for (int i = list.Count - 1; i >= 0; i--) {
-                if (predicateRemove.Matches(list[i])) {
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (predicateRemove.Matches(list[i]))
+                {
                     list.RemoveAt(i);
                     cont++;
                 }
@@ -249,7 +274,8 @@ namespace Pngcs.Chunks {
         /// <param name="c1">Chunk1</param>
         /// <param name="c2">Chunk1</param>
         /// <returns>true if equivalent</returns>
-        public static bool Equivalent(PngChunk c1, PngChunk c2) {
+        public static bool Equivalent(PngChunk c1, PngChunk c2)
+        {
             if (c1 == c2)
                 return true;
             if (c1 == null || c2 == null || !c1.Id.Equals(c2.Id))

@@ -12,7 +12,7 @@ namespace Sideloader
         internal static partial class Hooks
         {
             [HarmonyPostfix, HarmonyPatch(typeof(Studio.Info), "LoadExcelData")]
-            internal static void LoadExcelDataPostfix(string _bundlePath, string _fileName, ref ExcelData __result)
+            private static void LoadExcelDataPostfix(string _bundlePath, string _fileName, ref ExcelData __result)
             {
                 var studioList = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath && x.FileNameWithoutExtension == _fileName).ToList();
 
@@ -32,16 +32,14 @@ namespace Sideloader
                         {
                             foreach (var header in studioListData.Headers)
                             {
-                                var headerParam = new ExcelData.Param();
-                                headerParam.list = header;
+                                var headerParam = new ExcelData.Param { list = header };
                                 __result.list.Add(headerParam);
                             }
                             didHeader = true;
                         }
                         foreach (var entry in studioListData.Entries)
                         {
-                            var param = new ExcelData.Param();
-                            param.list = entry;
+                            var param = new ExcelData.Param { list = entry };
                             __result.list.Add(param);
                         }
                     }
@@ -62,7 +60,7 @@ namespace Sideloader
             }
 
             [HarmonyPrefix, HarmonyPatch(typeof(Studio.AssetBundleCheck), nameof(Studio.AssetBundleCheck.GetAllFileName))]
-            internal static bool GetAllFileName(string _assetBundleName, ref string[] __result)
+            private static bool GetAllFileName(string _assetBundleName, ref string[] __result)
             {
                 var list = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _assetBundleName).Select(y => y.FileNameWithoutExtension.ToLower()).ToArray();
                 if (list.Count() > 0)
@@ -74,7 +72,7 @@ namespace Sideloader
             }
 
             [HarmonyPrefix, HarmonyPatch(typeof(Studio.Info), "FindAllAssetName")]
-            internal static bool FindAllAssetNamePrefix(string _bundlePath, string _regex, ref string[] __result)
+            private static bool FindAllAssetNamePrefix(string _bundlePath, string _regex, ref string[] __result)
             {
                 var list = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath).Select(x => x.FileNameWithoutExtension).ToList();
                 if (list.Count() > 0)
@@ -86,7 +84,7 @@ namespace Sideloader
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
-            internal static void GetAssetBundleNameListFromPathStudio(string path, List<string> __result)
+            private static void GetAssetBundleNameListFromPathStudio(string path, List<string> __result)
             {
                 if (path == "studio/info/")
                 {

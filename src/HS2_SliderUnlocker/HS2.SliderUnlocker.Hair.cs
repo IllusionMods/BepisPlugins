@@ -1,11 +1,10 @@
+using AIChara;
+using CharaCustom;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using HarmonyLib;
-using BepInEx.Harmony;
-using AIChara;
-using CharaCustom;
 using UnityEngine;
 
 namespace SliderUnlocker
@@ -14,12 +13,12 @@ namespace SliderUnlocker
     {
         public static void Init()
         {
-            HarmonyWrapper.PatchAll(typeof(HairUnlocker));
+            Harmony.CreateAndPatchAll(typeof(HairUnlocker));
         }
 
         // Fix first pos value limit
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaControl), "SetHairCorrectPosValue")]
-        public static IEnumerable<CodeInstruction> SetHairCorrectPosValueHook(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> SetHairCorrectPosValueHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.InverseLerp));
             var instructionsList = instructions.ToList();
@@ -33,7 +32,7 @@ namespace SliderUnlocker
 
         // Fix first rot value limit
         [HarmonyTranspiler, HarmonyPatch(typeof(ChaControl), "SetHairCorrectRotValue")]
-        public static IEnumerable<CodeInstruction> SetHairCorrectRotValueHook(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> SetHairCorrectRotValueHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.InverseLerp));
             var instructionsList = instructions.ToList();
@@ -47,7 +46,7 @@ namespace SliderUnlocker
 
         // Fix last value limit
         [HarmonyTranspiler, HarmonyPatch(typeof(CmpHair), "Update")]
-        public static IEnumerable<CodeInstruction> CmpHairHook(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> CmpHairHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.Lerp));
             var instructionsList = instructions.ToList();
@@ -61,7 +60,7 @@ namespace SliderUnlocker
 
         // Fix guide limit
         [HarmonyPrefix, HarmonyPatch(typeof(CustomHairBundleSet), "LateUpdate")]
-        public static bool LateUpdateHook(CustomHairBundleSet __instance)
+        private static bool LateUpdateHook(CustomHairBundleSet __instance)
         {
             if (null == __instance.cmpGuid || !__instance.cmpGuid.gameObject.activeInHierarchy)
                 return true;
@@ -75,7 +74,7 @@ namespace SliderUnlocker
 
         // Fix the dynamic slider
         [HarmonyPrefix, HarmonyPatch(typeof(CustomHairBundleSet), "Initialize")]
-        public static void InitializeHook(CustomHairBundleSet __instance)
+        private static void InitializeHook(CustomHairBundleSet __instance)
         {
             foreach (var x in __instance.GetComponentsInChildren<CustomSliderSet>())
             {
@@ -113,7 +112,7 @@ namespace SliderUnlocker
 
         // Prevent reapplying slider limits in some situations
         [HarmonyTranspiler, HarmonyPatch(typeof(CustomHairBundleSet), "UpdateCustomUI")]
-        public static IEnumerable<CodeInstruction> UpdateCustomUIHook(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> UpdateCustomUIHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo1 = AccessTools.Method(typeof(HairUnlocker), nameof(UnlockAndSetSliderValue));
 
@@ -134,7 +133,7 @@ namespace SliderUnlocker
 
         // Fix the random rollback of rot (dirty fix)
         [HarmonyTranspiler, HarmonyPatch(typeof(CustomHairBundleSet), "SetHairTransform")]
-        public static IEnumerable<CodeInstruction> SetHairTransformHook(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> SetHairTransformHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(HairUnlocker), nameof(CorrectHairRot));
 

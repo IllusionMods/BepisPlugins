@@ -30,7 +30,7 @@ namespace Sideloader.AutoResolver
 
     internal static class StructReference
     {
-        #region Helper Methods
+#region Helper Methods
         private static Dictionary<CategoryProperty, StructValue<int>> GeneratePropertyInfoDictionary(Type t, IEnumerable<CategoryProperty> properties, string prefix = "")
         {
             var result = new Dictionary<CategoryProperty, StructValue<int>>();
@@ -47,10 +47,10 @@ namespace Sideloader.AutoResolver
 
             return result;
         }
-        #endregion
+#endregion
 
-        #region ChaFileFace
-        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileFaceGenerator(bool male, bool female)
+#region ChaFileFace
+        private static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceGenerator(bool male, bool female)
         {
             const string prefix = nameof(ChaFileFace);
 
@@ -105,13 +105,13 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties { get; } = _chaFileFaceGenerator(true, true);
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFacePropertiesMale { get; } = _chaFileFaceGenerator(true, false);
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFacePropertiesFemale { get; } = _chaFileFaceGenerator(false, true);
-        #endregion
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties { get; } = ChaFileFaceGenerator(true, true);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFacePropertiesMale { get; } = ChaFileFaceGenerator(true, false);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileFacePropertiesFemale { get; } = ChaFileFaceGenerator(false, true);
+#endregion
 
-        #region ChaFileBody
-        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileBodyGenerator(bool male, bool female)
+#region ChaFileBody
+        private static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyGenerator(bool male, bool female)
         {
             const string prefix = nameof(ChaFileBody);
 
@@ -163,14 +163,14 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = _chaFileBodyGenerator(true, true);
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyPropertiesMale { get; } = _chaFileBodyGenerator(true, false);
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyPropertiesFemale { get; } = _chaFileBodyGenerator(false, true);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = ChaFileBodyGenerator(true, true);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyPropertiesMale { get; } = ChaFileBodyGenerator(true, false);
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyPropertiesFemale { get; } = ChaFileBodyGenerator(false, true);
 
-        #endregion
+#endregion
 
-        #region ChaFileHair
-        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileHairGenerator()
+#region ChaFileHair
+        private static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairGenerator()
         {
             const string prefix = nameof(ChaFileHair);
 
@@ -186,7 +186,7 @@ namespace Sideloader.AutoResolver
                 new CategoryProperty(CategoryNo.so_hair_f, "HairFront", prefix),
                 new StructValue<int>(
                     (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.front].id = value; },
-                    (obj) => ((ChaFileHair)obj).parts[(int)ChaFileDefine.HairKind.front].id));
+                    (obj) => ((ChaFileHair)obj).parts[(int)HairKind.front].id));
 
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.so_hair_s, "HairSide", prefix),
@@ -200,14 +200,42 @@ namespace Sideloader.AutoResolver
                     (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.option].id = value; },
                     (obj) => ((ChaFileHair)obj).parts[(int)HairKind.option].id));
 
+            var hairMeshSupported = Enum.IsDefined(typeof(CategoryNo), "st_hairmeshptn");
+            if (hairMeshSupported)
+            {
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.st_hairmeshptn, "HairBackMesh", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.back].meshType = value; },
+                        (obj) => ((ChaFileHair)obj).parts[(int)HairKind.back].meshType));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.st_hairmeshptn, "HairFrontMesh", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.front].meshType = value; },
+                        (obj) => ((ChaFileHair)obj).parts[(int)HairKind.front].meshType));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.st_hairmeshptn, "HairSideMesh", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.side].meshType = value; },
+                        (obj) => ((ChaFileHair)obj).parts[(int)HairKind.side].meshType));
+
+                generatedProperties.Add(
+                    new CategoryProperty(CategoryNo.st_hairmeshptn, "HairOptionMesh", prefix),
+                    new StructValue<int>(
+                        (obj, value) => { ((ChaFileHair)obj).parts[(int)HairKind.option].meshType = value; },
+                        (obj) => ((ChaFileHair)obj).parts[(int)HairKind.option].meshType));
+            }
+
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties { get; } = _chaFileHairGenerator();
-        #endregion
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties { get; } = ChaFileHairGenerator();
+#endregion
 
-        #region ChaFileMakeup
-        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileMakeupGenerator()
+#region ChaFileMakeup
+        private static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupGenerator()
         {
             const string prefix = nameof(ChaFileFace.MakeupInfo);
 
@@ -247,11 +275,11 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties { get; } = _chaFileMakeupGenerator();
-        #endregion
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties { get; } = ChaFileMakeupGenerator();
+#endregion
 
-        #region ChaFileClothes
-        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileClothesGenerator()
+#region ChaFileClothes
+        private static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesGenerator()
         {
             const string prefix = nameof(ChaFileClothes);
 
@@ -395,11 +423,11 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesProperties { get; } = _chaFileClothesGenerator();
-        #endregion
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesProperties { get; } = ChaFileClothesGenerator();
+#endregion
 
-        #region ChaFileAccessory.PartsInfo
-        private static Dictionary<CategoryProperty, StructValue<int>> _chaFileAccessoryPartsInfoGenerator()
+#region ChaFileAccessory.PartsInfo
+        private static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoGenerator()
         {
             string prefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";
 
@@ -426,11 +454,11 @@ namespace Sideloader.AutoResolver
             return generatedProperties;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoProperties { get; } = _chaFileAccessoryPartsInfoGenerator();
-        #endregion
+        public static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoProperties { get; } = ChaFileAccessoryPartsInfoGenerator();
+#endregion
 
-        #region Collated
-        private static Dictionary<CategoryProperty, StructValue<int>> _collatedGenerator()
+#region Collated
+        private static Dictionary<CategoryProperty, StructValue<int>> CollatedGenerator()
         {
             var collated = new Dictionary<CategoryProperty, StructValue<int>>();
 
@@ -445,8 +473,8 @@ namespace Sideloader.AutoResolver
             return collated;
         }
 
-        public static Dictionary<CategoryProperty, StructValue<int>> CollatedStructValues { get; } = _collatedGenerator();
-        #endregion
+        public static Dictionary<CategoryProperty, StructValue<int>> CollatedStructValues { get; } = CollatedGenerator();
+#endregion
     }
 }
 #endif
