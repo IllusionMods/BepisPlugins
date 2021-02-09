@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Harmony;
 using BepisPlugins;
 using Config;
 using HarmonyLib;
@@ -34,7 +33,7 @@ namespace ConfigurationManagerWrapper
             bool mainGame = Application.productName == Constants.GameProcessName;
             if (mainGame)
             {
-                HarmonyWrapper.PatchAll(typeof(ConfigurationManagerWrapper));
+                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
                 //Main game is handled by the hooks, disable this plugin to prevent Update from running
                 enabled = false;
             }
@@ -46,8 +45,7 @@ namespace ConfigurationManagerWrapper
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ConfigWindow), "Initialize")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), "Initialize")]
         private static void OnOpen(ConfigWindow __instance, ref Button[] ___buttons)
         {
             // Spawn a new button for plugin settings
@@ -70,8 +68,7 @@ namespace ConfigurationManagerWrapper
             ___buttons = ___buttons.AddToArray(btn);
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ConfigWindow), "Unload")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), "Unload")]
         private static void OnClose() => _manager.DisplayingWindow = false;
     }
 }

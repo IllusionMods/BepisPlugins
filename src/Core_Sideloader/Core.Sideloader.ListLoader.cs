@@ -58,7 +58,7 @@ namespace Sideloader.ListLoader
 
             if (dictListInfo.TryGetValue(category, out Dictionary<int, ListInfoBase> dictData))
             {
-                loadListInternal(instance, dictData, data);
+                LoadListInternal(instance, dictData, data);
             }
         }
 #elif AI || HS2
@@ -68,13 +68,13 @@ namespace Sideloader.ListLoader
 
             if (dictListInfo.TryGetValue((int)category, out Dictionary<int, ListInfoBase> dictData))
             {
-                loadListInternal(instance, dictData, data);
+                LoadListInternal(instance, dictData, data);
             }
         }
 #endif
 
 #if KK || EC
-        internal static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
+        internal static void LoadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
         {
             foreach (KeyValuePair<int, List<string>> keyValuePair in chaListData.dictList)
             {
@@ -93,7 +93,7 @@ namespace Sideloader.ListLoader
             }
         }
 #elif AI || HS2
-        internal static void loadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
+        internal static void LoadListInternal(this ChaListControl instance, Dictionary<int, ListInfoBase> dictData, ChaListData chaListData)
         {
             foreach (KeyValuePair<int, List<string>> keyValuePair in chaListData.dictList)
             {
@@ -114,7 +114,7 @@ namespace Sideloader.ListLoader
         }
 #endif
 
-        internal static ChaListData LoadCSV(Stream stream, string guid)
+        internal static ChaListData LoadCSV(Stream stream)
         {
             ChaListData chaListData = new ChaListData();
 
@@ -151,8 +151,7 @@ namespace Sideloader.ListLoader
                 {
                     string line = reader.ReadLine().Trim();
 
-                    ExcelData.Param param = new ExcelData.Param();
-                    param.list = line.Split(',').ToList();
+                    ExcelData.Param param = new ExcelData.Param { list = line.Split(',').ToList() };
 
                     excelData.list.Add(param);
                 }

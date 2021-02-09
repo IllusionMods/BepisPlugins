@@ -65,7 +65,7 @@ namespace Sideloader.AutoResolver
             }
 
             [HarmonyPrefix, HarmonyPatch(typeof(Control), nameof(Control.Write))]
-            internal static void XMLWritePrefix(Control __instance, ref int __state)
+            private static void XMLWritePrefix(Control __instance, ref int __state)
             {
                 __state = -1;
                 foreach (Data data in __instance.Datas)
@@ -89,7 +89,7 @@ namespace Sideloader.AutoResolver
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(Control), nameof(Control.Write))]
-            internal static void XMLWritePostfix(Control __instance, ref int __state)
+            private static void XMLWritePostfix(Control __instance, ref int __state)
             {
                 int rampId = __state;
                 if (rampId >= BaseSlotID)
@@ -110,7 +110,7 @@ namespace Sideloader.AutoResolver
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(Control), nameof(Control.Read))]
-            internal static void XMLReadPostfix(Control __instance)
+            private static void XMLReadPostfix(Control __instance)
             {
                 foreach (Data data in __instance.Datas)
                     if (data is Config.EtceteraSystem etceteraSystem)
@@ -132,7 +132,7 @@ namespace Sideloader.AutoResolver
             }
             //Studio
             [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), nameof(SceneInfo.Init))]
-            internal static void SceneInfoInit(SceneInfo __instance)
+            private static void SceneInfoInit(SceneInfo __instance)
             {
                 var xmlDoc = XDocument.Load("UserData/config/system.xml");
                 string rampGUID = xmlDoc.Element("System").Element("Etc").Element("rampGUID")?.Value;

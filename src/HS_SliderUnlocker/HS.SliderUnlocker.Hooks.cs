@@ -7,13 +7,11 @@ namespace SliderUnlocker
 {
     public static partial class Hooks
     {
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(SubMenuBase), "ChangeTextFromFloat")]
-        public static void ConvertTextFromRateHook(ref string __result, float value) => __result = Math.Round(100 * value).ToString(CultureInfo.InvariantCulture);
+        [HarmonyPostfix, HarmonyPatch(typeof(SubMenuBase), "ChangeTextFromFloat")]
+        private static void ConvertTextFromRateHook(ref string __result, float value) => __result = Math.Round(100 * value).ToString(CultureInfo.InvariantCulture);
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(SubMenuBase), "ChangeFloatFromText")]
-        public static bool ConvertRateFromTextHook(ref float __result, ref string text)
+        [HarmonyPrefix, HarmonyPatch(typeof(SubMenuBase), "ChangeFloatFromText")]
+        private static bool ConvertRateFromTextHook(ref float __result, ref string text)
         {
             if (text == null || text == "")
                 __result = 0f;
@@ -28,7 +26,7 @@ namespace SliderUnlocker
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(CharFile), nameof(CharFile.ClampEx))]
-        public static bool ClampExPrefix(float value, ref float __result)
+        private static bool ClampExPrefix(float value, ref float __result)
         {
             __result = value;
             return false;
@@ -37,7 +35,7 @@ namespace SliderUnlocker
         /// Set the shapeValue if outside vanilla range
         /// </summary>
         [HarmonyPostfix, HarmonyPatch(typeof(CharFemaleCustom), nameof(CharFemaleCustom.SetShapeBodyValue))]
-        public static void SetShapeBodyValuePostfix(int index, float value, CharFemaleCustom __instance)
+        private static void SetShapeBodyValuePostfix(int index, float value, CharFemaleCustom __instance)
         {
             CharFileInfoCustom charFileInfoCustom = typeof(CharFemaleCustom).GetField("customInfo", AccessTools.all).GetValue(__instance) as CharFileInfoCustom;
             if (index >= charFileInfoCustom.shapeValueBody.Length) return;
@@ -48,7 +46,7 @@ namespace SliderUnlocker
         /// Set the shapeValue if outside vanilla range
         /// </summary>
         [HarmonyPostfix, HarmonyPatch(typeof(CharMaleCustom), nameof(CharMaleCustom.SetShapeBodyValue))]
-        public static void SetShapeBodyValuePostfix(int index, float value, CharMaleCustom __instance)
+        private static void SetShapeBodyValuePostfix(int index, float value, CharMaleCustom __instance)
         {
             CharFileInfoCustom charFileInfoCustom = typeof(CharMaleCustom).GetField("customInfo", AccessTools.all).GetValue(__instance) as CharFileInfoCustom;
             if (index >= charFileInfoCustom.shapeValueBody.Length) return;
@@ -59,11 +57,11 @@ namespace SliderUnlocker
         /// Set the shapeValue if outside vanilla range
         /// </summary>
         [HarmonyPostfix, HarmonyPatch(typeof(CharCustom), nameof(CharCustom.SetShapeFaceValue))]
-        public static void SetShapeFaceValuePostfix(int index, float value, CharCustom __instance) => (typeof(CharFemaleCustom).GetField("customInfo", AccessTools.all).GetValue(__instance) as CharFileInfoCustom).shapeValueFace[index] = value;
+        private static void SetShapeFaceValuePostfix(int index, float value, CharCustom __instance) => (typeof(CharFemaleCustom).GetField("customInfo", AccessTools.all).GetValue(__instance) as CharFileInfoCustom).shapeValueFace[index] = value;
 
         [HarmonyPrefix, HarmonyPatch(typeof(SubMenuControl), nameof(SubMenuControl.ChangeSubMenu))]
-        public static void SmBodyShapeS_FSetCharaInfoSubPrefix() => SliderUnlocker.MaximizeSliders();
+        private static void SmBodyShapeS_FSetCharaInfoSubPrefix() => SliderUnlocker.MaximizeSliders();
         [HarmonyPostfix, HarmonyPatch(typeof(SubMenuControl), nameof(SubMenuControl.ChangeSubMenu))]
-        public static void SmBodyShapeS_FSetCharaInfoSubPostfix() => SliderUnlocker.UnlockSliders();
+        private static void SmBodyShapeS_FSetCharaInfoSubPostfix() => SliderUnlocker.UnlockSliders();
     }
 }

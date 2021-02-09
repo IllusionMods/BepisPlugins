@@ -1,11 +1,11 @@
-﻿using System;
+﻿using BepInEx;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using BepInEx;
 using UnityEngine;
 
 internal static class Extensions

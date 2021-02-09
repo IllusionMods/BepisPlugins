@@ -1,12 +1,11 @@
-﻿using BepInEx.Harmony;
-using ExtensibleSaveFormat;
+﻿using ExtensibleSaveFormat;
 using HarmonyLib;
 using Illusion.Extensions;
+using Manager;
 using Sideloader.ListLoader;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Manager;
 #if AI || HS2
 using AIChara;
 #endif
@@ -24,7 +23,7 @@ namespace Sideloader.AutoResolver
 
             internal static void InstallHooks()
             {
-                var harmony = HarmonyWrapper.PatchAll(typeof(Hooks));
+                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
 
                 ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
                 ExtendedSave.CardBeingSaved += ExtendedCardSave;
@@ -168,7 +167,7 @@ namespace Sideloader.AutoResolver
 #else
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
-            internal static void ChaFileSaveFilePostHook(ChaFile __instance)
+            private static void ChaFileSaveFilePostHook(ChaFile __instance)
             {
                 if (DoingImport) return;
 
@@ -183,15 +182,13 @@ namespace Sideloader.AutoResolver
 
                 List<ResolveInfo> extInfo;
 
-                if (extData.data["info"] is List<byte[]>)
+                if (extData.data["info"] is List<byte[]> lstByte)
                 {
-                    var tmpExtInfo = (List<byte[]>)extData.data["info"];
-                    extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
+                    extInfo = lstByte.Select(ResolveInfo.Deserialize).ToList();
                 }
-                else if (extData.data["info"] is object[])
+                else if (extData.data["info"] is object[] objArray)
                 {
-                    var tmpExtInfo = (object[])extData.data["info"];
-                    extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
+                    extInfo = objArray.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
                 }
                 else
                 {
@@ -211,7 +208,7 @@ namespace Sideloader.AutoResolver
                 {
                     foreach (var kv in propertyDict)
                     {
-                        var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
+                        var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key}");
 
                         if (extResolve != null)
                             kv.Value.SetMethod(structure, extResolve.LocalSlot);
@@ -328,7 +325,7 @@ namespace Sideloader.AutoResolver
 #else
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string), typeof(int))]
 #endif
-            internal static void ChaFileCoordinateSaveFilePostHook(ChaFileCoordinate __instance, string path)
+            private static void ChaFileCoordinateSaveFilePostHook(ChaFileCoordinate __instance, string path)
             {
                 if (DoingImport) return;
 
@@ -351,7 +348,7 @@ namespace Sideloader.AutoResolver
                 {
                     foreach (var kv in propertyDict)
                     {
-                        var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key.ToString()}");
+                        var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key}");
 
                         if (extResolve != null)
                             kv.Value.SetMethod(structure, extResolve.LocalSlot);
@@ -368,7 +365,7 @@ namespace Sideloader.AutoResolver
             /// Find the head preset data
             /// </summary>
             [HarmonyPrefix, HarmonyPatch(typeof(ChaFileControl), nameof(ChaFileControl.LoadFacePreset))]
-            internal static void LoadFacePresetPrefix(ChaFileControl __instance, ref HeadPresetInfo __state)
+            private static void LoadFacePresetPrefix(ChaFileControl __instance, ref HeadPresetInfo __state)
             {
                 __state = null;
                 int headID = __instance.custom.face.headId;

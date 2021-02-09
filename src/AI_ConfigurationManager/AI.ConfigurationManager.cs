@@ -1,6 +1,5 @@
 ﻿using AIProject;
 using BepInEx;
-using BepInEx.Harmony;
 using BepisPlugins;
 using ConfigScene;
 using HarmonyLib;
@@ -32,7 +31,7 @@ namespace ConfigurationManagerWrapper
             var isStudio = Application.productName == "StudioNEOV2";
             if (!isStudio)
             {
-                HarmonyWrapper.PatchAll(typeof(ConfigurationManagerWrapper));
+                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
                 // Main game is handled by the hooks, Update is only for studio
                 enabled = false;
             }
@@ -44,21 +43,19 @@ namespace ConfigurationManagerWrapper
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(CharaCustom.CustomControl), "Update")]
+        [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomControl), "Update")]
         private static void ConfigScene_Toggle()
         {
             if (Input.GetKeyDown(KeyCode.F1) && !Manager.Scene.Instance.IsNowLoadingFade)
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ConfigWindow), "Open")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), "Open")]
         private static void OnOpen(ConfigWindow __instance, ref Button[] ___buttons)
         {
             // Spawn a new button for plugin settings
             var original = __instance.transform.FindLoop("btnTitle").transform;
-            var copy = GameObject.Instantiate(original, original.parent);
+            var copy = Instantiate(original, original.parent);
             copy.name = "btnPluginSettings";
 
             copy.GetComponentInChildren<Text>().text = "Plugin settings";
@@ -75,8 +72,7 @@ namespace ConfigurationManagerWrapper
             ___buttons = ___buttons.AddToArray(btn);
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ConfigWindow), nameof(ConfigWindow.Unload))]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), nameof(ConfigWindow.Unload))]
         private static void OnClose() => _manager.DisplayingWindow = false;
     }
 }

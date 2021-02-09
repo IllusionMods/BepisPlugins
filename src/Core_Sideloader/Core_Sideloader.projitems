@@ -28,9 +28,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.StructReference.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.StructValue.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)lib\I18N.dll" />
-    <None Include="$(MSBuildThisFileDirectory)lib\I18N.West.dll" />
-    <None Include="$(MSBuildThisFileDirectory)lib\ICSharpCode.SharpZipLib.dll" />
-  </ItemGroup>
 </Project>

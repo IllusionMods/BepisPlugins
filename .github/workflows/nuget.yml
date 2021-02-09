@@ -1,8 +1,7 @@
 name: Push to nuget feed on release
 
 on:
-  release:
-    types: [published]
+  push
 
 jobs:
   build:
@@ -14,7 +13,7 @@ jobs:
       uses: actions/checkout@v1
       
     - name: Setup Nuget
-      uses: warrenbuckley/Setup-Nuget@v1
+      uses: nuget/setup-nuget@v1
       
     - name: Nuget pack
       run: |

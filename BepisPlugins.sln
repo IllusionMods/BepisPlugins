@@ -193,6 +193,7 @@ Global
 		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{e426eec2-98ca-4abd-804b-3c1bd20bee9c}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{e426eec2-98ca-4abd-804b-3c1bd20bee9c}*SharedItemsImports = 4
 		src\Core_Screencap\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{f7e5c653-eeae-44bc-84b3-b16021b13d9e}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{f7e5c653-eeae-44bc-84b3-b16021b13d9e}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{fa7d93c6-05c2-42a9-b82b-c544898f26ad}*SharedItemsImports = 4
 	EndGlobalSection

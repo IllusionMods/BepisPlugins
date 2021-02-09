@@ -1,5 +1,4 @@
 ﻿using BepInEx;
-using BepInEx.Harmony;
 using BepisPlugins;
 using HarmonyLib;
 using Illusion.Game;
@@ -34,7 +33,7 @@ namespace ConfigurationManagerWrapper
             bool mainGame = Application.productName == Constants.GameProcessName || Application.productName == Constants.GameProcessNameSteam;
             if (mainGame)
             {
-                HarmonyWrapper.PatchAll(typeof(ConfigurationManagerWrapper));
+                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
                 //Main game is handled by the hooks, disable this plugin to prevent Update from running
                 enabled = false;
             }
@@ -46,8 +45,7 @@ namespace ConfigurationManagerWrapper
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ConfigScene), "Start")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), "Start")]
         private static void OnOpen(ref object __result)
         {
             __result = new[] { __result, CreateButton() }.GetEnumerator();
@@ -76,8 +74,7 @@ namespace ConfigurationManagerWrapper
             }
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(ConfigScene), "Unload")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), "Unload")]
         private static void OnClose() => _manager.DisplayingWindow = false;
     }
 }
