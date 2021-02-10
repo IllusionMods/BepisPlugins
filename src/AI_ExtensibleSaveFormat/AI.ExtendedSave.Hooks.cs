@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using AIProject.SaveData;
 using AIProject.UI;
+using BehaviorDesigner.Runtime.Tasks.Unity.UnityPlayerPrefs;
 using CharaCustom;
 using HarmonyLib;
 using Housing;
@@ -27,6 +28,32 @@ namespace ExtensibleSaveFormat
             [HarmonyPatch(typeof(CustomClothesFileInfoAssist), nameof(CustomClothesFileInfoAssist.CreateClothesFileInfoList))]
             [HarmonyPatch(typeof(GameCoordinateFileInfoAssist), nameof(GameCoordinateFileInfoAssist.CreateCoordinateFileInfoList))]
             private static void CreateListPostfix() => LoadEventsEnabled = true;
+
+
+            public static void InstallMainGameHooks(Harmony harmony)
+            {
+                // Minimizing the interference between games to limiting the harmony hook initialization
+                // MainGame Save/Load - PostFix
+                harmony.Patch(
+                    typeof(SaveData).GetMethod("Load", new[] {typeof(BinaryReader)}),
+                    null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnLoadMainGame)))
+                );
+                harmony.Patch(
+                    typeof(SaveData).GetMethod("SaveFile", new[] {typeof(BinaryWriter)}),
+                    null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnSaveMainGame)))
+                );
+
+                // HousingData Save/Load - Transpiler
+                // Based on 2021 Version
+                harmony.Patch(
+                    typeof(CraftInfo).GetMethod("Load", new[] {typeof(string)}),
+                    null, null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnCraftLoad)))
+                );
+                harmony.Patch(
+                    typeof(CraftInfo).GetMethod("Save", new[] {typeof(string), typeof(byte[])}),
+                    null, null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnCraftSave)))
+                );
+            }
 
             /// <summary>
             ///
@@ -161,8 +188,6 @@ namespace ExtensibleSaveFormat
                 bw.Write(DataVersion);
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(SaveData), "Load", typeof(BinaryReader))]
             public static void OnLoadMainGame(SaveData __instance, BinaryReader reader, bool __result)
             {
                 if (!__result) return;
@@ -170,11 +195,8 @@ namespace ExtensibleSaveFormat
                 GameDataLoadHook(__instance, reader);
             }
 
-            [HarmonyPostfix]
-            [HarmonyPatch(typeof(SaveData), "SaveFile", typeof(BinaryWriter))]
             public static void OnSaveMainGame(SaveData __instance, BinaryWriter writer) => GameDataSaveHook(__instance, writer);
 
-            [HarmonyTranspiler, HarmonyPatch(typeof(CraftInfo), "Save", typeof(string), typeof(byte[]))]
             public static IEnumerable<CodeInstruction> OnCraftSave(IEnumerable<CodeInstruction> instructions)
             {
                 var set = false;
@@ -199,7 +221,6 @@ namespace ExtensibleSaveFormat
                 HousingDataSaveHook(instance, writer);
             }
 
-            [HarmonyTranspiler, HarmonyPatch(typeof(CraftInfo), "Load", typeof(string))]
             public static IEnumerable<CodeInstruction> OnCraftLoad(IEnumerable<CodeInstruction> instructions)
             {
                 var set = false;
