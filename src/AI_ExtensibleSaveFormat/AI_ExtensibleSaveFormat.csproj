@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI.ExtendedSave.cs" />
+    <Compile Include="AI.ExtendedSave.Events.cs" />
     <Compile Include="AI.ExtendedSave.Hooks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

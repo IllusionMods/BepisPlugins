@@ -13,10 +13,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using BepisPlugins;
 using UnityEngine;
 using XUnity.ResourceRedirector;
 #if AI || HS2
 using AIChara;
+
 #endif
 
 namespace Sideloader
@@ -28,20 +30,26 @@ namespace Sideloader
     {
         /// <summary> Plugin GUID </summary>
         public const string GUID = "com.bepis.bepinex.sideloader";
+
         /// <summary> Plugin name </summary>
         public const string PluginName = "Sideloader";
+
         /// <summary> Plugin version </summary>
         public const string Version = BepisPlugins.Metadata.PluginsVersion;
+
         internal static new ManualLogSource Logger;
 
         /// <summary> Directory from which to load mods </summary>
         public static string ModsDirectory { get; } = Path.Combine(Paths.GameRootPath, "mods");
+
         private readonly List<ZipFile> Archives = new List<ZipFile>();
 
         /// <summary> List of all loaded manifest files </summary>
         public static readonly Dictionary<string, Manifest> Manifests = new Dictionary<string, Manifest>();
+
         /// <summary> Dictionary of GUID and loaded zip file name </summary>
         public static readonly Dictionary<string, string> ZipArchives = new Dictionary<string, string>();
+
         /// <summary> List of all loaded manifest files </summary>
         [Obsolete("Use Manifests or GetManifest")]
         public static List<Manifest> LoadedManifests;
@@ -102,7 +110,8 @@ namespace Sideloader
             LoadModsFromDirectories(ModsDirectory, AdditionalModsDirectory.Value);
         }
 
-        private static string GetRelativeArchiveDir(string archiveDir) => archiveDir.Length < ModsDirectory.Length ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
+        private static string GetRelativeArchiveDir(string archiveDir) =>
+            archiveDir.Length < ModsDirectory.Length ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
 
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
@@ -140,7 +149,7 @@ namespace Sideloader
                             return null;
                         }
 
-                        return new { archive, manifest };
+                        return new {archive, manifest};
                     }
                 }
                 catch (Exception ex)
@@ -148,6 +157,7 @@ namespace Sideloader
                     Logger.LogError($"Failed to load archive \"{GetRelativeArchiveDir(archivePath)}\" with error: {ex}");
                     archive?.Close();
                 }
+
                 return null;
             }, 3).Where(x => x != null).ToList();
 
@@ -192,6 +202,8 @@ namespace Sideloader
 #if AI || HS2
                     UniversalAutoResolver.GenerateHeadPresetInfo(manifest, _gatheredHeadPresetInfos);
                     UniversalAutoResolver.GenerateFaceSkinInfo(manifest, _gatheredFaceSkinInfos);
+#if AI
+#endif
 #endif
 
                     var trimmedName = manifest.Name?.Trim();
@@ -229,12 +241,15 @@ namespace Sideloader
             var failedPaths = allMods.Except(Archives.Select(x => x.Name));
             var failedStrings = failedPaths.Select(GetRelativeArchiveDir).ToArray();
             if (failedStrings.Length > 0)
-                Logger.LogWarning("Could not load " + failedStrings.Length + " mods, see previous warnings for more information. File names of skipped archives:\n" + string.Join(" | ", failedStrings));
+                Logger.LogWarning("Could not load " + failedStrings.Length + " mods, see previous warnings for more information. File names of skipped archives:\n" +
+                                  string.Join(" | ", failedStrings));
         }
 
         private void LoadAllLists(ZipFile arc, Manifest manifest)
         {
             List<ZipEntry> BoneList = new List<ZipEntry>();
+            bool mainGame = Application.productName == Constants.GameProcessName;
+
             foreach (ZipEntry entry in arc)
             {
                 if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
@@ -281,12 +296,12 @@ namespace Sideloader
                     {
                         string assetBundleName = entry.Name;
                         assetBundleName = assetBundleName.Remove(0, assetBundleName.IndexOf('/') + 1); //Remove "abdata/"
-                        assetBundleName = assetBundleName.Remove(assetBundleName.LastIndexOf('/')); //Remove the .csv filename
+                        assetBundleName = assetBundleName.Remove(assetBundleName.LastIndexOf('/'));    //Remove the .csv filename
                         assetBundleName += ".unity3d";
 
                         string assetName = entry.Name;
                         assetName = assetName.Remove(0, assetName.LastIndexOf('/') + 1); //Remove all but the filename
-                        assetName = assetName.Remove(assetName.LastIndexOf('.')); //Remove the .csv
+                        assetName = assetName.Remove(assetName.LastIndexOf('.'));        //Remove the .csv
 
                         var stream = arc.GetInputStream(entry);
                         Lists.LoadExcelDataCSV(assetBundleName, assetName, stream);
@@ -297,6 +312,41 @@ namespace Sideloader
                     }
                 }
 #endif
+#endif
+#if AI
+                // AI Main-Game Loading Procedure
+                else if (mainGame && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase) &&
+                         entry.Name.StartsWith("abdata/housing/info", StringComparison.OrdinalIgnoreCase))
+                {
+                    // resolve id later.
+                    try
+                    {
+                        string assetName = entry.Name;
+                        assetName = assetName.Remove(0, assetName.LastIndexOf('/') + 1); //Remove all but the filename
+                        assetName = assetName.Remove(assetName.LastIndexOf('.'));        //Remove the .csv
+                        var stream = arc.GetInputStream(entry);
+
+                        string assetBundleName = entry.Name;
+                        assetBundleName = assetBundleName.Remove(0, assetBundleName.IndexOf('/') + 1); //Remove "abdata/"
+                        assetBundleName = assetBundleName.Remove(assetBundleName.LastIndexOf('/'));    //Remove the .csv filename
+                        assetBundleName += ".unity3d";
+
+                        if (assetName.StartsWith("itemlist"))
+                        {
+                            var furnitureData = Lists.LoadMainGameCSV(stream, assetName, assetBundleName, manifest.GUID);
+                            UniversalAutoResolver.GenerateMainGameResolutionInfo(manifest, furnitureData);
+                            Lists.LoadExcelDataFromResolveInfo(furnitureData);
+                        }
+                        else
+                        {
+                            Lists.LoadExcelDataCSV(assetBundleName, assetName, stream);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
+                    }
+                }
 #endif
             }
 
@@ -332,6 +382,7 @@ namespace Sideloader
                 }
             }
         }
+
         /// <summary>
         /// Construct a list of all folders that contain a .png
         /// </summary>
@@ -364,6 +415,7 @@ namespace Sideloader
                 }
             }
         }
+
         /// <summary>
         /// Build a list of folders that contain .pngs but do not match an existing asset bundle
         /// </summary>
@@ -437,7 +489,7 @@ namespace Sideloader
                 {
                     // Load png byte data from the archive and load it into a new texture
                     var stream = archive.GetInputStream(entry);
-                    var fileLength = (int)entry.Size;
+                    var fileLength = (int) entry.Size;
                     var buffer = new byte[fileLength];
                     stream.Read(buffer, 0, fileLength);
                     var tex = new Texture2D(2, 2, format, mipmap);
@@ -454,6 +506,7 @@ namespace Sideloader
 
             return null;
         }
+
         /// <summary>
         /// Check whether the .png file comes from a sideloader mod
         /// </summary>
@@ -478,12 +531,12 @@ namespace Sideloader
 
                         if (entry.CompressionMethod == CompressionMethod.Stored)
                         {
-                            long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
+                            long index = (long) locateZipEntryMethodInfo.Invoke(arc, new object[] {entry});
 
                             if (DebugLogging.Value)
                                 Logger.LogDebug($"Streaming \"{entry.Name}\" ({GetRelativeArchiveDir(archiveFilename)}) unity3d file from disk, offset {index}");
 
-                            bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong)index);
+                            bundle = AssetBundle.LoadFromFile(archiveFilename, 0, (ulong) index);
                         }
                         else
                         {
@@ -492,7 +545,7 @@ namespace Sideloader
 
                             byte[] buffer = new byte[entry.Size];
 
-                            stream.Read(buffer, 0, (int)entry.Size);
+                            stream.Read(buffer, 0, (int) entry.Size);
 
                             // The line below can either be commented in or out - it doesn't really matter. 
                             //  - If in: It will generate successive unique CAB-strings for these asset bundles
@@ -566,6 +619,7 @@ namespace Sideloader
                     return;
                 }
             }
+
             if (context.Parameters.Type == typeof(ExcelData))
             {
                 if (TryGetExcelData(context.Bundle.name, context.Parameters.Name, out var excelData))

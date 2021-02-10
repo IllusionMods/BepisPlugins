@@ -2,6 +2,7 @@
 using Sideloader.AutoResolver;
 using System.Collections.Generic;
 using System.Linq;
+using BepisPlugins;
 using UnityEngine;
 using Sideloader.ListLoader;
 #if KK || EC
@@ -27,6 +28,15 @@ namespace Sideloader
 #if !EC
                 harmony.Patch(typeof(Studio.Info).GetNestedType("FileCheck", AccessTools.all).GetMethod("Check", AccessTools.all), null,
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(FileCheck), AccessTools.all)));
+#endif
+
+#if AI
+
+                bool mainGame = Application.productName == Constants.GameProcessName;
+                if (mainGame)
+                {
+                    InstallMainGameHooks(harmony);
+                }
 #endif
             }
 
@@ -71,6 +81,14 @@ namespace Sideloader
                         if (!__result.Contains(assetBundleName))
                             __result.Add(assetBundleName);
                 }
+#if AI
+                else if (path == "housing/info/")
+                {
+                    foreach (var assetBundleName in Lists.ExternalExcelData.Keys.Where(x => x.StartsWith(path)))
+                        if (!__result.Contains(assetBundleName))
+                            __result.Add(assetBundleName);
+                }
+#endif
 #if AI || HS2
                 else if (path == "list/map/")
                 {

@@ -19,5 +19,6 @@ namespace Sideloader
         private readonly List<FaceSkinInfo> _gatheredFaceSkinInfos = new List<FaceSkinInfo>();
 
         private static string FindKoiZipmodDir() => string.Empty;
+
     }
 }

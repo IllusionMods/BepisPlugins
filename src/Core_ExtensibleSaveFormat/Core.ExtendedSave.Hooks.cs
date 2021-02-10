@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
+using BepisPlugins;
 #if AI || HS2
 using AIChara;
+using UnityEngine;
+
 #endif
 
 namespace ExtensibleSaveFormat
@@ -24,6 +27,13 @@ namespace ExtensibleSaveFormat
                 harmony.Patch(typeof(Studio.MPCharCtrl).GetNestedType("CostumeInfo", AccessTools.all).GetMethod("InitFileList", AccessTools.all),
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPreHook), AccessTools.all)),
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPostHook), AccessTools.all)));
+#endif
+#if AI
+                bool mainGame = Application.productName == Constants.GameProcessName;
+                if (mainGame)
+                {
+                    InstallMainGameHooks(harmony);
+                }
 #endif
             }
 

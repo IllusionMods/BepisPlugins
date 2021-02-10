@@ -48,6 +48,10 @@ namespace Sideloader.AutoResolver
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ETCUpdateInfoPostfix), AccessTools.all)));
 #endif
 
+#if AI
+                InstallMainGameHooks(harmony);
+#endif
+
 #if !EC
                 DoingImport = false;
 #endif
