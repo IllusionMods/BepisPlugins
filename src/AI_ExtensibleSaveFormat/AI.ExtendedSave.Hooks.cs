@@ -113,6 +113,7 @@ namespace ExtensibleSaveFormat
 
                 // insert world datat load event
                 ReadWorldData(saveData, br); // Recursively search next entry.
+                Logger.LogMessage($"Loaded world data for {index}");
             }
 
             /// <summary>
@@ -156,20 +157,27 @@ namespace ExtensibleSaveFormat
                 WorldData autoSaveData = saveData.AutoData;
                 WriteWorldData(-1, saveData.AutoData, bw);
                 foreach (var kv in saveData.WorldList)
+                {
                     WriteWorldData(kv.Key, kv.Value, bw);
+                    Logger.LogMessage($"Saved world data for {kv.Key}");
+                }
             }
 
             public static void HousingDataLoadHook(CraftInfo craftInfo, BinaryReader br)
             {
                 try
                 {
-                    HousingReadEvent(craftInfo);
                     string marker = br.ReadString();
                     int version = br.ReadInt32();
                     int length = br.ReadInt32();
                     if (marker == Marker && version == DataVersion && length > 0)
                     {
-                        Logger.LogMessage("loaded game data extended");
+                        byte[] bytes = br.ReadBytes(length);
+                        var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+
+                        internalCraftInfoDictionary.Set(craftInfo, dictionary);
+                        HousingReadEvent(craftInfo);
+                        Logger.LogMessage("Successfully loaded housing extended informations");
                     }
                     else Logger.LogMessage("empty game data extended");
                 }
@@ -184,8 +192,15 @@ namespace ExtensibleSaveFormat
             public static void HousingDataSaveHook(CraftInfo craftInfo, BinaryWriter bw)
             {
                 HousingWriteEvent(craftInfo);
+                Dictionary<string, PluginData> extendedData = GetAllExtendedData(craftInfo);
+                if (extendedData == null)
+                    return;
+
+                byte[] data = MessagePackSerializer.Serialize(extendedData);
                 bw.Write(Marker);
                 bw.Write(DataVersion);
+                bw.Write(data.Length);
+                bw.Write(data);
             }
 
             public static void OnLoadMainGame(SaveData __instance, BinaryReader reader, bool __result)
@@ -205,7 +220,7 @@ namespace ExtensibleSaveFormat
                 {
                     var inst = instructionsList[i];
                     yield return inst;
-                    if (set != false || inst.opcode != OpCodes.Callvirt || instructionsList[i + 1].opcode != OpCodes.Leave) continue;
+                    if (set || inst.opcode != OpCodes.Callvirt || instructionsList[i + 1].opcode != OpCodes.Leave) continue;
 
                     // [0] FileStream, [1] BinaryWriter, [2] CraftInfoBytes
                     yield return new CodeInstruction(OpCodes.Ldarg_0); // Load Parameter 0: self
@@ -223,15 +238,20 @@ namespace ExtensibleSaveFormat
 
             public static IEnumerable<CodeInstruction> OnCraftLoad(IEnumerable<CodeInstruction> instructions)
             {
+                // to counter false opcode injection...
+                var instAnchor = typeof(Housing.CraftInfo).GetMethod("Load", new[] {typeof(byte[])});
                 var set = false;
                 var instructionsList = instructions.ToList();
                 for (var i = 0; i < instructionsList.Count; i++)
                 {
                     var inst = instructionsList[i];
                     yield return inst;
-                    if (set != false || inst.opcode != OpCodes.Stloc_1 || instructionsList[i + 1].opcode != OpCodes.Leave) continue;
+                    if (i == 0) continue;
+                    var prevInstruction = instructionsList[i - 1];
+                    if (set || prevInstruction == null || !prevInstruction.Is(OpCodes.Call, instAnchor)) continue;
 
-                    // [0] Filestream [1] boolean [2] BinaryReader [3]  int64, [4] version [5] unit8[] [6] exceptiopn
+                    // [0] Filestream [1] boolean [2] BinaryReader [3]  int64, [4] version [5] unit8[] [6] exception
+                    // invoke read housing card
                     yield return new CodeInstruction(OpCodes.Ldarg_1); // Load parameter 0 : self
                     yield return new CodeInstruction(OpCodes.Ldloc_2); // Load local value 1: binary reader
                     yield return new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(OnReadHousingCard)));

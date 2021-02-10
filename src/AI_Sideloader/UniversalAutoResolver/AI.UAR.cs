@@ -46,7 +46,7 @@ namespace Sideloader.AutoResolver
 
         internal static void ResolveHousingFurniture(AIGameResolveInfo extResolve, OIItem OI, ResolveType resolveType = ResolveType.Load)
         {
-            AIGameResolveInfo intResolve = LoadedMainGameResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == OI.ID && x.GUID == extResolve.GUID);
+            AIGameResolveInfo intResolve = LoadedMainGameResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == extResolve.Slot && x.GUID == extResolve.GUID); // originally OI.ID, maybe something gotta be changed related with hard mod compatibility?
             if (intResolve != null)
             {
                 if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
@@ -54,7 +54,7 @@ namespace Sideloader.AutoResolver
                 OI.ID = intResolve.LocalSlot;
             }
             else if (resolveType == ResolveType.Load)
-                ShowGUIDError(extResolve.GUID);
+                ShowGUIDError(extResolve.GUID); // TODO: does craft menu is fault proof?
         }
     }
 }

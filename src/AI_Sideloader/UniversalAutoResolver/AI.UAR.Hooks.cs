@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using AIProject.Definitions;
 using AIProject.SaveData;
 using ExtensibleSaveFormat;
 using HarmonyLib;
@@ -43,6 +45,22 @@ namespace Sideloader.AutoResolver
                 }
             }
 
+            private static void HousingObjectIteration<T>(IEnumerable<IObjectInfo> infoList, ref int index, Dictionary<int, T> indexedItems, Func<OIItem, T> callback)
+            {
+                if (callback == null) return;
+                foreach (var info in infoList)
+                    if (info is OIItem item) indexedItems.Add(index++, callback(item));
+                    else if (info is OIFolder folder) HousingObjectIteration<T>(folder.Child, ref index, indexedItems, callback);
+            }
+
+            private static void HousingObjectIteration(IEnumerable<IObjectInfo> infoList, ref int index, Action<OIItem, int> callback)
+            {
+                if (callback == null) return;
+                foreach (var info in infoList)
+                    if (info is OIItem item) callback(item, index++);
+                    else if (info is OIFolder folder) HousingObjectIteration(folder.Child, ref index, callback);
+            }
+
             internal static void ExtendedHousingSave(CraftInfo info)
             {
                 if (Sideloader.DebugLoggingResolveInfo.Value)
@@ -51,30 +69,35 @@ namespace Sideloader.AutoResolver
                 }
 
                 Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
-                List<AIGameResolveInfo> MainGameResolutionInfos = new List<AIGameResolveInfo>();
 
-                foreach (IObjectInfo objectInfo in info.ObjectInfos)
+                // housing data has no "key" so it's almost nightmare to resolve the id.
+                // and worst of all, the structure of housing card object info is nested.
+                // so what im going to do is generating iteration index which can be used for distinguishing objects
+                int index = 0;
+                Dictionary<int, byte[]> ResolutionInfos = new Dictionary<int, byte[]>();
+                HousingObjectIteration<byte[]>(info.ObjectInfos, ref index, ResolutionInfos, (item) =>
                 {
-                    if (objectInfo is OIItem item)
+                    var extResolve = LoadedMainGameResolutionInfo.Where(x => x.LocalSlot == item.ID).FirstOrDefault();
+                    if (extResolve != null)
                     {
-                        AIGameResolveInfo extResolve = LoadedMainGameResolutionInfo.Where(x => x.LocalSlot == item.ID).FirstOrDefault();
-                        if (extResolve != null)
+                        return new AIGameResolveInfo
                         {
-                            MainGameResolutionInfos.Add(new AIGameResolveInfo()
-                            {
-                                Slot = extResolve.Slot,
-                                LocalSlot = extResolve.LocalSlot,
-                                GUID = extResolve.GUID
-                            });
-
-                            //Set item ID back to original non-resolved ID
-                            if (Sideloader.DebugLogging.Value) Sideloader.Logger.LogDebug($"Setting ID:{item.ID}->{extResolve.Slot}");
-                            item.ID = extResolve.Slot;
-                        }
+                            GUID = extResolve.GUID,
+                            Slot = extResolve.Slot, // I need to know the history about "hard mod compatibility"
+                            LocalSlot = extResolve.LocalSlot,
+                        }.Serialize();
                     }
-                }
+                    else
+                    {
+                        return null;
+                    }
+                });
+                ExtendedData.Add("mapItemInfo", ResolutionInfos);
 
-                ExtendedData.Add("mapItemInfo", MainGameResolutionInfos);
+                ExtendedSave.SetExtendedDataById(info, UARExtID, new PluginData()
+                {
+                    data = ExtendedData
+                });
             }
 
             internal static void ExtendedHousingLoad(CraftInfo info)
@@ -85,6 +108,21 @@ namespace Sideloader.AutoResolver
                 }
 
                 PluginData ExtendedData = ExtendedSave.GetExtendedDataById(info, UARExtID);
+                if (ExtendedData != null)
+                {
+                    var ResolvedInfo = ((Dictionary<int, byte[]>) ExtendedData.data["mapItemInfo"]);
+                    int index = 0;
+                    HousingObjectIteration(info.ObjectInfos, ref index, (item, i) =>
+                    {
+                        if (!ResolvedInfo.TryGetValue(i, out byte[] bytes)) return;
+                        var extResolve = AIGameResolveInfo.Deserialize(bytes);
+                        if (extResolve == null) return;
+                        item.ID = extResolve.Slot;
+                        ResolveHousingFurniture(extResolve, item);
+                    });
+
+                    Sideloader.Logger.LogInfo("Successfully loaded extended data. resolving data...");
+                }
             }
         }
     }
