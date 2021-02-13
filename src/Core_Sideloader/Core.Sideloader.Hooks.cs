@@ -28,6 +28,12 @@ namespace Sideloader
                 harmony.Patch(typeof(Studio.Info).GetNestedType("FileCheck", AccessTools.all).GetMethod("Check", AccessTools.all), null,
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(FileCheck), AccessTools.all)));
 #endif
+
+#if HS2
+                var add50M = AccessTools.Method(typeof(Manager.GameSystem), "IsPathAdd50");
+                if (add50M != null)
+                    harmony.Patch(add50M, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.IsPathAdd50Hook)));
+#endif
             }
 
 #if AI || HS2
@@ -40,7 +46,6 @@ namespace Sideloader
 #endif
 
 #if HS2
-            [HarmonyPostfix, HarmonyPatch(typeof(Manager.GameSystem), "IsPathAdd50")]
             private static void IsPathAdd50Hook(string _path, ref bool __result)
             {
                 if (!__result)
