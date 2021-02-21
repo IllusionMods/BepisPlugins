@@ -1,6 +1,9 @@
-﻿using System.Collections;
+﻿using BepInEx;
+using BepInEx.Logging;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace BepisPlugins
 {
@@ -12,26 +15,30 @@ namespace BepisPlugins
 
         public int Count => _items.Count;
 
-
-        private UnityEngine.GameObject reaperRunnerObject;
+        private volatile bool reaperRunRequested = false;
 
         public void Set(TKey key, TValue value)
         {
-            _items[new HashedWeakReference(key)] = value;            
-
-            if (reaperRunnerObject == null)
+            _items[new HashedWeakReference(key)] = value;
+            if (!reaperRunRequested)
             {
-                reaperRunnerObject = new UnityEngine.GameObject();
-                reaperRunnerObject.isStatic = true;
-                ReaperRunner reaper = reaperRunnerObject.AddComponent<ReaperRunner>();
-                reaper.StartCoroutine(PurgeKeys());
-                
+                lock (this)
+                {
+                    if (!reaperRunRequested)
+                    {
+                        reaperRunRequested = true;
+                        ThreadingHelper.Instance.StartCoroutine(PurgeKeys());
+                    }
+                }
             }
         }
 
         IEnumerator PurgeKeys()
         {
             yield return new UnityEngine.WaitForSeconds(5);
+            reaperRunRequested = false;
+
+            int before = _items.Keys.Count;
 
             // Naive O(n) key prune
             var deadKeys = _items.Keys.Where(reference => !reference.IsAlive).ToList();
@@ -39,8 +46,7 @@ namespace BepisPlugins
             {
                 _items.Remove(reference);
             }
-
-            UnityEngine.Object.Destroy(reaperRunnerObject);
+            
         }
 
         public TValue Get(TKey key)
