@@ -1,9 +1,7 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace BepisPlugins
 {
