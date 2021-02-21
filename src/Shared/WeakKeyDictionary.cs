@@ -38,8 +38,6 @@ namespace BepisPlugins
             yield return new UnityEngine.WaitForSeconds(5);
             reaperRunRequested = false;
 
-            int before = _items.Keys.Count;
-
             // Naive O(n) key prune
             var deadKeys = _items.Keys.Where(reference => !reference.IsAlive).ToList();
             foreach (var reference in deadKeys)
