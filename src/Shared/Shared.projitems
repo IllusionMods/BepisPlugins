@@ -15,7 +15,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)HashedWeakReference.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Lazy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Metadata.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ReaperRunner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WeakKeyDictionary.cs" />
   </ItemGroup>
 </Project>
