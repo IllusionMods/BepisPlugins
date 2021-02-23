@@ -83,12 +83,17 @@ namespace BepisPlugins
             int lookupRef = RuntimeHelpers.GetHashCode(key);
             if (_items.TryGetValue(lookupRef, out List<KeyValuePair<WeakReference, TValue>> valueList))
             {
+                TValue value = null;
                 foreach (KeyValuePair<WeakReference, TValue> kvp in valueList)
                 {
-                    if (kvp.Key.IsAlive)
+                    if (kvp.Key.IsAlive && ReferenceEquals(kvp.Key.Target, key))
                     {
-                        return kvp.Value;
+                        value = kvp.Value;
                     }
+                }
+                if (value != null)
+                {
+                    return value;
                 }
             }
             return null;
