@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using AIProject.Definitions;
 using AIProject.SaveData;
 using ExtensibleSaveFormat;
 using HarmonyLib;
 using Housing;
+using MessagePack;
 
 // ReSharper disable All
 
@@ -15,10 +16,12 @@ namespace Sideloader.AutoResolver
     {
         internal static partial class Hooks
         {
+            private const string mapItemInfoKey = "mapItemInfo";
+
             internal static void InstallMainGameHooks(Harmony harmony)
             {
-                ExtendedSave.MainGameSaveBeingSaved += ExtendedMainGameSave;
-                ExtendedSave.MainGameSaveBeingLoaded += ExtendedMainGameLoad;
+                ExtendedSave.SaveDataBeingSaved += ExtendedSaveData;
+                ExtendedSave.SaveDataBeingLoaded += ExtendedLoad;
                 ExtendedSave.HousingBeingSaved += ExtendedHousingSave;
                 ExtendedSave.HousingBeingLoaded += ExtendedHousingLoad;
             }
@@ -29,19 +32,59 @@ namespace Sideloader.AutoResolver
             /// do not resolve other worlds!
             /// </summary>
             /// <param name="save"></param>
-            internal static void ExtendedMainGameSave(SaveData save)
+            internal static void ExtendedSaveData(SaveData save)
             {
+                if (save == null) return;
+
                 if (Sideloader.DebugLoggingResolveInfo.Value)
-                {
                     Sideloader.Logger.LogInfo($"Embedding Resolving Data to Main Game Save");
-                }
+
+                ExtendedWorldSave(save.AutoData); // autosave world
+                foreach (var world in save.WorldList.Values)
+                    ExtendedWorldSave(world); // saveslot world
             }
 
-            internal static void ExtendedMainGameLoad(SaveData save)
+            private static void ExtendedWorldSave(WorldData worldData)
             {
-                if (Sideloader.DebugLoggingResolveInfo.Value)
+                if (worldData == null) return; // just in case
+                // ugh... I don't think this is good idea
+                // also this code can't resolve world-level resolve.. if there will be any..
+                Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
+
+                foreach (var craftInfoPairs in worldData.HousingData.CraftInfos)
                 {
+                    ExtendedHousingSave(craftInfoPairs.Value);
+                    var data = ExtendedSave.GetExtendedDataById(craftInfoPairs.Value, UARExtID).data;
+                    ExtendedData.Add(craftInfoPairs.Key.ToString(), data);
+                }
+
+                ExtendedSave.SetExtendedDataById(worldData, UARExtID, new PluginData() {data = ExtendedData});
+            }
+
+            internal static void ExtendedLoad(SaveData save)
+            {
+                if (save == null) return;
+
+                if (Sideloader.DebugLoggingResolveInfo.Value)
                     Sideloader.Logger.LogInfo($"Resolving Extended Save Game");
+            }
+
+            private static void ExtendedWorldLoad(WorldData worldData)
+            {
+                if (worldData == null) return;
+
+                var extResolve = ExtendedSave.GetExtendedDataById(worldData, UARExtID);
+                if (extResolve == null) return;
+
+                foreach (var dataPair in extResolve.data)
+                {
+                    if (int.TryParse(dataPair.Key, out int id) &&
+                        worldData.HousingData.CraftInfos.TryGetValue(id, out var craftInfo) &&
+                        dataPair.Value is Dictionary<string, object> extData)
+                    {
+                        ExtendedSave.SetExtendedDataById(craftInfo, UARExtID, new PluginData() {data = extData});
+                        ExtendedHousingLoad(craftInfo);
+                    }
                 }
             }
 
@@ -63,10 +106,10 @@ namespace Sideloader.AutoResolver
 
             internal static void ExtendedHousingSave(CraftInfo info)
             {
+                if (info == null) return;
+
                 if (Sideloader.DebugLoggingResolveInfo.Value)
-                {
                     Sideloader.Logger.LogInfo($"Embedding Resolving Data to Housing");
-                }
 
                 Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
 
@@ -92,25 +135,23 @@ namespace Sideloader.AutoResolver
                         return null;
                     }
                 });
-                ExtendedData.Add("mapItemInfo", ResolutionInfos);
+                ExtendedData.Add(mapItemInfoKey, ResolutionInfos);
 
-                ExtendedSave.SetExtendedDataById(info, UARExtID, new PluginData()
-                {
-                    data = ExtendedData
-                });
+                ExtendedSave.SetExtendedDataById(info, UARExtID, new PluginData() {data = ExtendedData});
             }
 
             internal static void ExtendedHousingLoad(CraftInfo info)
             {
+                if (info == null)
+                    return; // TODO: check if this case needs debug logging message.
+
                 if (Sideloader.DebugLoggingResolveInfo.Value)
-                {
                     Sideloader.Logger.LogInfo($"Resolving Extended Save Game");
-                }
 
                 PluginData ExtendedData = ExtendedSave.GetExtendedDataById(info, UARExtID);
                 if (ExtendedData != null)
                 {
-                    var ResolvedInfo = ((Dictionary<int, byte[]>) ExtendedData.data["mapItemInfo"]);
+                    var ResolvedInfo = ((Dictionary<int, byte[]>) ExtendedData.data[mapItemInfoKey]);
                     int index = 0;
                     HousingObjectIteration(info.ObjectInfos, ref index, (item, i) =>
                     {

@@ -16,6 +16,8 @@ namespace ExtensibleSaveFormat
     {
         internal static partial class Hooks
         {
+            const string MainGameSaveMarker = "WD";
+
             //Override ExtSave for list loading at game startup
             [HarmonyPrefix]
             [HarmonyPatch(typeof(CustomCharaFileInfoAssist), nameof(CustomCharaFileInfoAssist.CreateCharaFileInfoList))]
@@ -34,6 +36,7 @@ namespace ExtensibleSaveFormat
             {
                 // Minimizing the interference between games to limiting the harmony hook initialization
                 // MainGame Save/Load - PostFix
+                // TODO: Make sure everything works with Steam AND JP Version.
                 harmony.Patch(
                     typeof(SaveData).GetMethod("Load", new[] {typeof(BinaryReader)}),
                     null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnLoadMainGame)))
@@ -42,9 +45,6 @@ namespace ExtensibleSaveFormat
                     typeof(SaveData).GetMethod("SaveFile", new[] {typeof(BinaryWriter)}),
                     null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnSaveMainGame)))
                 );
-
-                // HousingData Save/Load - Transpiler
-                // Based on 2021 Version
                 harmony.Patch(
                     typeof(CraftInfo).GetMethod("Load", new[] {typeof(string)}),
                     null, null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnCraftLoad)))
@@ -55,11 +55,6 @@ namespace ExtensibleSaveFormat
                 );
             }
 
-            /// <summary>
-            ///
-            /// </summary>
-            /// <param name="saveData"></param>
-            /// <param name="br"></param>
             public static void GameDataLoadHook(AIProject.SaveData.SaveData saveData, BinaryReader br)
             {
                 try
@@ -68,11 +63,7 @@ namespace ExtensibleSaveFormat
                     int version = br.ReadInt32();
                     int length = br.ReadInt32();
                     if (marker == Marker && version == DataVersion && length > 0)
-                    {
                         ReadWorldData(saveData, br);
-                        Logger.LogMessage("loaded game data extended");
-                    }
-                    else Logger.LogMessage("empty game data extended");
                 }
                 catch (EndOfStreamException)
                 {
@@ -82,15 +73,10 @@ namespace ExtensibleSaveFormat
                 } //Invalid/unexpected deserialized data
             }
 
-            /// <summary>
-            ///
-            /// </summary>
-            /// <param name="saveData"></param>
-            /// <param name="br"></param>
             public static void ReadWorldData(SaveData saveData, BinaryReader br)
             {
                 var marker = br.ReadString();
-                if (marker != "WD") return;
+                if (marker != MainGameSaveMarker) return;
 
                 var index = br.ReadInt32();
                 var length = br.ReadInt32();
@@ -116,12 +102,6 @@ namespace ExtensibleSaveFormat
                 Logger.LogMessage($"Loaded world data for {index}");
             }
 
-            /// <summary>
-            ///
-            /// </summary>
-            /// <param name="key"></param>
-            /// <param name="worldData"></param>
-            /// <param name="bw"></param>
             public static void WriteWorldData(int key, WorldData worldData, BinaryWriter bw)
             {
                 if (worldData == null) return;
@@ -139,11 +119,6 @@ namespace ExtensibleSaveFormat
                 bw.Write(data);
             }
 
-            /// <summary>
-            ///
-            /// </summary>
-            /// <param name="saveData"></param>
-            /// <param name="bw"></param>
             public static void GameDataSaveHook(AIProject.SaveData.SaveData saveData, BinaryWriter bw)
             {
                 Logger.Log(BepInEx.Logging.LogLevel.Debug, "Save Game Data Hook!");

@@ -9,7 +9,6 @@ using BepisPlugins;
 #if AI || HS2
 using AIChara;
 using UnityEngine;
-
 #endif
 
 namespace ExtensibleSaveFormat
@@ -29,11 +28,8 @@ namespace ExtensibleSaveFormat
                     new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPostHook), AccessTools.all)));
 #endif
 #if AI
-                bool mainGame = Application.productName == Constants.GameProcessName;
-                if (mainGame)
-                {
-                    InstallMainGameHooks(harmony);
-                }
+                bool mainGame = Application.productName != Constants.StudioProcessName; // To support Japanese/Steam version of main-game.
+                if (mainGame) InstallMainGameHooks(harmony);
 #endif
             }
 
@@ -259,7 +255,7 @@ namespace ExtensibleSaveFormat
                 newInstructionSet.InsertRange(blockHeaderIndex + 2, //we insert AFTER the NEXT instruction, which is the store local for the blockheader
                     new[] {
                     new CodeInstruction(OpCodes.Ldarg_0), //push the ChaFile instance
-	                new CodeInstruction(OpCodes.Ldloc_S, blockHeaderLocalBuilder), //push the BlockHeader instance 
+	                new CodeInstruction(OpCodes.Ldloc_S, blockHeaderLocalBuilder), //push the BlockHeader instance
 	                new CodeInstruction(OpCodes.Ldloca_S, array3LocalBuilder), //push the array3 instance as ref
                     new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(ChaFileSaveFileHook), AccessTools.all)), //call our hook
                     });

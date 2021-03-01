@@ -94,7 +94,11 @@
   <ItemGroup>
     <Compile Include="AI.Sideloader.cs" />
     <Compile Include="AI.Sideloader.Hooks.cs" />
+    <Compile Include="AI.Sideloader.ListLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UniversalAutoResolver\AI.UAR.AIGameResolveInfo.cs" />
+    <Compile Include="UniversalAutoResolver\AI.UAR.cs" />
+    <Compile Include="UniversalAutoResolver\AI.UAR.Hooks.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AI_ExtensibleSaveFormat\AI_ExtensibleSaveFormat.csproj">

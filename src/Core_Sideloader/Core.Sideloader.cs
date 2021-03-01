@@ -18,7 +18,6 @@ using UnityEngine;
 using XUnity.ResourceRedirector;
 #if AI || HS2
 using AIChara;
-
 #endif
 
 namespace Sideloader
@@ -202,8 +201,6 @@ namespace Sideloader
 #if AI || HS2
                     UniversalAutoResolver.GenerateHeadPresetInfo(manifest, _gatheredHeadPresetInfos);
                     UniversalAutoResolver.GenerateFaceSkinInfo(manifest, _gatheredFaceSkinInfos);
-#if AI
-#endif
 #endif
 
                     var trimmedName = manifest.Name?.Trim();

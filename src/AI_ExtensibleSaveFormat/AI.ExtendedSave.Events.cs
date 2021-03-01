@@ -7,13 +7,13 @@ namespace ExtensibleSaveFormat
     public partial class ExtendedSave
     {
         /// <summary> MainGameSaveEventHandler </summary>
-        public delegate void MainGameSaveEventHandler(SaveData file);
+        public delegate void SaveDataEventHandler(SaveData file);
 
         /// <summary> Register methods to trigger on main game data being saved </summary>
-        public static event MainGameSaveEventHandler MainGameSaveBeingSaved;
+        public static event SaveDataEventHandler SaveDataBeingSaved;
 
         /// <summary> Register methods to trigger on main game data being loaded </summary>
-        public static event MainGameSaveEventHandler MainGameSaveBeingLoaded;
+        public static event SaveDataEventHandler SaveDataBeingLoaded;
 
         /// <summary> HousingEventHandler </summary>
         public delegate void HousingEventHandler(CraftInfo file);
@@ -26,38 +26,38 @@ namespace ExtensibleSaveFormat
 
         internal static void MainGameSaveWriteEvent(SaveData file)
         {
-            if (MainGameSaveBeingSaved == null)
+            if (SaveDataBeingSaved == null)
                 return;
 
-            foreach (var entry in MainGameSaveBeingSaved.GetInvocationList())
+            foreach (var entry in SaveDataBeingSaved.GetInvocationList())
             {
-                var handler = (MainGameSaveEventHandler) entry;
+                var handler = (SaveDataEventHandler) entry;
                 try
                 {
                     handler.Invoke(file);
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(MainGameSaveBeingSaved)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SaveDataBeingSaved)} - {ex}");
                 }
             }
         }
 
         internal static void MainGameSaveReadEvent(SaveData file)
         {
-            if (MainGameSaveBeingLoaded == null)
+            if (SaveDataBeingLoaded == null)
                 return;
 
-            foreach (var entry in MainGameSaveBeingLoaded.GetInvocationList())
+            foreach (var entry in SaveDataBeingLoaded.GetInvocationList())
             {
-                var handler = (MainGameSaveEventHandler) entry;
+                var handler = (SaveDataEventHandler) entry;
                 try
                 {
                     handler.Invoke(file);
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(MainGameSaveBeingLoaded)} - {ex}");
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SaveDataBeingLoaded)} - {ex}");
                 }
             }
         }
