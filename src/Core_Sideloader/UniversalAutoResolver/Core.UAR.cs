@@ -414,6 +414,15 @@ namespace Sideloader.AutoResolver
 
             foreach (var kv in data.dictList)
             {
+                if (Sideloader.DebugRandomizeIDs.Value)
+                {
+                    // Increase the ID by a random number, the randomness increases for each consecurive ID
+                    // Only first one or two items can plausibly end up the same between two runs when randoming a range of 10
+                    var iterations = UnityEngine.Random.Range(1, 11);
+                    for (var i = 0; i < iterations; i++)
+                        Interlocked.Increment(ref CurrentSlotID);
+                }
+
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
 #if KK || EC
