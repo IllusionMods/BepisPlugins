@@ -39,7 +39,21 @@ namespace Sideloader.AutoResolver
         /// The starting point for UAR IDs
         /// </summary>
         public const int BaseSlotID = 100000000;
-        private static int CurrentSlotID = BaseSlotID;
+        private static int CurrentSlotID;
+
+        static UniversalAutoResolver()
+        {
+            if (Sideloader.DebugRandomizeIDs.Value)
+            {
+                var x = new System.Random().Next(0, 1000);
+                CurrentSlotID = BaseSlotID + x;
+                Sideloader.Logger.LogDebug("Starting Slot IDs at " + CurrentSlotID);
+            }
+            else
+            {
+                CurrentSlotID = BaseSlotID;
+            }
+        }
 
         /// <summary>
         /// All loaded ResolveInfo
@@ -414,15 +428,6 @@ namespace Sideloader.AutoResolver
 
             foreach (var kv in data.dictList)
             {
-                if (Sideloader.DebugRandomizeIDs.Value)
-                {
-                    // Increase the ID by a random number, the randomness increases for each consecurive ID
-                    // Only first one or two items can plausibly end up the same between two runs when randoming a range of 10
-                    var iterations = UnityEngine.Random.Range(1, 11);
-                    for (var i = 0; i < iterations; i++)
-                        Interlocked.Increment(ref CurrentSlotID);
-                }
-
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
 #if KK || EC
