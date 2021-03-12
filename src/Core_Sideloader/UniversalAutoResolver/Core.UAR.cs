@@ -39,7 +39,16 @@ namespace Sideloader.AutoResolver
         /// The starting point for UAR IDs
         /// </summary>
         public const int BaseSlotID = 100000000;
-        private static int CurrentSlotID = BaseSlotID;
+        private static int CurrentSlotID;
+
+        static UniversalAutoResolver()
+        {
+            // Assign each item a new random ID every time the game is started, instead of using sequential numbers that might be the same between game restarts.
+            // This can help uncover bugs in Sideloader and other plugins.
+            var x = new System.Random().Next(0, 1000);
+            CurrentSlotID = BaseSlotID + x;
+            Sideloader.Logger.LogDebug("Starting Slot IDs at " + CurrentSlotID);
+        }
 
         /// <summary>
         /// All loaded ResolveInfo
