@@ -43,16 +43,11 @@ namespace Sideloader.AutoResolver
 
         static UniversalAutoResolver()
         {
-            if (Sideloader.DebugRandomizeIDs.Value)
-            {
-                var x = new System.Random().Next(0, 1000);
-                CurrentSlotID = BaseSlotID + x;
-                Sideloader.Logger.LogDebug("Starting Slot IDs at " + CurrentSlotID);
-            }
-            else
-            {
-                CurrentSlotID = BaseSlotID;
-            }
+            // Assign each item a new random ID every time the game is started, instead of using sequential numbers that might be the same between game restarts.
+            // This can help uncover bugs in Sideloader and other plugins.
+            var x = new System.Random().Next(0, 1000);
+            CurrentSlotID = BaseSlotID + x;
+            Sideloader.Logger.LogDebug("Starting Slot IDs at " + CurrentSlotID);
         }
 
         /// <summary>
