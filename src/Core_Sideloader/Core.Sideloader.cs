@@ -85,7 +85,7 @@ namespace Sideloader
                 "Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes.");
             DebugLoggingModLoading = Config.Bind("Logging", "Debug mod loading logging", false,
                 "Enable verbose logging when loading mods.");
-            
+
             KeepMissingAccessories = Config.Bind("General", "Keep missing accessories", false,
                 "Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.");
             MigrationEnabled = Config.Bind("General", "Migration enabled", true,
