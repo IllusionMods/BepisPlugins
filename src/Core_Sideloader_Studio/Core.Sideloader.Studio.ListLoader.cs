@@ -41,9 +41,14 @@ namespace Sideloader.ListLoader
 
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
-                List<string> Header = reader.ReadLine().Trim().Split(',').ToList();
+                string line = reader.ReadLine();
+                if (line == null) return data;
+                List<string> Header = line.Trim().Split(',').ToList();
                 data.Headers.Add(Header);
-                List<string> Header2 = reader.ReadLine().Trim().Split(',').ToList();
+
+                line = reader.ReadLine();
+                if (line == null) return data;
+                List<string> Header2 = line.Trim().Split(',').ToList();
 
                 if (int.TryParse(Header2[0], out int cell))
                     //First cell of the row is a numeric ID, this is a data row
@@ -54,7 +59,7 @@ namespace Sideloader.ListLoader
 
                 while (!reader.EndOfStream)
                 {
-                    string line = reader.ReadLine().Trim();
+                    line = reader.ReadLine().Trim();
 
                     if (!line.Contains(',')) break;
                     var lineSplit = line.Split(',');
