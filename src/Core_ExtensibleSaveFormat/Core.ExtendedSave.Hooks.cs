@@ -15,6 +15,18 @@ namespace ExtensibleSaveFormat
     {
         internal static partial class Hooks
         {
+#if KK || EC
+            /// <summary>
+            /// Clear plugin data when the accessory slot is cleared
+            /// </summary>
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileAccessory.PartsInfo), nameof(ChaFileAccessory.PartsInfo.MemberInit))]
+            private static void PartsInfo_MemberInit(ChaFileAccessory.PartsInfo __instance)
+            {
+                Traverse.Create(__instance).Property("PluginData").SetValue(new Dictionary<string, PluginData>());
+            }
+#endif
+
+
             private static bool cardReadEventCalled;
 
             internal static void InstallHooks()
