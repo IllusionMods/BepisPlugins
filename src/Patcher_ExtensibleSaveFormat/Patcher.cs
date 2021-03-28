@@ -14,14 +14,10 @@ namespace ExtensibleSaveFormat
             "Assembly-CSharp.dll"
         };
 
-        private static ManualLogSource Logger;
-
         public static void Patch(AssemblyDefinition ass)
         {
-            Logger = BepInEx.Logging.Logger.CreateLogSource(PluginName);
-
             TypeDefinition PartsInfo = ass.MainModule.GetType("ChaFileAccessory/PartsInfo");
-            PropertyInject(ass, PartsInfo, "PluginData", typeof(object));
+            PropertyInject(ass, PartsInfo, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
         }
 
         public static void PropertyInject(AssemblyDefinition assembly, TypeDefinition assemblyTypes, string propertyName, Type returnType)

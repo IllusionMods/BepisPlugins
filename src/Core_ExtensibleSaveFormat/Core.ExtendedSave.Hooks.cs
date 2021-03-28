@@ -22,10 +22,9 @@ namespace ExtensibleSaveFormat
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileAccessory.PartsInfo), nameof(ChaFileAccessory.PartsInfo.MemberInit))]
             private static void PartsInfo_MemberInit(ChaFileAccessory.PartsInfo __instance)
             {
-                Traverse.Create(__instance).Property("PluginData").SetValue(new Dictionary<string, PluginData>());
+                Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(MessagePackSerialize(new Dictionary<string, PluginData>()));
             }
 #endif
-
 
             private static bool cardReadEventCalled;
 

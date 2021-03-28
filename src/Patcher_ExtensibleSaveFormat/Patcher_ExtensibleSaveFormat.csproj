@@ -67,5 +67,11 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KK_ExtensibleSaveFormat\KK_ExtensibleSaveFormat.csproj">
+      <Project>{8ebe81b9-9ed9-466d-864a-4c644bfd8827}</Project>
+      <Name>KK_ExtensibleSaveFormat</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

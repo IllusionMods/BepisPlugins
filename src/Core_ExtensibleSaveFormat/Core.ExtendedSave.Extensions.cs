@@ -9,31 +9,44 @@ namespace ExtensibleSaveFormat
 #if KK || EC
         public static bool TryGetExtendedDataById(this ChaFileAccessory.PartsInfo partsInfo, string id, out PluginData data)
         {
-            var bytes = (byte[])Traverse.Create(partsInfo).Property("PluginData").GetValue();
-            if (bytes != null)
+            try
             {
-                Dictionary<string, PluginData> pluginData = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
+                var bytes = (byte[])Traverse.Create(partsInfo).Property(ExtendedSaveDataPropertyName).GetValue();
+                if (bytes != null)
+                {
+                    Dictionary<string, PluginData> pluginData = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
 
-                if (pluginData != null && pluginData.TryGetValue(id, out data))
-                    return true;
+                    if (pluginData != null && pluginData.TryGetValue(id, out data))
+                        return true;
+                }
             }
-
+            catch (System.Exception ex)
+            {
+                Logger.LogError(ex);
+            }
             data = null;
             return false;
         }
 
         public static void SetExtendedDataById(this ChaFileAccessory.PartsInfo partsInfo, string id, PluginData data)
         {
-            var bytes = (byte[])Traverse.Create(partsInfo).Property("PluginData").GetValue();
-            Dictionary<string, PluginData> pluginData;
-            if (bytes == null)
-                pluginData = new Dictionary<string, PluginData>();
-            else
-                pluginData = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
+            try
+            {
+                var bytes = (byte[])Traverse.Create(partsInfo).Property(ExtendedSaveDataPropertyName).GetValue();
+                Dictionary<string, PluginData> pluginData;
+                if (bytes == null)
+                    pluginData = new Dictionary<string, PluginData>();
+                else
+                    pluginData = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
 
-            pluginData[id] = data;
-            bytes = MessagePackSerialize(pluginData);
-            Traverse.Create(partsInfo).Property("PluginData").SetValue(bytes);
+                pluginData[id] = data;
+                bytes = MessagePackSerialize(pluginData);
+                Traverse.Create(partsInfo).Property(ExtendedSaveDataPropertyName).SetValue(bytes);
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(ex);
+            }
         }
 #endif
     }
