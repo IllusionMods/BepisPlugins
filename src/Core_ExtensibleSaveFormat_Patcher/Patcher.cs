@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using Mono.Cecil;
+﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
@@ -16,8 +15,48 @@ namespace ExtensibleSaveFormat
 
         public static void Patch(AssemblyDefinition ass)
         {
-            TypeDefinition PartsInfo = ass.MainModule.GetType("ChaFileAccessory/PartsInfo");
-            PropertyInject(ass, PartsInfo, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            TypeDefinition messagePackObject;
+
+#if KK || EC
+            messagePackObject = ass.MainModule.GetType("ChaFileAccessory");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("ChaFileAccessory/PartsInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType("ChaFileClothes");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("ChaFileClothes/PartsInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("ChaFileClothes/PartsInfo/ColorInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType("ChaFileStatus");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType("ChaFileParameter");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType("ChaFileFace");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("ChaFileFace/PupilInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+#endif
+
+#if KK
+            //KK
+            messagePackObject = ass.MainModule.GetType("ChaFileMakeup");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType("ChaFileParameter/Awnser");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("ChaFileParameter/Denial");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("ChaFileParameter/Attribute");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+#elif EC
+            messagePackObject = ass.MainModule.GetType("ChaFileFace/ChaFileMakeup");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+#endif
         }
 
         public static void PropertyInject(AssemblyDefinition assembly, TypeDefinition assemblyTypes, string propertyName, Type returnType)
