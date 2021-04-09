@@ -19,6 +19,7 @@ namespace SliderUnlocker
         {
             var hi = Harmony.CreateAndPatchAll(typeof(Hooks));
 
+#if !PH && !HS
             var nomF = typeof(ChaFileDefine).GetField("cf_SteamShapeLimit", AccessTools.all);
             if (nomF != null)
             {
@@ -31,16 +32,18 @@ namespace SliderUnlocker
 #elif AI || HS2
                     if (i == 9)
 #endif
-                        arr[i] = 1f;
+                    arr[i] = 1f;
                     else
-                        arr[i] = 0f;
+                    arr[i] = 0f;
                 }
 
                 var m = AccessTools.Method(typeof(ChaFileBody), nameof(ChaFileBody.ComplementWithVersion));
                 hi.Patch(m, transpiler: new HarmonyMethod(typeof(Hooks), nameof(NomTheClamp)));
             }
+#endif
         }
 
+#if !PH && !HS
         private static IEnumerable<CodeInstruction> NomTheClamp(IEnumerable<CodeInstruction> instructions)
         {
 #if KK || EC
@@ -50,6 +53,7 @@ namespace SliderUnlocker
 #endif
             return instructions.Manipulator(instruction => instruction.operand as string == strToNom, instruction => instruction.operand = "0.0.0");
         }
+#endif
 
         private static readonly FieldInfo akf_dictInfo = typeof(AnimationKeyInfo).GetField("dictInfo", AccessTools.all);
 
