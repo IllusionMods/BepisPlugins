@@ -15,7 +15,41 @@ namespace SliderUnlocker
 {
     public static partial class Hooks
     {
-        public static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks));
+        public static void InstallHooks()
+        {
+            var hi = Harmony.CreateAndPatchAll(typeof(Hooks));
+
+            var nomF = typeof(ChaFileDefine).GetField("cf_SteamShapeLimit", AccessTools.all);
+            if (nomF != null)
+            {
+                SliderUnlocker.Logger.LogDebug("Nomming the clamp");
+                var arr = (float[])nomF.GetValue(null);
+                for (int i = 0; i < arr.Length; i++)
+                {
+#if KK || EC
+                    if (i == 1)
+#elif AI || HS2
+                    if (i == 9)
+#endif
+                        arr[i] = 1f;
+                    else
+                        arr[i] = 0f;
+                }
+
+                var m = AccessTools.Method(typeof(ChaFileBody), nameof(ChaFileBody.ComplementWithVersion));
+                hi.Patch(m, transpiler: new HarmonyMethod(typeof(Hooks), nameof(NomTheClamp)));
+            }
+        }
+
+        private static IEnumerable<CodeInstruction> NomTheClamp(IEnumerable<CodeInstruction> instructions)
+        {
+#if KK || EC
+            const string strToNom = "0.0.3";
+#elif AI || HS2
+            const string strToNom = "0.0.2";
+#endif
+            return instructions.Manipulator(instruction => instruction.operand as string == strToNom, instruction => instruction.operand = "0.0.0");
+        }
 
         private static readonly FieldInfo akf_dictInfo = typeof(AnimationKeyInfo).GetField("dictInfo", AccessTools.all);
 
