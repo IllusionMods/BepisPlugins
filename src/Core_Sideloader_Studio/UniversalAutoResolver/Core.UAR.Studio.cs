@@ -159,7 +159,7 @@ namespace Sideloader.AutoResolver
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Sideloader.Logger.LogDebug($"Resolving (Studio Item) [{extResolve.GUID}] {Item.no}->{intResolve.LocalSlot}");
-                    Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
+                    Item.no = intResolve.LocalSlot;
                 }
                 else if (resolveType == ResolveType.Load)
                     ShowGUIDError(extResolve.GUID);
@@ -171,7 +171,7 @@ namespace Sideloader.AutoResolver
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
                         Sideloader.Logger.LogDebug($"Resolving (Studio Light) [{extResolve.GUID}] {Light.no}->{intResolve.LocalSlot}");
-                    Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
+                    Light.no = intResolve.LocalSlot;
                 }
                 else if (resolveType == ResolveType.Load)
                     ShowGUIDError(extResolve.GUID);
@@ -207,7 +207,7 @@ namespace Sideloader.AutoResolver
                         //Found a match
                         if (Sideloader.DebugLogging.Value)
                             Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Item) {Item.no}->{intResolve.LocalSlot}");
-                        Traverse.Create(Item).Property("no").SetValue(intResolve.LocalSlot);
+                        Item.no = intResolve.LocalSlot;
                     }
                     else
                     {
@@ -226,7 +226,7 @@ namespace Sideloader.AutoResolver
                         //Found a match
                         if (Sideloader.DebugLogging.Value)
                             Sideloader.Logger.LogDebug($"Compatibility resolving (Studio Light) {Light.no}->{intResolve.LocalSlot}");
-                        Traverse.Create(Light).Property("no").SetValue(intResolve.LocalSlot);
+                        Light.no = intResolve.LocalSlot;
                     }
                     else
                     {

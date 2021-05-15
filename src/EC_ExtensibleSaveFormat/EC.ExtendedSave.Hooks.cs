@@ -55,7 +55,7 @@ namespace ExtensibleSaveFormat
                 }
             }
 
-            [HarmonyTranspiler, HarmonyPatch(typeof(KoikatsuCharaFile.ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
+            [HarmonyTranspiler, HarmonyPatch(typeof(KoikatsuCharaFile.ChaFile), nameof(KoikatsuCharaFile.ChaFile.LoadFile), typeof(BinaryReader), typeof(bool), typeof(bool))]
             private static IEnumerable<CodeInstruction> KKChaFileLoadFileTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 var newInstructionSet = new List<CodeInstruction>(instructions);
@@ -82,7 +82,7 @@ namespace ExtensibleSaveFormat
                 return newInstructionSet;
             }
 
-            [HarmonyPostfix, HarmonyPatch(typeof(KoikatsuCharaFile.ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
+            [HarmonyPostfix, HarmonyPatch(typeof(KoikatsuCharaFile.ChaFile), nameof(KoikatsuCharaFile.ChaFile.LoadFile), typeof(BinaryReader), typeof(bool), typeof(bool))]
             private static void KKChaFileLoadFilePostHook(KoikatsuCharaFile.ChaFile __instance, bool __result, BinaryReader br)
             {
                 if (!__result)

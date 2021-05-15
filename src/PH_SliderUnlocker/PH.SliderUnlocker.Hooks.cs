@@ -10,11 +10,10 @@ namespace SliderUnlocker
             SliderUnlocker.SetAllSliders(__instance);
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(InputSliderUI), "OnChanged", typeof(float), typeof(bool))]
+        [HarmonyPrefix, HarmonyPatch(typeof(InputSliderUI), nameof(InputSliderUI.OnChanged), typeof(float), typeof(bool))]
         private static void EditModeSetup(InputSliderUI __instance, float val)
         {
-            var slider = SliderUnlocker.GetSlider(__instance);
-            if (slider.maxValue >= val) return;
+            if (__instance.slider.maxValue >= val) return;
             SliderUnlocker.UnlockSliderPH(__instance, val);
         }
     }

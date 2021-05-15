@@ -92,7 +92,7 @@ namespace Sideloader
                 }
             }
 
-            [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), "LoadAssetAsync", typeof(string), typeof(string), typeof(Type), typeof(string))]
+            [HarmonyPrefix, HarmonyPatch(typeof(AssetBundleManager), nameof(AssetBundleManager.LoadAssetAsync), typeof(string), typeof(string), typeof(Type), typeof(string))]
             private static void LoadAssetAsyncPreHook(ref string assetBundleName)
             {
                 //Redirect KK vanilla assets to EC vanilla assets

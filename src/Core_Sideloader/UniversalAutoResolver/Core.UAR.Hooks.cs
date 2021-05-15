@@ -23,7 +23,7 @@ namespace Sideloader.AutoResolver
 
             internal static void InstallHooks()
             {
-                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
+                Harmony.CreateAndPatchAll(typeof(Hooks));
 
                 ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
                 ExtendedSave.CardBeingSaved += ExtendedCardSave;
@@ -37,15 +37,6 @@ namespace Sideloader.AutoResolver
 #else
                 ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
                 ExtendedSave.SceneBeingImported += ExtendedSceneImport;
-#endif
-
-#if KK
-                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnValueChangedLutPrefix), AccessTools.all)), null);
-                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ACEUpdateInfoPostfix), AccessTools.all)));
-                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("EtcInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ETCUpdateInfoPostfix), AccessTools.all)));
 #endif
 
 #if !EC
@@ -163,9 +154,9 @@ namespace Sideloader.AutoResolver
             }
 
 #if KK
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
 #else
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
             private static void ChaFileSaveFilePostHook(ChaFile __instance)
             {

@@ -43,14 +43,14 @@ namespace ConfigurationManagerWrapper
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomControl), "Update")]
+        [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomControl), nameof(CharaCustom.CustomControl.Update))]
         private static void ConfigScene_Toggle()
         {
             if (Input.GetKeyDown(KeyCode.F1) && !Manager.Scene.Instance.IsNowLoadingFade)
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), "Open")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), nameof(ConfigWindow.Open))]
         private static void OnOpen(ConfigWindow __instance, ref Button[] ___buttons)
         {
             // Spawn a new button for plugin settings

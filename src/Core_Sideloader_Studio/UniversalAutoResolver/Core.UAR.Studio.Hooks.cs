@@ -95,7 +95,7 @@ namespace Sideloader.AutoResolver
             /// Before the scene saves, go through every item, map, BGM, etc. in the scene, create extended save data with the GUID and other relevant info,
             /// and restore the IDs back to the original, non-resolved ID for hard mod compatibility
             /// </summary>
-            [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
+            [HarmonyPrefix, HarmonyPatch(typeof(SceneInfo), nameof(SceneInfo.Save), typeof(string))]
             private static void SavePrefix()
             {
                 Dictionary<string, object> ExtendedData = new Dictionary<string, object>();
@@ -184,7 +184,7 @@ namespace Sideloader.AutoResolver
                                 //Set item ID back to original non-resolved ID
                                 if (Sideloader.DebugLogging.Value)
                                     Sideloader.Logger.LogDebug($"Setting [{Item.dicKey}] ID:{Item.no}->{extResolve.Slot}");
-                                Traverse.Create(Item).Property("no").SetValue(extResolve.Slot);
+                                Item.no = extResolve.Slot;
                             }
                         }
                     }
@@ -206,7 +206,7 @@ namespace Sideloader.AutoResolver
                             //Set item ID back to original non-resolved ID
                             if (Sideloader.DebugLogging.Value)
                                 Sideloader.Logger.LogDebug($"Setting [{Light.dicKey}] ID:{Light.no}->{extResolve.Slot}");
-                            Traverse.Create(Light).Property("no").SetValue(extResolve.Slot);
+                            Light.no = extResolve.Slot;
                         }
                     }
                     else if (oi is OICharInfo CharInfo && CharInfo.animeInfo.no >= BaseSlotID)
@@ -320,7 +320,7 @@ namespace Sideloader.AutoResolver
             /// <summary>
             /// Set item IDs back to the resolved ID
             /// </summary>
-            [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), "Save", new[] { typeof(string) })]
+            [HarmonyPostfix, HarmonyPatch(typeof(SceneInfo), nameof(SceneInfo.Save), new[] { typeof(string) })]
             private static void SavePostfix()
             {
                 PluginData ExtendedData = ExtendedSave.GetSceneExtendedDataById(UARExtID);

@@ -11,7 +11,7 @@ namespace Sideloader
     {
         internal static partial class Hooks
         {
-            [HarmonyPostfix, HarmonyPatch(typeof(Studio.Info), "LoadExcelData")]
+            [HarmonyPostfix, HarmonyPatch(typeof(Studio.Info), nameof(Studio.Info.LoadExcelData))]
             private static void LoadExcelDataPostfix(string _bundlePath, string _fileName, ref ExcelData __result)
             {
                 var studioList = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath && x.FileNameWithoutExtension == _fileName).ToList();
@@ -71,7 +71,7 @@ namespace Sideloader
                 return true;
             }
 
-            [HarmonyPrefix, HarmonyPatch(typeof(Studio.Info), "FindAllAssetName")]
+            [HarmonyPrefix, HarmonyPatch(typeof(Studio.Info), nameof(Studio.Info.FindAllAssetName))]
             private static bool FindAllAssetNamePrefix(string _bundlePath, string _regex, ref string[] __result)
             {
                 var list = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath).Select(x => x.FileNameWithoutExtension).ToList();
@@ -95,6 +95,7 @@ namespace Sideloader
             }
 
             // Override the FileCheck to search asset bundles in zipmods as well
+            [HarmonyPostfix, HarmonyPatch(typeof(Studio.Info.FileCheck), nameof(Studio.Info.FileCheck.Check))]
             internal static void FileCheck(string _path, ref bool __result, Dictionary<string, bool> ___dicConfirmed)
             {
                 if (__result == false)

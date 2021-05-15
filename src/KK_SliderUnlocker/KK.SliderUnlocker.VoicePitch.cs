@@ -28,7 +28,7 @@ namespace SliderUnlocker
             harmony.Patch(iteratorMethod, null, null, transpiler);
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(ChaFileParameter), "voicePitch", MethodType.Getter)]
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaFileParameter), nameof(ChaFileParameter.voicePitch), MethodType.Getter)]
         private static bool VoicePitchHook(ChaFileParameter __instance, ref float __result)
         {
             // Replace line return Mathf.Lerp(0.94f, 1.06f, this.voiceRate);

@@ -73,7 +73,7 @@ namespace ExtensibleSaveFormat
             #region Saving
 
             // Nope, not patching the save lambda, not doing it, noooope
-            [HarmonyPostfix, HarmonyPatch(typeof(SaveData), "Save", typeof(string), typeof(string))]
+            [HarmonyPostfix, HarmonyPatch(typeof(SaveData), nameof(SaveData.Save), typeof(string), typeof(string))]
             private static void SaveDataSaveHook(SaveData __instance, string path, string fileName)
             {
                 SaveDataWriteEvent(__instance);

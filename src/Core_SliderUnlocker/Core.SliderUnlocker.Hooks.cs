@@ -32,9 +32,9 @@ namespace SliderUnlocker
 #elif AI || HS2
                     if (i == 9)
 #endif
-                    arr[i] = 1f;
+                        arr[i] = 1f;
                     else
-                    arr[i] = 0f;
+                        arr[i] = 0f;
                 }
 
                 var m = AccessTools.Method(typeof(ChaFileBody), nameof(ChaFileBody.ComplementWithVersion));
@@ -57,7 +57,7 @@ namespace SliderUnlocker
 
         private static readonly FieldInfo akf_dictInfo = typeof(AnimationKeyInfo).GetField("dictInfo", AccessTools.all);
 
-        [HarmonyPostfix, HarmonyPatch(typeof(Mathf), "Clamp", typeof(float), typeof(float), typeof(float))]
+        [HarmonyPostfix, HarmonyPatch(typeof(Mathf), nameof(Mathf.Clamp), typeof(float), typeof(float), typeof(float))]
         private static void MathfClampHook(ref float __result, float value, float min, float max)
         {
             if (min == 0f && max == 100f)
@@ -152,14 +152,14 @@ namespace SliderUnlocker
         }
 
 #if KK || EC || AI || HS2
-        [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), "ConvertTextFromRate")]
+        [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), nameof(CustomBase.ConvertTextFromRate))]
         private static void ConvertTextFromRateHook(ref string __result, int min, int max, float value)
         {
             if (min == 0 && max == 100)
                 __result = Math.Round(100 * value).ToString(CultureInfo.InvariantCulture);
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), "ConvertRateFromText")]
+        [HarmonyPostfix, HarmonyPatch(typeof(CustomBase), nameof(CustomBase.ConvertRateFromText))]
         private static void ConvertRateFromTextHook(ref float __result, int min, int max, string buf)
         {
             if (min == 0 && max == 100)
@@ -176,7 +176,7 @@ namespace SliderUnlocker
             }
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(ChaFileControl), "CheckDataRange")]
+        [HarmonyPrefix, HarmonyPatch(typeof(ChaFileControl), nameof(ChaFileControl.CheckDataRange))]
         private static bool CheckDataRangePreHook(ref bool __result)
         {
             __result = true;

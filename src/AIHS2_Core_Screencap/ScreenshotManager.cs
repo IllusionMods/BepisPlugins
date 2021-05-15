@@ -127,7 +127,7 @@ namespace Screencap
 
 #if AI
             // Hook here instead of hooking GameScreenShot.Capture to not affect the Photo functionality
-            [HarmonyPrefix, HarmonyPatch(typeof(AIProject.Scene.MapScene), "CaptureSS")]
+            [HarmonyPrefix, HarmonyPatch(typeof(AIProject.Scene.MapScene), nameof(AIProject.Scene.MapScene.CaptureSS))]
             private static bool CaptureSSOverride() => false;
 #elif HS2
             public static bool SoundWasPlayed;

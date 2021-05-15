@@ -19,21 +19,16 @@ namespace ExtensibleSaveFormat
 
             internal static void InstallHooks()
             {
-                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
-#if KK
-                harmony.Patch(typeof(Studio.MPCharCtrl).GetNestedType("CostumeInfo", AccessTools.all).GetMethod("InitFileList", AccessTools.all),
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPreHook), AccessTools.all)),
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(StudioCoordinateListPostHook), AccessTools.all)));
-#endif
+                Harmony.CreateAndPatchAll(typeof(Hooks));
             }
 
             #region ChaFile
 
             #region Loading
 #if KK
-            [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
+            [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(bool), typeof(bool))]
 #else
-            [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
+            [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
 #endif
 
             private static void ChaFileLoadFilePreHook() => cardReadEventCalled = false;
@@ -75,9 +70,9 @@ namespace ExtensibleSaveFormat
             }
 
 #if KK
-            [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
+            [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(bool), typeof(bool))]
 #else
-            [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
+            [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
 #endif
             private static IEnumerable<CodeInstruction> ChaFileLoadFileTranspiler(IEnumerable<CodeInstruction> instructions)
             {
@@ -108,9 +103,9 @@ namespace ExtensibleSaveFormat
             }
 
 #if KK
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(bool), typeof(bool))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(bool), typeof(bool))]
 #else
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "LoadFile", typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
 #endif
             private static void ChaFileLoadFilePostHook(ChaFile __instance, bool __result, BinaryReader br)
             {
@@ -166,9 +161,9 @@ namespace ExtensibleSaveFormat
             private static byte[] currentlySavingData = null;
 
 #if KK
-            [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+            [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
 #else
-            [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+            [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
             private static void ChaFileSaveFilePreHook(ChaFile __instance) => CardWriteEvent(__instance);
 
@@ -212,9 +207,9 @@ namespace ExtensibleSaveFormat
             }
 
 #if KK
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
 #else
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
             private static void ChaFileSaveFilePostHook(bool __result, BinaryWriter bw)
             {
@@ -225,9 +220,9 @@ namespace ExtensibleSaveFormat
             }
 
 #if KK
-            [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+            [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
 #else
-            [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+            [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
             private static IEnumerable<CodeInstruction> ChaFileSaveFileTranspiler(IEnumerable<CodeInstruction> instructions)
             {
@@ -410,27 +405,29 @@ namespace ExtensibleSaveFormat
             #region Extended Data Override Hooks
 #if EC || KK
             //Prevent loading extended data when loading the list of characters in Chara Maker since it is irrelevant here
-            [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), "Initialize")]
+            [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), nameof(ChaCustom.CustomCharaFile.Initialize))]
             private static void CustomScenePreHook() => LoadEventsEnabled = false;
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), "Initialize")]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), nameof(ChaCustom.CustomCharaFile.Initialize))]
             private static void CustomScenePostHook() => LoadEventsEnabled = true;
             //Prevent loading extended data when loading the list of coordinates in Chara Maker since it is irrelevant here
-            [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCoordinateFile), "Initialize")]
+            [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCoordinateFile), nameof(ChaCustom.CustomCoordinateFile.Initialize))]
             private static void CustomCoordinatePreHook() => LoadEventsEnabled = false;
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaCustom.CustomCoordinateFile), nameof(ChaCustom.CustomCoordinateFile.Initialize))]
+            private static void CustomCoordinatePostHook() => LoadEventsEnabled = true;
 #else
-            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), nameof(CharaCustom.CustomCharaFileInfoAssist.AddList))]
             private static void LoadCharacterListPrefix() => LoadEventsEnabled = false;
-            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), "AddList")]
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CustomCharaFileInfoAssist), nameof(CharaCustom.CustomCharaFileInfoAssist.AddList))]
             private static void LoadCharacterListPostfix() => LoadEventsEnabled = true;
 
-            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaLoad), "UpdateCharasList")]
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaLoad), nameof(CharaCustom.CvsO_CharaLoad.UpdateCharasList))]
             private static void CvsO_CharaLoadUpdateCharasListPrefix() => LoadEventsEnabled = false;
-            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaLoad), "UpdateCharasList")]
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaLoad), nameof(CharaCustom.CvsO_CharaLoad.UpdateCharasList))]
             private static void CvsO_CharaLoadUpdateCharasListPostfix() => LoadEventsEnabled = true;
 
-            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), "UpdateCharasList")]
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), nameof(CharaCustom.CvsO_CharaSave.UpdateCharasList))]
             private static void CvsO_CharaSaveUpdateCharasListPrefix() => LoadEventsEnabled = false;
-            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), "UpdateCharasList")]
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaCustom.CvsO_CharaSave), nameof(CharaCustom.CvsO_CharaSave.UpdateCharasList))]
             private static void CvsO_CharaSaveUpdateCharasListPostfix() => LoadEventsEnabled = true;
 #endif
             #endregion

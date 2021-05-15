@@ -13,10 +13,10 @@ namespace Screencap
         /// <summary>
         /// Cancel the vanilla screenshot
         /// </summary>
-        [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), "Capture")]
+        [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), nameof(GameScreenShot.Capture))]
         private static bool CapturePrefix() => false;
 
-        [HarmonyPrefix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
+        [HarmonyPrefix, HarmonyPatch(typeof(CustomCapture), nameof(CustomCapture.CreatePng))]
         private static bool CreatePngPrefix(ref int createW, ref int createH)
         {
             //Multiply up render resolution.
@@ -25,7 +25,7 @@ namespace Screencap
             return true;
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(CustomCapture), "CreatePng")]
+        [HarmonyPostfix, HarmonyPatch(typeof(CustomCapture), nameof(CustomCapture.CreatePng))]
         private static void CreatePngPostfix(ref byte[] pngData) => DownscaleEncoded(ref pngData);
 
         private static void DownscaleEncoded(ref byte[] encoded)
