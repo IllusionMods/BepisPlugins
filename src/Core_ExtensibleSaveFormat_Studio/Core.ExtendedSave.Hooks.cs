@@ -42,7 +42,7 @@ namespace ExtensibleSaveFormat
                     }
                 }
 
-                if(!set)
+                if (!set)
                     throw new Exception("Failed to patch SceneInfo.Load");
             }
 
@@ -96,8 +96,8 @@ namespace ExtensibleSaveFormat
                         set = true;
                     }
                 }
-                
-                if(!set)
+
+                if (!set)
                     throw new Exception("Failed to patch SceneInfo.Import");
             }
 
@@ -161,8 +161,8 @@ namespace ExtensibleSaveFormat
                         set = true;
                     }
                 }
-                
-                if(!set)
+
+                if (!set)
                     throw new Exception("Failed to patch SceneInfo.Save");
             }
 
@@ -173,6 +173,15 @@ namespace ExtensibleSaveFormat
                 Dictionary<string, PluginData> extendedData = internalSceneDictionary;
                 if (extendedData == null)
                     return;
+
+                //Remove null entries
+                List<string> keysToRemove = new List<string>();
+                foreach (var entry in extendedData)
+                    if (entry.Value == null)
+                        keysToRemove.Add(entry.Key);
+                foreach (var key in keysToRemove)
+                    extendedData.Remove(key);
+
                 byte[] data = MessagePackSerializer.Serialize(extendedData);
 
                 bw.Write(Marker);
