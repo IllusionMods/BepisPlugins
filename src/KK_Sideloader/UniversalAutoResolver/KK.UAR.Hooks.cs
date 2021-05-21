@@ -16,7 +16,7 @@ namespace Sideloader.AutoResolver
             /// Translate the value (selected index) to the actual ID of the filter. This allows us to save the ID to the scene.
             /// Without this, the index is saved which will be different depending on installed mods and make it impossible to save and load correctly.
             /// </summary>
-            [HarmonyPostfix, HarmonyPatch(typeof(SystemButtonCtrl.AmplifyColorEffectInfo), nameof(SystemButtonCtrl.AmplifyColorEffectInfo.OnValueChangedLut))]
+            [HarmonyPrefix, HarmonyPatch(typeof(SystemButtonCtrl.AmplifyColorEffectInfo), nameof(SystemButtonCtrl.AmplifyColorEffectInfo.OnValueChangedLut))]
             internal static void OnValueChangedLutPrefix(ref int _value)
             {
                 int counter = 0;
