@@ -1,0 +1,73 @@
+﻿using BepInEx.Logging;
+using ExtensibleSaveFormat;
+using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Sideloader.AutoResolver
+{
+    public static partial class UniversalAutoResolver
+    {
+        internal static partial class Hooks
+        {
+            /// <summary>
+            /// Re-enable sideloader card and coordinate saving once import is finished
+            /// </summary>
+            [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFileScene), nameof(ConvertChaFileScene.OnDestroy))]
+            private static void ConvertChaFileSceneEnd() => DoingImport = false;
+
+            internal static void ExtendedCardImport(Dictionary<string, PluginData> importedExtendedData)
+            {
+                if (importedExtendedData.TryGetValue(UARExtID, out var pluginData))
+                {
+                    if (pluginData != null && pluginData.data.ContainsKey("info"))
+                    {
+                        var tmpExtInfo = (object[])pluginData.data["info"];
+                        var extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
+
+                        for (int i = 0; i < extInfo.Count;)
+                        {
+                            if (extInfo[i].Property.StartsWith("outfit0"))
+                            {
+                                i++;
+                            }
+                            else if (extInfo[i].Property.StartsWith("outfit"))
+                            {
+                                //Remove all the excess outfits
+                                extInfo.RemoveAt(i);
+                            }
+                            else
+                                i++;
+                        }
+
+                        importedExtendedData[UARExtID] = new PluginData
+                        {
+                            data = new Dictionary<string, object>
+                            {
+                                ["info"] = extInfo.Select(x => x.Serialize()).ToList()
+                            }
+                        };
+                    }
+                }
+
+                if (Sideloader.DebugLogging.Value && importedExtendedData.TryGetValue(UARExtID, out var extData))
+                {
+                    if (extData == null || !extData.data.ContainsKey("info"))
+                    {
+                        Sideloader.Logger.Log(LogLevel.Debug, "Imported card data: No sideloader marker found");
+                    }
+                    else
+                    {
+                        var tmpExtInfo = (List<byte[]>)extData.data["info"];
+                        var extInfo = tmpExtInfo.Select(ResolveInfo.Deserialize).ToList();
+
+                        Sideloader.Logger.Log(LogLevel.Debug, $"Imported card data: Sideloader marker found, external info count: {extInfo.Count}");
+
+                        foreach (ResolveInfo info in extInfo)
+                            Sideloader.Logger.Log(LogLevel.Debug, $"External info: {info.GUID} : {info.Property} : {info.Slot}");
+                    }
+                }
+            }
+        }
+    }
+}

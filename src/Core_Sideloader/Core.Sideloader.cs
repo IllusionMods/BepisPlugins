@@ -253,6 +253,7 @@ namespace Sideloader
                         Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                     }
                 }
+                //TODO: KKS Studio release
 #if KK || AI || HS2
                 else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
@@ -300,6 +301,7 @@ namespace Sideloader
 #endif
             }
 
+            //TODO: KKS Studio release
 #if KK || AI || HS2
             //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
             foreach (ZipEntry entry in BoneList)

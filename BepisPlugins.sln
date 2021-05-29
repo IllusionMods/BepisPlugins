@@ -115,6 +115,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_Screencap", "src\HS2_Sc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_ExtensibleSaveFormat", "src\KKS_ExtensibleSaveFormat\KKS_ExtensibleSaveFormat.csproj", "{F34BB409-ECAC-435D-AD97-86E17304631A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_Sideloader", "src\KKS_Sideloader\KKS_Sideloader.csproj", "{DCBD8213-8CFE-40A8-8971-FD02E9D556FF}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
@@ -187,6 +189,8 @@ Global
 		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{cfc6ee58-cd1b-4a21-b281-c6e9d5d0390d}*SharedItemsImports = 13
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
+		src\Core_Sideloader\Core_Sideloader.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{e1074dcd-cc19-4c67-b799-eb534c885018}*SharedItemsImports = 13
@@ -351,6 +355,10 @@ Global
 		{F34BB409-ECAC-435D-AD97-86E17304631A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F34BB409-ECAC-435D-AD97-86E17304631A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F34BB409-ECAC-435D-AD97-86E17304631A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCBD8213-8CFE-40A8-8971-FD02E9D556FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCBD8213-8CFE-40A8-8971-FD02E9D556FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCBD8213-8CFE-40A8-8971-FD02E9D556FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCBD8213-8CFE-40A8-8971-FD02E9D556FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -411,6 +419,7 @@ Global
 		{CFC6EE58-CD1B-4A21-B281-C6E9D5D0390D} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
 		{E426EEC2-98CA-4ABD-804B-3C1BD20BEE9C} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
 		{F34BB409-ECAC-435D-AD97-86E17304631A} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
+		{DCBD8213-8CFE-40A8-8971-FD02E9D556FF} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}

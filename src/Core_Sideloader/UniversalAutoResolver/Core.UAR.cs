@@ -207,13 +207,13 @@ namespace Sideloader.AutoResolver
                 }
                 else
                 {
-#if KK || EC
+#if KK || EC || KKS
                     if (Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
 #elif AI || HS2
                     if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
 #endif
                     {
-#if KK || EC
+#if KK || EC || KKS
                         string mainAB = Lists.InternalDataList[kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
 #elif AI || HS2
                         string mainAB = Lists.InternalDataList[(int)kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
@@ -251,7 +251,7 @@ namespace Sideloader.AutoResolver
         private static void CompatibilityResolve(KeyValuePair<CategoryProperty, StructValue<int>> kv, object structure)
         {
             //Only attempt compatibility resolve if the ID does not belong to a vanilla item or hard mod
-#if KK || EC
+#if KK || EC || KKS
             if (!Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
 #elif AI || HS2
             if (!Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
@@ -319,7 +319,7 @@ namespace Sideloader.AutoResolver
             action(StructReference.ChaFileMakeupProperties, file.custom.face.baseMakeup, extInfo, "");
 #endif
 
-#if KK
+#if KK || KKS
             for (int i = 0; i < file.coordinate.Length; i++)
             {
                 var coordinate = file.coordinate[i];
@@ -425,7 +425,7 @@ namespace Sideloader.AutoResolver
             {
                 int newSlot = Interlocked.Increment(ref CurrentSlotID);
 
-#if KK || EC
+#if KK || EC || KKS
                 if (data.categoryNo == (int)ChaListDefine.CategoryNo.mt_ramp)
                 {
                     //Special handling for ramp stuff since it's the only thing that isn't saved to the character
@@ -507,6 +507,7 @@ namespace Sideloader.AutoResolver
             if (LoadedResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
                 Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]");
+            //TODO: KKS Studio release
 #if KK || AI || HS2
             else if (LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
@@ -519,7 +520,7 @@ namespace Sideloader.AutoResolver
 
         private static List<string> GetNowSceneNames()
         {
-#if HS2
+#if HS2 || KKS
             return Manager.Scene.NowSceneNames;
 #else
             return Manager.Scene.Instance.NowSceneNames;
