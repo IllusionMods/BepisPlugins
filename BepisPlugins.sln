@@ -123,6 +123,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_SliderUnlocker", "src\K
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_ColorCorrector", "src\KKS_ColorCorrector\KKS_ColorCorrector.csproj", "{C482D1AC-C17A-4B03-9453-321B85AB062E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_BGMLoader", "src\KKS_BGMLoader\KKS_BGMLoader.csproj", "{91EB6D62-371C-4CB1-8F0E-0A49C3328DCE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
@@ -176,6 +178,8 @@ Global
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{8ebe81b9-9ed9-466d-864a-4c644bfd8827}*SharedItemsImports = 4
+		src\Core_BGMLoader\Core_BGMLoader.projitems*{91eb6d62-371c-4cb1-8f0e-0a49c3328dce}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{91eb6d62-371c-4cb1-8f0e-0a49c3328dce}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9ec1e476-6a6c-43df-b6ed-3dff94f446fc}*SharedItemsImports = 4
@@ -383,6 +387,10 @@ Global
 		{C482D1AC-C17A-4B03-9453-321B85AB062E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C482D1AC-C17A-4B03-9453-321B85AB062E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C482D1AC-C17A-4B03-9453-321B85AB062E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91EB6D62-371C-4CB1-8F0E-0A49C3328DCE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91EB6D62-371C-4CB1-8F0E-0A49C3328DCE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91EB6D62-371C-4CB1-8F0E-0A49C3328DCE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91EB6D62-371C-4CB1-8F0E-0A49C3328DCE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -447,6 +455,7 @@ Global
 		{FAEBA074-6C5A-4D80-B1CD-ECA892CC6436} = {CE8AB915-8694-4892-BD38-05CBB1AAA418}
 		{46DA2EF5-5AB4-4B1E-AB4B-A8A76D74EA3A} = {4A1808A4-FEA9-4BC9-A93A-9F41D457569A}
 		{C482D1AC-C17A-4B03-9453-321B85AB062E} = {C9731CBE-A60E-4BA8-8B52-C7952DB3BC06}
+		{91EB6D62-371C-4CB1-8F0E-0A49C3328DCE} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
