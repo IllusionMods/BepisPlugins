@@ -59,7 +59,6 @@ namespace ColorCorrector
             if (_amplifyComponent != null)
                 _amplifyComponent.enabled = satEnabled;
 
-            Logger.LogInfo($"_bloomComponent.bloomIntensity:{_bloomComponent.bloomIntensity}");
             if (_bloomComponent != null)
                 _bloomComponent.bloomIntensity = bloomPower;
         }
