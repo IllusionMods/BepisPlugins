@@ -29,6 +29,8 @@
         internal const string GameProcessName32bit = "PlayHome32bit";
         internal const string StudioProcessName = "PlayHomeStudio64bit";
         internal const string StudioProcessName32bit = "PlayHomeStudio32bit";
+#elif KKS
+        internal const string GameProcessName = "KoikatsuSunshineTrial"; //todo
 #endif
     }
 }

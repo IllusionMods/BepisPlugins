@@ -25,7 +25,7 @@ namespace ExtensibleSaveFormat
             #region ChaFile
 
             #region Loading
-#if KK
+#if KK || KKS
             [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(bool), typeof(bool))]
 #else
             [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
@@ -69,7 +69,7 @@ namespace ExtensibleSaveFormat
                 }
             }
 
-#if KK
+#if KK || KKS
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(bool), typeof(bool))]
 #else
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
@@ -84,25 +84,21 @@ namespace ExtensibleSaveFormat
                 //get the index of the last seek call
                 int lastSeekIndex = newInstructionSet.FindLastIndex(instruction => CheckCallVirtName(instruction, "Seek"));
 
-                LocalBuilder blockHeaderLocalBuilder = (LocalBuilder)newInstructionSet[searchInfoIndex - 2].operand; //get the localbuilder for the blockheader
+                var blockHeaderLocalBuilder = newInstructionSet[searchInfoIndex - 2]; //get the localbuilder for the blockheader
 
                 //insert our own hook right after the last seek
                 newInstructionSet.InsertRange(lastSeekIndex + 2, //we insert AFTER the NEXT instruction, which is right before the try block exit
                     new[] {
                     new CodeInstruction(OpCodes.Ldarg_0), //push the ChaFile instance
-#if HS2
-                    new CodeInstruction(OpCodes.Ldloc_2, blockHeaderLocalBuilder), //push the BlockHeader instance
-#else
-                    new CodeInstruction(OpCodes.Ldloc_S, blockHeaderLocalBuilder), //push the BlockHeader instance
-#endif
-                    new CodeInstruction(OpCodes.Ldarg_1, blockHeaderLocalBuilder), //push the binaryreader instance
+                    new CodeInstruction(blockHeaderLocalBuilder.opcode, blockHeaderLocalBuilder.operand), //push the BlockHeader instance
+                    new CodeInstruction(OpCodes.Ldarg_1), //push the binaryreader instance
                     new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(ChaFileLoadFileHook), AccessTools.all)), //call our hook
                     });
 
                 return newInstructionSet;
             }
 
-#if KK
+#if KK || KKS
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(bool), typeof(bool))]
 #else
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.LoadFile), typeof(BinaryReader), typeof(int), typeof(bool), typeof(bool))]
@@ -160,7 +156,7 @@ namespace ExtensibleSaveFormat
 
             private static byte[] currentlySavingData = null;
 
-#if KK
+#if KK || KKS
             [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
 #else
             [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool), typeof(int))]
@@ -206,7 +202,7 @@ namespace ExtensibleSaveFormat
                 header.lstInfo.Add(info);
             }
 
-#if KK
+#if KK || KKS
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
 #else
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool), typeof(int))]
@@ -219,7 +215,7 @@ namespace ExtensibleSaveFormat
                 bw.Write(currentlySavingData);
             }
 
-#if KK
+#if KK || KKS
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
 #else
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool), typeof(int))]
@@ -251,10 +247,10 @@ namespace ExtensibleSaveFormat
                 //insert our own hook right after the blockheader creation
                 newInstructionSet.InsertRange(blockHeaderIndex + 2, //we insert AFTER the NEXT instruction, which is the store local for the blockheader
                     new[] {
-                    new CodeInstruction(OpCodes.Ldarg_0), //push the ChaFile instance
-	                new CodeInstruction(OpCodes.Ldloc_S, blockHeaderLocalBuilder), //push the BlockHeader instance 
-	                new CodeInstruction(OpCodes.Ldloca_S, array3LocalBuilder), //push the array3 instance as ref
-                    new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(ChaFileSaveFileHook), AccessTools.all)), //call our hook
+                        new CodeInstruction(OpCodes.Ldarg_0), //push the ChaFile instance
+                        new CodeInstruction(OpCodes.Ldloc_S, blockHeaderLocalBuilder), //push the BlockHeader instance 
+                        new CodeInstruction(OpCodes.Ldloca_S, array3LocalBuilder), //push the array3 instance as ref
+                        new CodeInstruction(OpCodes.Call, typeof(Hooks).GetMethod(nameof(ChaFileSaveFileHook), AccessTools.all)), //call our hook
                     });
 
                 return newInstructionSet;
@@ -268,7 +264,7 @@ namespace ExtensibleSaveFormat
 
             #region Loading
 
-#if KK
+#if KK || KKS
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.LoadFile), typeof(Stream))]
 #else
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.LoadFile), typeof(Stream), typeof(int))]
@@ -280,7 +276,7 @@ namespace ExtensibleSaveFormat
                 for (int i = 0; i < instructionsList.Count; i++)
                 {
                     CodeInstruction inst = instructionsList[i];
-#if HS2
+#if HS2 || KKS
                     if (set == false && inst.opcode == OpCodes.Ldc_I4_1 && instructionsList[i + 1].opcode == OpCodes.Stloc_3 && (instructionsList[i + 2].opcode == OpCodes.Leave || instructionsList[i + 2].opcode == OpCodes.Leave_S))
 #else
                     if (set == false && inst.opcode == OpCodes.Ldc_I4_1 && instructionsList[i + 1].opcode == OpCodes.Stloc_1 && (instructionsList[i + 2].opcode == OpCodes.Leave || instructionsList[i + 2].opcode == OpCodes.Leave_S))
@@ -294,6 +290,7 @@ namespace ExtensibleSaveFormat
 
                     yield return inst;
                 }
+                if (!set) throw new InvalidOperationException("Didn't find any matches");
             }
 
             private static void ChaFileCoordinateLoadHook(ChaFileCoordinate coordinate, BinaryReader br)
@@ -335,7 +332,7 @@ namespace ExtensibleSaveFormat
 
             #region Saving
 
-#if KK
+#if KK || KKS
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
 #else
             [HarmonyTranspiler, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string), typeof(int))]
@@ -358,6 +355,7 @@ namespace ExtensibleSaveFormat
                         hooked = true;
                     }
                 }
+                if (!hooked) throw new InvalidOperationException("Didn't find any matches");
             }
 
             private static void ChaFileCoordinateSaveHook(ChaFileCoordinate file, BinaryWriter bw)
@@ -403,7 +401,7 @@ namespace ExtensibleSaveFormat
             #endregion
 
             #region Extended Data Override Hooks
-#if EC || KK
+#if EC || KK || KKS
             //Prevent loading extended data when loading the list of characters in Chara Maker since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(ChaCustom.CustomCharaFile), nameof(ChaCustom.CustomCharaFile.Initialize))]
             private static void CustomScenePreHook() => LoadEventsEnabled = false;
