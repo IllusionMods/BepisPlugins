@@ -21,6 +21,12 @@ namespace ColorCorrector
         private AmplifyColorEffect _amplifyComponent;
         private BloomAndFlares _bloomComponent;
 
+#if KK || EC
+        private const float DefaultBloomStrength = 1.5f;
+#elif KKS
+        private const float DefaultBloomStrength = 2f;
+#endif
+
         private void Start()
         {
             if (Application.productName == "CharaStudio")
@@ -30,7 +36,7 @@ namespace ColorCorrector
             }
 
             SaturationEnabled = Config.Bind("Post Processing Settings", "Enable saturation filter", true, new ConfigDescription("Whether default saturation filter will be applied to the game. This setting has no effect in Studio."));
-            BloomStrength = Config.Bind("Post Processing Settings", "Bloom strength", 1f, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, 1f)));
+            BloomStrength = Config.Bind("Post Processing Settings", "Bloom strength", DefaultBloomStrength, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, DefaultBloomStrength)));
             SaturationEnabled.SettingChanged += OnSettingChanged;
             BloomStrength.SettingChanged += OnSettingChanged;
 
@@ -53,6 +59,7 @@ namespace ColorCorrector
             if (_amplifyComponent != null)
                 _amplifyComponent.enabled = satEnabled;
 
+            Logger.LogInfo($"_bloomComponent.bloomIntensity:{_bloomComponent.bloomIntensity}");
             if (_bloomComponent != null)
                 _bloomComponent.bloomIntensity = bloomPower;
         }
