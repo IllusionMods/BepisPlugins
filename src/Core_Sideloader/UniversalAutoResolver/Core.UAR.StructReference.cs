@@ -1,4 +1,4 @@
-﻿#if KK || EC
+﻿#if KK || EC || KKS
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace Sideloader.AutoResolver
 
     internal static class StructReference
     {
-#region Helper Methods
+        #region Helper Methods
         private static Dictionary<CategoryProperty, StructValue<int>> GeneratePropertyInfoDictionary(Type t, IEnumerable<CategoryProperty> properties, string prefix = "")
         {
             var result = new Dictionary<CategoryProperty, StructValue<int>>();
@@ -45,9 +45,9 @@ namespace Sideloader.AutoResolver
 
             return result;
         }
-#endregion
+        #endregion
 
-#region ChaFileFace
+        #region ChaFileFace
         private static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceGenerator()
         {
             const string prefix = nameof(ChaFileFace);
@@ -97,9 +97,9 @@ namespace Sideloader.AutoResolver
         }
 
         internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileFaceProperties { get; } = ChaFileFaceGenerator();
-#endregion
+        #endregion
 
-#region ChaFileBody
+        #region ChaFileBody
         private static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyGenerator()
         {
             const string prefix = nameof(ChaFileBody);
@@ -144,9 +144,9 @@ namespace Sideloader.AutoResolver
 
         internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileBodyProperties { get; } = ChaFileBodyGenerator();
 
-#endregion
+        #endregion
 
-#region ChaFileHair
+        #region ChaFileHair
         private static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairGenerator()
         {
             const string prefix = nameof(ChaFileHair);
@@ -186,12 +186,12 @@ namespace Sideloader.AutoResolver
         }
 
         internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileHairProperties { get; } = ChaFileHairGenerator();
-#endregion
+        #endregion
 
-#region ChaFileMakeup
+        #region ChaFileMakeup
         private static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupGenerator()
         {
-#if KK
+#if KK || KKS
             const string prefix = nameof(ChaFileMakeup);
 #elif EC
             const string prefix = nameof(ChaFileFace.ChaFileMakeup);
@@ -204,7 +204,7 @@ namespace Sideloader.AutoResolver
                 new CategoryProperty(CategoryNo.mt_lip, "lipId"),
             };
 
-#if KK
+#if KK || KKS
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileMakeup), baseProperties, prefix);
 #elif EC
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileFace.ChaFileMakeup), baseProperties, prefix);
@@ -214,7 +214,7 @@ namespace Sideloader.AutoResolver
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_face_paint, "PaintID1", prefix),
                 new StructValue<int>(
-#if KK
+#if KK || KKS
                     (obj, value) => { ((ChaFileMakeup)obj).paintId[0] = value; },
                     (obj) => ((ChaFileMakeup)obj).paintId[0]));
 #elif EC
@@ -225,7 +225,7 @@ namespace Sideloader.AutoResolver
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_face_paint, "PaintID2", prefix),
                 new StructValue<int>(
-#if KK
+#if KK || KKS
                     (obj, value) => { ((ChaFileMakeup)obj).paintId[1] = value; },
                     (obj) => ((ChaFileMakeup)obj).paintId[1]));
 #elif EC
@@ -237,9 +237,9 @@ namespace Sideloader.AutoResolver
         }
 
         internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileMakeupProperties { get; } = ChaFileMakeupGenerator();
-#endregion
+        #endregion
 
-#region ChaFileClothes
+        #region ChaFileClothes
         private static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesGenerator()
         {
             const string prefix = nameof(ChaFileClothes);
@@ -289,7 +289,7 @@ namespace Sideloader.AutoResolver
                     (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].id = value; },
                     (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].id));
 
-#if KK
+#if KK || KKS
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.co_shoes, "ClothesShoesInner", prefix),
                 new StructValue<int>(
@@ -350,7 +350,7 @@ namespace Sideloader.AutoResolver
                     (obj, value) => { ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC] = value; },
                     (obj) => ((ChaFileClothes)obj).subPartsId[(int)ClothesSubKind.partsC]));
 
-#if KK
+#if KK || KKS
             //Emblems
             generatedProperties.Add(
                 new CategoryProperty(CategoryNo.mt_emblem, "ClothesTopEmblem", prefix),
@@ -576,7 +576,7 @@ namespace Sideloader.AutoResolver
                         (obj, value) => { ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[index].pattern = value; },
                         (obj) => ((ChaFileClothes)obj).parts[(int)ClothesKind.socks].colorInfo[index].pattern));
 
-#if KK
+#if KK || KKS
                 //shoes inner
                 generatedProperties.Add(
                     new CategoryProperty(CategoryNo.mt_pattern, $"ClothesShoesInnerPattern{index}", prefix),
@@ -604,9 +604,9 @@ namespace Sideloader.AutoResolver
         }
 
         internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileClothesProperties { get; } = ChaFileClothesGenerator();
-#endregion
+        #endregion
 
-#region ChaFileAccessory.PartsInfo
+        #region ChaFileAccessory.PartsInfo
         private static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoGenerator()
         {
             string prefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";
@@ -632,9 +632,9 @@ namespace Sideloader.AutoResolver
         }
 
         internal static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoProperties { get; } = ChaFileAccessoryPartsInfoGenerator();
-#endregion
+        #endregion
 
-#region Collated
+        #region Collated
         private static Dictionary<CategoryProperty, StructValue<int>> CollatedGenerator()
         {
             var collated = new Dictionary<CategoryProperty, StructValue<int>>();
@@ -651,7 +651,7 @@ namespace Sideloader.AutoResolver
         }
 
         internal static Dictionary<CategoryProperty, StructValue<int>> CollatedStructValues { get; } = CollatedGenerator();
-#endregion
+        #endregion
     }
 }
 #endif

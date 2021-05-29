@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Sideloader.ListLoader;
-#if KK || EC
+#if KK || EC || KKS
 using ChaCustom;
 #elif AI || HS2
 using CharaCustom;
@@ -89,7 +89,7 @@ namespace Sideloader
 #endif
             }
 
-#if KK || EC
+#if KK || EC || KKS
             /// <summary>
             /// The game gets from a list by index which will cause errors. Get them safely for sideloader items
             /// </summary>
