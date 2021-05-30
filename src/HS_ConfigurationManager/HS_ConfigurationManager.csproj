@@ -23,6 +23,7 @@
     <DefineConstants>TRACE;DEBUG;HS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE;HS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.3.2.0, Culture=neutral, processorArchitecture=MSIL">
@@ -89,9 +91,11 @@
     <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect.UnityEngine.5.3.5.2\build\IllusionLibs.HoneySelect.UnityEngine.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect.UnityEngine.5.3.5.2\build\IllusionLibs.HoneySelect.UnityEngine.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect.UnityEngine.UI.5.3.5.2\build\IllusionLibs.HoneySelect.UnityEngine.UI.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect.UnityEngine.UI.5.3.5.2\build\IllusionLibs.HoneySelect.UnityEngine.UI.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets'))" />
   </Target>
   <Import Project="..\..\packages\IllusionLibs.HoneySelect.Assembly-CSharp.2017.6.30.2\build\IllusionLibs.HoneySelect.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect.Assembly-CSharp.2017.6.30.2\build\IllusionLibs.HoneySelect.Assembly-CSharp.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect.UnityEngine.5.3.5.2\build\IllusionLibs.HoneySelect.UnityEngine.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect.UnityEngine.5.3.5.2\build\IllusionLibs.HoneySelect.UnityEngine.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect.UnityEngine.UI.5.3.5.2\build\IllusionLibs.HoneySelect.UnityEngine.UI.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect.UnityEngine.UI.5.3.5.2\build\IllusionLibs.HoneySelect.UnityEngine.UI.targets')" />
   <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets')" />
 </Project>

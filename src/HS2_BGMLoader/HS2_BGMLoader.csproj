@@ -62,6 +62,10 @@
       <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.4\lib\net46\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.4\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.UnityWebRequestWWWModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.2018.4.11.4\lib\net46\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
       <Private>False</Private>
@@ -102,10 +106,12 @@
     <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.targets'))" />
   </Target>
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.4\build\IllusionLibs.HoneySelect2.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp.2020.5.29.4\build\IllusionLibs.HoneySelect2.Assembly-CSharp.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AssetBundleModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.AssetBundleModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AssetBundleModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.AssetBundleModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.AudioModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.UnityWebRequestWWWModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.targets')" />
 </Project>

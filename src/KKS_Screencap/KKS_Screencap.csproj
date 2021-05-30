@@ -94,6 +94,10 @@
       <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\lib\net46\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.ScreenCaptureModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.ScreenCaptureModule.2019.4.9\lib\net46\UnityEngine.ScreenCaptureModule.dll</HintPath>
       <Private>False</Private>
@@ -141,6 +145,7 @@
     <Error Condition="!Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.TextRenderingModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.TextRenderingModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.TextRenderingModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.TextRenderingModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.AudioModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.AudioModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.AudioModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.AudioModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.targets'))" />
   </Target>
   <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.CoreModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.CoreModule.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.CoreModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.CoreModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.Assembly-CSharp.2021.5.28\build\IllusionLibs.KoikatsuSunshine.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.Assembly-CSharp.2021.5.28\build\IllusionLibs.KoikatsuSunshine.Assembly-CSharp.targets')" />
@@ -151,4 +156,5 @@
   <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.TextRenderingModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.TextRenderingModule.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.TextRenderingModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.TextRenderingModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.AudioModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.AudioModule.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.AudioModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.AudioModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.targets')" />
 </Project>

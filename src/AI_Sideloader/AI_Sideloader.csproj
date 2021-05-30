@@ -83,6 +83,10 @@
       <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.2018.2.21.4\lib\net46\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="XUnity.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\XUnity.Common.1.0.0\lib\net35\XUnity.Common.dll</HintPath>
       <Private>False</Private>
@@ -134,6 +138,7 @@ IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(Tar
     <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets'))" />
   </Target>
   <Import Project="..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp.targets')" />
   <Import Project="..\..\packages\IllusionLibs.AIGirl.MessagePack.2020.5.29.4\build\IllusionLibs.AIGirl.MessagePack.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.MessagePack.2020.5.29.4\build\IllusionLibs.AIGirl.MessagePack.targets')" />
@@ -142,4 +147,5 @@ IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(Tar
   <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.ImageConversionModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets')" />
 </Project>

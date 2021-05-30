@@ -57,6 +57,10 @@
       <HintPath>..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\lib\net46\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.UnityWebRequestWWWModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.2017.4.24.4\lib\net46\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
       <Private>False</Private>
@@ -98,9 +102,11 @@
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.AudioModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.AudioModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.AudioModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.AudioModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets'))" />
   </Target>
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp.2019.6.6.4\build\IllusionLibs.EmotionCreators.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp.2019.6.6.4\build\IllusionLibs.EmotionCreators.Assembly-CSharp.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.AudioModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.AudioModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.AudioModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.AudioModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.UnityWebRequestWWWModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets')" />
 </Project>
