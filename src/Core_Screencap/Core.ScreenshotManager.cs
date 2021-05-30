@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using Shared;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 #if KK
@@ -450,7 +451,11 @@ namespace Screencap
         protected void OnGUI()
         {
             if (uiShow)
+            {
+                IMGUIUtils.DrawSolidBox(uiRect);
                 uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "Screenshot settings");
+                IMGUIUtils.EatInputInRect(uiRect);
+            }
         }
 
         private void WindowFunction(int windowID)
