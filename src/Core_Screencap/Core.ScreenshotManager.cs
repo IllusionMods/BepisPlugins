@@ -267,7 +267,7 @@ namespace Screencap
             var filename = GetUniqueFilename("UI");
 #if KK
             Application.CaptureScreenshot(filename, UIShotUpscale.Value);
-#elif EC
+#else
             ScreenCapture.CaptureScreenshot(filename, UIShotUpscale.Value);
 #endif
 

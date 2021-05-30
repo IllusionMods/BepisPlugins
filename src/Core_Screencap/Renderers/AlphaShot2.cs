@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Linq;
+using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityStandardAssets.ImageEffects;
 
 //code by essu
 namespace alphaShot
@@ -69,13 +70,15 @@ namespace alphaShot
             int newHeight = ResolutionY * DownscalingRate;
             float orgBlurSize = 0.0f;
 
+#if !KKS //todo check if they come back in KKS full game
             // Fix depth of field
-            DepthOfField dof = (DepthOfField)Camera.main.gameObject.GetComponent(typeof(DepthOfField));
+            var dof = Camera.main.gameObject.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
             if (dof != null)
             {
                 orgBlurSize = dof.maxBlurSize;
                 dof.maxBlurSize = newWidth * orgBlurSize / Screen.width;
             }
+#endif
 
             if (Transparent && (InStudio
                 || SceneManager.GetActiveScene().name == "CustomScene"
@@ -85,11 +88,13 @@ namespace alphaShot
             else
                 fullSizeCapture = CaptureOpaque(newWidth, newHeight);
 
+#if !KKS
             // Recover depth of field
             if (dof != null)
             {
                 dof.maxBlurSize = orgBlurSize;
             }
+#endif
 
             if (DownscalingRate > 1)
                 return LanczosTex(fullSizeCapture, ResolutionX, ResolutionY);
@@ -125,34 +130,20 @@ namespace alphaShot
         {
             var main = Camera.main;
 
-            var baf = main.GetComponent<BloomAndFlares>();
-            bool baf_e = false;
-            if (baf)
+            var disableTypes = new Type[]
             {
-                baf_e = baf.enabled;
-                baf.enabled = false;
-            }
-
-            var vig = main.GetComponent<VignetteAndChromaticAberration>();
-            bool vig_e = false;
-            if (vig)
-            {
-                vig_e = vig.enabled;
-                vig.enabled = false;
-            }
-
-            var ace = main.GetComponent<AmplifyColorEffect>();
-            bool ace_e = false;
-            if (ace)
-            {
-                ace_e = ace.enabled;
-                ace.enabled = false;
-            }
+#if !KKS //todo check if they come back in KKS full game
+                typeof(UnityStandardAssets.ImageEffects.BloomAndFlares),
+                typeof(UnityStandardAssets.ImageEffects.VignetteAndChromaticAberration),
+#endif
+                typeof(AmplifyColorEffect),
+            };
+            var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
+            foreach (var comp in disabled) comp.enabled = false;
 
             var texture2D = PerformCapture(ResolutionX, ResolutionY, true);
-            if (baf) baf.enabled = baf_e;
-            if (vig) vig.enabled = vig_e;
-            if (ace) ace.enabled = ace_e;
+
+            foreach (var comp in disabled) comp.enabled = true;
 
             var texture2D2 = PerformCapture(ResolutionX, ResolutionY, false);
 

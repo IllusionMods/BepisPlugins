@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
-using UnityStandardAssets.ImageEffects;
 
 namespace Screencap
 {
@@ -69,10 +68,12 @@ namespace Screencap
                 if (renderCam == null) throw new Exception("No camera detected");
             }
 
-            var disableTypes = new[]
+            var disableTypes = new Type[]
             {
-                typeof(VignetteAndChromaticAberration),
-                typeof(DepthOfField)
+#if !KKS //todo check if they come back in KKS full game
+                typeof(UnityStandardAssets.ImageEffects.VignetteAndChromaticAberration),
+                typeof(UnityStandardAssets.ImageEffects.DepthOfField)
+#endif
             };
             var disabled = renderCam.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
             foreach (var comp in disabled) comp.enabled = false;
