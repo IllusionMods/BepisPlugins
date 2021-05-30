@@ -69,7 +69,7 @@ namespace Sideloader.AutoResolver
             {
                 foreach (List<string> entry in data.Entries)
                 {
-                    int newSlot = Interlocked.Increment(ref CurrentSlotID);
+                    int newSlot = GetUniqueSlotID();
 
                     StudioResolveInfo studioResolveInfo = new StudioResolveInfo
                     {

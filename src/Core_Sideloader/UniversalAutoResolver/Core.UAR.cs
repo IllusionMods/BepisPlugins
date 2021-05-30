@@ -40,6 +40,14 @@ namespace Sideloader.AutoResolver
         /// </summary>
         public const int BaseSlotID = 100000000;
         private static int CurrentSlotID;
+        
+        /// <summary>
+        /// Get a new unique slot ID above <see cref="BaseSlotID"/>. Returns a different unique ID on every call.
+        /// </summary>
+        public static int GetUniqueSlotID()
+        {
+            return Interlocked.Increment(ref CurrentSlotID);
+        }
 
         static UniversalAutoResolver()
         {
@@ -423,7 +431,7 @@ namespace Sideloader.AutoResolver
 
             foreach (var kv in data.dictList)
             {
-                int newSlot = Interlocked.Increment(ref CurrentSlotID);
+                int newSlot = GetUniqueSlotID();
 
 #if KK || EC || KKS
                 if (data.categoryNo == (int)ChaListDefine.CategoryNo.mt_ramp)
