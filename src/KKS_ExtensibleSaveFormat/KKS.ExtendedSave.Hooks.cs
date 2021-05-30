@@ -33,7 +33,10 @@ namespace ExtensibleSaveFormat
                     {
                         var dictionary = MessagePackDeserialize<Dictionary<string, PluginData>>(data);
                         if (dictionary != null)
+                        {
                             CardImportEvent(dictionary);
+                            internalCharaDictionary.Set(file, dictionary);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -95,9 +98,12 @@ namespace ExtensibleSaveFormat
                             {
                                 byte[] bytes = br.ReadBytes(length);
                                 var dictionary = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
-                                
+
                                 if (dictionary != null)
+                                {
                                     CardImportEvent(dictionary);
+                                    internalCharaDictionary.Set(__instance, dictionary);
+                                }
                             }
                         }
                         else
