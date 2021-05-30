@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Sideloader.Koikatu</id>
+    <id>ScreenshotManager.KoikatsuSunshine</id>
     <version>$version$</version>
     <authors>IllusionMods</authors>
     <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Loads mods packaged in .zip archives from the Mods directory without modifying the game files at all</description>
+    <description>Utility for capturing screenshots</description>
     <developmentDependency>true</developmentDependency>
   </metadata>
   <files>
