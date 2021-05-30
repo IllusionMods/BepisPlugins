@@ -28,8 +28,7 @@ namespace ConfigurationManagerWrapper
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.OverrideHotkey = true;
 
-            var isStudio = Application.productName == "StudioNEOV2";
-            if (!isStudio)
+            if (!Constants.InsideStudio)
             {
                 Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
                 // Main game is handled by the hooks, Update is only for studio
