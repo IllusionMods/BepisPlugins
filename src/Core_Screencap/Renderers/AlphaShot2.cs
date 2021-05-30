@@ -68,10 +68,10 @@ namespace alphaShot
             Texture2D fullSizeCapture;
             int newWidth = ResolutionX * DownscalingRate;
             int newHeight = ResolutionY * DownscalingRate;
-            float orgBlurSize = 0.0f;
 
 #if !KKS //todo check if they come back in KKS full game
             // Fix depth of field
+            float orgBlurSize = 0.0f;
             var dof = Camera.main.gameObject.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
             if (dof != null)
             {
