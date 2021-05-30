@@ -185,7 +185,7 @@ namespace Screencap
             {
                 PlayCaptureSound();
 
-                var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Application.productName == "StudioNEOV2";
+                var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Constants.InsideStudio;
                 if (Alpha.Value && alphaAllowed)
                     StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true)));
                 else
