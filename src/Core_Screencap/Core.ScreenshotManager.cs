@@ -293,6 +293,16 @@ namespace Screencap
             try { OnPreCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
 
+#if EC || KKS
+            var colorMask = FindObjectOfType<CameraEffectorColorMask>();
+            var colorMaskDisabled = false;
+            if (colorMask && colorMask.Enabled)
+            {
+                colorMaskDisabled = true;
+                colorMask.Enabled = false;
+            }
+#endif
+
             if (!in3D)
             {
                 yield return new WaitForEndOfFrame();
@@ -337,6 +347,10 @@ namespace Screencap
                 Destroy(capture2);
                 Destroy(result);
             }
+
+#if EC || KKS
+            if (colorMaskDisabled && colorMask) colorMask.Enabled = false;
+#endif
 
             try { OnPostCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
