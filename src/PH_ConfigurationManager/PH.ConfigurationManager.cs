@@ -27,8 +27,7 @@ namespace ConfigurationManagerWrapper
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.OverrideHotkey = true;
 
-            var isStudio = Application.productName.Contains("PlayHomeStudio");
-            if (isStudio)
+            if (Constants.InsideStudio)
                 return;
 
             Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));

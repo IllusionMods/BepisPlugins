@@ -13,9 +13,11 @@ namespace ExtensibleSaveFormat
     /// <summary>
     /// A set of tools for reading and writing extra data to card and scene files.
     /// </summary>
-    [BepInProcess("PlayHome64bit")]
-    [BepInProcess("PlayHomeStudio64bit")]
-    [BepInProcess("VR GEDOU")]
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.GameProcessName32bit)]
+    [BepInProcess(Constants.StudioProcessName)]
+    [BepInProcess(Constants.StudioProcessName32bit)]
+    [BepInProcess(Constants.VRProcessName)]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class ExtendedSave : BaseUnityPlugin
     {

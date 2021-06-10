@@ -17,7 +17,7 @@ namespace SliderUnlocker
         }
 
         // Fix first pos value limit
-        [HarmonyTranspiler, HarmonyPatch(typeof(ChaControl), "SetHairCorrectPosValue")]
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetHairCorrectPosValue))]
         private static IEnumerable<CodeInstruction> SetHairCorrectPosValueHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.InverseLerp));
@@ -31,7 +31,7 @@ namespace SliderUnlocker
         }
 
         // Fix first rot value limit
-        [HarmonyTranspiler, HarmonyPatch(typeof(ChaControl), "SetHairCorrectRotValue")]
+        [HarmonyTranspiler, HarmonyPatch(typeof(ChaControl), nameof(ChaControl.SetHairCorrectRotValue))]
         private static IEnumerable<CodeInstruction> SetHairCorrectRotValueHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.InverseLerp));
@@ -45,7 +45,7 @@ namespace SliderUnlocker
         }
 
         // Fix last value limit
-        [HarmonyTranspiler, HarmonyPatch(typeof(CmpHair), "Update")]
+        [HarmonyTranspiler, HarmonyPatch(typeof(CmpHair), nameof(CmpHair.Update))]
         private static IEnumerable<CodeInstruction> CmpHairHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(SliderMath), nameof(SliderMath.Lerp));
@@ -59,7 +59,7 @@ namespace SliderUnlocker
         }
 
         // Fix guide limit
-        [HarmonyPrefix, HarmonyPatch(typeof(CustomHairBundleSet), "LateUpdate")]
+        [HarmonyPrefix, HarmonyPatch(typeof(CustomHairBundleSet), nameof(CustomHairBundleSet.LateUpdate))]
         private static bool LateUpdateHook(CustomHairBundleSet __instance)
         {
             if (null == __instance.cmpGuid || !__instance.cmpGuid.gameObject.activeInHierarchy)
@@ -73,7 +73,7 @@ namespace SliderUnlocker
         }
 
         // Fix the dynamic slider
-        [HarmonyPrefix, HarmonyPatch(typeof(CustomHairBundleSet), "Initialize")]
+        [HarmonyPrefix, HarmonyPatch(typeof(CustomHairBundleSet), nameof(CustomHairBundleSet.Initialize))]
         private static void InitializeHook(CustomHairBundleSet __instance)
         {
             foreach (var x in __instance.GetComponentsInChildren<CustomSliderSet>())
@@ -111,7 +111,7 @@ namespace SliderUnlocker
         }
 
         // Prevent reapplying slider limits in some situations
-        [HarmonyTranspiler, HarmonyPatch(typeof(CustomHairBundleSet), "UpdateCustomUI")]
+        [HarmonyTranspiler, HarmonyPatch(typeof(CustomHairBundleSet), nameof(CustomHairBundleSet.UpdateCustomUI))]
         private static IEnumerable<CodeInstruction> UpdateCustomUIHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo1 = AccessTools.Method(typeof(HairUnlocker), nameof(UnlockAndSetSliderValue));
@@ -132,7 +132,7 @@ namespace SliderUnlocker
         }
 
         // Fix the random rollback of rot (dirty fix)
-        [HarmonyTranspiler, HarmonyPatch(typeof(CustomHairBundleSet), "SetHairTransform")]
+        [HarmonyTranspiler, HarmonyPatch(typeof(CustomHairBundleSet), nameof(CustomHairBundleSet.SetHairTransform))]
         private static IEnumerable<CodeInstruction> SetHairTransformHook(IEnumerable<CodeInstruction> instructions)
         {
             var methodInfo = AccessTools.Method(typeof(HairUnlocker), nameof(CorrectHairRot));

@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using Shared;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 #if KK
@@ -267,7 +268,7 @@ namespace Screencap
             var filename = GetUniqueFilename("UI");
 #if KK
             Application.CaptureScreenshot(filename, UIShotUpscale.Value);
-#elif EC
+#else
             ScreenCapture.CaptureScreenshot(filename, UIShotUpscale.Value);
 #endif
 
@@ -291,6 +292,16 @@ namespace Screencap
 
             try { OnPreCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
+
+#if EC || KKS
+            var colorMask = FindObjectOfType<CameraEffectorColorMask>();
+            var colorMaskDisabled = false;
+            if (colorMask && colorMask.Enabled)
+            {
+                colorMaskDisabled = true;
+                colorMask.Enabled = false;
+            }
+#endif
 
             if (!in3D)
             {
@@ -336,6 +347,10 @@ namespace Screencap
                 Destroy(capture2);
                 Destroy(result);
             }
+
+#if EC || KKS
+            if (colorMaskDisabled && colorMask) colorMask.Enabled = false;
+#endif
 
             try { OnPostCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
@@ -450,7 +465,11 @@ namespace Screencap
         protected void OnGUI()
         {
             if (uiShow)
+            {
+                IMGUIUtils.DrawSolidBox(uiRect);
                 uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "Screenshot settings");
+                IMGUIUtils.EatInputInRect(uiRect);
+            }
         }
 
         private void WindowFunction(int windowID)

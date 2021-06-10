@@ -38,7 +38,7 @@ namespace ConfigurationManagerWrapper
 
         private void Start()
         {
-            _isStudio = Application.productName == "StudioNEO";
+            _isStudio = Constants.InsideStudio;
 
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.OverrideHotkey = true;

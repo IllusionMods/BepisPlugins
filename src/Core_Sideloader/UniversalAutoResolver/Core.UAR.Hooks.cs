@@ -19,11 +19,11 @@ namespace Sideloader.AutoResolver
             /// <summary>
             /// A flag for disabling certain events when importing KK cards to EC. Should always be set to false in InstallHooks for KK and always remain false.
             /// </summary>
-            private static bool DoingImport = true;
+            private static bool DoingImport;
 
             internal static void InstallHooks()
             {
-                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
+                Harmony.CreateAndPatchAll(typeof(Hooks));
 
                 ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
                 ExtendedSave.CardBeingSaved += ExtendedCardSave;
@@ -34,21 +34,16 @@ namespace Sideloader.AutoResolver
 #if EC
                 ExtendedSave.CardBeingImported += ExtendedCardImport;
                 ExtendedSave.CoordinateBeingImported += ExtendedCoordinateImport;
+#elif KKS
+                ExtendedSave.CardBeingImported += ExtendedCardImport;
 #else
                 ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
                 ExtendedSave.SceneBeingImported += ExtendedSceneImport;
 #endif
 
-#if KK
-                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("OnValueChangedLut", AccessTools.all),
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(OnValueChangedLutPrefix), AccessTools.all)), null);
-                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("AmplifyColorEffectInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ACEUpdateInfoPostfix), AccessTools.all)));
-                harmony.Patch(typeof(Studio.SystemButtonCtrl).GetNestedType("EtcInfo", AccessTools.all).GetMethod("UpdateInfo", AccessTools.all), null,
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(ETCUpdateInfoPostfix), AccessTools.all)));
-#endif
-
-#if !EC
+#if EC || KKS
+                DoingImport = true;
+#else
                 DoingImport = false;
 #endif
             }
@@ -112,7 +107,7 @@ namespace Sideloader.AutoResolver
 
                         //Check if it's a vanilla item
                         if (slot < BaseSlotID)
-#if KK || EC
+#if KK || EC || KKS
                             if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
 #elif AI || HS2
                             if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
@@ -162,10 +157,10 @@ namespace Sideloader.AutoResolver
 #endif
             }
 
-#if KK
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool))]
+#if KK || KKS
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool))]
 #else
-            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), "SaveFile", typeof(BinaryWriter), typeof(bool), typeof(int))]
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SaveFile), typeof(BinaryWriter), typeof(bool), typeof(int))]
 #endif
             private static void ChaFileSaveFilePostHook(ChaFile __instance)
             {
@@ -281,7 +276,7 @@ namespace Sideloader.AutoResolver
 #elif AI || HS2
                             if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
 #endif
-                                continue;
+                            continue;
 
                         //For accessories, make sure we're checking the appropriate category
                         if (kv.Key.Category.ToString().Contains("ao_"))
@@ -320,7 +315,7 @@ namespace Sideloader.AutoResolver
                 });
             }
 
-#if KK
+#if KK || KKS
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string))]
 #else
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.SaveFile), typeof(string), typeof(int))]

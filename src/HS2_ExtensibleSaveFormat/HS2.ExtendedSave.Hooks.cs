@@ -24,7 +24,7 @@ namespace ExtensibleSaveFormat
             [HarmonyPatch(typeof(CoordinateFileInfoAssist), nameof(CoordinateFileInfoAssist.CreateCharaFileInfoList))]
             private static void CreateListPostfix() => LoadEventsEnabled = true;
 
-            [HarmonyPostfix, HarmonyPatch(typeof(TitleScene), "LoadChara")]
+            [HarmonyPostfix, HarmonyPatch(typeof(TitleScene), nameof(TitleScene.LoadChara))]
             private static void FixTitleLoadCharaRace(ref IEnumerator __result)
             {
                 // Title character gets loaded in Start and causes a race condition with extended data stuff. Delay the load 1 frame to avoid this

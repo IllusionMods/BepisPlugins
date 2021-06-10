@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ScreenshotManager.KoikatsuSunshine</id>
+    <version>$version$</version>
+    <authors>IllusionMods</authors>
+    <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Utility for capturing screenshots</description>
+    <developmentDependency>true</developmentDependency>
+  </metadata>
+  <files>
+    <file src="..\install.ps1" target="tools"/>
+  </files>
+</package>

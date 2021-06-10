@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Sideloader.ListLoader;
-#if KK || EC
+#if KK || EC || KKS
 using ChaCustom;
 #elif AI || HS2
 using CharaCustom;
@@ -24,14 +24,9 @@ namespace Sideloader
                               null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));
 #endif
 
-#if !EC
-                harmony.Patch(typeof(Studio.Info).GetNestedType("FileCheck", AccessTools.all).GetMethod("Check", AccessTools.all), null,
-                    new HarmonyMethod(typeof(Hooks).GetMethod(nameof(FileCheck), AccessTools.all)));
-#endif
-
 #if HS2
                 var add50M = AccessTools.Method(typeof(Manager.GameSystem), "IsPathAdd50");
-                if (add50M != null)
+                if (add50M != null) //May not exist in earlier game versions
                     harmony.Patch(add50M, postfix: new HarmonyMethod(typeof(Hooks), nameof(Hooks.IsPathAdd50Hook)));
 #endif
             }
@@ -94,7 +89,7 @@ namespace Sideloader
 #endif
             }
 
-#if KK || EC
+#if KK || EC || KKS
             /// <summary>
             /// The game gets from a list by index which will cause errors. Get them safely for sideloader items
             /// </summary>
@@ -103,14 +98,11 @@ namespace Sideloader
             {
                 if (index >= UniversalAutoResolver.BaseSlotID)
                 {
-                    List<CustomFacePaintLayoutPreset.FacePaintPreset> lstPreset = Traverse.Create(__instance).Field("lstPreset").GetValue() as List<CustomFacePaintLayoutPreset.FacePaintPreset>;
-                    CvsMakeup cvsMakeup = Traverse.Create(__instance).Field("cvsMakeup").GetValue() as CvsMakeup;
-
-                    var preset = lstPreset.FirstOrDefault(p => p.index == index);
+                    var preset = __instance.lstPreset.FirstOrDefault(p => p.index == index);
                     if (preset == null)
                         return false;
 
-                    cvsMakeup.UpdatePushFacePaintLayout(new Vector4(preset.x, preset.y, preset.r, preset.s));
+                    __instance.cvsMakeup.UpdatePushFacePaintLayout(new Vector4(preset.x, preset.y, preset.r, preset.s));
                     return false;
                 }
 
@@ -124,17 +116,14 @@ namespace Sideloader
             {
                 if (index >= UniversalAutoResolver.BaseSlotID)
                 {
-                    List<CustomMoleLayoutPreset.MolePreset> lstPreset = Traverse.Create(__instance).Field("lstPreset").GetValue() as List<CustomMoleLayoutPreset.MolePreset>;
-                    CvsMole cvsMole = Traverse.Create(__instance).Field("cvsMole").GetValue() as CvsMole;
-
-                    var preset = lstPreset.FirstOrDefault(p => p.index == index);
+                    var preset = __instance.lstPreset.FirstOrDefault(p => p.index == index);
                     if (preset == null)
                         return false;
 
                     ChaControl chaCtrl = Singleton<CustomBase>.Instance.chaCtrl;
                     chaCtrl.chaFile.custom.face.moleLayout = new Vector4(preset.x, preset.y, 0f, preset.w);
-                    cvsMole.FuncUpdateMoleLayout();
-                    cvsMole.UpdateCustomUI();
+                    __instance.cvsMole.FuncUpdateMoleLayout();
+                    __instance.cvsMole.UpdateCustomUI();
                     return false;
                 }
 

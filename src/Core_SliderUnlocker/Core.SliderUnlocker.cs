@@ -9,7 +9,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-#if KK || EC
+#if KK || EC || KKS
 using ChaCustom;
 using TMPro;
 #endif
@@ -26,7 +26,7 @@ namespace SliderUnlocker
         public const string PluginName = "Slider Unlocker";
 
         internal static new ManualLogSource Logger;
-#if KK || EC
+#if KK || EC || KKS
         private static readonly List<Target> _targets = new List<Target>();
 #endif
 
@@ -85,7 +85,7 @@ namespace SliderUnlocker
             }
         }
 
-#if KK || EC
+#if KK || EC || KKS
         protected void Start()
         {
             foreach (var type in typeof(CvsAccessory).Assembly.GetTypes())

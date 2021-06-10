@@ -45,7 +45,7 @@ namespace ConfigurationManagerWrapper
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), "Start")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), nameof(ConfigScene.Start))]
         private static void OnOpen(ref object __result)
         {
             __result = new[] { __result, CreateButton() }.GetEnumerator();
@@ -74,7 +74,7 @@ namespace ConfigurationManagerWrapper
             }
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), "Unload")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), nameof(ConfigScene.Unload))]
         private static void OnClose() => _manager.DisplayingWindow = false;
     }
 }

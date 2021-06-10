@@ -42,7 +42,7 @@ namespace ExtensibleSaveFormat
                     }
                 }
 
-                if(!set)
+                if (!set)
                     throw new Exception("Failed to patch SceneInfo.Load");
             }
 
@@ -77,7 +77,7 @@ namespace ExtensibleSaveFormat
                 SceneReadEvent(path);
             }
 
-            [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Import", typeof(string))]
+            [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), nameof(SceneInfo.Import), typeof(string))]
             private static IEnumerable<CodeInstruction> SceneInfoImportTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 bool set = false;
@@ -96,8 +96,8 @@ namespace ExtensibleSaveFormat
                         set = true;
                     }
                 }
-                
-                if(!set)
+
+                if (!set)
                     throw new Exception("Failed to patch SceneInfo.Import");
             }
 
@@ -144,7 +144,7 @@ namespace ExtensibleSaveFormat
 
             #region Saving
 
-            [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), "Save", typeof(string))]
+            [HarmonyTranspiler, HarmonyPatch(typeof(SceneInfo), nameof(SceneInfo.Save), typeof(string))]
             private static IEnumerable<CodeInstruction> SceneInfoSaveTranspiler(IEnumerable<CodeInstruction> instructions)
             {
                 bool set = false;
@@ -161,8 +161,8 @@ namespace ExtensibleSaveFormat
                         set = true;
                     }
                 }
-                
-                if(!set)
+
+                if (!set)
                     throw new Exception("Failed to patch SceneInfo.Save");
             }
 
@@ -173,6 +173,15 @@ namespace ExtensibleSaveFormat
                 Dictionary<string, PluginData> extendedData = internalSceneDictionary;
                 if (extendedData == null)
                     return;
+
+                //Remove null entries
+                List<string> keysToRemove = new List<string>();
+                foreach (var entry in extendedData)
+                    if (entry.Value == null)
+                        keysToRemove.Add(entry.Key);
+                foreach (var key in keysToRemove)
+                    extendedData.Remove(key);
+
                 byte[] data = MessagePackSerializer.Serialize(extendedData);
 
                 bw.Write(Marker);
@@ -187,17 +196,19 @@ namespace ExtensibleSaveFormat
 
             #region Extended Data Override Hooks
             //Prevent loading extended data when loading the list of characters in Studio since it is irrelevant here
-            [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaList), nameof(CharaList.InitFemaleList))]
             private static void StudioFemaleListPreHook() => LoadEventsEnabled = false;
-            [HarmonyPostfix, HarmonyPatch(typeof(CharaList), "InitFemaleList")]
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaList), nameof(CharaList.InitFemaleList))]
             private static void StudioFemaleListPostHook() => LoadEventsEnabled = true;
-            [HarmonyPrefix, HarmonyPatch(typeof(CharaList), "InitMaleList")]
+            [HarmonyPrefix, HarmonyPatch(typeof(CharaList), nameof(CharaList.InitMaleList))]
             private static void StudioMaleListPreHook() => LoadEventsEnabled = false;
-            [HarmonyPostfix, HarmonyPatch(typeof(CharaList), "InitMaleList")]
+            [HarmonyPostfix, HarmonyPatch(typeof(CharaList), nameof(CharaList.InitMaleList))]
             private static void StudioMaleListPostHook() => LoadEventsEnabled = true;
 
             //Prevent loading extended data when loading the list of coordinates in Studio since it is irrelevant here
+            [HarmonyPrefix, HarmonyPatch(typeof(MPCharCtrl.CostumeInfo), nameof(MPCharCtrl.CostumeInfo.InitFileList))]
             private static void StudioCoordinateListPreHook() => LoadEventsEnabled = false;
+            [HarmonyPostfix, HarmonyPatch(typeof(MPCharCtrl.CostumeInfo), nameof(MPCharCtrl.CostumeInfo.InitFileList))]
             private static void StudioCoordinateListPostHook() => LoadEventsEnabled = true;
             #endregion
         }

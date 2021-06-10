@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IMGUIUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Lazy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Metadata.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WeakKeyDictionary.cs" />

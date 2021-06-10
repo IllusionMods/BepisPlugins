@@ -45,7 +45,7 @@ namespace ConfigurationManagerWrapper
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), "Initialize")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), nameof(ConfigWindow.Initialize))]
         private static void OnOpen(ConfigWindow __instance, ref Button[] ___buttons)
         {
             // Spawn a new button for plugin settings
@@ -54,7 +54,7 @@ namespace ConfigurationManagerWrapper
             copy.name = "btnPluginSettings";
 
             copy.GetComponentInChildren<Text>().text = "Plugin settings";
-            Traverse.Create(copy.GetComponent<ObservablePointerEnterTrigger>()).Field("onPointerEnter").SetValue(Traverse.Create(original.GetComponent<ObservablePointerEnterTrigger>()).Field("onPointerEnter").GetValue());
+            copy.GetComponent<ObservablePointerEnterTrigger>().onPointerEnter = original.GetComponent<ObservablePointerEnterTrigger>().onPointerEnter;
 
             var btn = copy.GetComponentInChildren<Button>();
             btn.onClick = new Button.ButtonClickedEvent();
@@ -68,7 +68,7 @@ namespace ConfigurationManagerWrapper
             ___buttons = ___buttons.AddToArray(btn);
         }
 
-        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), "Unload")]
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigWindow), nameof(ConfigWindow.Unload))]
         private static void OnClose() => _manager.DisplayingWindow = false;
     }
 }

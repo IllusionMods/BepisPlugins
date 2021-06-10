@@ -24,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>embedded</DebugType>
@@ -34,51 +35,56 @@
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
     <DocumentationFile>..\..\bin\BepInEx\plugins\AI_BepisPlugins\AI_Screencap.xml</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\lib\net35\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\lib\net35\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.2\lib\net46\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.4\lib\net46\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.2\lib\net46\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.4\lib\net46\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="BepInEx, Version=5.4.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.4\lib\net35\BepInEx.dll</HintPath>
+    <Reference Include="BepInEx, Version=5.4.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.8\lib\net35\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx.Harmony, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\lib\net35\BepInEx.Harmony.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\lib\net35\BepInEx.Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization, Version=2.0.13.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.2\lib\net46\Sirenix.Serialization.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.4\lib\net46\Sirenix.Serialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="Unity.Postprocessing.Runtime, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.3\lib\net46\Unity.Postprocessing.Runtime.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.4\lib\net46\Unity.Postprocessing.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.3\lib\net46\UnityEngine.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\lib\net46\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.3\lib\net46\UnityEngine.AssetBundleModule.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.4\lib\net46\UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.3\lib\net46\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\lib\net46\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ScreenCaptureModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.3\lib\net46\UnityEngine.ScreenCaptureModule.dll</HintPath>
+      <HintPath>..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.4\lib\net46\UnityEngine.ScreenCaptureModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -104,7 +110,7 @@
   <ItemGroup>
     <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.4\analyzers\dotnet\cs\BepInEx.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.4\analyzers\dotnet\cs\BepInEx.Analyzers.dll" />
-    <Analyzer Include="..\..\packages\Microsoft.Unity.Analyzers.1.9.0\analyzers\dotnet\cs\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\Microsoft.Unity.Analyzers.1.10.2\analyzers\dotnet\cs\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
   <Import Project="..\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems" Label="Shared" />
@@ -112,25 +118,27 @@
   <PropertyGroup>
     <PostBuildEvent>IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(TargetPath)" AI</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.2.0.1\build\IllusionLibs.BepInEx.Harmony.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.2\build\IllusionLibs.AIGirl.Assembly-CSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.2\build\IllusionLibs.AIGirl.Assembly-CSharp.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.2\build\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.2\build\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.2\build\IllusionLibs.AIGirl.Sirenix.Serialization.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.2\build\IllusionLibs.AIGirl.Sirenix.Serialization.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.3\build\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.3\build\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.4\build\IllusionLibs.AIGirl.Sirenix.Serialization.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.4\build\IllusionLibs.AIGirl.Sirenix.Serialization.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.4\build\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.4\build\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets'))" />
   </Target>
-  <Import Project="..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.2\build\IllusionLibs.AIGirl.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.2\build\IllusionLibs.AIGirl.Assembly-CSharp.targets')" />
-  <Import Project="..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.2\build\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.2\build\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.targets')" />
-  <Import Project="..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.2\build\IllusionLibs.AIGirl.Sirenix.Serialization.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.2\build\IllusionLibs.AIGirl.Sirenix.Serialization.targets')" />
-  <Import Project="..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.3\build\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.3\build\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.targets')" />
-  <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.targets')" />
-  <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets')" />
-  <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.3\build\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.2020.5.29.4\build\IllusionLibs.AIGirl.Assembly-CSharp-firstpass.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.4\build\IllusionLibs.AIGirl.Sirenix.Serialization.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Sirenix.Serialization.2020.5.29.4\build\IllusionLibs.AIGirl.Sirenix.Serialization.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.4\build\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.2018.2.21.4\build\IllusionLibs.AIGirl.Unity.Postprocessing.Runtime.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.AssetBundleModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.CoreModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.CoreModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.ScreenCaptureModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.3.2\build\IllusionLibs.BepInEx.Harmony.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.2018.2.21.4\build\IllusionLibs.AIGirl.UnityEngine.IMGUIModule.targets')" />
 </Project>
