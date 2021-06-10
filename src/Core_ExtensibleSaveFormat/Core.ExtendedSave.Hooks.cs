@@ -429,6 +429,61 @@ namespace ExtensibleSaveFormat
             private static void CvsO_CharaSaveUpdateCharasListPostfix() => LoadEventsEnabled = true;
 #endif
             #endregion
+
+#if KK || EC
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileAccessory), nameof(ChaFileAccessory.MemberInit))]
+            private static void MemberInit(ChaFileAccessory __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileAccessory.PartsInfo), nameof(ChaFileAccessory.PartsInfo.MemberInit))]
+            private static void MemberInit(ChaFileAccessory.PartsInfo __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileClothes), nameof(ChaFileClothes.MemberInit))]
+            private static void MemberInit(ChaFileClothes __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileClothes.PartsInfo), nameof(ChaFileClothes.PartsInfo.MemberInit))]
+            private static void MemberInit(ChaFileClothes.PartsInfo __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileClothes.PartsInfo.ColorInfo), nameof(ChaFileClothes.PartsInfo.ColorInfo.MemberInit))]
+            private static void MemberInit(ChaFileClothes.PartsInfo.ColorInfo __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileStatus), nameof(ChaFileStatus.MemberInit))]
+            private static void MemberInit(ChaFileStatus __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileStatus), nameof(ChaFileStatus.Copy))]
+            private static void Copy(ChaFileStatus __instance, ChaFileStatus src) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(Traverse.Create(src).Property(ExtendedSaveDataPropertyName).GetValue());
+
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileParameter), nameof(ChaFileParameter.MemberInit))]
+            private static void MemberInit(ChaFileParameter __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileParameter), nameof(ChaFileParameter.Copy))]
+            private static void Copy(ChaFileParameter __instance, ChaFileParameter src) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(Traverse.Create(src).Property(ExtendedSaveDataPropertyName).GetValue());
+
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileFace), nameof(ChaFileFace.MemberInit))]
+            private static void MemberInit(ChaFileFace __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileFace.PupilInfo), nameof(ChaFileFace.PupilInfo.MemberInit))]
+            private static void MemberInit(ChaFileFace.PupilInfo __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileFace.PupilInfo), nameof(ChaFileFace.PupilInfo.Copy))]
+            private static void Copy(ChaFileFace.PupilInfo __instance, ChaFileFace.PupilInfo src) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(Traverse.Create(src).Property(ExtendedSaveDataPropertyName).GetValue());
+#endif
+
+#if KK
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileMakeup), nameof(ChaFileMakeup.MemberInit))]
+            private static void MemberInit(ChaFileMakeup __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileParameter.Attribute), nameof(ChaFileStatus.MemberInit))]
+            private static void MemberInit(ChaFileParameter.Attribute __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileParameter.Awnser), nameof(ChaFileStatus.MemberInit))]
+            private static void MemberInit(ChaFileParameter.Awnser __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileParameter.Denial), nameof(ChaFileStatus.MemberInit))]
+            private static void MemberInit(ChaFileParameter.Denial __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileParameter.Attribute), nameof(ChaFileParameter.Attribute.Copy))]
+            private static void Copy(ChaFileParameter.Attribute __instance, ChaFileParameter.Attribute src) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(Traverse.Create(src).Property(ExtendedSaveDataPropertyName).GetValue());
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileParameter.Awnser), nameof(ChaFileParameter.Awnser.Copy))]
+            private static void Copy(ChaFileParameter.Awnser __instance, ChaFileParameter.Awnser src) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(Traverse.Create(src).Property(ExtendedSaveDataPropertyName).GetValue());
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileParameter.Denial), nameof(ChaFileParameter.Denial.Copy))]
+            private static void Copy(ChaFileParameter.Denial __instance, ChaFileParameter.Denial src) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(Traverse.Create(src).Property(ExtendedSaveDataPropertyName).GetValue());
+#endif
+
+#if EC
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileFace.ChaFileMakeup), nameof(ChaFileFace.ChaFileMakeup.MemberInit))]
+            private static void MemberInit(ChaFileFace.ChaFileMakeup __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
+#endif
         }
     }
 }

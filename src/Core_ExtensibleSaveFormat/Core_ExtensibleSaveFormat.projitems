@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Core.ExtendedSave.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ExtendedSave.Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.ExtendedSave.Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ExtendedSave.Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ExtendedSave.PluginData.cs" />
   </ItemGroup>

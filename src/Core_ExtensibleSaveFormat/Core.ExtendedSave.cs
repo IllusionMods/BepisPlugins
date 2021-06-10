@@ -30,6 +30,10 @@ namespace ExtensibleSaveFormat
         /// Whether extended data load events should be triggered. Temporarily disable it when extended data will never be used, for example loading lists of cards.
         /// </summary>
         public static bool LoadEventsEnabled = true;
+        /// <summary>
+        /// Name of the property injected in to classes by the patcher
+        /// </summary>
+        public const string ExtendedSaveDataPropertyName = "ExtendedSaveData";
 
         internal static WeakKeyDictionary<ChaFile, Dictionary<string, PluginData>> internalCharaDictionary = new WeakKeyDictionary<ChaFile, Dictionary<string, PluginData>>();
 
