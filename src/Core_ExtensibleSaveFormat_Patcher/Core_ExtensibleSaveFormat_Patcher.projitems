@@ -9,6 +9,7 @@
     <Import_RootNamespace>Core_ExtensibleSaveFormat_Patcher</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Patcher.cs" />
   </ItemGroup>
 </Project>
