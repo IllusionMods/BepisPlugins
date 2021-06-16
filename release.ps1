@@ -28,6 +28,8 @@ function CreateZip ($element)
     {
         $ver = "r" + (Get-ChildItem -Path ($copy) -Filter ("*.dll") -Recurse -Force)[0].VersionInfo.FileVersion.ToString()
     }
+    
+    & robocopy ($dir + "\BepInEx\patchers\") ($copy + "\patchers") ($element + "_*.*") /R:5 /W:5 
 
     Compress-Archive -Path $copy -Force -CompressionLevel "Optimal" -DestinationPath ($dir + "out\" + $element + "_BepisPlugins_" + $ver + ".zip")
 }
