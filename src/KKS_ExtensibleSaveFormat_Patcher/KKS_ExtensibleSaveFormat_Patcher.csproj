@@ -70,6 +70,7 @@
     <ProjectReference Include="..\KKS_ExtensibleSaveFormat\KKS_ExtensibleSaveFormat.csproj">
       <Project>{f34bb409-ecac-435d-ad97-86e17304631a}</Project>
       <Name>KKS_ExtensibleSaveFormat</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\Core_ExtensibleSaveFormat_Patcher\Core_ExtensibleSaveFormat_Patcher.projitems" Label="Shared" />

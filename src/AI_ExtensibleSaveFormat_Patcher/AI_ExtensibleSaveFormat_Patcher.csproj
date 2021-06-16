@@ -21,6 +21,8 @@
     <DefineConstants>TRACE;DEBUG;AI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -29,6 +31,8 @@
     <DefineConstants>TRACE;AI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BepInEx, Version=5.4.8.0, Culture=neutral, processorArchitecture=MSIL">
@@ -70,6 +74,7 @@
     <ProjectReference Include="..\AI_ExtensibleSaveFormat\AI_ExtensibleSaveFormat.csproj">
       <Project>{303c404b-9d91-4622-9b8b-8415e0de6a8f}</Project>
       <Name>AI_ExtensibleSaveFormat</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\Core_ExtensibleSaveFormat_Patcher\Core_ExtensibleSaveFormat_Patcher.projitems" Label="Shared" />
