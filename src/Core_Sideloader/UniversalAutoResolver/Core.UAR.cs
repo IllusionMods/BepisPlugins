@@ -158,6 +158,12 @@ namespace Sideloader.AutoResolver
                 var resolveInfo = TryGetResolutionInfo(info.SkinSlot, ChaListDefine.CategoryNo.ft_skin_f, info.SkinGUID);
                 if (resolveInfo != null)
                     info.SkinLocalSlot = resolveInfo.LocalSlot;
+                else
+                {
+                    resolveInfo = TryGetResolutionInfo(info.SkinSlot, ChaListDefine.CategoryNo.mt_skin_f, info.SkinGUID);
+                    if (resolveInfo != null)
+                        info.SkinLocalSlot = resolveInfo.LocalSlot;
+                }
             }
 
             _faceSkinInfoLookupSlot = results.ToLookup(info => info.SkinSlot);
@@ -369,6 +375,38 @@ namespace Sideloader.AutoResolver
                     if (faceSkinInfo == null) continue;
 
                     var resolveInfo = TryGetResolutionInfo(faceSkinInfo.HeadSlot, ChaListDefine.CategoryNo.fo_head, faceSkinInfo.HeadGUID);
+                    if (resolveInfo == null)
+                        ShowGUIDError(faceSkinInfo.HeadGUID);
+                    else
+                    {
+                        if (headID != faceSkinInfo.HeadSlot)
+                        {
+                            Sideloader.Logger.LogError($"Error resolving face skins, head ID in manifest does do not match ID in list for GUID:{faceSkinInfo.SkinGUID}, skin ID:{faceSkinInfo.SkinSlot}");
+                            continue;
+                        }
+
+                        if (Sideloader.DebugLoggingResolveInfo.Value)
+                            Sideloader.Logger.LogDebug($"Resolving face skin ({faceSkinInfo.SkinGUID}) head ID ({faceSkinInfo.HeadGUID}) from slot {faceSkinInfo.HeadSlot} to slot {resolveInfo.LocalSlot}");
+
+                        x.Value[headIDIndex] = resolveInfo.LocalSlot.ToString();
+                    }
+                }
+            }
+
+            foreach (var data in Lists.ExternalDataList.Where(x => x.categoryNo == (int)ChaListDefine.CategoryNo.mt_skin_f))
+            {
+                int IDIndex = data.lstKey.IndexOf("ID");
+                int headIDIndex = data.lstKey.IndexOf("HeadID");
+
+                foreach (var x in data.dictList)
+                {
+                    int id = int.Parse(x.Value[IDIndex]);
+                    int headID = int.Parse(x.Value[headIDIndex]);
+
+                    var faceSkinInfo = TryGetFaceSkinInfo(id);
+                    if (faceSkinInfo == null) continue;
+
+                    var resolveInfo = TryGetResolutionInfo(faceSkinInfo.HeadSlot, ChaListDefine.CategoryNo.mo_head, faceSkinInfo.HeadGUID);
                     if (resolveInfo == null)
                         ShowGUIDError(faceSkinInfo.HeadGUID);
                     else
