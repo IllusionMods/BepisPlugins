@@ -10,7 +10,15 @@ namespace ExtensibleSaveFormat
         {
             try
             {
-                var bytes = (byte[])Traverse.Create(messagePackObject).Property(ExtendedSaveDataPropertyName).GetValue();
+                if (messagePackObject == null) throw new System.ArgumentNullException(nameof(messagePackObject));
+
+                var tv = Traverse.Create(messagePackObject);
+                var prop = tv.Property(ExtendedSaveDataPropertyName);
+
+                if (!prop.PropertyExists())
+                    throw new System.NotSupportedException($"The type '{messagePackObject?.GetType()}' does not have the '{ExtendedSaveDataPropertyName}' property. Make sure the extended save patcher is installed and working.");
+
+                var bytes = (byte[])prop.GetValue();
                 if (bytes != null)
                 {
                     Dictionary<string, PluginData> pluginData = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
