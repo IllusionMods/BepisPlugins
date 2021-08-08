@@ -430,6 +430,8 @@ namespace ExtensibleSaveFormat
 #endif
             #endregion
 
+            [HarmonyPostfix, HarmonyPatch(typeof(ChaFileCoordinate), nameof(ChaFileCoordinate.MemberInit))]
+            private static void MemberInit(ChaFileCoordinate __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
 #if KK || EC
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileAccessory), nameof(ChaFileAccessory.MemberInit))]
             private static void MemberInit(ChaFileAccessory __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);

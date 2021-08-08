@@ -1,6 +1,10 @@
 ﻿using HarmonyLib;
 using System.Collections.Generic;
 using static ExtensibleSaveFormat.ExtendedSave;
+#if AI || HS2
+using AIChara;
+#endif
+
 
 namespace ExtensibleSaveFormat
 {
@@ -59,7 +63,12 @@ namespace ExtensibleSaveFormat
             }
         }
 
-#if KK || KKS || EC
+        //Coordinate
+        public static Dictionary<string, PluginData> GetAllExtendedData(this ChaFileCoordinate messagePackObject) => GetAllExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this ChaFileCoordinate messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this ChaFileCoordinate messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+#if KK || KKS || EC         
         //Body
         public static Dictionary<string, PluginData> GetAllExtendedData(this ChaFileBody messagePackObject) => GetAllExtendedData(messagePackObject);
         public static bool TryGetExtendedDataById(this ChaFileBody messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
