@@ -139,6 +139,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HS2_ExtensibleSaveFormat_Pa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_ExtensibleSaveFormat_Patcher", "src\KKS_ExtensibleSaveFormat_Patcher\KKS_ExtensibleSaveFormat_Patcher.csproj", "{346C42E1-4682-40D1-83DF-95B073D2E2D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_ConfigurationManager", "src\KKS_ConfigurationManager\KKS_ConfigurationManager.csproj", "{2C8DC4C7-99A4-45E1-B379-E67111810926}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
@@ -437,6 +439,10 @@ Global
 		{346C42E1-4682-40D1-83DF-95B073D2E2D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{346C42E1-4682-40D1-83DF-95B073D2E2D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{346C42E1-4682-40D1-83DF-95B073D2E2D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C8DC4C7-99A4-45E1-B379-E67111810926}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C8DC4C7-99A4-45E1-B379-E67111810926}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C8DC4C7-99A4-45E1-B379-E67111810926}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C8DC4C7-99A4-45E1-B379-E67111810926}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -509,6 +515,7 @@ Global
 		{68EFA368-2416-45A3-9641-CA6CE963BE21} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 		{943EFDFA-D903-4103-B5C5-E1BF118B6DCD} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 		{346C42E1-4682-40D1-83DF-95B073D2E2D3} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
+		{2C8DC4C7-99A4-45E1-B379-E67111810926} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
