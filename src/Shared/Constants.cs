@@ -39,7 +39,7 @@ namespace BepisPlugins
         internal const string VRProcessName = "VR GEDOU";
 #elif KKS //todo change on full release
         internal static bool InsideStudio => false;
-        internal const string GameProcessName = "KoikatsuSunshineTrial";
+        internal const string GameProcessName = "KoikatsuSunshine";
 #endif
     }
 }
