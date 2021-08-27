@@ -2,6 +2,7 @@
 using BepisPlugins;
 using HarmonyLib;
 using System.ComponentModel;
+using Cysharp.Threading.Tasks;
 using Illusion.Game;
 using TMPro;
 using UnityEngine;
@@ -10,6 +11,7 @@ using UnityEngine.UI;
 namespace ConfigurationManagerWrapper
 {
     [BepInProcess(Constants.GameProcessName)]
+    //[BepInProcess(Constants.StudioProcessName)] uncomment once studio constant is set
     [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
     [Browsable(false)]
     [BepInPlugin(GUID, PluginName, Version)]
@@ -29,13 +31,7 @@ namespace ConfigurationManagerWrapper
             bool mainGame = Application.productName == Constants.GameProcessName;
             if (mainGame)
             {
-                var harmony = Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
-                
-                var iteratorType = typeof(ConfigScene).GetNestedType("<Start>d__40", AccessTools.all);
-                var iteratorMethod = AccessTools.Method(iteratorType, "MoveNext");
-                var postfix = new HarmonyMethod(typeof(ConfigurationManagerWrapper), nameof(OnOpen));
-                harmony.Patch(iteratorMethod, null, postfix);
-                
+                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
                 //Main game is handled by the hooks, disable this plugin to prevent Update from running
                 enabled = false;
             }
@@ -47,21 +43,16 @@ namespace ConfigurationManagerWrapper
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
         }
 
-        private static void OnOpen()
+        private static void CreateButton()
         {
-            var existing = GameObject.Find("ConfigScene(Clone)/Canvas/Node ShortCut/Plugin Settings");
-            if (existing != null)
-                return;
-            
             var original = GameObject.Find("ConfigScene(Clone)/Canvas/Node ShortCut/ShortCutButton(Clone)");
-            if (original == null)
+            if (original == null) 
                 return;
 
             var copy = Instantiate(original, original.transform.parent);
             copy.name = "Plugin Settings";
-            
             copy.GetComponentInChildren<TextMeshProUGUI>().text = copy.name;
-            
+
             var button = copy.GetComponentInChildren<Button>();
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(delegate
@@ -71,6 +62,9 @@ namespace ConfigurationManagerWrapper
             });
         }
         
+        [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), nameof(ConfigScene.Start))]
+        private static void OnOpen(ref UniTask __result) => __result.GetAwaiter().OnCompleted(CreateButton);
+
         [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), nameof(ConfigScene.Unload))]
         private static void OnClose() => _manager.DisplayingWindow = false;
     }

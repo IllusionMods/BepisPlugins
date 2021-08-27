@@ -60,6 +60,26 @@
         <Reference Include="System.Core" />
         <Reference Include="System.Data" />
         <Reference Include="System.Xml" />
+        <Reference Include="UniTask, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\lib\net46\UniTask.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UniTask.Addressables, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\lib\net46\UniTask.Addressables.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UniTask.DOTween, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\lib\net46\UniTask.DOTween.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UniTask.Linq, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\lib\net46\UniTask.Linq.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="UniTask.TextMeshPro, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\lib\net46\UniTask.TextMeshPro.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
         <Reference Include="Unity.TextMeshPro, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
           <HintPath>..\..\packages\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.2019.4.9\lib\net46\Unity.TextMeshPro.dll</HintPath>
             <Private>false</Private>
@@ -110,6 +130,7 @@
       <Error Condition="!Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.targets'))" />
       <Error Condition="!Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.targets'))" />
       <Error Condition="!Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.2019.4.9\build\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.2019.4.9\build\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.targets'))" />
+      <Error Condition="!Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\build\IllusionLibs.KoikatsuSunshine.UniTask.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\build\IllusionLibs.KoikatsuSunshine.UniTask.targets'))" />
     </Target>
     <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets')" />
     <Import Project="..\Shared\Shared.projitems" Label="Shared" />
@@ -119,6 +140,7 @@
     <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.InputLegacyModule.targets')" />
     <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.2019.4.9\build\IllusionLibs.KoikatsuSunshine.UnityEngine.IMGUIModule.targets')" />
     <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.2019.4.9\build\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.2019.4.9\build\IllusionLibs.KoikatsuSunshine.Unity.TextMeshPro.targets')" />
+    <Import Project="..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\build\IllusionLibs.KoikatsuSunshine.UniTask.targets" Condition="Exists('..\..\packages\IllusionLibs.KoikatsuSunshine.UniTask.2021.8.27.1\build\IllusionLibs.KoikatsuSunshine.UniTask.targets')" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
          Other similar extension points exist, see Microsoft.Common.targets.
     <Target Name="BeforeBuild">
