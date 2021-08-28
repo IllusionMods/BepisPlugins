@@ -134,9 +134,23 @@ namespace Sideloader
                     if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
                     {
                         //Skip the mod if it is not for this game
-                        if (!manifest.Game.IsNullOrWhiteSpace() && !GameNameList.Contains(manifest.Game.ToLower().Replace("!", "")))
+                        bool allowed = false;
+                        if (manifest.Games.Count == 0)
+                            allowed = true;
+                        else
                         {
-                            Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {manifest.Game}");
+                            foreach (var gameName in manifest.Games)
+                            {
+                                if (GameNameList.Contains(gameName.ToLower()))
+                                {
+                                    allowed = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!allowed)
+                        {
+                            Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {string.Join(", ", manifest.Games.ToArray())}");
                             return null;
                         }
 

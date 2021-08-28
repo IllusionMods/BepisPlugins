@@ -49,7 +49,14 @@ namespace Sideloader
         /// <summary>
         /// Game the mod is made for. If specified, the mod will only load for that game. If not specified will load on any game.
         /// </summary>
+        [Obsolete("Use Games instead")]
         public string Game => manifestDocument.Root?.Element("game")?.Value;
+
+        private readonly List<string> _Games = new List<string>();
+        /// <summary>
+        /// Games the mod is made for. If specified, the mod will only load for those games. If not specified will load on any game.
+        /// </summary>
+        public List<string> Games => _Games;
         /// <summary>
         /// List of all migration info for this mod
         /// </summary>
@@ -64,6 +71,10 @@ namespace Sideloader
         {
             using (XmlReader reader = XmlReader.Create(stream))
                 manifestDocument = XDocument.Load(reader);
+
+            foreach (var element in manifestDocument.Root?.Elements("game"))
+                if (element != null && !element.Value.IsNullOrWhiteSpace())
+                    _Games.Add(element.Value);
         }
 
         internal void LoadMigrationInfo()
