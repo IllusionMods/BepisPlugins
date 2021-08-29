@@ -83,6 +83,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KKS.ExtendedSave.SaveData.cs" />
+    <Compile Include="KKS.ExtendedSave.SaveData.Hooks.cs" />
     <Compile Include="KKS.ExtendedSave.Events.cs" />
     <Compile Include="KKS.ExtendedSave.Hooks.cs" />
     <Compile Include="KKS.ExtendedSave.cs" />
