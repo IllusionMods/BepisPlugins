@@ -9,6 +9,9 @@ using System.Linq;
 #if AI || HS2
 using AIChara;
 #endif
+#if !EC
+using Studio;
+#endif
 
 namespace Sideloader.AutoResolver
 {
@@ -420,6 +423,63 @@ namespace Sideloader.AutoResolver
 
                 ResolveStructure(structref, __instance.custom.face, faceResolveInfos);
                 ResolveStructure(StructReference.ChaFileMakeupProperties, __instance.custom.face.makeup, makeupResolveInfos);
+            }
+#endif
+
+#if KK || KKS
+            /// <summary>
+            /// Translate the value (selected index) to the actual ID of the filter. This allows us to save the ID to the scene.
+            /// Without this, the index is saved which will be different depending on installed mods and make it impossible to save and load correctly.
+            /// </summary>
+            [HarmonyPrefix, HarmonyPatch(typeof(SystemButtonCtrl.AmplifyColorEffectInfo), nameof(SystemButtonCtrl.AmplifyColorEffectInfo.OnValueChangedLut))]
+            internal static void OnValueChangedLutPrefix(ref int _value)
+            {
+                int counter = 0;
+                foreach (var x in Info.Instance.dicFilterLoadInfo)
+                {
+                    if (counter == _value)
+                    {
+                        _value = x.Key;
+                        break;
+                    }
+                    counter++;
+                }
+            }
+
+            /// <summary>
+            /// Called after a scene load. Find the index of the currrent filter ID and set the dropdown.
+            /// </summary>
+            [HarmonyPostfix, HarmonyPatch(typeof(SystemButtonCtrl.AmplifyColorEffectInfo), nameof(SystemButtonCtrl.AmplifyColorEffectInfo.UpdateInfo))]
+            internal static void ACEUpdateInfoPostfix(SystemButtonCtrl.AmplifyColorEffectInfo __instance)
+            {
+                int counter = 0;
+                foreach (var x in Info.Instance.dicFilterLoadInfo)
+                {
+                    if (x.Key == Studio.Studio.Instance.sceneInfo.aceNo)
+                    {
+                        __instance.dropdownLut.value = counter;
+                        break;
+                    }
+                    counter++;
+                }
+            }
+
+            /// <summary>
+            /// Called after a scene load. Find the index of the currrent ramp ID and set the dropdown.
+            /// </summary>
+            [HarmonyPostfix, HarmonyPatch(typeof(SystemButtonCtrl.EtcInfo), nameof(SystemButtonCtrl.EtcInfo.UpdateInfo))]
+            internal static void ETCUpdateInfoPostfix(SystemButtonCtrl.EtcInfo __instance)
+            {
+                int counter = 0;
+                foreach (var x in Lists.InternalDataList[ChaListDefine.CategoryNo.mt_ramp])
+                {
+                    if (x.Key == Studio.Studio.Instance.sceneInfo.rampG)
+                    {
+                        __instance.dropdownRamp.value = counter;
+                        break;
+                    }
+                    counter++;
+                }
             }
 #endif
         }
