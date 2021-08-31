@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Sideloader.ListLoader;
+using System.IO;
 #if KK || EC || KKS
 using ChaCustom;
 #elif AI || HS2
@@ -19,7 +20,7 @@ namespace Sideloader
             internal static void InstallHooks()
             {
                 var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
-#if KK
+#if KK || KKS
                 harmony.Patch(typeof(GlobalMethod).GetMethod(nameof(GlobalMethod.LoadAllFolder), AccessTools.all).MakeGenericMethod(typeof(Object)),
                               null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));
 #endif
@@ -128,6 +129,25 @@ namespace Sideloader
                 }
 
                 return true;
+            }
+#endif
+
+#if KK || KKS
+            /// <summary>
+            /// Patch for loading h/common/ stuff for Sideloader maps
+            /// </summary>
+            internal static void LoadAllFolderPostfix(string _findFolder, string _strLoadFile, ref List<Object> __result)
+            {
+                if (__result.Count() == 0 && (_findFolder == "h/common/" || _findFolder == "vr/common/"))
+                    foreach (var kvp in BundleManager.Bundles.Where(x => x.Key.StartsWith(_findFolder)))
+                        foreach (var lazyList in kvp.Value)
+                            foreach (var assetName in lazyList.Instance.GetAllAssetNames())
+                                if (_strLoadFile.ToLower() == Path.GetFileNameWithoutExtension(assetName.ToLower()))
+                                {
+                                    GameObject go = CommonLib.LoadAsset<GameObject>(kvp.Key, assetName);
+                                    if (go)
+                                        __result.Add(go);
+                                }
             }
 #endif
         }

@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using Illusion.Elements.Xml;
-using Sideloader.ListLoader;
 using Studio;
 using System.Linq;
 using System.Xml.Linq;

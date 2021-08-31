@@ -1,12 +1,9 @@
 ﻿using BepInEx.Logging;
 using ExtensibleSaveFormat;
 using HarmonyLib;
-using System.Collections.Generic;
-using System.Linq;
-using HarmonyLib;
 using Illusion.Elements.Xml;
-using Sideloader.ListLoader;
 using Studio;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
