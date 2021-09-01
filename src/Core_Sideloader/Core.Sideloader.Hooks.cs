@@ -66,7 +66,7 @@ namespace Sideloader
             [HarmonyPostfix, HarmonyPatch(typeof(CommonLib), nameof(CommonLib.GetAssetBundleNameListFromPath))]
             private static void GetAssetBundleNameListFromPath(string path, List<string> __result)
             {
-                if (path == "h/list/" || path == "map/list/mapinfo/")
+                if (path == "h/list/" || path == "map/list/mapinfo/" || path == "map/list/mapthumbnailinfo/")
                 {
                     foreach (var assetBundleName in BundleManager.Bundles.Keys.Where(x => x.StartsWith(path)))
                         if (!__result.Contains(assetBundleName))
