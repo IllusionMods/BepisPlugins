@@ -7,7 +7,7 @@ namespace ExtensibleSaveFormat
     public partial class ExtendedSave
     {
         /// <summary> ImportEventHandler </summary>
-        public delegate void ImportEventHandler(Dictionary<string, PluginData> importedExtendedData);
+        public delegate void ImportEventHandler(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping);
 
         /// <summary>
         /// Contains all extended data read from the KK card. Key is data GUID.
@@ -15,7 +15,7 @@ namespace ExtensibleSaveFormat
         /// </summary>
         public static event ImportEventHandler CardBeingImported;
 
-        private static void CardImportEvent(Dictionary<string, PluginData> data)
+        private static void CardImportEvent(Dictionary<string, PluginData> data, Dictionary<int, int?> coordinateMapping)
         {
             if (CardBeingImported != null)
             {
@@ -24,7 +24,7 @@ namespace ExtensibleSaveFormat
                     var handler = (ImportEventHandler)entry;
                     try
                     {
-                        handler.Invoke(data);
+                        handler.Invoke(data, coordinateMapping);
                     }
                     catch (Exception ex)
                     {

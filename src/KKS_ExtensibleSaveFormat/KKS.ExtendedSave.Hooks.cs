@@ -12,12 +12,76 @@ namespace ExtensibleSaveFormat
     {
         internal static partial class Hooks
         {
+            private static readonly bool MoreOutfitsInstalled;
+            private static Dictionary<int, int?> CoordinateMapping = new Dictionary<int, int?>();
+
+            static Hooks()
+            {
+                MoreOutfitsInstalled = Type.GetType($"KK_Plugins.MoreOutfits.Plugin, KKS_MoreOutfits") != null;
+            }
+
             #region Import KK Chara
 
             private static void KKChaFileLoadFileHook(ChaFile file, BlockHeader header, BinaryReader reader)
             {
-                var info = header.SearchInfo(Marker);
+                CoordinateMapping = new Dictionary<int, int?>();
 
+                // Remap coordinates from the KK index to the matching KKS index
+                ChaFileCoordinate[] newCoordinates = new ChaFileCoordinate[file.coordinate.Length];
+                for (int i = 0; i < file.coordinate.Length; i++)
+                {
+                    int index = i;
+                    int? newIndex = i;
+
+                    switch (i)
+                    {
+                        case 0:
+                            newIndex = 4;
+                            break;
+                        case 1:
+                            newIndex = 3;
+                            break;
+                        case 2:
+                            newIndex = 5;
+                            break;
+                        case 3:
+                            newIndex = 1;
+                            break;
+                        case 4:
+                            //Get rid of these outfits without MoreOutfits installed since they wouldn't be usable
+                            if (MoreOutfitsInstalled)
+                                newIndex = 6;
+                            else
+                                newIndex = null;
+                            break;
+                        case 5:
+                            if (MoreOutfitsInstalled)
+                                newIndex = 0;
+                            else
+                                newIndex = null;
+                            break;
+                        case 6:
+                            if (MoreOutfitsInstalled)
+                                newIndex = 2;
+                            else
+                                newIndex = null;
+                            break;
+                        default:
+                            //Carry over extra outfits if MoreOutfits is installed, otherwise drop them 
+                            if (MoreOutfitsInstalled)
+                                newIndex = index;
+                            else
+                                newIndex = null;
+                            break;
+                    }
+
+                    CoordinateMapping[index] = newIndex;
+                    if (newIndex != null)
+                        newCoordinates[(int)newIndex] = file.coordinate[index];
+                }
+                file.coordinate = newCoordinates;
+
+                var info = header.SearchInfo(Marker);
                 if (info != null && info.version == DataVersion.ToString())
                 {
                     var originalPosition = reader.BaseStream.Position;
@@ -34,7 +98,7 @@ namespace ExtensibleSaveFormat
                         var dictionary = MessagePackDeserialize<Dictionary<string, PluginData>>(data);
                         if (dictionary != null)
                         {
-                            CardImportEvent(dictionary);
+                            CardImportEvent(dictionary, CoordinateMapping);
                             internalCharaDictionary.Set(file, dictionary);
                         }
                     }
@@ -101,7 +165,7 @@ namespace ExtensibleSaveFormat
 
                                 if (dictionary != null)
                                 {
-                                    CardImportEvent(dictionary);
+                                    CardImportEvent(dictionary, CoordinateMapping);
                                     internalCharaDictionary.Set(__instance, dictionary);
                                 }
                             }

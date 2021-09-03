@@ -19,7 +19,7 @@ namespace Sideloader.AutoResolver
             [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFileScene), nameof(ConvertChaFileScene.OnDestroy))]
             private static void ConvertChaFileSceneEnd() => DoingImport = false;
 
-            internal static void ExtendedCardImport(Dictionary<string, PluginData> importedExtendedData)
+            internal static void ExtendedCardImport(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping)
             {
                 if (importedExtendedData.TryGetValue(UARExtID, out var pluginData))
                 {
@@ -27,21 +27,28 @@ namespace Sideloader.AutoResolver
                     {
                         var tmpExtInfo = (object[])pluginData.data["info"];
                         var extInfo = tmpExtInfo.Select(x => ResolveInfo.Deserialize((byte[])x)).ToList();
+                        List<ResolveInfo> extInfoToRemove = new List<ResolveInfo>();
 
-                        for (int i = 0; i < extInfo.Count;)
+                        foreach (var info in extInfo)
                         {
-                            if (extInfo[i].Property.StartsWith("outfit0"))
+                            if (info.Property.StartsWith("outfit"))
                             {
-                                i++;
+                                var propertySplit = info.Property.Split('.');
+                                int index = int.Parse(propertySplit[0].Replace("outfit", ""));
+                                if (coordinateMapping.TryGetValue(index, out int? newIndex) && newIndex != null)
+                                {
+                                    propertySplit[0] = $"outfit{newIndex}";
+                                    info.Property = string.Join(".", propertySplit);
+                                }
+                                else
+                                {
+                                    //Remove all the excess outfits
+                                    extInfoToRemove.Add(info);
+                                }
                             }
-                            else if (extInfo[i].Property.StartsWith("outfit"))
-                            {
-                                //Remove all the excess outfits
-                                extInfo.RemoveAt(i);
-                            }
-                            else
-                                i++;
                         }
+                        foreach (var infoToRemove in extInfoToRemove)
+                            extInfo.Remove(infoToRemove);
 
                         importedExtendedData[UARExtID] = new PluginData
                         {
