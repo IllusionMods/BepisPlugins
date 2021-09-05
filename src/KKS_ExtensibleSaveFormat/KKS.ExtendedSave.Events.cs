@@ -10,8 +10,9 @@ namespace ExtensibleSaveFormat
         public delegate void ImportEventHandler(Dictionary<string, PluginData> importedExtendedData, Dictionary<int, int?> coordinateMapping);
 
         /// <summary>
-        /// Contains all extended data read from the KK card. Key is data GUID.
-        /// Convert your data and write it back to the dictionary to get it saved.
+        /// Contains all extended data read from the KK card. Key is data GUID. Convert your data and write it back to the dictionary to get it saved.
+        /// coordinateMapping.Key is the index of KK coordinate, and Value is the new index of KKS coordinate. If Value is null the coordinate will be discarded.
+        /// You can convert your data by simply switching coordinate IDs from Key to Value in your data. If Value is null you should remove data for that coordinate.
         /// </summary>
         public static event ImportEventHandler CardBeingImported;
 
