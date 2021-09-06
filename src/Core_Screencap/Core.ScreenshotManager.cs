@@ -349,7 +349,7 @@ namespace Screencap
             }
 
 #if EC || KKS
-            if (colorMaskDisabled && colorMask) colorMask.Enabled = false;
+            if (colorMaskDisabled && colorMask) colorMask.Enabled = true;
 #endif
 
             try { OnPostCapture?.Invoke(); }

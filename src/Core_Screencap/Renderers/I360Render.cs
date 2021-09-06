@@ -70,10 +70,8 @@ namespace Screencap
 
             var disableTypes = new Type[]
             {
-#if !KKS //todo check if they come back in KKS full game
                 typeof(UnityStandardAssets.ImageEffects.VignetteAndChromaticAberration),
                 typeof(UnityStandardAssets.ImageEffects.DepthOfField)
-#endif
             };
             var disabled = renderCam.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
             foreach (var comp in disabled) comp.enabled = false;

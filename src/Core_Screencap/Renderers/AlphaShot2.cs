@@ -69,7 +69,6 @@ namespace alphaShot
             int newWidth = ResolutionX * DownscalingRate;
             int newHeight = ResolutionY * DownscalingRate;
 
-#if !KKS //todo check if they come back in KKS full game
             // Fix depth of field
             float orgBlurSize = 0.0f;
             var dof = Camera.main.gameObject.GetComponent<UnityStandardAssets.ImageEffects.DepthOfField>();
@@ -78,7 +77,6 @@ namespace alphaShot
                 orgBlurSize = dof.maxBlurSize;
                 dof.maxBlurSize = newWidth * orgBlurSize / Screen.width;
             }
-#endif
 
             if (Transparent && (InStudio
                 || SceneManager.GetActiveScene().name == "CustomScene"
@@ -88,13 +86,11 @@ namespace alphaShot
             else
                 fullSizeCapture = CaptureOpaque(newWidth, newHeight);
 
-#if !KKS
             // Recover depth of field
             if (dof != null)
             {
                 dof.maxBlurSize = orgBlurSize;
             }
-#endif
 
             if (DownscalingRate > 1)
                 return LanczosTex(fullSizeCapture, ResolutionX, ResolutionY);
@@ -132,10 +128,8 @@ namespace alphaShot
 
             var disableTypes = new Type[]
             {
-#if !KKS //todo check if they come back in KKS full game
                 typeof(UnityStandardAssets.ImageEffects.BloomAndFlares),
                 typeof(UnityStandardAssets.ImageEffects.VignetteAndChromaticAberration),
-#endif
                 typeof(AmplifyColorEffect),
             };
             var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
