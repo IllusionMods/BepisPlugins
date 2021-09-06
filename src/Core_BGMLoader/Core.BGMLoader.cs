@@ -16,8 +16,8 @@ namespace BGMLoader
         public const string GUID = "com.bepis.bgmloader";
         public const string PluginName = "BGM Loader";
         public const string Version = Metadata.PluginsVersion;
-        public static string IntroClipsDirectory = BepInEx.Utility.CombinePaths(Paths.PluginPath, "introclips");
-        public static string BGMDirectory = BepInEx.Utility.CombinePaths(Paths.PluginPath, "bgm");
+        public static string IntroClipsDirectory = Path.Combine(Paths.PluginPath, "introclips");
+        public static string BGMDirectory = Path.Combine(Paths.PluginPath, "bgm");
 
         public void Awake()
         {
@@ -31,7 +31,8 @@ namespace BGMLoader
 
         public void LoadIntroClips(IAssetLoadingContext context)
         {
-            if (context.Bundle.name.StartsWith("sound/data/systemse/brandcall/") || context.Bundle.name.StartsWith("sound/data/systemse/titlecall/"))
+            if (context.Bundle.name.Length > 30 &&
+                (context.Bundle.name.StartsWith("sound/data/systemse/brandcall/") || context.Bundle.name.StartsWith("sound/data/systemse/titlecall/")))
             {
                 var files = Directory.GetFiles(IntroClipsDirectory, "*.wav");
 
@@ -47,21 +48,13 @@ namespace BGMLoader
 
         public void LoadBGM(IAssetLoadingContext context)
         {
-            if (context.Parameters.Name != null && context.Parameters.Name.Length > 4 &&
-                (context.Parameters.Name.StartsWith("bgm", System.StringComparison.InvariantCultureIgnoreCase)
-#if AI
-                 || context.Parameters.Name.StartsWith("ai_bgm", System.StringComparison.InvariantCultureIgnoreCase)
-#elif HS2
-                 || context.Parameters.Name.StartsWith("hs2_bgm", System.StringComparison.InvariantCultureIgnoreCase)
-#endif
-                ))
+            if (context.Parameters.Name != null && TryGetOverrideFileName(context, out var overrideFileName))
             {
-                int bgmTrack = int.Parse(context.Parameters.Name.Substring(context.Parameters.Name.Length - 2, 2));
-                var path = BepInEx.Utility.CombinePaths(BGMDirectory, $"BGM{bgmTrack:00}.ogg");
+                var path = Path.Combine(BGMDirectory, overrideFileName);
 
                 if (File.Exists(path))
                 {
-                    Logger.LogDebug($"Loading BGM track \"{(BGM)bgmTrack}\" from {path}");
+                    Logger.LogDebug($"Loading BGM track \"{context.Parameters.Name}\" from {path}");
 
                     context.Asset = AudioLoader.LoadAudioClip(path);
                     context.Complete();
