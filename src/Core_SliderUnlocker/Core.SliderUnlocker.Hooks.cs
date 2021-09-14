@@ -17,7 +17,7 @@ namespace SliderUnlocker
     {
         public static void InstallHooks()
         {
-            var hi = Harmony.CreateAndPatchAll(typeof(Hooks));
+            var hi = Harmony.CreateAndPatchAll(typeof(Hooks), SliderUnlocker.GUID);
 
 #if !PH && !HS
             var nomF = typeof(ChaFileDefine).GetField("cf_SteamShapeLimit", AccessTools.all);

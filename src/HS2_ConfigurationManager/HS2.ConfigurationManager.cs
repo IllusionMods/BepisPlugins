@@ -33,7 +33,7 @@ namespace ConfigurationManagerWrapper
             bool mainGame = Application.productName == Constants.GameProcessName;
             if (mainGame)
             {
-                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
+                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper), GUID);
                 //Main game is handled by the hooks, disable this plugin to prevent Update from running
                 enabled = false;
             }

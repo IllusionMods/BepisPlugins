@@ -20,7 +20,7 @@ namespace SliderUnlocker
 
         public static void Init()
         {
-            var harmony = Harmony.CreateAndPatchAll(typeof(VoicePitchUnlocker));
+            var harmony = Harmony.CreateAndPatchAll(typeof(VoicePitchUnlocker), nameof(VoicePitchUnlocker));
 
             var iteratorType = typeof(CvsChara).GetNestedType("<SetInputText>c__Iterator0", AccessTools.all);
             var iteratorMethod = AccessTools.Method(iteratorType, "MoveNext");

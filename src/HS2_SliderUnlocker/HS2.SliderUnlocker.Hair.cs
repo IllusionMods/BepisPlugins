@@ -13,7 +13,7 @@ namespace SliderUnlocker
     {
         public static void Init()
         {
-            Harmony.CreateAndPatchAll(typeof(HairUnlocker));
+            Harmony.CreateAndPatchAll(typeof(HairUnlocker), nameof(HairUnlocker));
         }
 
         // Fix first pos value limit

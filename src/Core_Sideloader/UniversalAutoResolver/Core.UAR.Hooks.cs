@@ -26,7 +26,7 @@ namespace Sideloader.AutoResolver
 
             internal static void InstallHooks()
             {
-                Harmony.CreateAndPatchAll(typeof(Hooks));
+                Harmony.CreateAndPatchAll(typeof(Hooks), "Sideloader.UniversalAutoResolver");
 
                 ExtendedSave.CardBeingLoaded += ExtendedCardLoad;
                 ExtendedSave.CardBeingSaved += ExtendedCardSave;

@@ -30,7 +30,7 @@ namespace ConfigurationManagerWrapper
 
             if (!Constants.InsideStudio)
             {
-                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
+                Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper), GUID);
                 // Main game is handled by the hooks, Update is only for studio
                 enabled = false;
             }

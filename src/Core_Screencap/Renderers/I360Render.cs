@@ -28,7 +28,7 @@ namespace Screencap
             paddingX = Shader.PropertyToID("_PaddingX");
             ab.Unload(false);
 
-            Harmony.CreateAndPatchAll(typeof(I360Render));
+            Harmony.CreateAndPatchAll(typeof(I360Render), nameof(I360Render));
         }
 
         // Fix mirrors messing up the capture by blindly inverting culling

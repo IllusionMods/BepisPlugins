@@ -16,7 +16,7 @@ namespace ExtensibleSaveFormat
         {
             internal static void InstallHooks()
             {
-                var h = Harmony.CreateAndPatchAll(typeof(Hooks));
+                var h = Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
 
                 // Just some casual prefix patches overriding the whole method, if it exists we need to patch it instead of the original method
                 foreach (var typeToPatch in new[]

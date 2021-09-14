@@ -19,7 +19,7 @@ namespace ExtensibleSaveFormat
 
             internal static void InstallHooks()
             {
-                Harmony.CreateAndPatchAll(typeof(Hooks));
+                Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
             }
 
             #region ChaFile

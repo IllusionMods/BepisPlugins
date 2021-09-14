@@ -19,7 +19,7 @@ namespace Sideloader
         {
             internal static void InstallHooks()
             {
-                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks));
+                var harmony = Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
 #if KK || KKS
                 harmony.Patch(typeof(GlobalMethod).GetMethod(nameof(GlobalMethod.LoadAllFolder), AccessTools.all).MakeGenericMethod(typeof(Object)),
                               null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));

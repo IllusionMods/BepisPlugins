@@ -25,7 +25,7 @@ namespace ConfigurationManagerWrapper
             _manager = GetComponent<ConfigurationManager.ConfigurationManager>();
             _manager.OverrideHotkey = true;
 
-            Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
+            Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper), GUID);
         }
 
         [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), nameof(ConfigScene.Start))]

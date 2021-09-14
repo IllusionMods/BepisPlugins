@@ -14,7 +14,7 @@ namespace SliderUnlocker
 
         public static void Init()
         {
-            Harmony.CreateAndPatchAll(typeof(VoicePitchUnlocker));
+            Harmony.CreateAndPatchAll(typeof(VoicePitchUnlocker), nameof(VoicePitchUnlocker));
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(ChaFileParameter), nameof(ChaFileParameter.voicePitch), MethodType.Getter)]

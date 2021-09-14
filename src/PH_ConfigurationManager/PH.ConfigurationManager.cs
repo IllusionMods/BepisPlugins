@@ -30,7 +30,7 @@ namespace ConfigurationManagerWrapper
             if (Constants.InsideStudio)
                 return;
 
-            Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper));
+            Harmony.CreateAndPatchAll(typeof(ConfigurationManagerWrapper), GUID);
             enabled = false;
         }
 

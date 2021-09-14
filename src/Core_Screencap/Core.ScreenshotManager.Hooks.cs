@@ -9,7 +9,7 @@ namespace Screencap
         /// <summary> Chara card Render/Downsample rate.</summary>
         private static int CardRenderRate => ScreenshotManager.CardDownscalingRate.Value;
 
-        public static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks));
+        public static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks), ScreenshotManager.GUID);
         /// <summary>
         /// Cancel the vanilla screenshot
         /// </summary>

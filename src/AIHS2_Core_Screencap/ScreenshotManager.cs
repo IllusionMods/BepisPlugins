@@ -119,7 +119,7 @@ namespace Screencap
         {
             public static void Apply()
             {
-                var h = Harmony.CreateAndPatchAll(typeof(Hooks));
+                var h = Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
 
                 var msvoType = Type.GetType("UnityEngine.Rendering.PostProcessing.MultiScaleVO, Unity.Postprocessing.Runtime");
                 h.Patch(AccessTools.Method(msvoType, "PushAllocCommands"), transpiler: new HarmonyMethod(typeof(Hooks), nameof(AoBandingFix)));

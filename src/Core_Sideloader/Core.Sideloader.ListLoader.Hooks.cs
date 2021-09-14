@@ -11,7 +11,7 @@ namespace Sideloader.ListLoader
     {
         internal static partial class Hooks
         {
-            internal static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks));
+            internal static void InstallHooks() => Harmony.CreateAndPatchAll(typeof(Hooks), "Sideloader.ListLoader");
 
             [HarmonyPrefix, HarmonyPatch(typeof(ChaListControl), nameof(ChaListControl.CheckItemID), typeof(int), typeof(int))]
             private static bool CheckItemIDHook(int category, int id, ref byte __result, ChaListControl __instance)
