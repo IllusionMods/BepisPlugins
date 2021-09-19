@@ -228,11 +228,11 @@ namespace Sideloader.AutoResolver
 #endif
                     {
 #if KK || EC || KKS
-                        string mainAB = Lists.InternalDataList[kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
+                        Lists.InternalDataList[kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo.TryGetValue((int)ChaListDefine.KeyType.MainAB, out string mainAB);
 #elif AI || HS2
-                        string mainAB = Lists.InternalDataList[(int)kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo[(int)ChaListDefine.KeyType.MainAB];
+                        Lists.InternalDataList[(int)kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo.TryGetValue((int)ChaListDefine.KeyType.MainAB, out string mainAB);
 #endif
-                        mainAB = mainAB.Replace("chara/", "").Replace(".unity3d", "").Replace(kv.Key.Category.ToString() + "_", "").Replace("/", "");
+                        mainAB = mainAB?.Replace("chara/", "").Replace(".unity3d", "").Replace(kv.Key.Category.ToString() + "_", "").Replace("/", "");
 
                         if (int.TryParse(mainAB, out int x))
                         {
