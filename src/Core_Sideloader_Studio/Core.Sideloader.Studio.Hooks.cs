@@ -107,6 +107,33 @@ namespace Sideloader
                     }
                 }
             }
+
+#if KKS
+            [HarmonyFinalizer, HarmonyPatch(typeof(Studio.Info.MapLoadInfo), MethodType.Constructor, typeof(List<string>))]
+            internal static System.Exception InvalidMapLoadInfoCategoryFix(System.Exception __exception, Studio.Info.MapLoadInfo __instance, List<string> _list)
+            {
+                // KK-style list files are missing a new KKS column that represents the map group (at index 1). Attempt to load them into a temporary group in that case.
+                if (__exception is System.FormatException)
+                {
+                    int num = 1;
+                    __instance.name = _list[num++];
+                    __instance.bundlePath = _list[num++];
+                    __instance.fileName = _list[num++];
+                    __instance.manifest = _list.SafeGet(num++);
+                    __instance.vanish = new Studio.Info.FileInfo();
+                    __instance.vanish.bundlePath = _list.SafeGet(num++);
+                    __instance.vanish.fileName = _list.SafeGet(num++);
+
+                    const int invalidMapCategoryNo = 69133769;
+                    Studio.Info.Instance.dicMapCategory[invalidMapCategoryNo] = "Invalid";
+                    __instance.category = invalidMapCategoryNo;
+
+                    return null;
+                }
+
+                return __exception;
+            }
+#endif
         }
     }
 }
