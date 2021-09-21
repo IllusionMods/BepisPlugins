@@ -274,7 +274,7 @@ namespace Sideloader.AutoResolver
 
                         //Check if it's a vanilla item
                         if (slot < BaseSlotID)
-#if KK || EC
+#if KK || EC || KKS
                             if (Lists.InternalDataList[kv.Key.Category].ContainsKey(slot))
 #elif AI || HS2
                             if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))

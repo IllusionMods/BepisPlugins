@@ -83,7 +83,7 @@ namespace Sideloader.AutoResolver
                     //...probably other item types too, but don't tell anyone or I'll have to add support for it
                     if (StudioListType == "anime" || StudioListType == "hanime")
                     {
-#if KK
+#if KK || KKS
                         studioResolveInfo.Group = int.Parse(entry[1]);
                         studioResolveInfo.Category = int.Parse(entry[2]);
 #elif AI || HS2
@@ -267,7 +267,7 @@ namespace Sideloader.AutoResolver
         {
             if (OI is OIItemInfo Item)
             {
-#if KK
+#if KK || KKS
                 for (int i = 0; i < Item.pattern.Length; i++)
                 {
                     if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;
@@ -352,7 +352,7 @@ namespace Sideloader.AutoResolver
 
         internal static void ResolveStudioFilter(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
         {
-#if KK
+#if KK || KKS
             //Set filter ID to the resolved ID
             int filterID = Studio.Studio.Instance.sceneInfo.aceNo;
 
@@ -394,7 +394,7 @@ namespace Sideloader.AutoResolver
 
         internal static void ResolveStudioRamp(ExtensibleSaveFormat.PluginData extData, ResolveType resolveType)
         {
-#if KK
+#if KK || KKS
             //Set ramp ID to the resolved ID
             int rampID = Studio.Studio.Instance.sceneInfo.rampG;
 

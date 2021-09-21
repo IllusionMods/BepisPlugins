@@ -4,6 +4,8 @@ using BepisPlugins;
 namespace Sideloader
 {
     [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.VRProcessName)]
+    [BepInProcess(Constants.StudioProcessName)]
     [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
     [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, "1.1.0")]
     [BepInIncompatibility("com.bepis.bepinex.resourceredirector")]

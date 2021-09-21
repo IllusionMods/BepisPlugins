@@ -229,6 +229,7 @@ Global
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4
+		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{dd2b2edc-224a-487d-93fa-a71fccc5433e}*SharedItemsImports = 4

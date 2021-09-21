@@ -11,7 +11,8 @@ using UnityEngine.UI;
 namespace ConfigurationManagerWrapper
 {
     [BepInProcess(Constants.GameProcessName)]
-    //[BepInProcess(Constants.StudioProcessName)] uncomment once studio constant is set
+    [BepInProcess(Constants.VRProcessName)]
+    [BepInProcess(Constants.StudioProcessName)]
     [BepInDependency(ConfigurationManager.ConfigurationManager.GUID)]
     [Browsable(false)]
     [BepInPlugin(GUID, PluginName, Version)]

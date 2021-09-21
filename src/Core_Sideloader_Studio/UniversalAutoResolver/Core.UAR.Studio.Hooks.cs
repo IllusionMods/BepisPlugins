@@ -116,7 +116,7 @@ namespace Sideloader.AutoResolver
                             ObjectOrder = ItemOrder[Item.dicKey],
                             ObjectPatternInfo = new Dictionary<int, StudioPatternResolveInfo.PatternInfo>()
                         };
-#if KK
+#if KK || KKS
                         for (int i = 0; i < Item.pattern.Length; i++)
                         {
                             if (Item.pattern[i].key >= BaseSlotID)
@@ -259,7 +259,7 @@ namespace Sideloader.AutoResolver
                     }
                 }
 
-#if KK
+#if KK || KKS
                 //Add the extended data for the filter, if any
                 int filterID = Studio.Studio.Instance.sceneInfo.aceNo;
                 if (filterID > BaseSlotID)

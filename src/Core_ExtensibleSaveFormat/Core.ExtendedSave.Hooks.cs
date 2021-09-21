@@ -107,7 +107,7 @@ namespace ExtensibleSaveFormat
             {
                 if (!__result) return;
 
-#if KK
+#if KK // Doesn't work in KKS because KK cards go through a different load path
                 //Compatibility for ver 1 and 2 ext save data
                 if (br.BaseStream.Position != br.BaseStream.Length)
                 {
@@ -430,7 +430,7 @@ namespace ExtensibleSaveFormat
 #endif
             #endregion
 
-#if KK || EC
+#if KK || EC || KKS
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileAccessory), nameof(ChaFileAccessory.MemberInit))]
             private static void MemberInit(ChaFileAccessory __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileAccessory.PartsInfo), nameof(ChaFileAccessory.PartsInfo.MemberInit))]
@@ -461,7 +461,7 @@ namespace ExtensibleSaveFormat
             private static void Copy(ChaFileFace.PupilInfo __instance, ChaFileFace.PupilInfo src) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(Traverse.Create(src).Property(ExtendedSaveDataPropertyName).GetValue());
 #endif
 
-#if KK
+#if KK || KKS
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileMakeup), nameof(ChaFileMakeup.MemberInit))]
             private static void MemberInit(ChaFileMakeup __instance) => Traverse.Create(__instance).Property(ExtendedSaveDataPropertyName).SetValue(null);
 

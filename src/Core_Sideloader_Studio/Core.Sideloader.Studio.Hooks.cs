@@ -98,7 +98,7 @@ namespace Sideloader
             [HarmonyPostfix, HarmonyPatch(typeof(Studio.Info.FileCheck), nameof(Studio.Info.FileCheck.Check))]
             internal static void FileCheck(string _path, ref bool __result, Dictionary<string, bool> ___dicConfirmed)
             {
-                if (__result == false)
+                if (__result == false && _path != null) // _path can be null in KKS when loading animations?
                 {
                     if (BundleManager.Bundles.TryGetValue(_path, out _))
                     {

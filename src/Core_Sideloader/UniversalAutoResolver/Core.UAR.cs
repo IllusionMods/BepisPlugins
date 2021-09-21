@@ -553,8 +553,7 @@ namespace Sideloader.AutoResolver
             if (LoadedResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
                 Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]");
-            //TODO: KKS Studio release
-#if KK || AI || HS2
+#if KK || AI || HS2 || KKS
             else if (LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
                 Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]");

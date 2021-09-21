@@ -11,7 +11,7 @@ using System.IO;
 using Shared;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#if KK
+#if KK || KKS
 using StrayTech;
 #endif
 
@@ -425,7 +425,7 @@ namespace Screencap
         /// </summary>
         private static void ToggleCameraControllers(Transform targetTr, bool enabled)
         {
-#if KK
+#if KK || KKS
             foreach (var controllerType in new[] { typeof(Studio.CameraControl), typeof(BaseCameraControl_Ver2), typeof(BaseCameraControl) })
             {
                 var cc = targetTr.GetComponent(controllerType);

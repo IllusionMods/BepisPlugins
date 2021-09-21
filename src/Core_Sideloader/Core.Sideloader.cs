@@ -62,7 +62,7 @@ namespace Sideloader
 
         internal void Awake()
         {
-#if KK
+#if KK // Fixes an issue with reading some zips made on Japanese systems. Only needed on .Net 3.5, it doesn't affect newer Unity versions.
             ZipConstants.DefaultCodePage = 0;
 #endif
             Logger = base.Logger;
@@ -267,8 +267,7 @@ namespace Sideloader
                         Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                     }
                 }
-                //TODO: KKS Studio release
-#if KK || AI || HS2
+#if KK || AI || HS2 || KKS
                 else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
                     if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
@@ -314,9 +313,8 @@ namespace Sideloader
 #endif
 #endif
             }
-
-            //TODO: KKS Studio release
-#if KK || AI || HS2
+            
+#if KK || AI || HS2 || KKS
             //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
             foreach (ZipEntry entry in BoneList)
             {
