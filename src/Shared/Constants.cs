@@ -37,9 +37,11 @@ namespace BepisPlugins
         internal const string StudioProcessName = "PlayHomeStudio64bit";
         internal const string StudioProcessName32bit = "PlayHomeStudio32bit";
         internal const string VRProcessName = "VR GEDOU";
-#elif KKS //todo change on studio release
-        internal static bool InsideStudio => false;
+#elif KKS
+        internal static bool InsideStudio => Application.productName == StudioProcessName;
         internal const string GameProcessName = "KoikatsuSunshine";
+        internal const string StudioProcessName = "CharaStudio";
+        internal const string VRProcessName = "KoikatsuSunshine_VR";
 #endif
     }
 }
