@@ -18,6 +18,8 @@ namespace ExtensibleSaveFormat
             static Hooks()
             {
                 MoreOutfitsInstalled = Type.GetType($"KK_Plugins.MoreOutfits.Plugin, KKS_MoreOutfits") != null;
+                if (!MoreOutfitsInstalled)
+                    HandleNoMoreOutfitsHooks.Apply();
             }
 
             #region Import KK Chara
@@ -31,47 +33,39 @@ namespace ExtensibleSaveFormat
                 for (int i = 0; i < file.coordinate.Length; i++)
                 {
                     int index = i;
-                    int? newIndex = i;
+                    int? newIndex = null;
 
                     switch (i)
                     {
                         case 0:
-                            newIndex = 4;
+                            //Get rid of these outfits without MoreOutfits installed since they wouldn't be usable
+                            if (MoreOutfitsInstalled)
+                                newIndex = 4;
                             break;
                         case 1:
                             newIndex = 3;
                             break;
                         case 2:
-                            newIndex = 5;
+                            if (MoreOutfitsInstalled)
+                                newIndex = 5;
                             break;
                         case 3:
                             newIndex = 1;
                             break;
                         case 4:
-                            //Get rid of these outfits without MoreOutfits installed since they wouldn't be usable
                             if (MoreOutfitsInstalled)
                                 newIndex = 6;
-                            else
-                                newIndex = null;
                             break;
                         case 5:
-                            if (MoreOutfitsInstalled)
-                                newIndex = 0;
-                            else
-                                newIndex = null;
+                            newIndex = 0;
                             break;
                         case 6:
-                            if (MoreOutfitsInstalled)
-                                newIndex = 2;
-                            else
-                                newIndex = null;
+                            newIndex = 2;
                             break;
                         default:
                             //Carry over extra outfits if MoreOutfits is installed, otherwise drop them 
                             if (MoreOutfitsInstalled)
                                 newIndex = index;
-                            else
-                                newIndex = null;
                             break;
                     }
 
@@ -79,6 +73,10 @@ namespace ExtensibleSaveFormat
                     if (newIndex != null)
                         newCoordinates[(int)newIndex] = file.coordinate[index];
                 }
+
+                if (!MoreOutfitsInstalled)
+                    newCoordinates = newCoordinates.Take(4).ToArray();
+
                 file.coordinate = newCoordinates;
 
                 var info = header.SearchInfo(Marker);
@@ -189,6 +187,60 @@ namespace ExtensibleSaveFormat
             }
 
             #endregion
+
+            /// <summary>
+            /// Prevent coords from being trimmed to 4 and then overwritten with defaults if MoreOutfits is missing
+            /// (basically a copy of some of the MoreOutfits hooks, should not be applied if MoreOutfits exists)
+            /// </summary>
+            private static class HandleNoMoreOutfitsHooks
+            {
+                private static Harmony _nmoHooks;
+
+                public static void Apply()
+                {
+                    _nmoHooks = Harmony.CreateAndPatchAll(typeof(HandleNoMoreOutfitsHooks), nameof(HandleNoMoreOutfitsHooks));
+                }
+
+                /// <summary>
+                /// Ensure extra coordinates are loaded
+                /// </summary>
+                [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SetCoordinateBytes))]
+                private static bool SetCoordinateBytes(ChaFile __instance, byte[] data, Version ver)
+                {
+                    List<byte[]> list = MessagePack.MessagePackSerializer.Deserialize<List<byte[]>>(data);
+
+                    //Reinitialize the array with the new length
+                    __instance.coordinate = new ChaFileCoordinate[list.Count];
+                    for (int i = 0; i < list.Count; i++)
+                        __instance.coordinate[i] = new ChaFileCoordinate();
+
+                    //Load all the coordinates
+                    for (int i = 0; i < __instance.coordinate.Length; i++)
+                        __instance.coordinate[i].LoadBytes(list[i], ver);
+
+                    return false;
+                }
+
+                private static bool DoingImport = true;
+
+                [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFileScene), nameof(ConvertChaFileScene.OnDestroy))]
+                private static void ConvertChaFileSceneEnd()
+                {
+                    DoingImport = false;
+                    _nmoHooks.UnpatchSelf();
+                }
+
+                /// <summary>
+                /// Don't allow outfits to be replaced by defaults
+                /// </summary>
+                [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.AssignCoordinate))]
+                private static bool ChaFile_AssignCoordinate()
+                {
+                    if (DoingImport)
+                        return false;
+                    return true;
+                }
+            }
         }
     }
 }
