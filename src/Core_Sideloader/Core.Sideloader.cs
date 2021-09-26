@@ -134,20 +134,7 @@ namespace Sideloader
                     if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
                     {
                         //Skip the mod if it is not for this game
-                        bool allowed = false;
-                        if (manifest.Games.Count == 0)
-                            allowed = true;
-                        else
-                        {
-                            foreach (var gameName in manifest.Games)
-                            {
-                                if (GameNameList.Contains(gameName.ToLower()))
-                                {
-                                    allowed = true;
-                                    break;
-                                }
-                            }
-                        }
+                        bool allowed = manifest.Games.Count == 0 || manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains);
                         if (!allowed)
                         {
                             Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {string.Join(", ", manifest.Games.ToArray())}");
@@ -313,7 +300,7 @@ namespace Sideloader
 #endif
 #endif
             }
-            
+
 #if KK || AI || HS2 || KKS
             //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
             foreach (ZipEntry entry in BoneList)
