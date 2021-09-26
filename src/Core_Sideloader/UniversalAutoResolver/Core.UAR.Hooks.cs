@@ -39,7 +39,9 @@ namespace Sideloader.AutoResolver
                 ExtendedSave.CoordinateBeingImported += ExtendedCoordinateImport;
 #elif KKS
                 ExtendedSave.CardBeingImported += ExtendedCardImport;
-#else
+#endif
+
+#if !EC
                 ExtendedSave.SceneBeingLoaded += ExtendedSceneLoad;
                 ExtendedSave.SceneBeingImported += ExtendedSceneImport;
 #endif
