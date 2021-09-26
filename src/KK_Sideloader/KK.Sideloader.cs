@@ -9,7 +9,7 @@ namespace Sideloader
     [BepInProcess(Constants.VRProcessNameSteam)]
     [BepInProcess(Constants.StudioProcessName)]
     [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
-    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, "1.1.0")]
+    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, XUnity.ResourceRedirector.Constants.PluginData.Version)]
     [BepInIncompatibility("com.bepis.bepinex.resourceredirector")]
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin
