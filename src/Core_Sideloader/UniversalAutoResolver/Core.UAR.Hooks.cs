@@ -46,8 +46,10 @@ namespace Sideloader.AutoResolver
                 ExtendedSave.SceneBeingImported += ExtendedSceneImport;
 #endif
 
-#if EC || KKS
+#if EC
                 DoingImport = true;
+#elif KKS
+                DoingImport = !BepisPlugins.Constants.InsideStudio;
 #else
                 DoingImport = false;
 #endif
