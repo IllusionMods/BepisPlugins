@@ -29,10 +29,10 @@ namespace ExtensibleSaveFormat
                 CoordinateMapping = new Dictionary<int, int?>();
 
                 // Remap coordinates from the KK index to the matching KKS index
-                ChaFileCoordinate[] newCoordinates = new ChaFileCoordinate[file.coordinate.Length];
-                for (int i = 0; i < file.coordinate.Length; i++)
+                var newCoordinates = new ChaFileCoordinate[file.coordinate.Length];
+                for (var i = 0; i < file.coordinate.Length; i++)
                 {
-                    int index = i;
+                    var index = i;
                     int? newIndex = null;
 
                     switch (i)
@@ -96,6 +96,8 @@ namespace ExtensibleSaveFormat
                         var dictionary = MessagePackDeserialize<Dictionary<string, PluginData>>(data);
                         if (dictionary != null)
                         {
+                            if (!file.charaFileName.IsNullOrEmpty())//plugin currently feeds empty, but not null charafilenames
+                                Logger.Log(LogLevel.Debug, $"Importing \"{file.parameter.fullname}\" \"{file.charaFileName}\" ");
                             CardImportEvent(dictionary, CoordinateMapping);
                             internalCharaDictionary.Set(file, dictionary);
                         }
@@ -145,24 +147,26 @@ namespace ExtensibleSaveFormat
                 //Compatibility for ver 1 and 2 ext save data
                 if (br.BaseStream.Position != br.BaseStream.Length)
                 {
-                    long originalPosition = br.BaseStream.Position;
+                    var originalPosition = br.BaseStream.Position;
 
                     try
                     {
-                        string marker = br.ReadString();
-                        int version = br.ReadInt32();
+                        var marker = br.ReadString();
+                        var version = br.ReadInt32();
 
                         if (marker == "KKEx" && version == 2)
                         {
-                            int length = br.ReadInt32();
+                            var length = br.ReadInt32();
 
                             if (length > 0)
                             {
-                                byte[] bytes = br.ReadBytes(length);
+                                var bytes = br.ReadBytes(length);
                                 var dictionary = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
 
                                 if (dictionary != null)
                                 {
+                                    if (!__instance.charaFileName.IsNullOrEmpty())
+                                        Logger.Log(LogLevel.Debug, $"Importing \"{__instance.parameter.fullname}\" \"{__instance.charaFileName}\" ");
                                     CardImportEvent(dictionary, CoordinateMapping);
                                     internalCharaDictionary.Set(__instance, dictionary);
                                 }
@@ -207,15 +211,15 @@ namespace ExtensibleSaveFormat
                 [HarmonyPrefix, HarmonyPatch(typeof(ChaFile), nameof(ChaFile.SetCoordinateBytes))]
                 private static bool SetCoordinateBytes(ChaFile __instance, byte[] data, Version ver)
                 {
-                    List<byte[]> list = MessagePack.MessagePackSerializer.Deserialize<List<byte[]>>(data);
+                    var list = MessagePack.MessagePackSerializer.Deserialize<List<byte[]>>(data);
 
                     //Reinitialize the array with the new length
                     __instance.coordinate = new ChaFileCoordinate[list.Count];
-                    for (int i = 0; i < list.Count; i++)
+                    for (var i = 0; i < list.Count; i++)
                         __instance.coordinate[i] = new ChaFileCoordinate();
 
                     //Load all the coordinates
-                    for (int i = 0; i < __instance.coordinate.Length; i++)
+                    for (var i = 0; i < __instance.coordinate.Length; i++)
                         __instance.coordinate[i].LoadBytes(list[i], ver);
 
                     return false;
