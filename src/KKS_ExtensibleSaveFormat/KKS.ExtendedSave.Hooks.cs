@@ -96,8 +96,9 @@ namespace ExtensibleSaveFormat
                         var dictionary = MessagePackDeserialize<Dictionary<string, PluginData>>(data);
                         if (dictionary != null)
                         {
-                            if (!file.charaFileName.IsNullOrEmpty())//plugin currently feeds empty, but not null charafilenames
-                                Logger.Log(LogLevel.Debug, $"Importing \"{file.parameter.fullname}\" \"{file.charaFileName}\" ");
+                            if (!file.charaFileName.IsNullOrEmpty()) // plugins can leave charaFileName empty instead of null
+                                Logger.Log(LogLevel.Debug, $"Importing \"{file.parameter?.fullname}\" from \"{file.charaFileName}\" ");
+
                             CardImportEvent(dictionary, CoordinateMapping);
                             internalCharaDictionary.Set(file, dictionary);
                         }
@@ -165,8 +166,9 @@ namespace ExtensibleSaveFormat
 
                                 if (dictionary != null)
                                 {
-                                    if (!__instance.charaFileName.IsNullOrEmpty())
-                                        Logger.Log(LogLevel.Debug, $"Importing \"{__instance.parameter.fullname}\" \"{__instance.charaFileName}\" ");
+                                    if (!__instance.charaFileName.IsNullOrEmpty()) // plugins can leave charaFileName empty instead of null
+                                        Logger.Log(LogLevel.Debug, $"Importing \"{__instance.parameter?.fullname}\" from \"{__instance.charaFileName}\" ");
+
                                     CardImportEvent(dictionary, CoordinateMapping);
                                     internalCharaDictionary.Set(__instance, dictionary);
                                 }
@@ -225,7 +227,10 @@ namespace ExtensibleSaveFormat
                     return false;
                 }
 
-                private static bool DoingImport = true;
+                private static bool DoingImport;
+
+                [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFileScene), nameof(ConvertChaFileScene.Start))]
+                private static void ConvertChaFileSceneStart() => DoingImport = true;
 
                 [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFileScene), nameof(ConvertChaFileScene.OnDestroy))]
                 private static void ConvertChaFileSceneEnd()
