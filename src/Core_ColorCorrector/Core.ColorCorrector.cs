@@ -66,6 +66,7 @@ namespace ColorCorrector
             if (_bloomComponent != null)
                 _bloomComponent.bloomIntensity = bloomPower;
         }
+
         private IEnumerator DelayMethod(Action action)
         {
             yield return null;
