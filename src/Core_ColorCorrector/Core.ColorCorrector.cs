@@ -26,13 +26,14 @@ namespace ColorCorrector
 #if KK || EC
         private const float DefaultBloomStrength = 1.5f;
 #elif KKS
-        private const float DefaultBloomStrength = 2f;
+        private const float DefaultBloomStrength = 0.5f;
 #endif
+        private const float MaxBloomStrength = 2.0f;
 
         private void Start()
         {
             SaturationEnabled = Config.Bind("Post Processing Settings", "Enable saturation filter", true, new ConfigDescription("Whether default saturation filter will be applied to the game. This setting has no effect in Studio."));
-            BloomStrength = Config.Bind("Post Processing Settings", "Bloom strength", DefaultBloomStrength, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, DefaultBloomStrength)));
+            BloomStrength = Config.Bind("Post Processing Settings", "Bloom strength", DefaultBloomStrength, new ConfigDescription("Strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu.", new AcceptableValueRange<float>(0f, MaxBloomStrength)));
             SaturationEnabled.SettingChanged += OnSettingChanged;
             BloomStrength.SettingChanged += OnSettingChanged;
 
