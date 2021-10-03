@@ -1,5 +1,7 @@
 ﻿using BepInEx.Configuration;
 using BepisPlugins;
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
@@ -44,7 +46,14 @@ namespace ColorCorrector
                 _amplifyComponent = Camera.main.gameObject.GetComponent<AmplifyColorEffect>();
                 _bloomComponent = Camera.main.gameObject.GetComponent<BloomAndFlares>();
 
+#if KK || EC
                 SetEffects(SaturationEnabled.Value, BloomStrength.Value);
+#elif KKS
+                StartCoroutine(DelayMethod(() =>
+                {
+                    SetEffects(SaturationEnabled.Value, BloomStrength.Value);
+                }));
+#endif
             }
         }
 
@@ -55,6 +64,11 @@ namespace ColorCorrector
 
             if (_bloomComponent != null)
                 _bloomComponent.bloomIntensity = bloomPower;
+        }
+        private IEnumerator DelayMethod(Action action)
+        {
+            yield return null;
+            action();
         }
 
         private void OnSettingChanged(object sender, System.EventArgs e) => SetEffects(SaturationEnabled.Value, BloomStrength.Value);
