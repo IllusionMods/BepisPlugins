@@ -326,8 +326,13 @@ namespace Sideloader.AutoResolver
             if (extData != null && extData.data.ContainsKey("mapInfoGUID"))
             {
                 string MapGUID = (string)extData.data["mapInfoGUID"];
-                string MapAuthor = (string)extData.data["mapInfoAuthor"];
-                string MapWebsite = (string)extData.data["mapInfoWebsite"];
+
+                string MapAuthor = null;
+                if (extData.data.TryGetValue("mapInfoAuthor", out object MapAuthorData))
+                    MapAuthor = (string)MapAuthorData;
+                string MapWebsite = null;
+                if (extData.data.TryGetValue("mapInfoWebsite", out object MapWebsiteData))
+                    MapWebsite = (string)MapWebsiteData;
 
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID && x.GUID == MapGUID);
                 if (intResolve != null)
@@ -369,8 +374,13 @@ namespace Sideloader.AutoResolver
             if (extData != null && extData.data.ContainsKey("filterInfoGUID"))
             {
                 string filterGUID = (string)extData.data["filterInfoGUID"];
-                string filterAuthor = (string)extData.data["filterInfoAuthor"];
-                string filterWebsite = (string)extData.data["filterInfoWebsite"];
+
+                string filterAuthor = null;
+                if (extData.data.TryGetValue("filterInfoAuthor", out object filterAuthorData))
+                    filterAuthor = (string)filterAuthorData;
+                string filterWebsite = null;
+                if (extData.data.TryGetValue("filterInfoWebsite", out object filterWebsiteData))
+                    filterWebsite = (string)filterWebsiteData;
 
 
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == filterID && x.GUID == filterGUID);
@@ -414,8 +424,13 @@ namespace Sideloader.AutoResolver
             if (extData != null && extData.data.ContainsKey("rampInfoGUID"))
             {
                 string rampGUID = (string)extData.data["rampInfoGUID"];
-                string rampAuthor = (string)extData.data["rampInfoAuthor"];
-                string rampWebsite = (string)extData.data["rampInfoWebsite"];
+
+                string rampAuthor = null;
+                if (extData.data.TryGetValue("rampInfoAuthor", out object rampAuthorData))
+                    rampAuthor = (string)rampAuthorData;
+                string rampWebsite = null;
+                if (extData.data.TryGetValue("rampInfoWebsite", out object rampWebsiteData))
+                    rampWebsite = (string)rampWebsiteData;
 
                 ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == rampID);
                 if (intResolve != null)
@@ -461,8 +476,13 @@ namespace Sideloader.AutoResolver
             if (extData != null && extData.data.ContainsKey("bgmInfoGUID"))
             {
                 string bgmGUID = (string)extData.data["bgmInfoGUID"];
-                string bgmAuthor = (string)extData.data["bgmInfoAuthor"];
-                string bgmWebsite = (string)extData.data["bgmInfoWebsite"];
+
+                string bgmAuthor = null;
+                if (extData.data.TryGetValue("bgmInfoAuthor", out object bgmAuthorData))
+                    bgmAuthor = (string)bgmAuthorData;
+                string bgmWebsite = null;
+                if (extData.data.TryGetValue("bgmInfoWebsite", out object bgmWebsiteData))
+                    bgmWebsite = (string)bgmWebsiteData;
 
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == bgmID && x.GUID == bgmGUID);
                 if (intResolve != null)
