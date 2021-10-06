@@ -52,6 +52,12 @@ namespace Sideloader.AutoResolver
         [Key("Website")]
         public string Website { get; set; }
 
+        /// <summary>
+        /// Display name of the mod as defined in the manifest.xml
+        /// </summary>
+        [Key("Name")]
+        public string Name { get; set; }
+
         internal static ResolveInfo Deserialize(byte[] data) => MessagePackSerializer.Deserialize<ResolveInfo>(data);
 
         internal byte[] Serialize() => MessagePackSerializer.Serialize(this);

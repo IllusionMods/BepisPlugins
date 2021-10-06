@@ -45,7 +45,8 @@ namespace Sideloader.AutoResolver
                         LocalSlot = newSlot,
                         ResolveItem = false,
                         Author = manifest.Author,
-                        Website = manifest.Website
+                        Website = manifest.Website,
+                        Name = manifest.Name
                     });
 
                     entry[0] = newSlot.ToString();
@@ -65,7 +66,8 @@ namespace Sideloader.AutoResolver
                         LocalSlot = int.Parse(entry[0]),
                         ResolveItem = false,
                         Author = manifest.Author,
-                        Website = manifest.Website
+                        Website = manifest.Website,
+                        Name = manifest.Name
                     });
                 }
             }
@@ -82,7 +84,8 @@ namespace Sideloader.AutoResolver
                         LocalSlot = newSlot,
                         ResolveItem = true,
                         Author = manifest.Author,
-                        Website = manifest.Website
+                        Website = manifest.Website,
+                        Name = manifest.Name
                     };
 
                     //Group and category is important for animations since the same ID can be used in different groups and categories
@@ -104,6 +107,7 @@ namespace Sideloader.AutoResolver
                     {
                         Sideloader.Logger.LogInfo($"StudioResolveInfo - " +
                                                   $"GUID: {manifest.GUID} " +
+                                                  $"Name: {manifest.Name} " +
                                                   $"Author: {manifest.Author} " +
                                                   $"Website: {manifest.Website} " +
                                                   $"Slot: {int.Parse(entry[0])} " +
@@ -170,7 +174,7 @@ namespace Sideloader.AutoResolver
                     Item.no = intResolve.LocalSlot;
                 }
                 else if (resolveType == ResolveType.Load)
-                    ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website);
+                    ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website, extResolve.Name);
             }
             else if (OI is OILightInfo Light)
             {
@@ -182,7 +186,7 @@ namespace Sideloader.AutoResolver
                     Light.no = intResolve.LocalSlot;
                 }
                 else if (resolveType == ResolveType.Load)
-                    ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website);
+                    ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website, extResolve.Name);
             }
             else if (OI is OICharInfo CharInfo)
             {
@@ -195,7 +199,7 @@ namespace Sideloader.AutoResolver
                     CharInfo.animeInfo.no = intResolve.LocalSlot;
                 }
                 else if (resolveType == ResolveType.Load)
-                    ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website);
+                    ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website, extResolve.Name);
             }
         }
 
@@ -289,7 +293,7 @@ namespace Sideloader.AutoResolver
                     }
                     else if (resolveType == ResolveType.Load)
                     {
-                        ShowGUIDError(patternInfo.GUID, patternInfo.Author, patternInfo.Website);
+                        ShowGUIDError(patternInfo.GUID, patternInfo.Author, patternInfo.Website, patternInfo.Name);
                         Item.pattern[i].key = BaseSlotID - 1;
                     }
                 }
@@ -307,7 +311,7 @@ namespace Sideloader.AutoResolver
                     }
                     else if (resolveType == ResolveType.Load)
                     {
-                        ShowGUIDError(patternInfo.GUID, patternInfo.Author, patternInfo.Website);
+                        ShowGUIDError(patternInfo.GUID, patternInfo.Author, patternInfo.Website, patternInfo.Name);
                         Item.colors[i].pattern.key = BaseSlotID - 1;
                     }
                 }
@@ -333,6 +337,9 @@ namespace Sideloader.AutoResolver
                 string MapWebsite = null;
                 if (extData.data.TryGetValue("mapInfoWebsite", out object MapWebsiteData))
                     MapWebsite = (string)MapWebsiteData;
+                string MapName = null;
+                if (extData.data.TryGetValue("mapInfoName", out object MapNameData))
+                    MapName = (string)MapNameData;
 
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID && x.GUID == MapGUID);
                 if (intResolve != null)
@@ -342,7 +349,7 @@ namespace Sideloader.AutoResolver
                     SetMapID(intResolve.LocalSlot);
                 }
                 else
-                    ShowGUIDError(MapGUID, MapAuthor, MapWebsite);
+                    ShowGUIDError(MapGUID, MapAuthor, MapWebsite, MapName);
             }
             else if (resolveType == ResolveType.Load)
             {
@@ -381,6 +388,9 @@ namespace Sideloader.AutoResolver
                 string filterWebsite = null;
                 if (extData.data.TryGetValue("filterInfoWebsite", out object filterWebsiteData))
                     filterWebsite = (string)filterWebsiteData;
+                string filterName = null;
+                if (extData.data.TryGetValue("filterInfoName", out object filterNameData))
+                    filterName = (string)filterNameData;
 
 
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == filterID && x.GUID == filterGUID);
@@ -391,7 +401,7 @@ namespace Sideloader.AutoResolver
                     Studio.Studio.Instance.sceneInfo.aceNo = intResolve.LocalSlot;
                 }
                 else
-                    ShowGUIDError(filterGUID, filterAuthor, filterWebsite);
+                    ShowGUIDError(filterGUID, filterAuthor, filterWebsite, filterName);
             }
             else if (resolveType == ResolveType.Load)
             {
@@ -431,6 +441,9 @@ namespace Sideloader.AutoResolver
                 string rampWebsite = null;
                 if (extData.data.TryGetValue("rampInfoWebsite", out object rampWebsiteData))
                     rampWebsite = (string)rampWebsiteData;
+                string rampName = null;
+                if (extData.data.TryGetValue("rampInfoName", out object rampNameData))
+                    rampName = (string)rampNameData;
 
                 ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == rampID);
                 if (intResolve != null)
@@ -441,7 +454,7 @@ namespace Sideloader.AutoResolver
                     Studio.Studio.Instance.sceneInfo.rampG = intResolve.LocalSlot;
                 }
                 else
-                    ShowGUIDError(rampGUID, rampAuthor, rampWebsite);
+                    ShowGUIDError(rampGUID, rampAuthor, rampWebsite, rampName);
             }
             else if (resolveType == ResolveType.Load)
             {
@@ -483,6 +496,9 @@ namespace Sideloader.AutoResolver
                 string bgmWebsite = null;
                 if (extData.data.TryGetValue("bgmInfoWebsite", out object bgmWebsiteData))
                     bgmWebsite = (string)bgmWebsiteData;
+                string bgmName = null;
+                if (extData.data.TryGetValue("bgmInfoName", out object bgmNameData))
+                    bgmName = (string)bgmNameData;
 
                 StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == bgmID && x.GUID == bgmGUID);
                 if (intResolve != null)
@@ -492,7 +508,7 @@ namespace Sideloader.AutoResolver
                     Singleton<Studio.Studio>.Instance.sceneInfo.bgmCtrl.no = intResolve.LocalSlot;
                 }
                 else
-                    ShowGUIDError(bgmGUID, bgmAuthor, bgmWebsite);
+                    ShowGUIDError(bgmGUID, bgmAuthor, bgmWebsite, bgmName);
             }
             else if (resolveType == ResolveType.Load)
             {
