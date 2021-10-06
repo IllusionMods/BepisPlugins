@@ -237,7 +237,7 @@ namespace Sideloader.AutoResolver
                         if (int.TryParse(mainAB, out int x))
                         {
                             //ID found but it conflicts with a vanilla item. Change the ID to avoid conflicts.
-                            ShowGUIDError(extResolve.GUID);
+                            ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website);
                             if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
                                 kv.Value.SetMethod(structure, 1);
                             else
@@ -252,7 +252,7 @@ namespace Sideloader.AutoResolver
                     else
                     {
                         //ID not found. Change the ID to avoid potential future conflicts.
-                        ShowGUIDError(extResolve.GUID);
+                        ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website);
                         if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
                             kv.Value.SetMethod(structure, 1);
                         else
@@ -376,7 +376,7 @@ namespace Sideloader.AutoResolver
 
                     var resolveInfo = TryGetResolutionInfo(faceSkinInfo.HeadSlot, ChaListDefine.CategoryNo.fo_head, faceSkinInfo.HeadGUID);
                     if (resolveInfo == null)
-                        ShowGUIDError(faceSkinInfo.HeadGUID);
+                        ShowGUIDError(faceSkinInfo.HeadGUID, null, null);
                     else
                     {
                         if (headID != faceSkinInfo.HeadSlot)
@@ -408,7 +408,7 @@ namespace Sideloader.AutoResolver
 
                     var resolveInfo = TryGetResolutionInfo(faceSkinInfo.HeadSlot, ChaListDefine.CategoryNo.mo_head, faceSkinInfo.HeadGUID);
                     if (resolveInfo == null)
-                        ShowGUIDError(faceSkinInfo.HeadGUID);
+                        ShowGUIDError(faceSkinInfo.HeadGUID, null, null);
                     else
                     {
                         if (headID != faceSkinInfo.HeadSlot)
@@ -479,6 +479,8 @@ namespace Sideloader.AutoResolver
                     {
                         Sideloader.Logger.LogInfo($"ResolveInfo - " +
                                                   $"GUID: {manifest.GUID} " +
+                                                  $"Author: {manifest.Author} " +
+                                                  $"Website: {manifest.Website} " +
                                                   $"Slot: {int.Parse(kv.Value[0])} " +
                                                   $"LocalSlot: {newSlot} " +
                                                   $"Property: Ramp " +
@@ -492,7 +494,9 @@ namespace Sideloader.AutoResolver
                         Slot = int.Parse(kv.Value[0]),
                         LocalSlot = newSlot,
                         Property = "Ramp",
-                        CategoryNo = category
+                        CategoryNo = category,
+                        Author = manifest.Author,
+                        Website = manifest.Website
                     });
                 }
                 else
@@ -504,6 +508,8 @@ namespace Sideloader.AutoResolver
                         {
                             Sideloader.Logger.LogInfo($"ResolveInfo - " +
                                                       $"GUID: {manifest.GUID} " +
+                                                      $"Author: {manifest.Author}" +
+                                                      $"Website: {manifest.Website}" +
                                                       $"Slot: {int.Parse(kv.Value[0])} " +
                                                       $"LocalSlot: {newSlot} " +
                                                       $"Property: {propertyKey} " +
@@ -517,7 +523,9 @@ namespace Sideloader.AutoResolver
                             Slot = int.Parse(kv.Value[0]),
                             LocalSlot = newSlot,
                             Property = propertyKey.ToString(),
-                            CategoryNo = category
+                            CategoryNo = category,
+                            Author = manifest.Author,
+                            Website = manifest.Website
                         };
                     }));
                 }
@@ -546,21 +554,21 @@ namespace Sideloader.AutoResolver
         }
 #endif
 
-        internal static void ShowGUIDError(string guid)
+        internal static void ShowGUIDError(string guid, string author, string website)
         {
             Logging.LogLevel loglevel = Sideloader.MissingModWarning.Value ? Logging.LogLevel.Warning | Logging.LogLevel.Message : Logging.LogLevel.Warning;
 
             if (LoadedResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]");
+                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]:[By:{author}]:[Site:{website}]");
 #if KK || AI || HS2 || KKS
             else if (LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]");
+                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! [{guid}]:[By:{author}]:[Site:{website}]");
 #endif
             else
                 //did not find a match, we don't have the mod
-                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Missing mod detected! [{guid}]");
+                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Missing mod detected! [{guid}]:[By:{author}]:[Site:{website}]");
         }
 
         private static List<string> GetNowSceneNames()

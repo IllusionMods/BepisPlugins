@@ -51,6 +51,18 @@ namespace Sideloader.AutoResolver
         [Key("Category")]
         public int Category { get; set; }
 
+        /// <summary>
+        /// Author of the mod as defined in the manifest.
+        /// </summary>
+        [Key("Author")]
+        public string Author { get; set; }
+
+        /// <summary>
+        /// /// Author of the mod as defined in the manifest.
+        /// </summary>
+        [Key("Website")]
+        public string Website { get; set; }
+
         internal static StudioResolveInfo Deserialize(byte[] data) => MessagePackSerializer.Deserialize<StudioResolveInfo>(data);
 
         internal byte[] Serialize() => MessagePackSerializer.Serialize(this);

@@ -53,6 +53,18 @@ namespace Sideloader.AutoResolver
             /// </summary>
             [Key("LocalSlot")]
             public int LocalSlot;
+
+            /// <summary>
+            /// Author of the mod as defined in the manifest.xml
+            /// </summary>
+            [Key("Author")]
+            public string Author;
+
+            /// <summary>
+            /// Website of the mod as defined in the manifest.xml
+            /// </summary>
+            [Key("Website")]
+            public string Website;
         }
     }
 }

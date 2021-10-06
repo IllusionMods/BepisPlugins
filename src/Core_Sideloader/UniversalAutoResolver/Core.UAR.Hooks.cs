@@ -410,7 +410,7 @@ namespace Sideloader.AutoResolver
                     if (__state.FaceData[property.Key.Property] == null) continue;
                     var resolveinfo = TryGetResolutionInfo(property.Value.GetMethod(__instance.custom.face), $"{property.Key.Prefix}.{property.Key.Property}", property.Key.Category, __state.FaceData[property.Key.Property]);
                     if (resolveinfo == null)
-                        ShowGUIDError(__state.FaceData[property.Key.Property]);
+                        ShowGUIDError(__state.FaceData[property.Key.Property], null, null);
                     else
                         faceResolveInfos.Add(resolveinfo);
                 }
@@ -420,7 +420,7 @@ namespace Sideloader.AutoResolver
                     if (__state.MakeupData[property.Key.Property] == null) continue;
                     var resolveinfo = TryGetResolutionInfo(property.Value.GetMethod(__instance.custom.face.makeup), $"{property.Key.Prefix}.{property.Key.Property}", property.Key.Category, __state.MakeupData[property.Key.Property]);
                     if (resolveinfo == null)
-                        ShowGUIDError(__state.MakeupData[property.Key.Property]);
+                        ShowGUIDError(__state.MakeupData[property.Key.Property], null, null);
                     else
                         makeupResolveInfos.Add(resolveinfo);
                 }
