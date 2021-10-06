@@ -129,7 +129,10 @@ namespace Sideloader.AutoResolver
                                     {
                                         GUID = intResolve.GUID,
                                         Slot = intResolve.Slot,
-                                        LocalSlot = Item.pattern[i].key
+                                        LocalSlot = Item.pattern[i].key,
+                                        Author = intResolve.Author,
+                                        Website = intResolve.Website,
+                                        Name = intResolve.Name
                                     };
 
                                     //Set pattern ID back to original non-resolved ID
@@ -152,7 +155,10 @@ namespace Sideloader.AutoResolver
                                     {
                                         GUID = intResolve.GUID,
                                         Slot = intResolve.Slot,
-                                        LocalSlot = Item.colors[i].pattern.key
+                                        LocalSlot = Item.colors[i].pattern.key,
+                                        Author = intResolve.Author,
+                                        Website = intResolve.Website,
+                                        Name = intResolve.Name
                                     };
 
                                     //Set pattern ID back to original non-resolved ID
@@ -177,7 +183,10 @@ namespace Sideloader.AutoResolver
                                     Slot = extResolve.Slot,
                                     LocalSlot = extResolve.LocalSlot,
                                     DicKey = Item.dicKey,
-                                    ObjectOrder = ItemOrder[Item.dicKey]
+                                    ObjectOrder = ItemOrder[Item.dicKey],
+                                    Author = extResolve.Author,
+                                    Website = extResolve.Website,
+                                    Name = extResolve.Name
                                 };
                                 ObjectResolutionInfo.Add(intResolve);
 
@@ -199,7 +208,10 @@ namespace Sideloader.AutoResolver
                                 Slot = extResolve.Slot,
                                 LocalSlot = extResolve.LocalSlot,
                                 DicKey = Light.dicKey,
-                                ObjectOrder = LightOrder[Light.dicKey]
+                                ObjectOrder = LightOrder[Light.dicKey],
+                                Author = extResolve.Author,
+                                Website = extResolve.Website,
+                                Name = extResolve.Name
                             };
                             ObjectResolutionInfo.Add(intResolve);
 
@@ -223,7 +235,10 @@ namespace Sideloader.AutoResolver
                                 Group = extResolve.Group,
                                 Category = extResolve.Category,
                                 DicKey = CharInfo.dicKey,
-                                ObjectOrder = CharOrder[CharInfo.dicKey]
+                                ObjectOrder = CharOrder[CharInfo.dicKey],
+                                Author = extResolve.Author,
+                                Website = extResolve.Website,
+                                Name = extResolve.Name
                             };
                             ObjectResolutionInfo.Add(intResolve);
 
@@ -251,6 +266,9 @@ namespace Sideloader.AutoResolver
                     if (extResolve != null)
                     {
                         ExtendedData.Add("mapInfoGUID", extResolve.GUID);
+                        ExtendedData.Add("mapInfoAuthor", extResolve.Author);
+                        ExtendedData.Add("mapInfoWebsite", extResolve.Website);
+                        ExtendedData.Add("mapInfoName", extResolve.Name);
 
                         //Set map ID back to default
                         if (Sideloader.DebugLogging.Value)
@@ -268,6 +286,9 @@ namespace Sideloader.AutoResolver
                     if (extResolve != null)
                     {
                         ExtendedData.Add("filterInfoGUID", extResolve.GUID);
+                        ExtendedData.Add("filterInfoAuthor", extResolve.Author);
+                        ExtendedData.Add("filterInfoWebsite", extResolve.Website);
+                        ExtendedData.Add("filterInfoName", extResolve.Name);
 
                         //Set filter ID back to default
                         if (Sideloader.DebugLogging.Value)
@@ -284,6 +305,9 @@ namespace Sideloader.AutoResolver
                     if (extResolve != null)
                     {
                         ExtendedData.Add("rampInfoGUID", extResolve.GUID);
+                        ExtendedData.Add("rampInfoAuthor", extResolve.Author);
+                        ExtendedData.Add("rampInfoWebsite", extResolve.Website);
+                        ExtendedData.Add("rampInfoName", extResolve.Name);
 
                         //Set ramp ID back to default
                         if (Sideloader.DebugLogging.Value)
@@ -300,7 +324,11 @@ namespace Sideloader.AutoResolver
                     StudioResolveInfo extResolve = LoadedStudioResolutionInfo.Where(x => x.LocalSlot == bgmID).FirstOrDefault();
                     if (extResolve != null)
                     {
+
                         ExtendedData.Add("bgmInfoGUID", extResolve.GUID);
+                        ExtendedData.Add("bgmInfoAuthor", extResolve.Author);
+                        ExtendedData.Add("bgmInfoWebsite", extResolve.Website);
+                        ExtendedData.Add("bgmInfoName", extResolve.Name);
 
                         //Set bgm ID back to default
                         if (Sideloader.DebugLogging.Value)
