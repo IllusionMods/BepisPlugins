@@ -69,6 +69,7 @@ namespace Sideloader.AutoResolver
             /// <summary>
             /// Name of the mod as defined in the manifest.xml
             /// </summary>
+            [Key("Name")]
             public string Name;
         }
     }
