@@ -565,22 +565,22 @@ namespace Sideloader.AutoResolver
             if (LoadedResolutionInfo.Any(x => x.GUID == guid))
             {
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! {author}:{(string.IsNullOrEmpty(name) ? guid : name)}");
-                Sideloader.Logger.LogWarning($"[UAR] WARNING! {guid}:{website}");
+                Sideloader.Logger.Log(loglevel, $"Outdated zipmod, some items are missing! - {author} : {(string.IsNullOrEmpty(name) ? guid : name)}");
+                Sideloader.Logger.LogWarning($"[UAR] WARNING! Outdated mod detected! {guid} : {website}");
             }
 #if KK || AI || HS2 || KKS
             else if (LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
             {
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Outdated mod detected! {author}:{(string.IsNullOrEmpty(name) ? guid : name)}");
-                Sideloader.Logger.LogWarning($"[UAR] WARNING! {guid}:{website}");
+                Sideloader.Logger.Log(loglevel, $"Outdated zipmod, some items are missing! - {author} : {(string.IsNullOrEmpty(name) ? guid : name)}");
+                Sideloader.Logger.LogWarning($"[UAR] WARNING! Outdated mod detected! {guid} : {website}");
             }
 #endif
             else
             {
                 //did not find a match, we don't have the mod
-                Sideloader.Logger.Log(loglevel, $"[UAR] WARNING! Missing mod detected! {author}:{(string.IsNullOrEmpty(name) ? guid : name)}");
-                Sideloader.Logger.LogWarning($"[UAR] WARNING! {guid}:{website}");
+                Sideloader.Logger.Log(loglevel, $"Missing zipmod, some items are missing! - {author} : {(string.IsNullOrEmpty(name) ? guid : name)}");
+                Sideloader.Logger.LogWarning($"[UAR] WARNING! Missing mod detected! {guid} : {website}");
             }
         }
 
