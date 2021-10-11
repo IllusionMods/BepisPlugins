@@ -58,7 +58,27 @@ namespace ExtensibleSaveFormat
                 Logger.LogError(ex);
             }
         }
+        internal static void TransferSerializedExtendedData(this object destination, object source)
+        {
+            try
+            {
+                if (source == null) throw new System.ArgumentNullException(nameof(source));
 
+                var tv = Traverse.Create(source);
+                var prop = tv.Property(ExtendedSaveDataPropertyName);
+
+                if (!prop.PropertyExists())
+                    throw new System.NotSupportedException($"The type '{source?.GetType()}' does not have the '{ExtendedSaveDataPropertyName}' property. Make sure the extended save patcher is installed and working.");
+
+                var data = prop.GetValue();
+                if (data == null) return;
+                Traverse.Create(destination).Property(ExtendedSaveDataPropertyName).SetValue(data);
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(ex);
+            }
+        }
 #if KK || KKS || EC
         //Body
         public static Dictionary<string, PluginData> GetAllExtendedData(this ChaFileBody messagePackObject) => GetExtendedData(messagePackObject);
