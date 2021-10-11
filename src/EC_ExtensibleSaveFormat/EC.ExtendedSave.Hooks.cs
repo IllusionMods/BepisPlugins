@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
+using static Extensions;
 
 namespace ExtensibleSaveFormat
 {
@@ -91,20 +92,20 @@ namespace ExtensibleSaveFormat
                 //Compatibility for ver 1 and 2 ext save data
                 if (br.BaseStream.Position != br.BaseStream.Length)
                 {
-                    long originalPosition = br.BaseStream.Position;
+                    var originalPosition = br.BaseStream.Position;
 
                     try
                     {
-                        string marker = br.ReadString();
-                        int version = br.ReadInt32();
+                        var marker = br.ReadString();
+                        var version = br.ReadInt32();
 
                         if (marker == "KKEx" && version == 2)
                         {
-                            int length = br.ReadInt32();
+                            var length = br.ReadInt32();
 
                             if (length > 0)
                             {
-                                byte[] bytes = br.ReadBytes(length);
+                                var bytes = br.ReadBytes(length);
                                 var dictionary = MessagePackDeserialize<Dictionary<string, PluginData>>(bytes);
 
                                 _internalCharaImportDictionary.Set(__instance, dictionary);
@@ -274,6 +275,89 @@ namespace ExtensibleSaveFormat
                 return __result;
             }
 
+            #endregion
+
+            #region Import Chara ExtendedSaveData
+            [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFile), nameof(ConvertChaFile.ConvertCharaFile))]
+            private static void ConvertCharaFile(ChaFileControl cfc, KoikatsuCharaFile.ChaFile kkfile)
+            {
+                #region Face
+                var face = cfc.custom.face;
+                var face2 = kkfile.custom.face;
+                face.TransferSerializedExtendedData(face2);
+                for (var i = 0; i < face.pupil.Length; i++)
+                {
+                    face.pupil[i].TransferSerializedExtendedData(face2.pupil[i]);
+                }
+                #endregion
+
+                #region Body
+                cfc.custom.body.TransferSerializedExtendedData(kkfile.custom.body);
+                #endregion
+
+                #region Hair
+                var hair = cfc.custom.hair;
+                var hair2 = kkfile.custom.hair;
+                hair.TransferSerializedExtendedData(hair2);
+                for (var i = 0; i < hair.parts.Length; i++)
+                {
+                    hair.parts[i].TransferSerializedExtendedData(hair2.parts[i]);
+                }
+                #endregion
+
+                #region Parameters
+                cfc.parameter.TransferSerializedExtendedData(kkfile.parameter);
+                #endregion
+            }
+            #endregion
+
+            #region Import Coordinate ExtendedSaveData
+            [HarmonyPrefix, HarmonyPatch(typeof(ConvertChaFile), nameof(ConvertChaFile.ConvertCoordinate))]
+            private static void ConvertCoordinatePrefix(ChaFileCoordinate emcoorde, KoikatsuCharaFile.ChaFileCoordinate kkcoorde)
+            {
+                emcoorde.accessory.parts = new ChaFileAccessory.PartsInfo[kkcoorde.accessory.parts.Length];
+                for (var i = 0; i < kkcoorde.accessory.parts.Length; i++)
+                {
+                    emcoorde.accessory.parts[i] = new ChaFileAccessory.PartsInfo();
+                }
+            }
+
+            [HarmonyPostfix, HarmonyPatch(typeof(ConvertChaFile), nameof(ConvertChaFile.ConvertCoordinate))]
+            private static void ConvertCoordinatePostfix(ChaFileCoordinate emcoorde, KoikatsuCharaFile.ChaFileCoordinate kkcoorde)
+            {
+                var clothes = emcoorde.clothes;
+                var clothes2 = kkcoorde.clothes;
+
+                #region ChaFileClothes
+                clothes.TransferSerializedExtendedData(clothes2); //ChaFileClothes
+                for (var i = 0; i < clothes.parts.Length - 1; i++)
+                {
+                    clothes.parts[i].TransferSerializedExtendedData(clothes2.parts[i]);//ChaFileClothes/PartsInfo
+                    for (var j = 0; j < clothes.parts[i].colorInfo.Length; j++)
+                    {
+                        clothes.parts[i].colorInfo[j].TransferSerializedExtendedData(clothes2.parts[i].colorInfo[j]);//ChaFileClothes/PartsInfo/ColorInfo
+                    }
+                }
+
+                var destinationshoe = 7;
+                var sourceshoe = 8;
+                clothes.parts[destinationshoe].TransferSerializedExtendedData(clothes2.parts[sourceshoe]);//(shoes) ChaFileClothes/PartsInfo
+                for (var i = 0; i < clothes.parts[destinationshoe].colorInfo.Length; i++)
+                {
+                    clothes.parts[destinationshoe].colorInfo[i].TransferSerializedExtendedData(clothes2.parts[sourceshoe].colorInfo[i]);//(shoes) ChaFileClothes/PartsInfo/ColorInfo
+                }
+                #endregion
+
+                #region Accessories
+                var accessory = emcoorde.accessory;
+                var accessory2 = kkcoorde.accessory;
+                accessory.TransferSerializedExtendedData(accessory2);//ChaFileAccessory
+                for (var i = 0; i < accessory.parts.Length; i++)
+                {
+                    accessory.parts[i].TransferSerializedExtendedData(accessory2.parts[i]);//ChaFileAccessory/PartsInfo
+                }
+                #endregion
+            }
             #endregion
         }
     }

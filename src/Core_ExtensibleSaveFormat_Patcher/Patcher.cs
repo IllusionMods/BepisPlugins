@@ -61,8 +61,10 @@ namespace ExtensibleSaveFormat
 
             messagePackObject = ass.MainModule.GetType("ChaFileParameter/Awnser");
             PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
             messagePackObject = ass.MainModule.GetType("ChaFileParameter/Denial");
             PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
             messagePackObject = ass.MainModule.GetType("ChaFileParameter/Attribute");
             PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
 #endif
@@ -76,8 +78,48 @@ namespace ExtensibleSaveFormat
 #endif
 
 #if EC
+
             messagePackObject = ass.MainModule.GetType("ChaFileFace/ChaFileMakeup");
             PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //import messagepacks are different from normal messagepacks in-game
+            #region Import MessagePacks
+            //Body
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileBody");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //Face
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileFace");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileFace/PupilInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //Hair
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileHair");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileHair/PartsInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //Clothes
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileClothes");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileClothes/PartsInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileClothes/PartsInfo/ColorInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //Accessory
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileAccessory");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileAccessory/PartsInfo");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileStatus");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType("KoikatsuCharaFile.ChaFileParameter");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            #endregion
 #endif
 
 #if AI || HS2
