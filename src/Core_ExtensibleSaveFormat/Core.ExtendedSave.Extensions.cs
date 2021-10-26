@@ -44,11 +44,16 @@ namespace ExtensibleSaveFormat
         private static void SetExtendedData(object messagePackObject, string id, PluginData data)
         {
             var pluginData = GetExtendedData(messagePackObject);
+            if (pluginData == null) pluginData = new Dictionary<string, PluginData>();
+
+            pluginData[id] = data;
+            if (data == null || data.data == null)
+            {
+                pluginData.Remove(id);
+            }
 
             try
             {
-                if (pluginData == null) pluginData = new Dictionary<string, PluginData>();
-                pluginData[id] = data;
                 var bytes = MessagePackSerialize(pluginData);
 
                 Traverse.Create(messagePackObject).Property(ExtendedSaveDataPropertyName).SetValue(bytes);
