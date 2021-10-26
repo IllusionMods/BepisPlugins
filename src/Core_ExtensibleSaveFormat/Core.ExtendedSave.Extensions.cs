@@ -46,11 +46,10 @@ namespace ExtensibleSaveFormat
             var pluginData = GetExtendedData(messagePackObject);
             if (pluginData == null) pluginData = new Dictionary<string, PluginData>();
 
-            pluginData[id] = data;
             if (data == null)
-            {
                 pluginData.Remove(id);
-            }
+            else
+                pluginData[id] = data;
 
             try
             {
