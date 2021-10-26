@@ -44,11 +44,15 @@ namespace ExtensibleSaveFormat
         private static void SetExtendedData(object messagePackObject, string id, PluginData data)
         {
             var pluginData = GetExtendedData(messagePackObject);
+            if (pluginData == null) pluginData = new Dictionary<string, PluginData>();
+
+            if (data == null)
+                pluginData.Remove(id);
+            else
+                pluginData[id] = data;
 
             try
             {
-                if (pluginData == null) pluginData = new Dictionary<string, PluginData>();
-                pluginData[id] = data;
                 var bytes = MessagePackSerialize(pluginData);
 
                 Traverse.Create(messagePackObject).Property(ExtendedSaveDataPropertyName).SetValue(bytes);
@@ -58,6 +62,8 @@ namespace ExtensibleSaveFormat
                 Logger.LogError(ex);
             }
         }
+
+        //currently only used to transfer data for EC because data is manually converted for EC format and messagepack objects are different
         internal static void TransferSerializedExtendedData(this object destination, object source)
         {
             try
