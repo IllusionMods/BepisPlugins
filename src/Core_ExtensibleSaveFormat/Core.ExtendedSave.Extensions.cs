@@ -47,7 +47,7 @@ namespace ExtensibleSaveFormat
             if (pluginData == null) pluginData = new Dictionary<string, PluginData>();
 
             pluginData[id] = data;
-            if (data == null || data.data == null)
+            if (data == null)
             {
                 pluginData.Remove(id);
             }
@@ -63,6 +63,8 @@ namespace ExtensibleSaveFormat
                 Logger.LogError(ex);
             }
         }
+
+        //currently only used to transfer data for EC because data is manually converted for EC format and messagepack objects are different
         internal static void TransferSerializedExtendedData(this object destination, object source)
         {
             try
