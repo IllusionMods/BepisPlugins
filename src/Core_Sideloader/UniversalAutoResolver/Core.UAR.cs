@@ -338,17 +338,30 @@ namespace Sideloader.AutoResolver
             {
                 var coordinate = file.coordinate[i];
                 string prefix = $"outfit{i}.";
-                IterateCoordinatePrefixes(action, coordinate, extInfo, prefix);
+                IterateCoordinatePrefixes(action, coordinate, extInfo, file.parameter.sex, prefix);
             }
 #else
-            IterateCoordinatePrefixes(action, file.coordinate, extInfo, "outfit.");
+            IterateCoordinatePrefixes(action, file.coordinate, extInfo, file.parameter.sex, "outfit.");
 #endif
         }
 
-        internal static void IterateCoordinatePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFileCoordinate coordinate, ICollection<ResolveInfo> extInfo, string prefix = "")
+        internal static void IterateCoordinatePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFileCoordinate coordinate, ICollection<ResolveInfo> extInfo, int sex = -1, string prefix = "")
         {
             prefix = prefix.IsNullOrWhiteSpace() ? string.Empty : prefix;
+#if AI || HS2
+            if (Sideloader.DebugLoggingResolveInfo.Value)
+                Sideloader.Logger.LogDebug($"Resolving Using Sex: {sex}\n{Environment.StackTrace}");
+
+            if (sex == 0)
+                action(StructReference.ChaFileClothesMaleProperties, coordinate.clothes, extInfo, prefix);
+            else if (sex == 1)
+                action(StructReference.ChaFileClothesFemaleProperties, coordinate.clothes, extInfo, prefix);
+            else // Status Quo Ante - If we don't know which sex to lookup for, use the combined set which will bug Vanilla items with a gender flipped modded item sharing IDs -- passthrough in case the sex doesn't get stamped into the ChaFileCoordinate for some reason
+                action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, prefix);
+
+#else
             action(StructReference.ChaFileClothesProperties, coordinate.clothes, extInfo, prefix);
+#endif
 
             for (int acc = 0; acc < coordinate.accessory.parts.Length; acc++)
             {
