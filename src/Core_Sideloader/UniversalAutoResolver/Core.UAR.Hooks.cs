@@ -258,11 +258,7 @@ namespace Sideloader.AutoResolver
                     }
                 }
 
-#if AI || HS2                
-                IterateCoordinatePrefixes(ResolveStructure, file, extInfo, RetrieveSexOnClothes(file.clothes));
-#else
                 IterateCoordinatePrefixes(ResolveStructure, file, extInfo);
-#endif
             }
 
             internal static void ExtendedCoordinateSave(ChaFileCoordinate file)
@@ -316,11 +312,7 @@ namespace Sideloader.AutoResolver
                     }
                 }
 
-#if AI || HS2
-                IterateCoordinatePrefixes(IterateStruct, file, null, RetrieveSexOnClothes(file.clothes));
-#else
                 IterateCoordinatePrefixes(IterateStruct, file, null);
-#endif
 
                 ExtendedSave.SetExtendedDataById(file, UARExtID, new PluginData
                 {
@@ -366,11 +358,7 @@ namespace Sideloader.AutoResolver
                     }
                 }
 
-#if AI || HS2
-                IterateCoordinatePrefixes(ResetStructResolveStructure, __instance, extInfo, RetrieveSexOnClothes(__instance.clothes));
-#else
                 IterateCoordinatePrefixes(ResetStructResolveStructure, __instance, extInfo);
-#endif
             }
 
             #endregion
@@ -507,7 +495,7 @@ namespace Sideloader.AutoResolver
             // So we'll start storing the related sex of the coordinate card with the clothes data for later use.
             // This won't fix old coordinate cards but will at least fix new ones.
 
-            private static int RetrieveSexOnClothes(ChaFileClothes clothes)
+            internal static int RetrieveSexOnClothes(ChaFileClothes clothes)
             {
                 if (clothes != null && clothes.TryGetExtendedDataById(Sideloader.GUID, out PluginData data))
                 {

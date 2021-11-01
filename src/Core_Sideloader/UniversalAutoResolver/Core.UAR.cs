@@ -352,6 +352,9 @@ namespace Sideloader.AutoResolver
             if (Sideloader.DebugLoggingResolveInfo.Value)
                 Sideloader.Logger.LogDebug($"Resolving Using Sex: {sex}\n{Environment.StackTrace}");
 
+            if (sex == -1)
+                sex = Hooks.RetrieveSexOnClothes(coordinate?.clothes);
+
             if (sex == 0)
                 action(StructReference.ChaFileClothesMaleProperties, coordinate.clothes, extInfo, prefix);
             else if (sex == 1)
