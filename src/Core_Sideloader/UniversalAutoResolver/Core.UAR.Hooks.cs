@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 #if AI || HS2
 using AIChara;
+using CharaCustom;
 #endif
 #if !EC
 using Studio;
@@ -486,6 +487,48 @@ namespace Sideloader.AutoResolver
                 }
             }
 #endif
+
+#if AI || HS2
+
+            // Need to differentiate between Male/Female Categories in clothing items.
+            // With Character cards, easy, with coordinates...no way to tell.
+            // So we'll start storing the related sex of the coordinate card with the clothes data for later use.
+            // This won't fix old coordinate cards but will at least fix new ones.
+
+            internal static int RetrieveSexOnClothes(ChaFileClothes clothes)
+            {
+                if (clothes != null && clothes.TryGetExtendedDataById(Sideloader.GUID, out PluginData data))
+                {
+                    if (data.data != null && data.data.TryGetValue("CoordinateSex", out object sexData))
+                    {
+                        return (byte)sexData;
+                    }
+                }
+                return -1;
+            }
+
+            private static void StoreSexOnClothes(byte sex, ChaFileClothes clothes)
+            {
+                PluginData data;
+                if (!clothes.TryGetExtendedDataById(Sideloader.GUID, out data))
+                {
+                    data = new PluginData();                    
+                }
+                data.data["CoordinateSex"] = sex;
+                clothes.SetExtendedDataById(Sideloader.GUID, data);
+            }
+
+            // Store Sex on Coordinate for Later Use
+            [HarmonyPrefix, HarmonyPatch(typeof(CvsC_CreateCoordinateFile), nameof(CvsC_CreateCoordinateFile.CreateCoordinateFile))]
+            internal static void ChaFileConstructor()
+            {
+                ChaControl chaCtrl = Singleton<CustomBase>.Instance?.chaCtrl;
+                if (chaCtrl?.chaFile?.parameter != null && chaCtrl?.chaFile?.coordinate?.clothes != null)
+                    StoreSexOnClothes(chaCtrl.chaFile.parameter.sex, chaCtrl.chaFile.coordinate.clothes);
+            }
+
+#endif
+
         }
     }
 }
