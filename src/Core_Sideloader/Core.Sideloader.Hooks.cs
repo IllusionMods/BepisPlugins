@@ -88,6 +88,14 @@ namespace Sideloader
                             __result.Add(assetBundleName);
                 }
 #endif
+#if KKS
+                else if (path == "custom/customscenelist/")
+                {
+                    foreach (var assetBundleName in BundleManager.Bundles.Keys.Where(x => x.StartsWith(path)))
+                        if (!__result.Contains(assetBundleName))
+                            __result.Add(assetBundleName);
+                }
+#endif
             }
 
 #if KK || EC || KKS
