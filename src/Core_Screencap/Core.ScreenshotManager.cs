@@ -62,6 +62,7 @@ namespace Screencap
         public static ConfigEntry<bool> ScreenshotMessage { get; private set; }
         public static ConfigEntry<float> EyeSeparation { get; private set; }
         public static ConfigEntry<float> ImageSeparationOffset { get; private set; }
+        public static ConfigEntry<bool> FlipEyesIn3DCapture { get; private set; }
         public static ConfigEntry<bool> UseJpg { get; private set; }
         public static ConfigEntry<int> JpgQuality { get; private set; }
         public static ConfigEntry<NameFormat> ScreenshotNameFormat { get; private set; }
@@ -150,6 +151,11 @@ namespace Screencap
                 "3D Settings", "3D screenshot image separation offset",
                 0.25f,
                 new ConfigDescription("Move images in stereoscopic screenshots closer together by this percentage (discards overlapping parts). Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.", new AcceptableValueRange<float>(0f, 1f)));
+
+            FlipEyesIn3DCapture = Config.Bind(
+                "3D Settings", "Flip left and right eye",
+                true,
+                new ConfigDescription("Flip left and right eye for cross-eyed viewing. Disable to use the screenshots in most VR image viewers."));
 
             UseJpg = Config.Bind(
                 "JPG Settings", "Save screenshots as .jpg instead of .png",
@@ -335,8 +341,8 @@ namespace Screencap
 
                 ToggleCameraControllers(targetTr, true);
                 Time.timeScale = 1;
-
-                var result = StitchImages(capture, capture2, ImageSeparationOffset.Value);
+                
+                var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, ImageSeparationOffset.Value) : StitchImages(capture2, capture, ImageSeparationOffset.Value);
 
                 var filename = GetUniqueFilename("3D-Render");
                 File.WriteAllBytes(filename, EncodeToFile(result));
@@ -402,7 +408,7 @@ namespace Screencap
                 Time.timeScale = 1;
 
                 // Overlap is useless for these so don't use
-                var result = StitchImages(capture, capture2, 0);
+                var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, 0) : StitchImages(capture2, capture, 0);
 
                 var filename = GetUniqueFilename("3D-360");
                 File.WriteAllBytes(filename, EncodeToXmpFile(result));
