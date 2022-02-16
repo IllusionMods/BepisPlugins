@@ -1,4 +1,5 @@
 ﻿using System;
+using Studio;
 
 namespace ExtensibleSaveFormat
 {
@@ -12,6 +13,13 @@ namespace ExtensibleSaveFormat
         public static event SceneEventHandler SceneBeingLoaded;
         /// <summary> Register methods to trigger on scene being imported </summary>
         public static event SceneEventHandler SceneBeingImported;
+
+        /// <summary> PoseEventHandler </summary>
+        public delegate void PoseEventHandler(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar);
+        /// <summary> Register methods to trigger on pose being saved </summary>
+        public static event PoseEventHandler PoseBeingSaved;
+        /// <summary> Register methods to trigger on pose being loaded </summary>
+        public static event PoseEventHandler PoseBeingLoaded;
 
         internal static void SceneWriteEvent(string path)
         {
@@ -66,6 +74,44 @@ namespace ExtensibleSaveFormat
                 catch (Exception ex)
                 {
                     Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(SceneBeingImported)} - {ex}");
+                }
+            }
+        }
+
+        internal static void PoseWriteEvent(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar)
+        {
+            if (PoseBeingSaved == null)
+                return;
+
+            foreach (var entry in PoseBeingSaved.GetInvocationList())
+            {
+                var handler = (PoseEventHandler)entry;
+                try
+                {
+                    handler.Invoke(poseName, fileInfo, ociChar);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(PoseBeingSaved)} - {ex}");
+                }
+            }
+        }
+
+        internal static void PoseReadEvent(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar)
+        {
+            if (PoseBeingLoaded == null)
+                return;
+
+            foreach (var entry in PoseBeingLoaded.GetInvocationList())
+            {
+                var handler = (PoseEventHandler)entry;
+                try
+                {
+                    handler.Invoke(poseName, fileInfo, ociChar);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Subscriber crash in {nameof(ExtendedSave)}.{nameof(PoseBeingLoaded)} - {ex}");
                 }
             }
         }

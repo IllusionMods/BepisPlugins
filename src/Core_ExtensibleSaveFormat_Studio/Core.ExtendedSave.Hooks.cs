@@ -194,6 +194,91 @@ namespace ExtensibleSaveFormat
 
             #endregion
 
+            #region Pose
+            private static OCIChar PoseChar;
+            private static string PoseName;
+
+            [HarmonyPrefix, HarmonyPatch(typeof(PauseCtrl), nameof(PauseCtrl.Load))]
+            private static void PauseCtrl_Load(OCIChar _ociChar, string _path)
+            {
+                PoseChar = _ociChar;
+                PoseName = _path;
+            }
+
+            [HarmonyPostfix, HarmonyPatch(typeof(PauseCtrl.FileInfo), nameof(PauseCtrl.FileInfo.Load))]
+            private static void PauseCtrl_FileInfo_Load(BinaryReader _reader, PauseCtrl.FileInfo __instance)
+            {
+                PoseLoadHook(_reader, __instance);
+            }
+
+            private static void PoseLoadHook(BinaryReader br, PauseCtrl.FileInfo fileInfo)
+            {
+                internalPoseDictionary.Clear();
+
+                try
+                {
+                    string marker = br.ReadString();
+                    int version = br.ReadInt32();
+                    int length = br.ReadInt32();
+
+                    if (marker.Equals(Marker) && length > 0)
+                    {
+                        byte[] bytes = br.ReadBytes(length);
+                        internalPoseDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                    }
+                }
+                catch (EndOfStreamException)
+                {
+                    /* Incomplete/non-existant data */
+                }
+                catch (InvalidOperationException)
+                {
+                    /* Invalid/unexpected deserialized data */
+                }
+
+                PoseReadEvent(PoseName, fileInfo, PoseChar);
+            }
+
+
+            [HarmonyPrefix, HarmonyPatch(typeof(PauseCtrl), nameof(PauseCtrl.Save))]
+            private static void PauseCtrl_Save(OCIChar _ociChar, string _name)
+            {
+                PoseChar = _ociChar;
+                PoseName = _name;
+            }
+
+            [HarmonyPostfix, HarmonyPatch(typeof(PauseCtrl.FileInfo), nameof(PauseCtrl.FileInfo.Save))]
+            private static void PauseCtrl_FileInfo_Save(BinaryWriter _writer , PauseCtrl.FileInfo __instance)
+            {
+                PoseSaveHook(_writer, __instance);
+            }
+
+            private static void PoseSaveHook(BinaryWriter bw, PauseCtrl.FileInfo fileInfo)
+            {
+                PoseWriteEvent(PoseName, fileInfo, PoseChar);
+
+                Dictionary<string, PluginData> extendedData = internalPoseDictionary;
+                if (extendedData == null)
+                    return;
+
+                //Remove null entries
+                List<string> keysToRemove = new List<string>();
+                foreach (var entry in extendedData)
+                    if (entry.Value == null)
+                        keysToRemove.Add(entry.Key);
+                foreach (var key in keysToRemove)
+                    extendedData.Remove(key);
+
+                byte[] data = MessagePackSerializer.Serialize(extendedData);
+
+                bw.Write(Marker);
+                bw.Write(DataVersion);
+                bw.Write(data.Length);
+                bw.Write(data);
+            }
+
+            #endregion
+
             #region Extended Data Override Hooks
             //Prevent loading extended data when loading the list of characters in Studio since it is irrelevant here
             [HarmonyPrefix, HarmonyPatch(typeof(CharaList), nameof(CharaList.InitFemaleList))]
