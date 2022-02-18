@@ -15,7 +15,7 @@ namespace ExtensibleSaveFormat
         public static event SceneEventHandler SceneBeingImported;
 
         /// <summary> PoseEventHandler </summary>
-        public delegate void PoseEventHandler(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar);
+        public delegate void PoseEventHandler(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar, GameNames gameName);
         /// <summary> Register methods to trigger on pose being saved </summary>
         public static event PoseEventHandler PoseBeingSaved;
         /// <summary> Register methods to trigger on pose being loaded </summary>
@@ -78,7 +78,7 @@ namespace ExtensibleSaveFormat
             }
         }
 
-        internal static void PoseWriteEvent(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar)
+        internal static void PoseWriteEvent(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar, GameNames gameName)
         {
             if (PoseBeingSaved == null)
                 return;
@@ -88,7 +88,7 @@ namespace ExtensibleSaveFormat
                 var handler = (PoseEventHandler)entry;
                 try
                 {
-                    handler.Invoke(poseName, fileInfo, ociChar);
+                    handler.Invoke(poseName, fileInfo, ociChar, gameName);
                 }
                 catch (Exception ex)
                 {
@@ -97,7 +97,7 @@ namespace ExtensibleSaveFormat
             }
         }
 
-        internal static void PoseReadEvent(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar)
+        internal static void PoseReadEvent(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar, GameNames gameName)
         {
             if (PoseBeingLoaded == null)
                 return;
@@ -107,7 +107,7 @@ namespace ExtensibleSaveFormat
                 var handler = (PoseEventHandler)entry;
                 try
                 {
-                    handler.Invoke(poseName, fileInfo, ociChar);
+                    handler.Invoke(poseName, fileInfo, ociChar, gameName);
                 }
                 catch (Exception ex)
                 {

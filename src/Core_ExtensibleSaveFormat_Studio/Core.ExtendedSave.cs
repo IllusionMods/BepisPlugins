@@ -36,5 +36,24 @@ namespace ExtensibleSaveFormat
         /// <param name="id">ID of the data to be saved to the card</param>
         /// <param name="extendedFormatData">PluginData to save to the card</param>
         public static void SetPoseExtendedDataById(string id, PluginData extendedFormatData) => internalPoseDictionary[id] = extendedFormatData;
+
+        /// <summary>
+        /// The current game, written to some ext save data to determine which game it was created in
+        /// </summary>
+#if KK
+        public static readonly GameNames GameName = GameNames.Koikatsu;
+#elif EC
+        public static readonly GameNames GameName = Games.EmotionCreators;
+#elif AI
+        public static readonly GameNames GameName = GameNames.AIGirl;
+#elif HS2
+        public static readonly GameNames GameName = GameNames.HoneySelect2;
+#elif PH
+        public static readonly GameNames GameName = GameNames.PlayHome;
+#elif KKS
+        public static readonly GameNames GameName = GameNames.KoikatsuSunshine;
+#endif
+
+        public enum GameNames { Unknown, Koikatsu, EmotionCreators, AIGirl, HoneySelect2, PlayHome, KoikatsuSunshine }
     }
 }

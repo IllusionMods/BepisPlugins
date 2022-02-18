@@ -236,7 +236,12 @@ namespace ExtensibleSaveFormat
                     /* Invalid/unexpected deserialized data */
                 }
 
-                PoseReadEvent(PoseName, fileInfo, PoseChar);
+                var data = GetPoseExtendedDataById(GUID);
+                var gameName = GameNames.Unknown;
+                if (data != null && data.data.TryGetValue("gameName", out var loadedData) && loadedData != null)
+                    gameName = (GameNames)loadedData;
+
+                PoseReadEvent(PoseName, fileInfo, PoseChar, gameName);
             }
 
 
@@ -248,14 +253,18 @@ namespace ExtensibleSaveFormat
             }
 
             [HarmonyPostfix, HarmonyPatch(typeof(PauseCtrl.FileInfo), nameof(PauseCtrl.FileInfo.Save))]
-            private static void PauseCtrl_FileInfo_Save(BinaryWriter _writer , PauseCtrl.FileInfo __instance)
+            private static void PauseCtrl_FileInfo_Save(BinaryWriter _writer, PauseCtrl.FileInfo __instance)
             {
                 PoseSaveHook(_writer, __instance);
             }
 
             private static void PoseSaveHook(BinaryWriter bw, PauseCtrl.FileInfo fileInfo)
             {
-                PoseWriteEvent(PoseName, fileInfo, PoseChar);
+                PoseWriteEvent(PoseName, fileInfo, PoseChar, GameName);
+
+                var gameNameData = new PluginData();
+                gameNameData.data.Add("gameName", GameName);
+                SetPoseExtendedDataById(GUID, gameNameData);
 
                 Dictionary<string, PluginData> extendedData = internalPoseDictionary;
                 if (extendedData == null)
