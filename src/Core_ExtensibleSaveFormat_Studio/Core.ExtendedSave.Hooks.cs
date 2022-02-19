@@ -197,6 +197,8 @@ namespace ExtensibleSaveFormat
             #region Pose
             private static OCIChar PoseChar;
             private static string PoseName;
+            // Use a single data maker since poses are compatible across games and PH marker is different for some reason.
+            private const string PoseMarker = "KKex";
 
             [HarmonyPrefix, HarmonyPatch(typeof(PauseCtrl), nameof(PauseCtrl.Load))]
             private static void PauseCtrl_Load(OCIChar _ociChar, string _path)
@@ -221,7 +223,7 @@ namespace ExtensibleSaveFormat
                     int version = br.ReadInt32();
                     int length = br.ReadInt32();
 
-                    if (marker.Equals(Marker) && length > 0)
+                    if (marker.Equals(PoseMarker) && length > 0)
                     {
                         byte[] bytes = br.ReadBytes(length);
                         internalPoseDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
@@ -280,7 +282,7 @@ namespace ExtensibleSaveFormat
 
                 byte[] data = MessagePackSerializer.Serialize(extendedData);
 
-                bw.Write(Marker);
+                bw.Write(PoseMarker);
                 bw.Write(DataVersion);
                 bw.Write(data.Length);
                 bw.Write(data);
