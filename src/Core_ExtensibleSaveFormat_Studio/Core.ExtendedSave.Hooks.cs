@@ -198,7 +198,7 @@ namespace ExtensibleSaveFormat
             private static OCIChar PoseChar;
             private static string PoseName;
             // Use a single data maker since poses are compatible across games and PH marker is different for some reason.
-            private const string PoseMarker = "KKex";
+            private const string PoseMarker = "KKEx";
 
             [HarmonyPrefix, HarmonyPatch(typeof(PauseCtrl), nameof(PauseCtrl.Load))]
             private static void PauseCtrl_Load(OCIChar _ociChar, string _path)
