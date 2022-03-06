@@ -79,5 +79,15 @@ namespace Screencap.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] rgalpha {
+            get {
+                object obj = ResourceManager.GetObject("rgalpha", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

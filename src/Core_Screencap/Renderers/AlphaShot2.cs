@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityStandardAssets.ImageEffects;
 
 //code by essu
 namespace alphaShot
@@ -11,6 +13,8 @@ namespace alphaShot
         private Material matScale;
         private Material matBlackout;
         private Material matMask;
+
+        private Material matRgAlpha;
 
         private bool InStudio = false;
 
@@ -23,9 +27,16 @@ namespace alphaShot
             matScale = new Material(ab.LoadAsset<Shader>("resize.shader"));
             ab.Unload(false);
 
+            var rgbd = Screencap.Properties.Resources.rgalpha;
+            var rgab = AssetBundle.LoadFromMemory(rgbd);
+            matRgAlpha = new Material(rgab.LoadAsset<Shader>("rgAlpha2"));
+            rgab.Unload(false);
+
+
             InStudio = SceneManager.GetActiveScene().name == "Studio";
         }
 
+        [Obsolete]
         public byte[] Lanczos(Texture input, int ResolutionX, int ResolutionY)
         {
             var t2d = LanczosTex(input, ResolutionX, ResolutionY);
@@ -51,15 +62,22 @@ namespace alphaShot
             return t2d;
         }
 
+        [Obsolete]
         public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
         {
-            var fullSizeCapture = CaptureTex(ResolutionX, ResolutionY, DownscalingRate, Transparent);
+            var fullSizeCapture = CaptureTex(ResolutionX, ResolutionY, DownscalingRate, Transparent ? AlphaMode.blackout : AlphaMode.None);
             var ret = fullSizeCapture.EncodeToPNG();
             Destroy(fullSizeCapture);
             return ret;
         }
 
+        [Obsolete]
         public Texture2D CaptureTex(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
+        {
+            return CaptureTex(ResolutionX, ResolutionY, DownscalingRate, Transparent ? AlphaMode.blackout : AlphaMode.None);
+        }
+
+        public Texture2D CaptureTex(int ResolutionX, int ResolutionY, int DownscalingRate, AlphaMode mode)
         {
             Shader.SetGlobalTexture("_AlphaMask", Texture2D.whiteTexture);
             Shader.SetGlobalInt("_alpha_a", 1);
@@ -78,13 +96,33 @@ namespace alphaShot
                 dof.maxBlurSize = newWidth * orgBlurSize / Screen.width;
             }
 
-            if (Transparent && (InStudio
-                || SceneManager.GetActiveScene().name == "CustomScene"
-                || SceneManager.GetActiveScene().name == "HEditScene"
-                || SceneManager.GetActiveScene().name == "HPlayScene"))
-                fullSizeCapture = CaptureAlpha(newWidth, newHeight);
-            else
-                fullSizeCapture = CaptureOpaque(newWidth, newHeight);
+            if (mode != AlphaMode.None)
+            {
+                bool CanTakeAlpha()
+                {
+                    if (InStudio) return true;
+                    var sceneName = SceneManager.GetActiveScene().name;
+                    return sceneName == "CustomScene" || sceneName == "HEditScene" || sceneName == "HPlayScene";
+                }
+
+                if (!CanTakeAlpha())
+                    mode = AlphaMode.None;
+            }
+
+            switch (mode)
+            {
+                case AlphaMode.None:
+                    fullSizeCapture = CaptureOpaque(newWidth, newHeight);
+                    break;
+                case AlphaMode.blackout:
+                    fullSizeCapture = CaptureAlpha(newWidth, newHeight);
+                    break;
+                case AlphaMode.rgAlpha:
+                    fullSizeCapture = CaptureRgAlpha(newWidth, newHeight);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+            }
 
             // Recover depth of field
             if (dof != null)
@@ -122,14 +160,109 @@ namespace alphaShot
             return ss;
         }
 
+        #region rgAlpha
+
+        private Texture2D CaptureRgAlpha(int ResolutionX, int ResolutionY)
+        {
+            var r = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
+            var g = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
+
+            var output = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 1, RenderTextureFormat.ARGB32);
+            ClearRT(output);
+
+            //matRgAlpha.SetTexture("_red", r);
+            //matRgAlpha.SetTexture("_green", g);
+            //
+            //Graphics.Blit(r, output, matRgAlpha);
+
+
+
+            
+            {
+                var rgbd = Screencap.Properties.Resources.rgalpha;
+                var ab = AssetBundle.LoadFromMemory(rgbd);
+                if (ab == null) throw new ArgumentNullException(nameof(ab));
+                var sha = ab.LoadAsset<Shader>("rgAlpha2");
+                if (sha == null) throw new ArgumentNullException(nameof(sha));
+                ab.Unload(false);
+
+                var mat = new Material(sha);
+                mat.SetTexture("_red", r);
+                mat.SetTexture("_green", g);
+
+                Graphics.Blit(r, output, mat);
+                Destroy(mat);
+                Destroy(sha);
+            }
+
+
+
+            RenderTexture.ReleaseTemporary(r);
+            RenderTexture.ReleaseTemporary(g);
+            var result = GetT2D(output);
+            RenderTexture.ReleaseTemporary(output);
+            return result;
+        }
+
+        //TODO: is this necessary?
+        private static void ClearRT(RenderTexture rt)
+        {
+            var main = Camera.main;
+            var targetTexture = main.targetTexture;
+            main.targetTexture = rt;
+            GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
+            main.targetTexture = targetTexture;
+        }
+
+        private static Texture2D GetT2D(RenderTexture renderTexture)
+        {
+            var currentActiveRT = RenderTexture.active;
+            RenderTexture.active = renderTexture;
+            var tex = new Texture2D(renderTexture.width, renderTexture.height);
+            tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
+            RenderTexture.active = currentActiveRT;
+            return tex;
+        }
+
+        public RenderTexture PerformRgCapture(int ResolutionX, int ResolutionY, Color bg)
+        {
+            //todo: disable vignette/bloom?
+            Camera main = Camera.main;
+            RenderTexture active = RenderTexture.active;
+            var targetTexture = main.targetTexture;
+            var rect = main.rect;
+            var backgroundColor = main.backgroundColor;
+            var clearFlags = main.clearFlags;
+            var temporary = RenderTexture.GetTemporary(ResolutionX, ResolutionY);
+            ClearRT(temporary);
+
+            main.clearFlags = CameraClearFlags.Color;
+            main.backgroundColor = bg;
+            main.rect = new Rect(0f, 0f, 1f, 1f);
+            main.targetTexture = temporary;
+
+            main.Render();
+
+            main.targetTexture = targetTexture;
+            main.rect = rect;
+            RenderTexture.active = active;
+            main.backgroundColor = backgroundColor;
+            main.clearFlags = clearFlags;
+            return temporary;
+        }
+
+        #endregion
+
+        #region blackout
+
         private Texture2D CaptureAlpha(int ResolutionX, int ResolutionY)
         {
             var main = Camera.main;
 
             var disableTypes = new Type[]
             {
-                typeof(UnityStandardAssets.ImageEffects.BloomAndFlares),
-                typeof(UnityStandardAssets.ImageEffects.VignetteAndChromaticAberration),
+                typeof(BloomAndFlares),
+                typeof(VignetteAndChromaticAberration),
                 typeof(AmplifyColorEffect),
             };
             var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
@@ -202,6 +335,18 @@ namespace alphaShot
             RenderTexture.ReleaseTemporary(rt_temp);
 
             return t2d;
+        }
+
+        #endregion
+
+        public enum AlphaMode
+        {
+            [Description("No transparency")]
+            None = 0,
+            [Description("Cutout transparency (hard edges)")]
+            blackout,
+            [Description("Gradual transparency (has issues with some effects)")]
+            rgAlpha
         }
     }
 }

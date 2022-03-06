@@ -79,6 +79,7 @@
     <None Include="packages.config" />
     <None Include="Resources\blackout.unity3d" />
     <None Include="Resources\EquirectangularConverter.unity3d" />
+    <None Include="Resources\rgalpha.unity3d" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.4\analyzers\dotnet\cs\BepInEx.Analyzers.CodeFixes.dll" />

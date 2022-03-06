@@ -121,6 +121,7 @@
     <None Include="packages.config" />
     <None Include="Resources\blackout.unity3d" />
     <None Include="Resources\EquirectangularConverter.unity3d" />
+    <None Include="Resources\rgalpha.unity3d" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

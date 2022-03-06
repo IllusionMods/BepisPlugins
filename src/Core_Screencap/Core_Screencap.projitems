@@ -20,5 +20,6 @@
     <None Include="$(MSBuildThisFileDirectory)shader_source\blackout.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\EquirectangularConverter.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\Resize.shader" />
+    <None Include="$(MSBuildThisFileDirectory)shader_source\rgAlpha2.shader" />
   </ItemGroup>
 </Project>
