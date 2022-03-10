@@ -119,7 +119,7 @@ namespace Screencap
 
             CaptureAlpha = Config.Bind(
                 "Render Settings", "Transparency in rendered screenshots",
-                AlphaShot2.AlphaMode.blackout,
+                AlphaShot2.AlphaMode.rgAlpha,
                 new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
 
             ScreenshotMessage = Config.Bind(
