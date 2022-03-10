@@ -165,6 +165,9 @@ namespace alphaShot
         private Texture2D CaptureRgAlpha(int ResolutionX, int ResolutionY)
         {
             Camera main = Camera.main;
+
+            #region Generate alpha image
+
             var disableTypes = new Type[]
             {
                 typeof(BloomAndFlares),
@@ -174,39 +177,56 @@ namespace alphaShot
             var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
             foreach (var comp in disabled) comp.enabled = false;
 
-            var r = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
-            var g = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
+            var rtR = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
+            var rtG = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
 
             foreach (var comp in disabled) comp.enabled = true;
 
-            var output = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
-            ClearRT(output);
+            var rtAlpha = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
+            ClearRT(rtAlpha);
 
-            matRgAlpha.SetTexture("_red", r);
-            matRgAlpha.SetTexture("_green", g);
+            matRgAlpha.SetTexture("_green", rtG);
+            Graphics.Blit(rtR, rtAlpha, matRgAlpha);
+            //System.IO.File.WriteAllBytes("e:\\alphaRTex.png", GetT2D(alphaRTex).EncodeToPNG());
 
-            Graphics.Blit(r, output, matRgAlpha);
+            RenderTexture.ReleaseTemporary(rtR);
+            RenderTexture.ReleaseTemporary(rtG);
 
-            RenderTexture.ReleaseTemporary(r);
-            RenderTexture.ReleaseTemporary(g);
-            var result = GetT2D(output);
-            // File.WriteAllBytes("e:\\result.png",result.EncodeToPNG());
-            RenderTexture.ReleaseTemporary(output);
-            return result;
+            #endregion
+
+            #region Combine color with alpha
+
+            var texColor = PerformCapture(ResolutionX, ResolutionY, false);
+
+            var rtOutput = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            var prev = RenderTexture.active;
+            RenderTexture.active = rtOutput;
+            GL.Clear(false, true, new Color(0, 0, 0, 0));
+
+            matMask.SetTexture("_Mask", rtAlpha);
+            Graphics.Blit(texColor, rtOutput, matMask);
+
+            Destroy(texColor);
+            RenderTexture.ReleaseTemporary(rtAlpha);
+
+            var texOutput = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
+            texOutput.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0, false);
+            texOutput.Apply();
+
+            RenderTexture.active = prev;
+            RenderTexture.ReleaseTemporary(rtOutput);
+
+            #endregion
+
+            return texOutput;
         }
 
-        //TODO: is this necessary?
         private static void ClearRT(RenderTexture rt)
         {
-            var main = Camera.main;
-            var targetTexture = RenderTexture.active;//main.targetTexture;
-            //main.targetTexture = rt;
+            var targetTexture = RenderTexture.active;
             RenderTexture.active = rt;
-
             GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
-            //main.targetTexture = targetTexture;
             RenderTexture.active = targetTexture;
-
         }
 
         private static Texture2D GetT2D(RenderTexture renderTexture)
