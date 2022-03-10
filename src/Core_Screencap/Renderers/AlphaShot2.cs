@@ -164,42 +164,33 @@ namespace alphaShot
 
         private Texture2D CaptureRgAlpha(int ResolutionX, int ResolutionY)
         {
+            Camera main = Camera.main;
+            var disableTypes = new Type[]
+            {
+                typeof(BloomAndFlares),
+                typeof(VignetteAndChromaticAberration),
+                typeof(AmplifyColorEffect),
+            };
+            var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
+            foreach (var comp in disabled) comp.enabled = false;
+
             var r = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
             var g = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
 
-            var output = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 1, RenderTextureFormat.ARGB32);
+            foreach (var comp in disabled) comp.enabled = true;
+
+            var output = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
             ClearRT(output);
 
-            //matRgAlpha.SetTexture("_red", r);
-            //matRgAlpha.SetTexture("_green", g);
-            //
-            //Graphics.Blit(r, output, matRgAlpha);
+            matRgAlpha.SetTexture("_red", r);
+            matRgAlpha.SetTexture("_green", g);
 
-
-
-            
-            {
-                var rgbd = Screencap.Properties.Resources.rgalpha;
-                var ab = AssetBundle.LoadFromMemory(rgbd);
-                if (ab == null) throw new ArgumentNullException(nameof(ab));
-                var sha = ab.LoadAsset<Shader>("rgAlpha2");
-                if (sha == null) throw new ArgumentNullException(nameof(sha));
-                ab.Unload(false);
-
-                var mat = new Material(sha);
-                mat.SetTexture("_red", r);
-                mat.SetTexture("_green", g);
-
-                Graphics.Blit(r, output, mat);
-                Destroy(mat);
-                Destroy(sha);
-            }
-
-
+            Graphics.Blit(r, output, matRgAlpha);
 
             RenderTexture.ReleaseTemporary(r);
             RenderTexture.ReleaseTemporary(g);
             var result = GetT2D(output);
+            // File.WriteAllBytes("e:\\result.png",result.EncodeToPNG());
             RenderTexture.ReleaseTemporary(output);
             return result;
         }
@@ -208,32 +199,36 @@ namespace alphaShot
         private static void ClearRT(RenderTexture rt)
         {
             var main = Camera.main;
-            var targetTexture = main.targetTexture;
-            main.targetTexture = rt;
+            var targetTexture = RenderTexture.active;//main.targetTexture;
+            //main.targetTexture = rt;
+            RenderTexture.active = rt;
+
             GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
-            main.targetTexture = targetTexture;
+            //main.targetTexture = targetTexture;
+            RenderTexture.active = targetTexture;
+
         }
 
         private static Texture2D GetT2D(RenderTexture renderTexture)
         {
             var currentActiveRT = RenderTexture.active;
             RenderTexture.active = renderTexture;
-            var tex = new Texture2D(renderTexture.width, renderTexture.height);
+            var tex = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.ARGB32, false);
             tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
+            tex.Apply();
             RenderTexture.active = currentActiveRT;
             return tex;
         }
 
         public RenderTexture PerformRgCapture(int ResolutionX, int ResolutionY, Color bg)
         {
-            //todo: disable vignette/bloom?
             Camera main = Camera.main;
             RenderTexture active = RenderTexture.active;
             var targetTexture = main.targetTexture;
             var rect = main.rect;
             var backgroundColor = main.backgroundColor;
             var clearFlags = main.clearFlags;
-            var temporary = RenderTexture.GetTemporary(ResolutionX, ResolutionY);
+            var temporary = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
             ClearRT(temporary);
 
             main.clearFlags = CameraClearFlags.Color;
