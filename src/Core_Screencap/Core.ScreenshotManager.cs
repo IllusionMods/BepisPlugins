@@ -58,7 +58,7 @@ namespace Screencap
         public static ConfigEntry<int> Resolution360 { get; private set; }
         public static ConfigEntry<int> DownscalingRate { get; private set; }
         public static ConfigEntry<int> CardDownscalingRate { get; private set; }
-        public static ConfigEntry<bool> CaptureAlpha { get; private set; }
+        public static ConfigEntry<AlphaShot2.AlphaMode> CaptureAlpha { get; private set; }
         public static ConfigEntry<bool> ScreenshotMessage { get; private set; }
         public static ConfigEntry<float> EyeSeparation { get; private set; }
         public static ConfigEntry<float> ImageSeparationOffset { get; private set; }
@@ -119,7 +119,7 @@ namespace Screencap
 
             CaptureAlpha = Config.Bind(
                 "Render Settings", "Transparency in rendered screenshots",
-                true,
+                AlphaShot2.AlphaMode.rgAlpha,
                 new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
 
             ScreenshotMessage = Config.Bind(
@@ -341,7 +341,7 @@ namespace Screencap
 
                 ToggleCameraControllers(targetTr, true);
                 Time.timeScale = 1;
-                
+
                 var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, ImageSeparationOffset.Value) : StitchImages(capture2, capture, ImageSeparationOffset.Value);
 
                 var filename = GetUniqueFilename("3D-Render");
@@ -596,7 +596,26 @@ namespace Screencap
                 }
                 GUILayout.EndVertical();
 
-                CaptureAlpha.Value = GUILayout.Toggle(CaptureAlpha.Value, "Transparent background");
+                GUILayout.BeginVertical(GUI.skin.box);
+                {
+                    GUILayout.Label("Transparent background");
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUI.changed = false;
+                        var val = GUILayout.Toggle(CaptureAlpha.Value == AlphaShot2.AlphaMode.None, "No");
+                        if (GUI.changed && val) CaptureAlpha.Value = AlphaShot2.AlphaMode.None;
+
+                        GUI.changed = false;
+                        val = GUILayout.Toggle(CaptureAlpha.Value == AlphaShot2.AlphaMode.blackout, "Cutout");
+                        if (GUI.changed && val) CaptureAlpha.Value = AlphaShot2.AlphaMode.blackout;
+
+                        GUI.changed = false;
+                        val = GUILayout.Toggle(CaptureAlpha.Value == AlphaShot2.AlphaMode.rgAlpha, "Alpha");
+                        if (GUI.changed && val) CaptureAlpha.Value = AlphaShot2.AlphaMode.rgAlpha;
+                    }
+                    GUILayout.EndHorizontal();
+                }
+                GUILayout.EndVertical();
 
                 if (GUILayout.Button("Open screenshot dir"))
                     Process.Start(screenshotDir);

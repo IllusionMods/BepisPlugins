@@ -124,4 +124,7 @@
   <data name="EquirectangularConverter" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\EquirectangularConverter.unity3d;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="rgalpha" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\rgalpha.unity3d;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>
