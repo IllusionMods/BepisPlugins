@@ -4,10 +4,12 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
+#pragma warning disable 1591
 
 //code by essu
 namespace alphaShot
 {
+    [Obsolete("Avoid using AlphaShot2 directly since it might get changed in the future. Use ScreenshotManager.Capture instead", false)]
     public class AlphaShot2 : MonoBehaviour
     {
         private Material matScale;

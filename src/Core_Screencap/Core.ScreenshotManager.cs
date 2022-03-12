@@ -269,6 +269,31 @@ namespace Screencap
             else if (KeyCapture360in3D.Value.IsDown()) StartCoroutine(Take360Screenshot(true));
         }
 
+        /// <summary>
+        /// Capture the screen into a texture based on supplied arguments. Remember to destroy the texture when done with it.
+        /// Can return null if there no 3D camera was found to take the picture with.
+        /// </summary>
+        /// <param name="width">Width of the resulting capture, after downscaling</param>
+        /// <param name="height">Height of the resulting capture, after downscaling</param>
+        /// <param name="downscaling">How much to oversize and then downscale. 1 for none.</param>
+        /// <param name="transparent">Should the capture be transparent</param>
+        public Texture2D Capture(int width, int height, int downscaling, bool transparent)
+        {
+            if (currentAlphaShot == null)
+            {
+                Logger.LogDebug("Capture - No camera found");
+                return null;
+            }
+
+            try { OnPreCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
+            var capture = currentAlphaShot.CaptureTex(width, height, downscaling, transparent ? AlphaShot2.AlphaMode.rgAlpha : AlphaShot2.AlphaMode.None);
+            try { OnPostCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
+
+            return capture;
+        }
+
         private void TakeScreenshot()
         {
             var filename = GetUniqueFilename("UI");
