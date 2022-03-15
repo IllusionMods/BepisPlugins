@@ -6,6 +6,7 @@ using BepisPlugins;
 using Illusion.Game;
 using System;
 using System.Collections;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using Shared;
@@ -58,7 +59,8 @@ namespace Screencap
         public static ConfigEntry<int> Resolution360 { get; private set; }
         public static ConfigEntry<int> DownscalingRate { get; private set; }
         public static ConfigEntry<int> CardDownscalingRate { get; private set; }
-        public static ConfigEntry<AlphaShot2.AlphaMode> CaptureAlpha { get; private set; }
+        public static ConfigEntry<bool> CaptureAlpha { get; private set; }
+        public static ConfigEntry<AlphaMode> CaptureAlphaMode { get; private set; }
         public static ConfigEntry<bool> ScreenshotMessage { get; private set; }
         public static ConfigEntry<float> EyeSeparation { get; private set; }
         public static ConfigEntry<float> ImageSeparationOffset { get; private set; }
@@ -117,10 +119,15 @@ namespace Screencap
                 3,
                 new ConfigDescription("Capture character card images in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4)));
 
-            CaptureAlpha = Config.Bind(
+            CaptureAlphaMode = Config.Bind(
                 "Render Settings", "Transparency in rendered screenshots",
-                AlphaShot2.AlphaMode.rgAlpha,
+                AlphaMode.rgAlpha,
                 new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
+
+            CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None, 
+                new ConfigDescription("Only for backwards compatibility, use CaptureAlphaMode instead.", null, new BrowsableAttribute(false)));
+            CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.rgAlpha : AlphaMode.None;
+            CaptureAlphaMode.SettingChanged += (sender, args) => CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
 
             ScreenshotMessage = Config.Bind(
                 "General", "Show messages on screen",
@@ -287,7 +294,7 @@ namespace Screencap
 
             try { OnPreCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
-            var capture = currentAlphaShot.CaptureTex(width, height, downscaling, transparent ? AlphaShot2.AlphaMode.rgAlpha : AlphaShot2.AlphaMode.None);
+            var capture = currentAlphaShot.CaptureTex(width, height, downscaling, transparent ? AlphaMode.rgAlpha : AlphaMode.None);
             try { OnPostCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
 
@@ -337,7 +344,7 @@ namespace Screencap
             if (!in3D)
             {
                 yield return new WaitForEndOfFrame();
-                var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+                var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
 
                 var filename = GetUniqueFilename("Render");
                 File.WriteAllBytes(filename, EncodeToFile(capture));
@@ -356,11 +363,11 @@ namespace Screencap
                 targetTr.position += targetTr.right * EyeSeparation.Value / 2;
                 // Let the game render at the new position
                 yield return new WaitForEndOfFrame();
-                var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+                var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
 
                 targetTr.position -= targetTr.right * EyeSeparation.Value;
                 yield return new WaitForEndOfFrame();
-                var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlpha.Value);
+                var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
 
                 targetTr.position += targetTr.right * EyeSeparation.Value / 2;
 
@@ -627,16 +634,16 @@ namespace Screencap
                     GUILayout.BeginHorizontal();
                     {
                         GUI.changed = false;
-                        var val = GUILayout.Toggle(CaptureAlpha.Value == AlphaShot2.AlphaMode.None, "No");
-                        if (GUI.changed && val) CaptureAlpha.Value = AlphaShot2.AlphaMode.None;
+                        var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
+                        if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
 
                         GUI.changed = false;
-                        val = GUILayout.Toggle(CaptureAlpha.Value == AlphaShot2.AlphaMode.blackout, "Cutout");
-                        if (GUI.changed && val) CaptureAlpha.Value = AlphaShot2.AlphaMode.blackout;
+                        val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.blackout, "Cutout");
+                        if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.blackout;
 
                         GUI.changed = false;
-                        val = GUILayout.Toggle(CaptureAlpha.Value == AlphaShot2.AlphaMode.rgAlpha, "Alpha");
-                        if (GUI.changed && val) CaptureAlpha.Value = AlphaShot2.AlphaMode.rgAlpha;
+                        val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.rgAlpha, "Alpha");
+                        if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.rgAlpha;
                     }
                     GUILayout.EndHorizontal();
                 }

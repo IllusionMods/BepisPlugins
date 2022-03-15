@@ -355,15 +355,15 @@ namespace alphaShot
         }
 
         #endregion
+    }
 
-        public enum AlphaMode
-        {
-            [Description("No transparency")]
-            None = 0,
-            [Description("Cutout transparency (hard edges)")]
-            blackout,
-            [Description("Gradual transparency (has issues with some effects)")]
-            rgAlpha
-        }
+    public enum AlphaMode
+    {
+        [Description("No transparency")]
+        None = 0,
+        [Description("Cutout transparency (hard edges)")]
+        blackout,
+        [Description("Gradual transparency (has issues with some effects)")]
+        rgAlpha
     }
 }
