@@ -19,7 +19,18 @@ namespace ExtensibleSaveFormat
 
             internal static void InstallHooks()
             {
-                Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
+                var hi = Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
+
+#if KK
+                var vrType = AccessTools.TypeByName("VR.VRClassRoomCharaFile");
+                if (vrType != null)
+                {
+                    var vrTarget = AccessTools.DeclaredMethod(vrType, "Start");
+                    hi.Patch(original: vrTarget,
+                        prefix: new HarmonyMethod(typeof(Hooks), nameof(CustomScenePreHook)),
+                        postfix: new HarmonyMethod(typeof(Hooks), nameof(CustomScenePostHook)));
+                }
+#endif
             }
 
             #region ChaFile
