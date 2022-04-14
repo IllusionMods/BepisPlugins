@@ -37,7 +37,7 @@ namespace ExtensibleSaveFormat
             {
                 var info = header.SearchInfo(Marker);
 
-                if (info != null && info.version == DataVersion.ToString())
+                if (LoadEventsEnabled && info != null && info.version == DataVersion.ToString())
                 {
                     long originalPosition = reader.BaseStream.Position;
                     long basePosition = originalPosition - header.lstInfo.Sum(x => x.size);
@@ -124,13 +124,20 @@ namespace ExtensibleSaveFormat
 
                             if (length > 0)
                             {
-                                byte[] bytes = br.ReadBytes(length);
-                                var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                                if (!LoadEventsEnabled)
+                                {
+                                    br.BaseStream.Seek(length, SeekOrigin.Current);
+                                }
+                                else
+                                {
+                                    byte[] bytes = br.ReadBytes(length);
+                                    var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
 
-                                cardReadEventCalled = true;
-                                internalCharaDictionary.Set(__instance, dictionary);
+                                    cardReadEventCalled = true;
+                                    internalCharaDictionary.Set(__instance, dictionary);
 
-                                CardReadEvent(__instance);
+                                    CardReadEvent(__instance);
+                                }
                             }
                         }
                         else
@@ -304,10 +311,18 @@ namespace ExtensibleSaveFormat
 
                     if (marker == Marker && version == DataVersion && length > 0)
                     {
-                        byte[] bytes = br.ReadBytes(length);
-                        var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
+                        if (!LoadEventsEnabled)
+                        {
+                            br.BaseStream.Seek(length, SeekOrigin.Current);
+                            internalCoordinateDictionary.Set(coordinate, new Dictionary<string, PluginData>());
+                        }
+                        else
+                        {
+                            byte[] bytes = br.ReadBytes(length);
+                            var dictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
 
-                        internalCoordinateDictionary.Set(coordinate, dictionary);
+                            internalCoordinateDictionary.Set(coordinate, dictionary);
+                        }
                     }
                     else
                         internalCoordinateDictionary.Set(coordinate, new Dictionary<string, PluginData>()); //Overriding with empty data just in case there is some remnant from former loads.
