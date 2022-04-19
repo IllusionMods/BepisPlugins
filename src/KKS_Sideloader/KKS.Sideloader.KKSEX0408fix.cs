@@ -17,7 +17,7 @@ namespace Sideloader
         {
             public static void ApplyIfNeeded(Harmony harmony)
             {
-                // This was added in the patch and needs to be patched
+                // This was added in the offical 0408 patch and needs to be patched or it will filter out most of the modded studio items
                 var listProp = AccessTools.PropertyGetter(typeof(Studio.Info.FileListInfo), "PathList");
                 if (listProp != null)
                 {
@@ -27,6 +27,10 @@ namespace Sideloader
                         harmony.Patch(
                             original: listProp,
                             prefix: new HarmonyMethod(typeof(KKSEX0408fix), nameof(StudioInfoPathListOverride)));
+                        // Fix crash if multiple zipmods have list files with number names that are the same
+                        harmony.Patch(
+                            original: AccessTools.Constructor(typeof(Info.FileListInfo), new[] { typeof(List<string>) }),
+                            transpiler: new HarmonyMethod(typeof(KKSEX0408fix), nameof(StudioInfoRemoveDictTpl)));
                         // Fix all character list files with non-number filenames being randomly ordered in front of everything else by the new sorting algorithm
                         harmony.Patch(
                             original: AccessTools.Method(typeof(ChaListControl), nameof(ChaListControl.LoadListInfoAll)),
@@ -34,9 +38,19 @@ namespace Sideloader
                     }
                     catch (Exception e)
                     {
-                        Logger.LogWarning("Failed to apply KKSEX0408fix, many modded items might not work. Cause: " + e);
+                        Logger.LogWarning("Failed to apply a fix for the KKS EX 0408 patch, many modded items might not work. Cause: " + e);
                     }
                 }
+            }
+
+            private static IEnumerable<CodeInstruction> StudioInfoRemoveDictTpl(IEnumerable<CodeInstruction> instructions)
+            {
+                return new CodeMatcher(instructions)
+                    .MatchForward(true, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SortedDictionary<Int32, string>), nameof(SortedDictionary<Int32, string>.Add))))
+                    .ThrowIfInvalid("No SortedDictionary<Int32, string>.Add found")
+                    .SetAndAdvance(OpCodes.Pop, null)
+                    .Insert(new CodeInstruction(OpCodes.Pop), new CodeInstruction(OpCodes.Pop))
+                    .Instructions();
             }
 
             private static IEnumerable<CodeInstruction> LoadListInfoAllSortReplaceTpl(IEnumerable<CodeInstruction> instructions)
