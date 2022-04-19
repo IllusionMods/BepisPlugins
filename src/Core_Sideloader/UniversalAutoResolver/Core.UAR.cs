@@ -181,15 +181,20 @@ namespace Sideloader.AutoResolver
                 string property = $"{propertyPrefix}{kv.Key}";
 
                 //For accessories, make sure we're checking the appropriate category
-                if (kv.Key.Category.ToString().Contains("ao_"))
+                if (structure is ChaFileAccessory.PartsInfo)
                 {
+                    // Do not combine this cast with the is check above to keep compatibility with Jetpack's transplier hook
                     ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)structure;
-
                     if ((int)kv.Key.Category != AccessoryInfo.type)
                     {
-                        //If the current category does not match the category saved to the card do not attempt resolving
+                        //If the current accessory category does not match the category saved to the card do not attempt resolving
                         continue;
                     }
+                }
+                else if (kv.Key.Prefix == StructReference.AccessoryPropPrefix)
+                {
+                    // If we are not an accessory then skip trying to resolve accessory props
+                    continue;
                 }
 
                 ResolveInfo extResolve = extInfo?.FirstOrDefault(x => x.Property == property);
@@ -238,7 +243,7 @@ namespace Sideloader.AutoResolver
                         {
                             //ID found but it conflicts with a vanilla item. Change the ID to avoid conflicts.
                             ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website, extResolve.Name);
-                            if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
+                            if (structure is ChaFileAccessory.PartsInfo && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
                                 kv.Value.SetMethod(structure, 1);
                             else
                                 kv.Value.SetMethod(structure, BaseSlotID - 1);
@@ -253,7 +258,7 @@ namespace Sideloader.AutoResolver
                     {
                         //ID not found. Change the ID to avoid potential future conflicts.
                         ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website, extResolve.Name);
-                        if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
+                        if (structure is ChaFileAccessory.PartsInfo && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
                             kv.Value.SetMethod(structure, 1);
                         else
                             kv.Value.SetMethod(structure, BaseSlotID - 1);
@@ -302,7 +307,7 @@ namespace Sideloader.AutoResolver
                 //No match was found
                 if (Sideloader.DebugLogging.Value)
                     Sideloader.Logger.LogDebug($"Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
-                if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
+                if (structure is ChaFileAccessory.PartsInfo && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
                     kv.Value.SetMethod(structure, 1);
             }
         }

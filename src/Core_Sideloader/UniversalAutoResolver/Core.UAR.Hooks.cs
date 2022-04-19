@@ -123,7 +123,7 @@ namespace Sideloader.AutoResolver
                                 continue;
 
                         //For accessories, make sure we're checking the appropriate category
-                        if (kv.Key.Category.ToString().Contains("ao_"))
+                        if (obj is ChaFileAccessory.PartsInfo)
                         {
                             ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)obj;
 
@@ -132,6 +132,11 @@ namespace Sideloader.AutoResolver
                                 //If the current category does not match the accessory's category do not attempt a resolution info lookup
                                 continue;
                             }
+                        }
+                        else if (kv.Key.Prefix == StructReference.AccessoryPropPrefix)
+                        {
+                            // If we are not an accessory then skip trying to resolve accessory props
+                            continue;
                         }
 
                         var info = TryGetResolutionInfo(kv.Key.ToString(), slot);
@@ -284,10 +289,10 @@ namespace Sideloader.AutoResolver
 #elif AI || HS2
                             if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(slot))
 #endif
-                            continue;
+                                continue;
 
                         //For accessories, make sure we're checking the appropriate category
-                        if (kv.Key.Category.ToString().Contains("ao_"))
+                        if (obj is ChaFileAccessory.PartsInfo)
                         {
                             ChaFileAccessory.PartsInfo AccessoryInfo = (ChaFileAccessory.PartsInfo)obj;
 
@@ -296,6 +301,11 @@ namespace Sideloader.AutoResolver
                                 //If the current category does not match the accessory's category do not attempt a resolution info lookup
                                 continue;
                             }
+                        }
+                        else if (kv.Key.Prefix == StructReference.AccessoryPropPrefix)
+                        {
+                            // If we are not an accessory then skip trying to resolve accessory props
+                            continue;
                         }
 
                         var info = TryGetResolutionInfo(kv.Key.ToString(), slot);

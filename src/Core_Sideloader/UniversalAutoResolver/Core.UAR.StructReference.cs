@@ -607,26 +607,13 @@ namespace Sideloader.AutoResolver
         #endregion
 
         #region ChaFileAccessory.PartsInfo
+        internal static readonly string AccessoryPropPrefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";
+
         private static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoGenerator()
         {
-            string prefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";
+            var baseProperties = Enum.GetValues(typeof(CategoryNo)).Cast<CategoryNo>().Select(x => new CategoryProperty(x, "id", AccessoryPropPrefix)).ToList();
 
-            var baseProperties = new List<CategoryProperty>
-            {
-                new CategoryProperty(CategoryNo.ao_none , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_hair , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_head , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_face , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_neck , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_body , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_waist , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_leg , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_arm , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_hand , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_kokan , "id", prefix)
-            };
-
-            var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileAccessory.PartsInfo), baseProperties, prefix);
+            var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileAccessory.PartsInfo), baseProperties, AccessoryPropPrefix);
 
             return generatedProperties;
         }
