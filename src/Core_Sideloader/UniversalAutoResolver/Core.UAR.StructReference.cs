@@ -608,6 +608,7 @@ namespace Sideloader.AutoResolver
 
         #region ChaFileAccessory.PartsInfo
         internal static readonly string AccessoryPropPrefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";
+
         private static Dictionary<CategoryProperty, StructValue<int>> ChaFileAccessoryPartsInfoGenerator()
         {
             var baseProperties = Enum.GetValues(typeof(CategoryNo)).Cast<CategoryNo>().Select(x => new CategoryProperty(x, "id", AccessoryPropPrefix)).ToList();

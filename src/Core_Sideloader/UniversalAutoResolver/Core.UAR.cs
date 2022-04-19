@@ -243,7 +243,7 @@ namespace Sideloader.AutoResolver
                         {
                             //ID found but it conflicts with a vanilla item. Change the ID to avoid conflicts.
                             ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website, extResolve.Name);
-                            if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
+                            if (structure is ChaFileAccessory.PartsInfo && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
                                 kv.Value.SetMethod(structure, 1);
                             else
                                 kv.Value.SetMethod(structure, BaseSlotID - 1);
@@ -258,7 +258,7 @@ namespace Sideloader.AutoResolver
                     {
                         //ID not found. Change the ID to avoid potential future conflicts.
                         ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website, extResolve.Name);
-                        if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
+                        if (structure is ChaFileAccessory.PartsInfo && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
                             kv.Value.SetMethod(structure, 1);
                         else
                             kv.Value.SetMethod(structure, BaseSlotID - 1);
@@ -307,7 +307,7 @@ namespace Sideloader.AutoResolver
                 //No match was found
                 if (Sideloader.DebugLogging.Value)
                     Sideloader.Logger.LogDebug($"Compatibility resolving failed, no match found for ID {kv.Value.GetMethod(structure)} Category {kv.Key.Category}");
-                if (kv.Key.Category.ToString().Contains("ao_") && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
+                if (structure is ChaFileAccessory.PartsInfo && Sideloader.KeepMissingAccessories.Value && GetNowSceneNames().Any(sceneName => sceneName == "CustomScene"))
                     kv.Value.SetMethod(structure, 1);
             }
         }
