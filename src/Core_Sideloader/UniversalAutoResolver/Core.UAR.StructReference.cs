@@ -611,20 +611,7 @@ namespace Sideloader.AutoResolver
         {
             string prefix = $"{nameof(ChaFileAccessory)}.{nameof(ChaFileAccessory.PartsInfo)}";
 
-            var baseProperties = new List<CategoryProperty>
-            {
-                new CategoryProperty(CategoryNo.ao_none , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_hair , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_head , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_face , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_neck , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_body , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_waist , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_leg , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_arm , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_hand , "id", prefix),
-                new CategoryProperty(CategoryNo.ao_kokan , "id", prefix)
-            };
+            var baseProperties = Enum.GetValues(typeof(CategoryNo)).Cast<CategoryNo>().Select(x => new CategoryProperty(x, "id", prefix)).ToList();
 
             var generatedProperties = GeneratePropertyInfoDictionary(typeof(ChaFileAccessory.PartsInfo), baseProperties, prefix);
 
