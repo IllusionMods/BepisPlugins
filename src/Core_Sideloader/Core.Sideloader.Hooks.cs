@@ -25,6 +25,10 @@ namespace Sideloader
                               null, new HarmonyMethod(typeof(Hooks).GetMethod(nameof(LoadAllFolderPostfix), AccessTools.all)));
 #endif
 
+#if KKS
+                KKSEX0408fix.ApplyIfNeeded(harmony);
+#endif
+
 #if HS2
                 var add50M = AccessTools.Method(typeof(Manager.GameSystem), "IsPathAdd50");
                 if (add50M != null) //May not exist in earlier game versions
