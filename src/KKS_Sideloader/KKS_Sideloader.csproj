@@ -102,6 +102,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KKS.Sideloader.KKSEX0408fix.cs" />
     <Compile Include="KKS.Sideloader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UniversalAutoResolver\KKS.UAR.Hooks.cs" />
