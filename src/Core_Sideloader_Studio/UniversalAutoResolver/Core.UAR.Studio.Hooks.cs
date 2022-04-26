@@ -52,7 +52,15 @@ namespace Sideloader.AutoResolver
                     foreach (StudioResolveInfo extResolve in extInfo)
                     {
                         int NewDicKey = ItemImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
-                        if (ObjectList[NewDicKey] is OIItemInfo Item)
+
+                        //Console.WriteLine($"NEW KEY: {NewDicKey}  ORDER: {extResolve.ObjectOrder}  NAME: {extResolve.Name}");
+                        if (!ObjectList.TryGetValue(NewDicKey, out var objectInfo))
+                        {
+                            Sideloader.Logger.LogWarning("Corrupted Sideloader data, some items might not load properly");
+                            continue;
+                        }
+
+                        if (objectInfo is OIItemInfo Item)
                         {
                             ResolveStudioObject(extResolve, Item);
                             ObjectList.Remove(NewDicKey);
@@ -60,7 +68,7 @@ namespace Sideloader.AutoResolver
                         else
                         {
                             NewDicKey = LightImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
-                            if (ObjectList[NewDicKey] is OILightInfo Light)
+                            if (objectInfo is OILightInfo Light)
                             {
                                 ResolveStudioObject(extResolve, Light);
                                 ObjectList.Remove(NewDicKey);
@@ -68,7 +76,7 @@ namespace Sideloader.AutoResolver
                             else
                             {
                                 NewDicKey = CharImportOrder.Where(x => x.Value == extResolve.ObjectOrder).Select(x => x.Key).FirstOrDefault();
-                                if (ObjectList[NewDicKey] is OICharInfo CharInfo)
+                                if (objectInfo is OICharInfo CharInfo)
                                 {
                                     ResolveStudioObject(extResolve, CharInfo);
                                     ObjectList.Remove(NewDicKey);
