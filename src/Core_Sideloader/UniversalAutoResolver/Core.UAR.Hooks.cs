@@ -182,7 +182,6 @@ namespace Sideloader.AutoResolver
                 string cardName = __instance.charaFileName;
                 if (cardName.IsNullOrEmpty())
                     cardName = __instance.parameter?.fullname?.Trim();
-                Sideloader.Logger.LogDebug($"Reloading card [{cardName}]");
 
                 var extData = ExtendedSave.GetExtendedDataById(__instance, UARExtIDOld) ?? ExtendedSave.GetExtendedDataById(__instance, UARExtID);
 
@@ -200,11 +199,11 @@ namespace Sideloader.AutoResolver
                 }
                 else
                 {
-                    Sideloader.Logger.LogError("Unknown data type:" + (extData.data["info"]).GetType());
+                    Sideloader.Logger.LogError($"Reloading card [{cardName}] failed - Unknown data type:{extData.data["info"]?.GetType()}");
                     return;
                 }
 
-                Sideloader.Logger.LogDebug($"External info count: {extInfo.Count}");
+                Sideloader.Logger.LogDebug($"Reloading card [{cardName}] - External info count: {extInfo.Count}");
 
                 if (Sideloader.DebugLogging.Value)
                 {
