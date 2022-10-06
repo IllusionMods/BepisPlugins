@@ -30,6 +30,16 @@ namespace ExtensibleSaveFormat
                         prefix: new HarmonyMethod(typeof(Hooks), nameof(CustomScenePreHook)),
                         postfix: new HarmonyMethod(typeof(Hooks), nameof(CustomScenePostHook)));
                 }
+
+                // Fix ext data getting lost in KK Party live mode. Not needed in KK.
+                if (UnityEngine.Application.productName == BepisPlugins.Constants.GameProcessNameSteam)
+                {
+                    var t = typeof(LiveCharaSelectSprite)
+                            .GetNestedType("<Start>c__AnonStorey0", AccessTools.allDeclared)
+                            .GetNestedType("<Start>c__AnonStorey1", AccessTools.allDeclared)
+                            .GetMethod("<>m__3", AccessTools.allDeclared);
+                    hi.Patch(t, transpiler: new HarmonyMethod(typeof(Hooks), nameof(Hooks.PartyLiveCharaFixTpl)));
+                }
 #endif
             }
 
@@ -455,6 +465,27 @@ namespace ExtensibleSaveFormat
             private static void CvsO_CharaSaveUpdateCharasListPostfix() => LoadEventsEnabled = true;
 #endif
             #endregion
+
+#if KK
+            private static IEnumerable<CodeInstruction> PartyLiveCharaFixTpl(IEnumerable<CodeInstruction> instructions)
+            {
+                return new CodeMatcher(instructions).MatchForward(true, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(ChaFile), nameof(ChaFile.CopyCustom))))
+                                                    .ThrowIfInvalid("CopyCustom not found")
+                                                    .Advance(1)
+                                                    .ThrowIfNotMatch("Ldloc_0 not found", new CodeMatch(OpCodes.Ldloc_0))
+                                                    .Advance(1)
+                                                    .Insert(new CodeInstruction(OpCodes.Dup),
+                                                            new CodeInstruction(OpCodes.Ldarg_1),
+                                                            CodeInstruction.Call(typeof(Hooks), nameof(Hooks.PartyLiveCharaFix)))
+                                                    .Instructions();
+            }
+            private static void PartyLiveCharaFix(ChaFile target, SaveData.Heroine source)
+            {
+                // Copy ext data over to the new chafile
+                var data = internalCharaDictionary.Get(source.charFile);
+                if (data != null) internalCharaDictionary.Set(target, data);
+            }
+#endif
 
 #if KK || EC || KKS
             [HarmonyPostfix, HarmonyPatch(typeof(ChaFileAccessory), nameof(ChaFileAccessory.MemberInit))]
