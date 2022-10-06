@@ -56,6 +56,7 @@ namespace Sideloader
         internal static ConfigEntry<bool> DebugLogging { get; private set; }
         internal static ConfigEntry<bool> DebugLoggingResolveInfo { get; private set; }
         internal static ConfigEntry<bool> DebugLoggingModLoading { get; private set; }
+        internal static ConfigEntry<bool> RandomizeSlotIds { get; private set; }
         internal static ConfigEntry<bool> KeepMissingAccessories { get; private set; }
         internal static ConfigEntry<bool> MigrationEnabled { get; private set; }
         internal static ConfigEntry<string> AdditionalModsDirectory { get; private set; }
@@ -85,7 +86,9 @@ namespace Sideloader
                 "Enable verbose logging for debugging issues with Sideloader and sideloader mods.\nWarning: Will increase game start up time and will result in very large log sizes.");
             DebugLoggingModLoading = Config.Bind("Logging", "Debug mod loading logging", false,
                 "Enable verbose logging when loading mods.");
-
+            
+            RandomizeSlotIds = Config.Bind("General", "Randomize Slot IDs", true,
+                new ConfigDescription("Helps detect bugs in Sideloader and other plugins by making them more obvious. If false, the bugs might not affect current game instance but will suddenly pop up after updating the game or sending scenes/cards to another users.", null, "Advanced"));
             KeepMissingAccessories = Config.Bind("General", "Keep missing accessories", false,
                 "Missing accessories will be replaced by a default item with color and position information intact when loaded in the character maker.");
             MigrationEnabled = Config.Bind("General", "Migration enabled", true,
