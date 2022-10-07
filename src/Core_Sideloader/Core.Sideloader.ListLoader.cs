@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using System.Xml.Linq;
+using JetBrains.Annotations;
 #if KK || EC || KKS
 using ChaCustom;
 #elif AI || HS2
@@ -114,6 +115,7 @@ namespace Sideloader.ListLoader
         }
 #endif
 
+        [Pure]
         internal static ChaListData LoadCSV(Stream stream)
         {
             ChaListData chaListData = new ChaListData();
@@ -141,10 +143,10 @@ namespace Sideloader.ListLoader
             return chaListData;
         }
 
-        internal static void LoadExcelDataCSV(string assetBundleName, string assetName, Stream stream)
+        [Pure]
+        internal static List<ExcelData.Param> LoadExcelDataCSV(Stream stream)
         {
-            ExcelData excelData = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
-            excelData.list = new List<ExcelData.Param>();
+            var list = new List<ExcelData.Param>();
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
                 while (!reader.EndOfStream)
@@ -153,9 +155,15 @@ namespace Sideloader.ListLoader
 
                     ExcelData.Param param = new ExcelData.Param { list = line.Split(',').ToList() };
 
-                    excelData.list.Add(param);
+                    list.Add(param);
                 }
             }
+            return list;
+        }
+        internal static void AddExcelDataCSV(string assetBundleName, string assetName, List<ExcelData.Param> data)
+        {
+            ExcelData excelData = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
+            excelData.list = data;
 
             if (!ExternalExcelData.ContainsKey(assetBundleName))
                 ExternalExcelData[assetBundleName] = new Dictionary<string, ExcelData>();

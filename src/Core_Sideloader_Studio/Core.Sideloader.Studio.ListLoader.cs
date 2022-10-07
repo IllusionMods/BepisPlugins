@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace Sideloader.ListLoader
 {
@@ -27,6 +28,7 @@ namespace Sideloader.ListLoader
             }
         }
 
+        [Pure]
         internal static StudioListData LoadStudioCSV(Stream stream, string fileName, string guid)
         {
             StudioListData data = new StudioListData(fileName);
@@ -64,7 +66,7 @@ namespace Sideloader.ListLoader
                     if (!line.Contains(',')) break;
                     var lineSplit = line.Split(',');
 
-                    data.Entries.Add(FormatList(line.Split(',').ToList(), CategoryOrGroup));
+                    data.Entries.Add(FormatList(lineSplit.ToList(), CategoryOrGroup));
                 }
             }
             return data;

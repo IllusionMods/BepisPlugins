@@ -199,8 +199,11 @@ namespace Sideloader
                     }
 
                     LoadAllLists(archive, manifest);
-                    BuildPngFolderList(archive);
 
+                    var pngNames = GetPngAssetFilenames(archive);
+                    BuildPngFolderList(pngNames, archive);
+
+                    // todo split manifest parsing, do later
                     UniversalAutoResolver.GenerateMigrationInfo(manifest, _gatheredMigrationInfos);
 #if AI || HS2
                     UniversalAutoResolver.GenerateHeadPresetInfo(manifest, _gatheredHeadPresetInfos);
@@ -258,6 +261,7 @@ namespace Sideloader
                         var chaListData = Lists.LoadCSV(stream);
 
                         SetPossessNew(chaListData);
+                        //------
                         UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
                         Lists.ExternalDataList.Add(chaListData);
                     }
@@ -277,6 +281,7 @@ namespace Sideloader
                         {
                             var stream = arc.GetInputStream(entry);
                             var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
+                            //------
 
                             UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
                             Lists.ExternalStudioDataList.Add(studioListData);
@@ -302,7 +307,9 @@ namespace Sideloader
                         assetName = assetName.Remove(assetName.LastIndexOf('.')); //Remove the .csv
 
                         var stream = arc.GetInputStream(entry);
-                        Lists.LoadExcelDataCSV(assetBundleName, assetName, stream);
+                        var data = Lists.LoadExcelDataCSV(stream);
+                        //------
+                        Lists.AddExcelDataCSV(assetBundleName, assetName, data);
                     }
                     catch (Exception ex)
                     {
@@ -322,6 +329,7 @@ namespace Sideloader
                     var stream = arc.GetInputStream(entry);
                     var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
 
+                    //------
                     UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
                     Lists.ExternalStudioDataList.Add(studioListData);
                 }
@@ -346,9 +354,10 @@ namespace Sideloader
             }
         }
         /// <summary>
-        /// Construct a list of all folders that contain a .png
+        /// Get filenames of all .png files in this archive that are inside an abdata folder.
         /// </summary>
-        private void BuildPngFolderList(ZipFile arc)
+        [Pure]
+        private static IEnumerable<string> GetPngAssetFilenames(ZipFile arc)
         {
             foreach (ZipEntry entry in arc)
             {
@@ -356,24 +365,37 @@ namespace Sideloader
                 //i.e. skip preview pics or character cards that might be included with the mod
                 if (entry.Name.StartsWith("abdata/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
                 {
-                    string assetBundlePath = entry.Name;
-                    assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1); //Remove "abdata/"
+                    yield return entry.Name;
+                }
+            }
+        }
+        /// <summary>
+        /// Construct a list of all folders that contain a .png
+        /// </summary>
+        /// //todo pass in whole zipfile data classes to add all at once
+        /// //todo pass in path to zipfile and open it on demand
+        /// //todo measure if expensive, maybe collect pngs and serialize the whole things?
+        private static void BuildPngFolderList(IEnumerable<string> pngAssetFilenames, ZipFile arc) 
+        {
+            foreach (var pngAssetFilename in pngAssetFilenames)
+            {
+                //Make a list of all the .png files and archive they come from
+                if (PngList.ContainsKey(pngAssetFilename))
+                {
+                    if (DebugLoggingModLoading.Value)
+                        Logger.LogWarning($"Duplicate .png asset detected! {pngAssetFilename} in \"{GetRelativeArchiveDir(arc.Name)}\"");
+                }
+                else
+                    PngList.Add(pngAssetFilename, arc);
 
-                    //Make a list of all the .png files and archive they come from
-                    if (PngList.ContainsKey(entry.Name))
-                    {
-                        if (DebugLoggingModLoading.Value)
-                            Logger.LogWarning($"Duplicate .png asset detected! {assetBundlePath} in \"{GetRelativeArchiveDir(arc.Name)}\"");
-                    }
-                    else
-                        PngList.Add(entry.Name, arc);
-
-                    assetBundlePath = assetBundlePath.Remove(assetBundlePath.LastIndexOf('/')); //Remove the .png filename
-                    if (!PngFolderList.Contains(assetBundlePath))
-                    {
-                        //Make a unique list of all folders that contain a .png
-                        PngFolderList.Add(assetBundlePath);
-                    }
+                // todo generate this at the very end after all archive png files are added so theres no duplicates
+                string assetBundlePath = pngAssetFilename;
+                assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1); //Remove "abdata/"
+                assetBundlePath = assetBundlePath.Remove(assetBundlePath.LastIndexOf('/')); //Remove the .png filename
+                if (!PngFolderList.Contains(assetBundlePath))
+                {
+                    //Make a unique list of all folders that contain a .png
+                    PngFolderList.Add(assetBundlePath);
                 }
             }
         }
@@ -546,7 +568,7 @@ namespace Sideloader
 
                     if (assetBundlePath.Contains('/'))
                         assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
-                    
+
                     if (entry.CompressionMethod == CompressionMethod.Stored)
                     {
                         long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
