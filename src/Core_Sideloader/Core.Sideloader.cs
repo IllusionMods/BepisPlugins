@@ -190,15 +190,10 @@ namespace Sideloader
                     Manifests[manifest.GUID] = manifest;
 
                     var bundleInfos = FindAllBundlesInArchive(archive);
-                    foreach (var bundleLoadInfo in bundleInfos)
-                    {
-                        BundleManager.AddBundleLoader(bundleLoadInfo.LoadBundle, bundleLoadInfo.BundleTrimmedPath, out string warning);
+                    AddBundles(bundleInfos);
 
-                        if (!string.IsNullOrEmpty(warning) && DebugLoggingModLoading.Value)
-                            Logger.LogWarning($"{warning} in \"{GetRelativeArchiveDir(bundleLoadInfo.ArchiveFilename)}\"");
-                    }
-
-                    LoadAllLists(archive, manifest);
+                    LoadAllLists(archive, manifest, out var charaLists, out var studioLists, out var boneLists, out var mapLists);
+                    AddAllLists(manifest, charaLists, studioLists, boneLists, mapLists);
 
                     var pngNames = GetPngAssetFilenames(archive);
                     BuildPngFolderList(pngNames, archive);
@@ -248,88 +243,93 @@ namespace Sideloader
                 Logger.LogWarning("Could not load " + failedStrings.Length + " mods, see previous warnings for more information. File names of skipped archives:\n" + string.Join(" | ", failedStrings));
         }
 
-        private void LoadAllLists(ZipFile arc, Manifest manifest)
+        private void LoadAllLists(ZipFile arc, Manifest manifest,
+                                  out List<ChaListData> charaLists,
+                                  out List<Lists.StudioListData> studioLists,
+                                  out List<Lists.StudioListData> boneLists,
+                                  out List<Lists.StudioListData> mapLists)
         {
-            List<ZipEntry> BoneList = new List<ZipEntry>();
+            charaLists = new List<ChaListData>();
+            studioLists = new List<Lists.StudioListData>();
+            boneLists = new List<Lists.StudioListData>();
+            mapLists = new List<Lists.StudioListData>();
+
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    try
+                    if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                     {
                         var stream = arc.GetInputStream(entry);
                         var chaListData = Lists.LoadCSV(stream);
 
                         SetPossessNew(chaListData);
-                        //------
-                        UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
-                        Lists.ExternalDataList.Add(chaListData);
+
+                        charaLists.Add(chaListData);
                     }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
-                    }
-                }
 #if KK || AI || HS2 || KKS
-                else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
-                        BoneList.Add(entry);
-                    else
+                    else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                     {
-                        try
+                        if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
                         {
                             var stream = arc.GetInputStream(entry);
                             var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
-                            //------
 
-                            UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
-                            Lists.ExternalStudioDataList.Add(studioListData);
+                            boneLists.Add(studioListData);
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
+                            var stream = arc.GetInputStream(entry);
+                            var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
+
+                            studioLists.Add(studioListData);
                         }
                     }
-                }
+#endif
 #if AI || HS2
-                else if (entry.Name.StartsWith("abdata/list/map/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                {
-                    try
+                    else if (entry.Name.StartsWith("abdata/list/map/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                     {
                         var stream = arc.GetInputStream(entry);
                         var data = Lists.LoadExcelDataCSV(stream, entry.Name);
-                        //------
-                        Lists.AddExcelDataCSV(data);
+                        mapLists.Add(data);
                     }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
-                    }
-                }
 #endif
-#endif
-            }
-
-#if KK || AI || HS2 || KKS
-            //ItemBoneList data must be resolved after the corresponding item so they can be resolved to the same ID
-            foreach (ZipEntry entry in BoneList)
-            {
-                try
-                {
-                    var stream = arc.GetInputStream(entry);
-                    var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
-
-                    //------
-                    UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
-                    Lists.ExternalStudioDataList.Add(studioListData);
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
                 }
             }
-#endif
+        }
+
+        private void AddAllLists(Manifest manifest,
+                                 IEnumerable<ChaListData> charaLists,
+                                 IEnumerable<Lists.StudioListData> studioLists,
+                                 IEnumerable<Lists.StudioListData> boneLists,
+                                 IEnumerable<Lists.StudioListData> mapLists)
+        {
+            foreach (var chaListData in charaLists)
+            {
+                UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
+                Lists.ExternalDataList.Add(chaListData);
+            }
+
+            foreach (var studioListData in studioLists)
+            {
+                UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
+                Lists.ExternalStudioDataList.Add(studioListData);
+            }
+
+            foreach (var mapListData in mapLists)
+            {
+                Lists.AddExcelDataCSV(mapListData);
+            }
+
+            foreach (var boneListData in boneLists)
+            {
+                UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, boneListData);
+                Lists.ExternalStudioDataList.Add(boneListData);
+            }
         }
 
         private void SetPossessNew(ChaListData data)
@@ -366,7 +366,7 @@ namespace Sideloader
         /// //todo pass in whole zipfile data classes to add all at once
         /// //todo pass in path to zipfile and open it on demand
         /// //todo measure if expensive, maybe collect pngs and serialize the whole things?
-        private static void BuildPngFolderList(IEnumerable<string> pngAssetFilenames, ZipFile arc) 
+        private static void BuildPngFolderList(IEnumerable<string> pngAssetFilenames, ZipFile arc)
         {
             foreach (var pngAssetFilename in pngAssetFilenames)
             {
@@ -570,6 +570,16 @@ namespace Sideloader
                         yield return new BundleLoadInfo(arc.Name, -1, entry.Name, assetBundlePath);
                     }
                 }
+            }
+        }
+        private static void AddBundles(IEnumerable<BundleLoadInfo> bundleInfos)
+        {
+            foreach (var bundleLoadInfo in bundleInfos)
+            {
+                BundleManager.AddBundleLoader(bundleLoadInfo.LoadBundle, bundleLoadInfo.BundleTrimmedPath, out string warning);
+
+                if (!string.IsNullOrEmpty(warning) && DebugLoggingModLoading.Value)
+                    Logger.LogWarning($"{warning} in \"{GetRelativeArchiveDir(bundleLoadInfo.ArchiveFilename)}\"");
             }
         }
 
