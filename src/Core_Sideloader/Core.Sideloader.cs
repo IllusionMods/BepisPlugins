@@ -297,19 +297,10 @@ namespace Sideloader
                 {
                     try
                     {
-                        string assetBundleName = entry.Name;
-                        assetBundleName = assetBundleName.Remove(0, assetBundleName.IndexOf('/') + 1); //Remove "abdata/"
-                        assetBundleName = assetBundleName.Remove(assetBundleName.LastIndexOf('/')); //Remove the .csv filename
-                        assetBundleName += ".unity3d";
-
-                        string assetName = entry.Name;
-                        assetName = assetName.Remove(0, assetName.LastIndexOf('/') + 1); //Remove all but the filename
-                        assetName = assetName.Remove(assetName.LastIndexOf('.')); //Remove the .csv
-
                         var stream = arc.GetInputStream(entry);
-                        var data = Lists.LoadExcelDataCSV(stream);
+                        var data = Lists.LoadExcelDataCSV(stream, entry.Name);
                         //------
-                        Lists.AddExcelDataCSV(assetBundleName, assetName, data);
+                        Lists.AddExcelDataCSV(data);
                     }
                     catch (Exception ex)
                     {
@@ -655,9 +646,9 @@ namespace Sideloader
             if (path == null) return;
 
             var abdataIndex = path.IndexOf("/abdata/");
-            if (abdataIndex == -1) return;
+            if (abdataIndex == -1 || abdataIndex + "/abdata/".Length >= path.Length) return;
 
-            string bundle = path.Substring(abdataIndex).Replace("/abdata/", "");
+            string bundle = path.Substring(abdataIndex + "/abdata/".Length);
             if (!File.Exists(path))
             {
                 if (BundleManager.Bundles.TryGetValue(bundle, out List<LazyCustom<AssetBundle>> lazyList))

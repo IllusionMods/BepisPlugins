@@ -144,30 +144,28 @@ namespace Sideloader.ListLoader
         }
 
         [Pure]
-        internal static List<ExcelData.Param> LoadExcelDataCSV(Stream stream)
+        internal static StudioListData LoadExcelDataCSV(Stream stream, string csvFilename)
         {
-            var list = new List<ExcelData.Param>();
+            var result = new StudioListData(csvFilename);
+
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
                 while (!reader.EndOfStream)
                 {
                     string line = reader.ReadLine().Trim();
-
-                    ExcelData.Param param = new ExcelData.Param { list = line.Split(',').ToList() };
-
-                    list.Add(param);
+                    result.Entries.Add(line.Split(',').ToList());
                 }
             }
-            return list;
+            return result;
         }
-        internal static void AddExcelDataCSV(string assetBundleName, string assetName, List<ExcelData.Param> data)
+        internal static void AddExcelDataCSV(StudioListData data)
         {
             ExcelData excelData = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
-            excelData.list = data;
+            excelData.list = data.Entries.Select(x=> new ExcelData.Param { list = x}).ToList();
 
-            if (!ExternalExcelData.ContainsKey(assetBundleName))
-                ExternalExcelData[assetBundleName] = new Dictionary<string, ExcelData>();
-            ExternalExcelData[assetBundleName][assetName] = excelData;
+            if (!ExternalExcelData.ContainsKey(data.AssetBundleName))
+                ExternalExcelData[data.AssetBundleName] = new Dictionary<string, ExcelData>();
+            ExternalExcelData[data.AssetBundleName][data.FileNameWithoutExtension] = excelData;
         }
 
         internal static void LoadCheckItemList()
