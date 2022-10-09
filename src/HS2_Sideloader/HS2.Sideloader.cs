@@ -13,7 +13,7 @@ namespace Sideloader
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin
     {
-        private static readonly string[] GameNameList = { "hs2", "honeyselect2", "honey select 2" };
+        internal static readonly string[] GameNameList = { "hs2", "honeyselect2", "honey select 2" };
         
         private static string FindKoiZipmodDir() => string.Empty;
     }

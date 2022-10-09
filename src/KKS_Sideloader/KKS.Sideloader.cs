@@ -14,7 +14,7 @@ namespace Sideloader
     [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin
     {
-        private static readonly string[] GameNameList = { "koikatsu sunshine", "koikatu sunshine", "コイカツ sunshine" };
+        internal static readonly string[] GameNameList = { "koikatsu sunshine", "koikatu sunshine", "コイカツ sunshine" };
         
         private static string FindKoiZipmodDir()
         {
