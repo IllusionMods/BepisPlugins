@@ -71,12 +71,12 @@ namespace Sideloader.ListLoader
                 }
             }
             return data;
-
+            
             List<string> FormatList(List<string> line, bool categoryOrGroup)
             {
 #if AI || HS2
                 //Convert group and category from KK to AI
-                if (CategoryOrGroup)
+                if (categoryOrGroup)
                 {
                     if (line.Count == 2)
                     {
@@ -91,20 +91,30 @@ namespace Sideloader.ListLoader
             }
         }
 
-        [MessagePackObject(true)]
+        [MessagePackObject]
         public class StudioListData
         {
-            public string FileName { get;  set; }
-            public string FileNameWithoutExtension { get;  set; }
-            public string AssetBundleName { get;  set; }
-            public List<List<string>> Headers = new List<List<string>>();
-            public List<List<string>> Entries = new List<List<string>>();
+            [Key("fileName")] public string FileName { get; private set; }
+            [Key("fileNameWithoutExtension")] public string FileNameWithoutExtension { get; private set; }
+            [Key("assetBundleName")] public string AssetBundleName { get; private set; }
+            [Key("headers")] public List<List<string>> Headers { get; private set; } = new List<List<string>>();
+            [Key("entries")] public List<List<string>> Entries { get; private set; } = new List<List<string>>();
 
             public StudioListData(string fileName)
             {
                 FileName = fileName;
                 FileNameWithoutExtension = Path.GetFileNameWithoutExtension(FileName);
                 AssetBundleName = FileName.Remove(FileName.LastIndexOf('/')).Remove(0, FileName.IndexOf('/') + 1) + ".unity3d";
+            }
+
+            [SerializationConstructor]
+            public StudioListData(string fileName, string fileNameWithoutExtension, string assetBundleName, List<List<string>> headers, List<List<string>> entries)
+            {
+                FileName = fileName;
+                FileNameWithoutExtension = fileNameWithoutExtension;
+                AssetBundleName = assetBundleName;
+                Headers = headers;
+                Entries = entries;
             }
         }
     }

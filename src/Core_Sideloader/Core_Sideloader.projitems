@@ -27,5 +27,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.ResolveInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.StructReference.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UniversalAutoResolver\Core.UAR.StructValue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Core.Sideloader.ZipmodInfo.cs" />
   </ItemGroup>
 </Project>

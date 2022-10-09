@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using HarmonyLib;
 using ICSharpCode.SharpZipLib.Zip;
 using Shared;
 using Sideloader.AutoResolver;
@@ -11,15 +10,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using JetBrains.Annotations;
 using UnityEngine;
 using XUnity.ResourceRedirector;
-using ADV.Commands.Base;
 using MessagePack;
-using UnityEngine.Assertions;
-using System.ComponentModel;
 using System.Threading;
 #if AI || HS2
 using AIChara;
@@ -43,7 +38,7 @@ namespace Sideloader
         /// <summary> Directory from which to load mods </summary>
         public static string ModsDirectory { get; } = Path.Combine(Paths.GameRootPath, "mods");
         /// <summary> Dictionary of loaded zip file name and its zipmod metadata </summary>
-        private static Dictionary<string, ZipmodInfo> Zipmods = new Dictionary<string, ZipmodInfo>();
+        private static readonly Dictionary<string, ZipmodInfo> Zipmods = new Dictionary<string, ZipmodInfo>();
 
         /// <summary> List of all loaded manifest files </summary>
         public static readonly Dictionary<string, Manifest> Manifests = new Dictionary<string, Manifest>();
@@ -66,24 +61,9 @@ namespace Sideloader
         internal static ConfigEntry<bool> MigrationEnabled { get; private set; }
         internal static ConfigEntry<string> AdditionalModsDirectory { get; private set; }
 
-        class TestLogListener : ILogListener
+        [UsedImplicitly]
+        private void Awake()
         {
-            public void Dispose()
-            {
-
-            }
-
-            public void LogEvent(object sender, LogEventArgs eventArgs)
-            {
-                if (eventArgs.Source.SourceName == "Sideloader" && eventArgs.Level == LogLevel.Error)
-                    Console.WriteLine(new StackTrace());
-            }
-        }
-
-        internal void Awake()
-        {
-            BepInEx.Logging.Logger.Listeners.Add(new TestLogListener());
-
 #if KK // Fixes an issue with reading some zips made on Japanese systems. Only needed on .Net 3.5, it doesn't affect newer Unity versions.
             ZipConstants.DefaultCodePage = 0;
 #endif
@@ -126,18 +106,13 @@ namespace Sideloader
             LoadModsFromDirectories(ModsDirectory, AdditionalModsDirectory.Value);
         }
 
-        private static string GetRelativeArchiveDir(string archiveDir) => !archiveDir.StartsWith(ModsDirectory, StringComparison.OrdinalIgnoreCase) ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
+        internal static string GetRelativeArchiveDir(string archiveDir) => !archiveDir.StartsWith(ModsDirectory, StringComparison.OrdinalIgnoreCase) ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
 
-        Stopwatch sw1 = new Stopwatch();
-        Stopwatch sw2 = new Stopwatch();
-        Stopwatch sw3 = new Stopwatch();
-        Stopwatch sw4 = new Stopwatch();
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
             var stopWatch = Stopwatch.StartNew();
 
-            sw1.Start();
-            //1038
+            #region Find zipmod files on drive
 
             var foundZipfiles = new List<ZipmodInfo>();
             var waitHandle = new ManualResetEvent(false);
@@ -146,15 +121,14 @@ namespace Sideloader
             {
                 try
                 {
-                    foreach (var modDirectory in modDirectories.Where(Directory.Exists))
+                    foreach (var modDirectory in modDirectories.Distinct(StringComparer.OrdinalIgnoreCase).Where(Directory.Exists))
                     {
                         var prevCount = foundZipfiles.Count;
                         foreach (var zipFile in Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories))
                         {
-                            if (!zipFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) && !zipFile.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase))
-                                continue;
-
-                            foundZipfiles.Add(new ZipmodInfo(zipFile));
+                            if (zipFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
+                                zipFile.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase))
+                                foundZipfiles.Add(new ZipmodInfo(zipFile));
                         }
 
                         Logger.LogInfo("Found " + (foundZipfiles.Count - prevCount) + " zip/zipmod files in directory: " + modDirectory);
@@ -170,17 +144,27 @@ namespace Sideloader
                 }
             });
 
-            var cachePath = @"e:\test.txt"; //Path.Combine(BepInEx.Paths.CachePath, "sideloader_zipmodcache.bin");
+            #endregion
+
+            #region Read cache
+
+            //var cachePath = @"e:\test.txt";
+            var cachePath = Path.Combine(Paths.CachePath, "sideloader_zipmodcache.bin");
             var cache = new Dictionary<string, ZipmodInfo>();
             try
             {
+                var sw = Stopwatch.StartNew();
                 if (File.Exists(cachePath))
                 {
-                    // Takes around 1s
+                    var cacheVer = new Version(File.ReadAllText(cachePath + ".ver"));
+                    if (cacheVer != Info.Metadata.Version)
+                        throw new Exception($"Cache version ({cacheVer}) doesn't match Sideloader version ({Info.Metadata.Version}), it has to be regenerated.");
+
                     using (var fileStream = File.OpenRead(cachePath))
                     {
-                        // todo check sideloader version and invalidate
+                        // Takes around 1s. LZ4 ends up about 100ms slower, but the file size is reduced from 16MB to 3.5MB, so it might actually be faster depending on the HDD
                         cache = LZ4MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream);
+                        Logger.LogInfo($"Loaded zipmod cache from \"{cachePath}\" in {sw.ElapsedMilliseconds}ms");
                     }
                 }
             }
@@ -189,84 +173,104 @@ namespace Sideloader
                 Logger.LogWarning("Failed to load cache: " + e);
             }
 
+            #endregion
+
             waitHandle.WaitOne();
 
+            #region Load the zipmod metadata either from drive or cache
 
-            //var groupedZipmods = new Dictionary<string, List<ZipmodInfo>>();
+            var groupedZipmodsToLoad = new Dictionary<string, List<ZipmodInfo>>();
+            void AddZipmodToLoad(ZipmodInfo zipmodInfo)
+            {
+                if (!zipmodInfo.Valid) return;
+
+                if (!groupedZipmodsToLoad.TryGetValue(zipmodInfo.Manifest.GUID, out var ziplist))
+                {
+                    ziplist = new List<ZipmodInfo>(1);
+                    groupedZipmodsToLoad[zipmodInfo.Manifest.GUID] = ziplist;
+                }
+
+                ziplist.Add(zipmodInfo);
+            }
 
             // Very fast
-            foreach (var info in foundZipfiles)
+            foreach (var newInfo in foundZipfiles)
             {
-                var zipFileName = info.FileName;
-                cache.TryGetValue(zipFileName, out var cachedInfo);
-                if (cachedInfo != null && info.FileSize == cachedInfo.FileSize && info.LastWriteTime == cachedInfo.LastWriteTime)
+                cache.TryGetValue(newInfo.FileName, out var cachedInfo);
+                if (cachedInfo != null && newInfo.FileSize == cachedInfo.FileSize && newInfo.LastWriteTime == cachedInfo.LastWriteTime)
                 {
-                    if (zipFileName != cachedInfo.FileName) Console.WriteLine($"WTF {zipFileName}   /   {cachedInfo.FileName}");
-                    Zipmods.Add(zipFileName, cachedInfo);
+                    Zipmods.Add(cachedInfo.FileName, cachedInfo);
 
+                    // Replay error/info messages
                     if (cachedInfo.Error != null)
                     {
                         if (cachedInfo.Error.StartsWith("Skipping"))
-                            Logger.LogWarning(cachedInfo.Error);
+                            Logger.LogInfo(cachedInfo.Error);
                         else
                             Logger.LogError(cachedInfo.Error);
                     }
-
-                    continue;
-                }
-
-                if (cache.Count > 0)
-                    Console.WriteLine("Cache MISS for " + zipFileName);
-
-                Zipmods.Add(info.FileName, info);
-
-                try
-                {
-                    var archive = info.GetZipFile();
-
-                    info.Manifest = Manifest.LoadFromZip(archive);
-                    //Skip the mod if it is not for this game
-                    bool allowed = info.Manifest.Games.Count == 0 || info.Manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains);
-                    if (!allowed)
+                    else
                     {
-                        var msg = $"Skipping archive \"{info.RelativeFileName}\" because it's meant for {string.Join(", ", info.Manifest.Games.ToArray())}";
-                        Logger.LogInfo(msg);
-                        info.Error = msg;
-                        continue;
+                        AddZipmodToLoad(cachedInfo);
                     }
-
-                    info.BundleInfos.AddRange(FindAllBundlesInArchive(archive));
-
-                    LoadAllLists(info);
-
-                    info.pngNames.AddRange(GetPngAssetFilenames(archive));
                 }
-                catch (Exception ex)
+                else
                 {
-                    var msg = $"Failed to load archive \"{info.RelativeFileName}\" with error: {ex}";
-                    Logger.LogError(msg);
-                    info.Error = msg;
-                    info.Dispose();
+                    try
+                    {
+                        if (cache.Count > 0 && DebugLogging.Value)
+                            Logger.LogDebug($"Cache MISS for {newInfo.FileName}  -  {(cachedInfo != null ? "size/date changed" : "entry missing")}");
+
+                        // Add to the mod list first so that it gets saved to the cache even if it throws an exception
+                        Zipmods.Add(newInfo.FileName, newInfo);
+
+                        var archive = newInfo.GetZipFile();
+
+                        newInfo.Manifest = Manifest.LoadFromZip(archive);
+                        //Skip the mod if it is not for this game
+                        if (newInfo.Manifest.Games.Count != 0 && !newInfo.Manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains))
+                            throw new PlatformNotSupportedException();
+
+                        newInfo.LoadAllLists();
+
+                        AddZipmodToLoad(newInfo);
+                    }
+                    catch (PlatformNotSupportedException)
+                    {
+                        var msg = $"Skipping archive \"{newInfo.RelativeFileName}\" because it's meant for {string.Join(", ", newInfo.Manifest.Games.ToArray())}";
+                        Logger.LogInfo(msg);
+                        newInfo.Error = msg;
+                        newInfo.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg = $"Failed to load archive \"{newInfo.RelativeFileName}\" with error: {ex}";
+                        Logger.LogError(msg);
+                        newInfo.Error = msg;
+                        newInfo.Dispose();
+                    }
                 }
             }
 
-            waitHandle.Reset();
-            // Can serialize in background since Zipmods should not get modified
-            ThreadPool.QueueUserWorkItem(state =>
+            #endregion
+
+            #region Write all found zipmod metadata to the cache
+
+            // Can NOT serialize in background since AddAllLists->GenerateStudioResolutionInfo modifies StudioResolveInfo.Entries
+            // todo find a way to serialize in background anyways?
+            try
             {
-                try
-                {
-                    File.WriteAllBytes(cachePath, LZ4MessagePackSerializer.Serialize(Zipmods));
-                }
-                catch (Exception e)
-                {
-                    Logger.LogWarning("Failed to save cache: " + e);
-                }
-                finally
-                {
-                    waitHandle.Set();
-                }
-            });
+                File.WriteAllBytes(cachePath, LZ4MessagePackSerializer.Serialize(Zipmods));
+                File.WriteAllText(cachePath + ".ver", Info.Metadata.Version.ToString());
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning("Failed to save cache: " + e);
+            }
+
+            #endregion
+
+            #region Actually load the zipmods to use in the game from the metadata
 
             var enableModLoadingLogging = DebugLoggingModLoading.Value;
             var modLoadInfoSb = enableModLoadingLogging ? new StringBuilder(1000) : null;
@@ -278,46 +282,35 @@ namespace Sideloader
             var gatheredFaceSkinInfos = new List<FaceSkinInfo>();
 #endif
 
-
-            //586
-
-            // Handle duplicate GUIDs and load unique mods
-            //0ms
-            var valids = Zipmods.Values.Where(x => x.Valid).ToList();
-            sw1.Stop();
-            sw2.Start();
-            //520ms
-            var groupBy = valids.GroupBy(x => x.Manifest.GUID).ToList();
-            sw2.Stop();
-            sw3.Start();
-            //63ms
-            var modGroups = groupBy.OrderBy(x => x.Key).ToList();
-
-            sw3.Stop();
-            sw4.Start();
-            //224
-
-            foreach (var modGroup in modGroups)
+            // Actually load the mods (only one per GUID, the newest one)
+            // Loop takes around 280ms
+            foreach (var modGroup in groupedZipmodsToLoad.Values)
             {
-                // Order by version if available, else use modified dates (less reliable)
-                // If versions match, prefer mods inside folders or with more descriptive names so modpacks are preferred
-                var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.Manifest.Version))
-                    ? modGroup.OrderByDescending(x => x.Manifest.Version, new ManifestVersionComparer()).ThenByDescending(x => x.FileName.Length)
-                    : modGroup.OrderByDescending(x => x.LastWriteTime);
-
-                var orderedMods = orderedModsQuery.ToList();
-                var zipmod = orderedMods[0];
-
-                if (orderedMods.Count > 1)
+                ZipmodInfo zipmod;
+                // Handle multiple versions/copies of a single zipmod
+                if (modGroup.Count > 1)
                 {
-                    var modList = string.Join(", ", orderedMods.Skip(1).Select(x => '"' + zipmod.RelativeFileName + '"').ToArray());
+                    // Order by version if available, else use modified dates (less reliable)
+                    // If versions match, prefer mods inside folders or with more descriptive names so modpacks are preferred
+                    var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.Manifest.Version))
+                        ? modGroup.OrderByDescending(x => x.Manifest.Version, new ManifestVersionComparer()).ThenByDescending(x => x.FileName.Length)
+                        : modGroup.OrderByDescending(x => x.LastWriteTime);
+
+                    var orderedMods = orderedModsQuery.ToList();
+                    zipmod = orderedMods[0];
+
+                    var modList = string.Join(", ", orderedMods.Skip(1).Select(x => '"' + x.RelativeFileName + '"').ToArray());
                     Logger.LogWarning($"Multiple versions detected, only \"{zipmod.RelativeFileName}\" will be loaded. Skipped versions: {modList}");
 
                     // Don't keep the duplicate archives in memory
                     foreach (var dupeMod in orderedMods.Skip(1))
                         dupeMod.Dispose();
                 }
-                // Actually load the mods (only one per GUID, the newest one)
+                else
+                {
+                    zipmod = modGroup[0];
+                }
+
                 try
                 {
                     var manifest = zipmod.Manifest;
@@ -349,8 +342,7 @@ namespace Sideloader
                 }
             }
 
-            sw4.Stop();
-            //31
+            // Past this point is very fast
 
             UniversalAutoResolver.SetResolveInfos(gatheredResolutionInfos);
             UniversalAutoResolver.SetMigrationInfos(gatheredMigrationInfos);
@@ -366,10 +358,7 @@ namespace Sideloader
             LoadedManifests = Manifests.Values.AsEnumerable().ToList();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            // Should finish by now, but wait just to be safe
-            waitHandle.WaitOne();
-
-            stopWatch.Stop();
+            #endregion
 
             if (enableModLoadingLogging)
                 Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
@@ -378,207 +367,38 @@ namespace Sideloader
             var failedPaths = Zipmods.Values.Where(x => !x.Loaded).Select(x => x.RelativeFileName).ToArray();
             if (failedPaths.Length > 0)
                 Logger.LogWarning("Could not load " + failedPaths.Length + " mods, see previous warnings for more information. File names of skipped archives:\n" + string.Join(" | ", failedPaths));
-
-
-
-
-            Console.WriteLine($"sw1 {sw1.ElapsedMilliseconds}  sw2 {sw2.ElapsedMilliseconds}  sw3 {sw3.ElapsedMilliseconds}  sw4 {sw4.ElapsedMilliseconds}");
-
         }
 
-        [MessagePackObject(true)]
-        internal class ZipmodInfo : IDisposable
-        {
-            public Manifest Manifest;
-            public string FileName;
-            public string RelativeFileName;
-            public DateTime LastWriteTime;
-            public long FileSize;
-            public string Error;
-
-            //todo generate cache id from file size and last change date
-
-            [IgnoreMember]
-            private ZipFile _zipFile;
-
-            public List<ChaListData> charaLists = new List<ChaListData>();
-            public List<BundleLoadInfo> BundleInfos = new List<BundleLoadInfo>();
-            public List<Lists.StudioListData> boneLists = new List<Lists.StudioListData>();
-            public List<Lists.StudioListData> studioLists = new List<Lists.StudioListData>();
-            public List<Lists.StudioListData> mapLists = new List<Lists.StudioListData>();
-            public List<string> pngNames = new List<string>();
-
-            [IgnoreMember]
-            public bool Loaded;
-
-            public ZipmodInfo() { }
-            public ZipmodInfo(string fileName)
-            {
-                FileName = fileName;
-                RelativeFileName = GetRelativeArchiveDir(fileName);
-
-                var fi = new FileInfo(fileName);
-                LastWriteTime = fi.LastWriteTimeUtc;
-                FileSize = fi.Length;
-            }
-
-            public ZipFile GetZipFile()
-            {
-                if (_zipFile == null)
-                {
-                    _zipFile = new ZipFile(FileName);
-                }
-                else if (_zipFile.Count == 0)
-                {
-                    // Disposing makes entry count = 0, but it should be at least 1 for the manifest.
-                    // Still try to dispose the old zipfile just to be safe.
-                    _zipFile.Close();
-                    _zipFile = new ZipFile(FileName);
-                }
-
-                return _zipFile;
-            }
-
-            // todo use to be able to cache non-zipmod files?
-            [IgnoreMember]
-            public bool Valid => Manifest != null && Error == null;
-
-            //public long GetCacheHash()
-            //{
-            //    return LastWriteTime.Ticks ^ ~FileSize;
-            //}
-            //static long Reverse(long x)
-            //{
-            //    long y = 0;
-            //    for (int i = 0; i < 32; ++i)
-            //    {
-            //        y <<= 1;
-            //        y |= (x & 1);
-            //        x >>= 1;
-            //    }
-            //    return y;
-            //}
-
-            public void Dispose()
-            {
-                if (_zipFile != null)
-                {
-                    _zipFile.Close();
-                    _zipFile = null;
-                }
-            }
-        }
-
-        private static void LoadAllLists(ZipmodInfo zipmod)
-        {
-            var arc = zipmod.GetZipFile();
-            var manifest = zipmod.Manifest;
-            foreach (ZipEntry entry in arc)
-            {
-                try
-                {
-                    if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var stream = arc.GetInputStream(entry);
-                        var chaListData = Lists.LoadCSV(stream);
-
-                        SetPossessNew(chaListData);
-
-                        zipmod.charaLists.Add(chaListData);
-                    }
-#if KK || AI || HS2 || KKS
-                    else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
-                        {
-                            var stream = arc.GetInputStream(entry);
-                            var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
-
-                            zipmod.boneLists.Add(studioListData);
-                        }
-                        else
-                        {
-                            var stream = arc.GetInputStream(entry);
-                            var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
-
-                            zipmod.studioLists.Add(studioListData);
-                        }
-                    }
-#endif
-#if AI || HS2
-                    else if (entry.Name.StartsWith("abdata/list/map/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var stream = arc.GetInputStream(entry);
-                        var data = Lists.LoadExcelDataCSV(stream, entry.Name);
-                        zipmod.mapLists.Add(data);
-                    }
-#endif
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
-                }
-            }
-        }
-
-        private static void AddAllLists(ZipmodInfo zipmod, List<ResolveInfo> _gatheredResolutionInfos)
+        private static void AddAllLists(ZipmodInfo zipmod, List<ResolveInfo> gatheredResolutionInfos)
         {
             var manifest = zipmod.Manifest;
-            foreach (var chaListData in zipmod.charaLists)
+            foreach (var chaListData in zipmod.CharaLists)
             {
-                UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
+                UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, gatheredResolutionInfos);
                 Lists.ExternalDataList.Add(chaListData);
             }
-            foreach (var studioListData in zipmod.studioLists)
+            foreach (var studioListData in zipmod.StudioLists)
             {
                 UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
                 Lists.ExternalStudioDataList.Add(studioListData);
             }
-            foreach (var mapListData in zipmod.mapLists)
+            foreach (var mapListData in zipmod.MapLists)
             {
                 Lists.AddExcelDataCSV(mapListData);
             }
-            foreach (var boneListData in zipmod.boneLists)
+            foreach (var boneListData in zipmod.BoneLists)
             {
                 UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, boneListData);
                 Lists.ExternalStudioDataList.Add(boneListData);
             }
         }
 
-        private static void SetPossessNew(ChaListData data)
-        {
-            for (int i = 0; i < data.lstKey.Count; i++)
-            {
-                if (data.lstKey[i] == "Possess")
-                {
-                    foreach (var kv in data.dictList)
-                        kv.Value[i] = "1";
-                    break;
-                }
-            }
-        }
-        /// <summary>
-        /// Get filenames of all .png files in this archive that are inside an abdata folder.
-        /// </summary>
-        [Pure]
-        private static IEnumerable<string> GetPngAssetFilenames(ZipFile arc)
-        {
-            foreach (ZipEntry entry in arc)
-            {
-                //Only list folders for .pngs in abdata folder
-                //i.e. skip preview pics or character cards that might be included with the mod
-                if (entry.Name.StartsWith("abdata/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                {
-                    yield return entry.Name;
-                }
-            }
-        }
         /// <summary>
         /// Construct a list of all folders that contain a .png
         /// </summary>
         private static void BuildPngFolderList(ZipmodInfo zipmod)
         {
-            foreach (var pngAssetFilename in zipmod.pngNames)
+            foreach (var pngAssetFilename in zipmod.PngNames)
             {
                 //Make a list of all the .png files and archive they come from
                 if (PngList.ContainsKey(pngAssetFilename))
@@ -589,7 +409,6 @@ namespace Sideloader
                 else
                     PngList.Add(pngAssetFilename, zipmod);
 
-                // todo generate this at the very end after all archive png files are added so theres no duplicates
                 string assetBundlePath = pngAssetFilename;
                 assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1); //Remove "abdata/"
                 assetBundlePath = assetBundlePath.Remove(assetBundlePath.LastIndexOf('/')); //Remove the .png filename
@@ -676,7 +495,7 @@ namespace Sideloader
                     var stream = archive.GetInputStream(entry);
                     var fileLength = (int)entry.Size;
                     var buffer = new byte[fileLength];
-                    stream.Read(buffer, 0, fileLength);
+                    _ = stream.Read(buffer, 0, fileLength);
                     var tex = new Texture2D(2, 2, format, mipmap);
                     tex.LoadImage(buffer);
 
@@ -696,11 +515,10 @@ namespace Sideloader
         /// </summary>
         public static bool IsPng(string pngFile) => PngList.ContainsKey(pngFile);
 
-        private static readonly MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", AccessTools.all);
-
-        [MessagePackObject(true)]
+        [MessagePackObject]
         public class BundleLoadInfo
         {
+            [SerializationConstructor]
             public BundleLoadInfo(string archiveFilename, long streamOffset, string bundleFullPath, string bundleTrimmedPath)
             {
                 ArchiveFilename = archiveFilename;
@@ -708,14 +526,11 @@ namespace Sideloader
                 BundleFullPath = bundleFullPath;
                 BundleTrimmedPath = bundleTrimmedPath;
             }
-            public string ArchiveFilename;
-            [IgnoreMember]
-            public bool CanBeStreamed => StreamOffset >= 0;
-
-            public long StreamOffset = -1;
-
-            public string BundleFullPath;
-            public string BundleTrimmedPath;
+            [Key("archiveFilename")] public string ArchiveFilename { get; private set; }
+            [Key("streamOffset")] public long StreamOffset { get; private set; }
+            [IgnoreMember] public bool CanBeStreamed => StreamOffset > 0;
+            [Key("bundleFullPath")] public string BundleFullPath { get; private set; }
+            [Key("bundleTrimmedPath")] public string BundleTrimmedPath { get; private set; }
 
             public AssetBundle LoadBundle()
             {
@@ -738,7 +553,7 @@ namespace Sideloader
 
                     byte[] buffer = new byte[entry.Size];
 
-                    stream.Read(buffer, 0, (int)entry.Size);
+                    _ = stream.Read(buffer, 0, (int)entry.Size);
 
                     // The line below can either be commented in or out - it doesn't really matter. 
                     //  - If in: It will generate successive unique CAB-strings for these asset bundles
@@ -757,30 +572,6 @@ namespace Sideloader
             }
         }
 
-        [Pure]
-        private static IEnumerable<BundleLoadInfo> FindAllBundlesInArchive(ZipFile arc)
-        {
-            foreach (ZipEntry entry in arc)
-            {
-                if (entry.Name.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase))
-                {
-                    string assetBundlePath = entry.Name;
-
-                    if (assetBundlePath.Contains('/'))
-                        assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
-
-                    if (entry.CompressionMethod == CompressionMethod.Stored)
-                    {
-                        long index = (long)locateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
-                        yield return new BundleLoadInfo(arc.Name, index, entry.Name, assetBundlePath);
-                    }
-                    else
-                    {
-                        yield return new BundleLoadInfo(arc.Name, -1, entry.Name, assetBundlePath);
-                    }
-                }
-            }
-        }
         private static void AddBundles(IEnumerable<BundleLoadInfo> bundleInfos)
         {
             foreach (var bundleLoadInfo in bundleInfos)
@@ -864,7 +655,7 @@ namespace Sideloader
             var path = context.Parameters.Path;
             if (path == null) return;
 
-            var abdataIndex = path.IndexOf("/abdata/");
+            var abdataIndex = path.IndexOf("/abdata/", StringComparison.OrdinalIgnoreCase);
             if (abdataIndex == -1 || abdataIndex + "/abdata/".Length >= path.Length) return;
 
             string bundle = path.Substring(abdataIndex + "/abdata/".Length);

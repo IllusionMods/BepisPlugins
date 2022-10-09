@@ -58,6 +58,7 @@ namespace Sideloader.AutoResolver
             GUIDNew = guidNew;
         }
 
+        [SerializationConstructor]
         public MigrationInfo() { }
     }
 }
