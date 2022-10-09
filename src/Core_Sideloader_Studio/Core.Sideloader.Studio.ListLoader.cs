@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
+using MessagePack;
 
 namespace Sideloader.ListLoader
 {
@@ -90,11 +91,12 @@ namespace Sideloader.ListLoader
             }
         }
 
-        internal class StudioListData
+        [MessagePackObject(true)]
+        public class StudioListData
         {
-            public string FileName { get; private set; }
-            public string FileNameWithoutExtension { get; private set; }
-            public string AssetBundleName { get; private set; }
+            public string FileName { get;  set; }
+            public string FileNameWithoutExtension { get;  set; }
+            public string AssetBundleName { get;  set; }
             public List<List<string>> Headers = new List<List<string>>();
             public List<List<string>> Entries = new List<List<string>>();
 

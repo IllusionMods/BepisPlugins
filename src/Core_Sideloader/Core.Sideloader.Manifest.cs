@@ -3,8 +3,10 @@ using Sideloader.AutoResolver;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using MessagePack;
 #if AI || HS2
 using AIChara;
 #endif
@@ -14,70 +16,96 @@ namespace Sideloader
     /// <summary>
     /// Contains data about the loaded manifest.xml
     /// </summary>
+    [MessagePackObject]
     public partial class Manifest
     {
-        private readonly int SchemaVer = 1;
+        [Key(0)] public int SchemaVer = 1;
 
         /// <summary>
         /// Full contents of the manifest.xml.
         /// </summary>
-        public readonly XDocument manifestDocument;
+        [IgnoreMember]
+        public readonly XDocument manifestDocument; //todo problem when deserializing
         /// <summary>
         /// GUID of the mod.
         /// </summary>
-        public string GUID => manifestDocument.Root?.Element("guid")?.Value;
+        [Key(1)]
+        public string GUID { get; set; }
         /// <summary>
         /// Name of the mod. Only used for display the name of the mod when mods are loaded.
         /// </summary>
-        public string Name => manifestDocument.Root?.Element("name")?.Value;
+        [Key(2)]
+        public string Name { get; set; }
         /// <summary>
         /// Version of the mod.
         /// </summary>
-        public string Version => manifestDocument.Root?.Element("version")?.Value;
+        [Key(3)]
+        public string Version { get; set; }
         /// <summary>
         /// Author of the mod. Not currently used for anything.
         /// </summary>
-        public string Author => manifestDocument.Root?.Element("author")?.Value;
+        [Key(4)]
+        public string Author { get; set; }
         /// <summary>
         /// Website of the mod. Not currently used for anything.
         /// </summary>
-        public string Website => manifestDocument.Root?.Element("website")?.Value;
+        [Key(5)]
+        public string Website { get; set; }
         /// <summary>
         /// Description of the mod. Not currently used for anything.
         /// </summary>
-        public string Description => manifestDocument.Root?.Element("description")?.Value;
+        [Key(7)]
+        public string Description { get; set; }
+
         /// <summary>
         /// Game the mod is made for. If specified, the mod will only load for that game. If not specified will load on any game.
         /// </summary>
         [Obsolete("Use Games instead")]
-        public string Game => manifestDocument.Root?.Element("game")?.Value;
+        [IgnoreMember]
+        public string Game => Games.FirstOrDefault();
 
-        private readonly List<string> _Games = new List<string>();
         /// <summary>
         /// Games the mod is made for. If specified, the mod will only load for those games. If not specified will load on any game.
         /// </summary>
-        public List<string> Games => _Games;
+        [Key(8)]
+        public List<string> Games { get; set; } = new List<string>();
         /// <summary>
         /// List of all migration info for this mod
         /// </summary>
+        [Key(9)]
         public List<MigrationInfo> MigrationList = new List<MigrationInfo>();
 
 #if AI || HS2
-        internal List<HeadPresetInfo> HeadPresetList = new List<HeadPresetInfo>();
-        internal List<FaceSkinInfo> FaceSkinList = new List<FaceSkinInfo>();
+        [Key(10)]
+        public List<HeadPresetInfo> HeadPresetList = new List<HeadPresetInfo>();
+        [Key(11)]
+        public List<FaceSkinInfo> FaceSkinList = new List<FaceSkinInfo>();
 #endif
+
+        public Manifest() { }
 
         internal Manifest(Stream stream)
         {
             using (XmlReader reader = XmlReader.Create(stream))
                 manifestDocument = XDocument.Load(reader);
 
+
+            if (manifestDocument?.Root?.Attribute("schema-ver")?.Value != SchemaVer.ToString())
+                throw new OperationCanceledException("Manifest.xml is in an invalid format");
+
             foreach (var element in manifestDocument.Root?.Elements("game"))
                 if (element != null && !element.Value.IsNullOrWhiteSpace())
-                    _Games.Add(element.Value);
+                    Games.Add(element.Value);
+
+            Description = manifestDocument.Root?.Element("description")?.Value;
+            Website = manifestDocument.Root?.Element("website")?.Value;
+            Author = manifestDocument.Root?.Element("author")?.Value;
+            Version = manifestDocument.Root?.Element("version")?.Value;
+            Name = manifestDocument.Root?.Element("name")?.Value;
+            GUID = manifestDocument.Root?.Element("guid")?.Value;
         }
 
-        internal void LoadMigrationInfo()
+        private void LoadMigrationInfo()
         {
             if (manifestDocument.Root?.Element("migrationInfo") == null) return;
 
@@ -132,19 +160,7 @@ namespace Sideloader
             manifest = null;
             try
             {
-                ZipEntry entry = zip.GetEntry("manifest.xml");
-
-                if (entry == null)
-                    throw new OperationCanceledException("Manifest.xml is missing, make sure this is a zipmod");
-
-                manifest = new Manifest(zip.GetInputStream(entry));
-
-                if (manifest.manifestDocument?.Root?.Attribute("schema-ver")?.Value != manifest.SchemaVer.ToString())
-                    throw new OperationCanceledException("Manifest.xml is in an invalid format");
-
-                if (manifest.GUID == null)
-                    throw new OperationCanceledException("Manifest.xml is missing the GUID");
-
+                manifest = LoadFromZip(zip);
                 return true;
             }
             catch (SystemException ex)
@@ -156,8 +172,28 @@ namespace Sideloader
             }
         }
 
+        internal static Manifest LoadFromZip(ZipFile zip)
+        {
+            ZipEntry entry = zip.GetEntry("manifest.xml");
+
+            if (entry == null)
+                throw new OperationCanceledException("Manifest.xml is missing, make sure this is a zipmod");
+
+            var manifest = new Manifest(zip.GetInputStream(entry));
+
+            if (manifest.GUID == null)
+                throw new OperationCanceledException("Manifest.xml is missing the GUID");
+
+            manifest.LoadMigrationInfo();
 #if AI || HS2
-        internal void LoadHeadPresetInfo()
+            manifest.LoadHeadPresetInfo();
+            manifest.LoadFaceSkinInfo();
+#endif
+            return manifest;
+        }
+
+#if AI || HS2
+        private void LoadHeadPresetInfo()
         {
             foreach (var info in manifestDocument.Root.Elements("headPresetInfo"))
             {
@@ -221,7 +257,7 @@ namespace Sideloader
             }
         }
 
-        internal void LoadFaceSkinInfo()
+        private void LoadFaceSkinInfo()
         {
             foreach (var info in manifestDocument.Root.Elements("faceSkinInfo"))
             {

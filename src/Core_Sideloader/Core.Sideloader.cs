@@ -16,6 +16,9 @@ using System.Text;
 using JetBrains.Annotations;
 using UnityEngine;
 using XUnity.ResourceRedirector;
+using ADV.Commands.Base;
+using MessagePack;
+using UnityEngine.Assertions;
 #if AI || HS2
 using AIChara;
 #endif
@@ -38,7 +41,7 @@ namespace Sideloader
         /// <summary> Directory from which to load mods </summary>
         public static string ModsDirectory { get; } = Path.Combine(Paths.GameRootPath, "mods");
         /// <summary> Dictionary of loaded zip file name and its zipmod metadata </summary>
-        private static readonly Dictionary<string, ZipmodInfo> Zipmods = new Dictionary<string, ZipmodInfo>();
+        private static Dictionary<string, ZipmodInfo> Zipmods = new Dictionary<string, ZipmodInfo>();
 
         /// <summary> List of all loaded manifest files </summary>
         public static readonly Dictionary<string, Manifest> Manifests = new Dictionary<string, Manifest>();
@@ -107,53 +110,121 @@ namespace Sideloader
 
         private static string GetRelativeArchiveDir(string archiveDir) => !archiveDir.StartsWith(ModsDirectory, StringComparison.OrdinalIgnoreCase) ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
 
+        Stopwatch sw1 = new Stopwatch();
+        Stopwatch sw2 = new Stopwatch();
+        Stopwatch sw3 = new Stopwatch();
+        Stopwatch sw4 = new Stopwatch();
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
             var stopWatch = Stopwatch.StartNew();
 
-            // Look for mods, load their manifests
-            var allMods = new List<string>();
-            foreach (var modDirectory in modDirectories)
+
+
+            string cachePath = @"e:\test.txt";
+            Dictionary<string, ZipmodInfo> cache = new Dictionary<string, ZipmodInfo>();
+            try
             {
-                if (!modDirectory.IsNullOrWhiteSpace() && Directory.Exists(modDirectory))
+                if (File.Exists(cachePath))
                 {
-                    var prevCount = allMods.Count;
-
-                    allMods.AddRange(Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories)
-                        .Where(x => x.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
-                                    x.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase)));
-
-                    Logger.LogInfo("Found " + (allMods.Count - prevCount) + " zipmods in directory: " + modDirectory);
-                }
-            }
-
-            var archives = allMods.RunParallel(archivePath =>
-            {
-                ZipFile archive = null;
-                try
-                {
-                    archive = new ZipFile(archivePath);
-
-                    if (Manifest.TryLoadFromZip(archive, out Manifest manifest))
+                    using (var fileStream = File.OpenRead(cachePath))
                     {
-                        //Skip the mod if it is not for this game
-                        bool allowed = manifest.Games.Count == 0 || manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains);
-                        if (!allowed)
-                        {
-                            Logger.LogInfo($"Skipping archive \"{GetRelativeArchiveDir(archivePath)}\" because it's meant for {string.Join(", ", manifest.Games.ToArray())}");
-                            return null;
-                        }
+                        // todo check sideloader version and invalidate
+                        cache = MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream);
 
-                        return new ZipmodInfo { FileName = archivePath, Manifest = manifest, _zipFile = archive };
+                        foreach (var cacheKey in cache)
+                        {
+                            //Console.WriteLine($"{cacheKey.Key}  ->   {cacheKey.Value.Manifest.GUID}");
+
+                        }
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning("Failed to load cache: " + e);
+            }
+
+
+
+            foreach (var modDirectory in modDirectories.Where(Directory.Exists))
+            {
+                var prevCount = Zipmods.Count;
+
+
+
+                foreach (var zipFile in Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories))
                 {
-                    Logger.LogError($"Failed to load archive \"{GetRelativeArchiveDir(archivePath)}\" with error: {ex}");
-                    archive?.Close();
+                    if (!zipFile.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) && !zipFile.EndsWith(".zipmod", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    //todo check if exists and up to date in cache here
+                    var info = new ZipmodInfo(zipFile);
+
+                    cache.TryGetValue(zipFile, out var cachedInfo);
+                    if (cachedInfo != null && info.FileSize == cachedInfo.FileSize && info.LastWriteTime == cachedInfo.LastWriteTime)
+                    {
+                        //Console.WriteLine("Cache hit for " + zipFile);
+
+                        if (zipFile != cachedInfo.FileName) Console.WriteLine($"WTF {zipFile}   /   {cachedInfo.FileName}");
+                        Zipmods.Add(zipFile, cachedInfo);
+
+                        if (cachedInfo.Error != null)
+                        {
+                            if (cachedInfo.Error.Length == 0) Console.WriteLine($"WTF LEN");
+                            Logger.LogError(info.Error);
+                        }
+
+                        continue;
+                    }
+
+                    if (cache.Count > 0)
+                        Console.WriteLine("Cache MISS for " + zipFile);
+
+                    Zipmods.Add(info.FileName, info);
+
+                    try
+                    {
+                        var archive = info.GetZipFile();
+
+                        info.Manifest = Manifest.LoadFromZip(archive);
+                        //Skip the mod if it is not for this game
+                        bool allowed = info.Manifest.Games.Count == 0 || info.Manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains);
+                        if (!allowed)
+                        {
+                            var msg = $"Skipping archive \"{info.RelativeFileName}\" because it's meant for {string.Join(", ", info.Manifest.Games.ToArray())}";
+                            Logger.LogInfo(msg);
+                            info.Error = msg; //todo wrong log level when read from cache
+                            continue;
+                        }
+
+                        info.BundleInfos.AddRange(FindAllBundlesInArchive(archive));
+
+                        LoadAllLists(info);
+
+                        info.pngNames.AddRange(GetPngAssetFilenames(archive));
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg = $"Failed to load archive \"{info.RelativeFileName}\" with error: {ex}";
+                        Logger.LogError(msg);
+                        info.Error = msg;
+                        info.Dispose();
+                    }
                 }
-                return null;
-            }, 3).Where(x => x != null).ToList();
+                Logger.LogInfo("Found " + (Zipmods.Count - prevCount) + " zip/zipmod files in directory: " + modDirectory);
+            }
+
+
+            try
+            {
+                File.WriteAllBytes(cachePath, MessagePackSerializer.Serialize(Zipmods));
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning("Failed to save cache: " + e);
+            }
+
+
 
             var enableModLoadingLogging = DebugLoggingModLoading.Value;
             var modLoadInfoSb = enableModLoadingLogging ? new StringBuilder(1000) : null;
@@ -165,57 +236,49 @@ namespace Sideloader
             var gatheredFaceSkinInfos = new List<FaceSkinInfo>();
 #endif
 
+
             // Handle duplicate GUIDs and load unique mods
-            foreach (var modGroup in archives.GroupBy(x => x.Manifest.GUID).OrderBy(x => x.Key))
+            foreach (var modGroup in Zipmods.Values.Where(x => x.Valid).GroupBy(x => x.Manifest.GUID).OrderBy(x => x.Key))
             {
                 // Order by version if available, else use modified dates (less reliable)
                 // If versions match, prefer mods inside folders or with more descriptive names so modpacks are preferred
                 var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.Manifest.Version))
                     ? modGroup.OrderByDescending(x => x.Manifest.Version, new ManifestVersionComparer()).ThenByDescending(x => x.FileName.Length)
-                    : modGroup.OrderByDescending(x => File.GetLastWriteTime(x.FileName));
+                    : modGroup.OrderByDescending(x => x.LastWriteTime);
 
                 var orderedMods = orderedModsQuery.ToList();
                 var zipmod = orderedMods[0];
 
                 if (orderedMods.Count > 1)
                 {
-                    var modList = string.Join(", ", orderedMods.Skip(1).Select(x => '"' + GetRelativeArchiveDir(x.FileName) + '"').ToArray());
-                    Logger.LogWarning($"Multiple versions detected, only \"{GetRelativeArchiveDir(zipmod.FileName)}\" will be loaded. Skipped versions: {modList}");
+                    var modList = string.Join(", ", orderedMods.Skip(1).Select(x => '"' + zipmod.RelativeFileName + '"').ToArray());
+                    Logger.LogWarning($"Multiple versions detected, only \"{zipmod.RelativeFileName}\" will be loaded. Skipped versions: {modList}");
 
                     // Don't keep the duplicate archives in memory
                     foreach (var dupeMod in orderedMods.Skip(1))
-                        dupeMod._zipFile?.Close();
+                        dupeMod.Dispose();
                 }
-
                 // Actually load the mods (only one per GUID, the newest one)
-                var archive = zipmod.GetZipFile();
-                var manifest = zipmod.Manifest;
                 try
                 {
-                    Zipmods.Add(zipmod.FileName, zipmod);
+                    var manifest = zipmod.Manifest;
                     ZipArchives[manifest.GUID] = zipmod.FileName;
                     Manifests[manifest.GUID] = manifest;
 
-                    zipmod.BundleInfos.AddRange(FindAllBundlesInArchive(archive));
                     AddBundles(zipmod.BundleInfos);
-
-                    LoadAllLists(zipmod);
                     AddAllLists(zipmod, gatheredResolutionInfos);
-
-                    zipmod.pngNames.AddRange(GetPngAssetFilenames(archive));
                     BuildPngFolderList(zipmod);
 
-                    // todo split manifest parsing, do later
-                    UniversalAutoResolver.GenerateMigrationInfo(manifest, gatheredMigrationInfos);
+                    gatheredMigrationInfos.AddRange(manifest.MigrationList);
 #if AI || HS2
-                    UniversalAutoResolver.GenerateHeadPresetInfo(manifest, gatheredHeadPresetInfos);
-                    UniversalAutoResolver.GenerateFaceSkinInfo(manifest, gatheredFaceSkinInfos);
+                    gatheredHeadPresetInfos.AddRange(manifest.HeadPresetList);
+                    gatheredFaceSkinInfos.AddRange(manifest.FaceSkinList);
 #endif
 
                     if (enableModLoadingLogging)
                     {
                         var trimmedName = manifest.Name?.Trim();
-                        var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(archive.Name);
+                        var displayName = !string.IsNullOrEmpty(trimmedName) ? trimmedName : Path.GetFileName(zipmod.FileName);
                         modLoadInfoSb.AppendLine($"Loaded {displayName} {manifest.Version}");
                     }
 
@@ -223,9 +286,11 @@ namespace Sideloader
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Failed to load archive \"{GetRelativeArchiveDir(archive.Name)}\" with error: {ex}");
+                    Logger.LogError($"Failed to load archive \"{zipmod.RelativeFileName}\", state might be corrupted! Error: {ex}");
                 }
             }
+
+            Console.WriteLine($"sw1 {sw1.ElapsedMilliseconds}  sw2 {sw2.ElapsedMilliseconds}  sw3 {sw3.ElapsedMilliseconds}  sw4 {sw4.ElapsedMilliseconds}");
 
             UniversalAutoResolver.SetResolveInfos(gatheredResolutionInfos);
             UniversalAutoResolver.SetMigrationInfos(gatheredMigrationInfos);
@@ -245,21 +310,27 @@ namespace Sideloader
 
             if (enableModLoadingLogging)
                 Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
-            Logger.LogInfo($"Successfully loaded {Zipmods.Count(x => x.Value.Loaded)} mods out of {allMods.Count} archives in {stopWatch.ElapsedMilliseconds}ms");
+            Logger.LogInfo($"Successfully loaded {Zipmods.Count(x => x.Value.Loaded)} mods out of {Zipmods.Count} archives in {stopWatch.ElapsedMilliseconds}ms");
 
-            var failedPaths = allMods.Except(Zipmods.Where(x => x.Value.Loaded).Select(x => x.Key));
-            var failedStrings = failedPaths.Select(GetRelativeArchiveDir).ToArray();
-            if (failedStrings.Length > 0)
-                Logger.LogWarning("Could not load " + failedStrings.Length + " mods, see previous warnings for more information. File names of skipped archives:\n" + string.Join(" | ", failedStrings));
+            var failedPaths = Zipmods.Values.Where(x => !x.Loaded).Select(x => x.RelativeFileName).ToArray();
+            if (failedPaths.Length > 0)
+                Logger.LogWarning("Could not load " + failedPaths.Length + " mods, see previous warnings for more information. File names of skipped archives:\n" + string.Join(" | ", failedPaths));
         }
 
-        internal class ZipmodInfo
+        [MessagePackObject(true)]
+        internal class ZipmodInfo : IDisposable
         {
             public Manifest Manifest;
             public string FileName;
-            //public long Timestamp, Size;
+            public string RelativeFileName;
+            public DateTime LastWriteTime;
+            public long FileSize;
+            public string Error;
 
-            internal ZipFile _zipFile;
+            //todo generate cache id from file size and last change date
+
+            [IgnoreMember]
+            private ZipFile _zipFile;
 
             public List<ChaListData> charaLists = new List<ChaListData>();
             public List<BundleLoadInfo> BundleInfos = new List<BundleLoadInfo>();
@@ -267,13 +338,65 @@ namespace Sideloader
             public List<Lists.StudioListData> studioLists = new List<Lists.StudioListData>();
             public List<Lists.StudioListData> mapLists = new List<Lists.StudioListData>();
             public List<string> pngNames = new List<string>();
+
+            [IgnoreMember]
             public bool Loaded;
+
+            public ZipmodInfo() { }
+            public ZipmodInfo(string fileName)
+            {
+                FileName = fileName;
+                RelativeFileName = GetRelativeArchiveDir(fileName);
+
+                var fi = new FileInfo(fileName);
+                LastWriteTime = fi.LastWriteTimeUtc;
+                FileSize = fi.Length;
+            }
 
             public ZipFile GetZipFile()
             {
-                if (_zipFile == null || _zipFile.Count == 0) // Disposing makes entry count = 0, but it should be at least 1 for the manifest
+                if (_zipFile == null)
+                {
                     _zipFile = new ZipFile(FileName);
+                }
+                else if (_zipFile.Count == 0)
+                {
+                    // Disposing makes entry count = 0, but it should be at least 1 for the manifest.
+                    // Still try to dispose the old zipfile just to be safe.
+                    _zipFile.Close();
+                    _zipFile = new ZipFile(FileName);
+                }
+
                 return _zipFile;
+            }
+
+            // todo use to be able to cache non-zipmod files?
+            [IgnoreMember]
+            public bool Valid => Manifest != null && Error == null;
+
+            //public long GetCacheHash()
+            //{
+            //    return LastWriteTime.Ticks ^ ~FileSize;
+            //}
+            //static long Reverse(long x)
+            //{
+            //    long y = 0;
+            //    for (int i = 0; i < 32; ++i)
+            //    {
+            //        y <<= 1;
+            //        y |= (x & 1);
+            //        x >>= 1;
+            //    }
+            //    return y;
+            //}
+
+            public void Dispose()
+            {
+                if (_zipFile != null)
+                {
+                    _zipFile.Close();
+                    _zipFile = null;
+                }
             }
         }
 
@@ -331,6 +454,8 @@ namespace Sideloader
 
         private void AddAllLists(ZipmodInfo zipmod, List<ResolveInfo> _gatheredResolutionInfos)
         {
+
+            sw1.Start();
             var manifest = zipmod.Manifest;
 
             foreach (var chaListData in zipmod.charaLists)
@@ -338,6 +463,8 @@ namespace Sideloader
                 UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, _gatheredResolutionInfos);
                 Lists.ExternalDataList.Add(chaListData);
             }
+            sw1.Stop();
+            sw2.Start();
 
             foreach (var studioListData in zipmod.studioLists)
             {
@@ -345,16 +472,21 @@ namespace Sideloader
                 Lists.ExternalStudioDataList.Add(studioListData);
             }
 
+            sw2.Stop();
+            sw3.Start();
             foreach (var mapListData in zipmod.mapLists)
             {
                 Lists.AddExcelDataCSV(mapListData);
             }
+            sw3.Stop();
+            sw4.Start();
 
             foreach (var boneListData in zipmod.boneLists)
             {
                 UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, boneListData);
                 Lists.ExternalStudioDataList.Add(boneListData);
             }
+            sw4.Stop();
         }
 
         private void SetPossessNew(ChaListData data)
@@ -388,9 +520,6 @@ namespace Sideloader
         /// <summary>
         /// Construct a list of all folders that contain a .png
         /// </summary>
-        /// //todo pass in whole zipfile data classes to add all at once
-        /// //todo pass in path to zipfile and open it on demand
-        /// //todo measure if expensive, maybe collect pngs and serialize the whole things?
         private static void BuildPngFolderList(ZipmodInfo zipmod)
         {
             foreach (var pngAssetFilename in zipmod.pngNames)
@@ -399,7 +528,7 @@ namespace Sideloader
                 if (PngList.ContainsKey(pngAssetFilename))
                 {
                     if (DebugLoggingModLoading.Value)
-                        Logger.LogWarning($"Duplicate .png asset detected! {pngAssetFilename} in \"{GetRelativeArchiveDir(zipmod.FileName)}\"");
+                        Logger.LogWarning($"Duplicate .png asset detected! {pngAssetFilename} in \"{zipmod.RelativeFileName}\"");
                 }
                 else
                     PngList.Add(pngAssetFilename, zipmod);
@@ -513,6 +642,7 @@ namespace Sideloader
 
         private static readonly MethodInfo locateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", AccessTools.all);
 
+        [MessagePackObject(true)]
         public class BundleLoadInfo
         {
             public BundleLoadInfo(string archiveFilename, long streamOffset, string bundleFullPath, string bundleTrimmedPath)
@@ -523,6 +653,7 @@ namespace Sideloader
                 BundleTrimmedPath = bundleTrimmedPath;
             }
             public string ArchiveFilename;
+            [IgnoreMember]
             public bool CanBeStreamed => StreamOffset >= 0;
 
             public long StreamOffset = -1;

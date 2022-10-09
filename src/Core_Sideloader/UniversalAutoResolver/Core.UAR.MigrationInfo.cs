@@ -1,4 +1,5 @@
-﻿#if AI || HS2
+﻿using MessagePack;
+#if AI || HS2
 using AIChara;
 #endif
 
@@ -7,31 +8,38 @@ namespace Sideloader.AutoResolver
     /// <summary>
     /// Data about the migration to be performed
     /// </summary>
+    [MessagePackObject]
     public class MigrationInfo
     {
         /// <summary>
         /// Type of migration to perform
         /// </summary>
+        [Key(1)]
         public MigrationType MigrationType;
         /// <summary>
         /// Category of the item
         /// </summary>
+        [Key(2)]
         public ChaListDefine.CategoryNo Category;
         /// <summary>
         /// GUID of the item to perform migration on
         /// </summary>
+        [Key(3)]
         public string GUIDOld;
         /// <summary>
         /// GUID to migrate to
         /// </summary>
+        [Key(4)]
         public string GUIDNew;
         /// <summary>
         /// ID of the item to perform migration on
         /// </summary>
+        [Key(5)]
         public int IDOld;
         /// <summary>
         /// ID to migrate to
         /// </summary>
+        [Key(6)]
         public int IDNew;
 
         internal MigrationInfo(MigrationType migrationType, ChaListDefine.CategoryNo category, string guidOld, string guidNew, int idOld, int idNew)
@@ -49,5 +57,7 @@ namespace Sideloader.AutoResolver
             GUIDOld = guidOld;
             GUIDNew = guidNew;
         }
+
+        public MigrationInfo() { }
     }
 }

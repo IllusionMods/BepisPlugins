@@ -561,27 +561,7 @@ namespace Sideloader.AutoResolver
                 kv.Value[0] = newSlot.ToString();
             }
         }
-
-        internal static void GenerateMigrationInfo(Manifest manifest, List<MigrationInfo> results)
-        {
-            manifest.LoadMigrationInfo();
-            results.AddRange(manifest.MigrationList);
-        }
-
-#if AI || HS2
-        internal static void GenerateHeadPresetInfo(Manifest manifest, List<HeadPresetInfo> results)
-        {
-            manifest.LoadHeadPresetInfo();
-            results.AddRange(manifest.HeadPresetList);
-        }
-
-        internal static void GenerateFaceSkinInfo(Manifest manifest, List<FaceSkinInfo> results)
-        {
-            manifest.LoadFaceSkinInfo();
-            results.AddRange(manifest.FaceSkinList);
-        }
-#endif
-
+        
         internal static void ShowGUIDError(string guid, string author, string website, string name)
         {
             Logging.LogLevel loglevel = Sideloader.MissingModWarning.Value ? Logging.LogLevel.Warning | Logging.LogLevel.Message : Logging.LogLevel.Warning;
@@ -596,7 +576,7 @@ namespace Sideloader.AutoResolver
                 Sideloader.Logger.LogWarning($"[UAR] WARNING! Outdated mod detected! [{guid}]  {website}");
             }
 #if KK || AI || HS2 || KKS
-            else if (LoadedStudioResolutionInfo.Any(x => x.GUID == guid))
+            else if (StudioResolutionInfoGuidLookup.ContainsKey(guid))
             {
                 //we have the GUID loaded, so the user has an outdated mod
                 Sideloader.Logger.Log(loglevel, "Outdated zipmod! Some items are missing! - " + 
