@@ -7,12 +7,9 @@ using System.IO;
 namespace Sideloader
 {
     [BepInProcess(Constants.GameProcessName)]
-    [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID)]
-    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, XUnity.ResourceRedirector.Constants.PluginData.Version)]
-    [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader : BaseUnityPlugin
     {
-        private static readonly string[] GameNameList = { "emotioncreators", "emotion creators" };
+        internal static readonly string[] GameNameList = { "emotioncreators", "emotion creators" };
 
         private static string FindKoiZipmodDir()
         {

@@ -143,6 +143,7 @@ namespace Sideloader.ListLoader
             return chaListData;
         }
 
+#if !EC
         [Pure]
         internal static StudioListData LoadExcelDataCSV(Stream stream, string csvFilename)
         {
@@ -167,6 +168,7 @@ namespace Sideloader.ListLoader
                 ExternalExcelData[data.AssetBundleName] = new Dictionary<string, ExcelData>();
             ExternalExcelData[data.AssetBundleName][data.FileNameWithoutExtension] = excelData;
         }
+#endif
 
         internal static void LoadCheckItemList()
         {

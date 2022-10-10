@@ -25,6 +25,9 @@ namespace Sideloader
     /// <summary>
     /// Allows for loading mods in .zip format from the mods folder and automatically resolves ID conflicts.
     /// </summary>
+    [BepInDependency(ExtensibleSaveFormat.ExtendedSave.GUID, ExtensibleSaveFormat.ExtendedSave.Version)]
+    [BepInDependency(XUnity.ResourceRedirector.Constants.PluginData.Identifier, XUnity.ResourceRedirector.Constants.PluginData.Version)]
+    [BepInPlugin(GUID, PluginName, Version)]
     public partial class Sideloader
     {
         /// <summary> Plugin GUID </summary>
@@ -106,7 +109,19 @@ namespace Sideloader
             LoadModsFromDirectories(ModsDirectory, AdditionalModsDirectory.Value);
         }
 
-        internal static string GetRelativeArchiveDir(string archiveDir) => !archiveDir.StartsWith(ModsDirectory, StringComparison.OrdinalIgnoreCase) ? archiveDir : archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
+        internal static string GetRelativeArchiveDir(string archiveDir)
+        {
+            if (archiveDir.StartsWith(ModsDirectory, StringComparison.OrdinalIgnoreCase))
+                return archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
+            else
+                return archiveDir;
+        }
+
+        //var cachePath = @"e:\test.txt";
+        private static string CachePath { get; } = Path.Combine(Paths.CachePath, "sideloader_zipmod_cache.bin");
+
+        // LZ4 ends up about 80ms slower deserializing and 100ms slower serializing, but the file size is reduced from 16MB to 3.5MB. Not sure if it's worth it in that case, depends on drive speed
+        private static bool CacheUsesLz4 { get; } = true;
 
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
@@ -148,8 +163,7 @@ namespace Sideloader
 
             #region Read cache
 
-            //var cachePath = @"e:\test.txt";
-            var cachePath = Path.Combine(Paths.CachePath, "sideloader_zipmodcache.bin");
+            var cachePath = CachePath;
             var cache = new Dictionary<string, ZipmodInfo>();
             try
             {
@@ -162,8 +176,7 @@ namespace Sideloader
 
                     using (var fileStream = File.OpenRead(cachePath))
                     {
-                        // Takes around 1s. LZ4 ends up about 100ms slower, but the file size is reduced from 16MB to 3.5MB, so it might actually be faster depending on the HDD
-                        cache = LZ4MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream);
+                        cache = CacheUsesLz4 ? LZ4MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream) : MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream);
                         Logger.LogInfo($"Loaded zipmod cache from \"{cachePath}\" in {sw.ElapsedMilliseconds}ms");
                     }
                 }
@@ -256,12 +269,14 @@ namespace Sideloader
 
             #region Write all found zipmod metadata to the cache
 
-            // Can NOT serialize in background since AddAllLists->GenerateStudioResolutionInfo modifies StudioResolveInfo.Entries
-            // todo find a way to serialize in background anyways?
             try
             {
-                File.WriteAllBytes(cachePath, LZ4MessagePackSerializer.Serialize(Zipmods));
+                var sw = Stopwatch.StartNew();
+                // Can NOT serialize in background since AddAllLists->GenerateStudioResolutionInfo modifies StudioResolveInfo.Entries (and possibly others)
+                // todo find a way to serialize in background anyways?
+                File.WriteAllBytes(cachePath, CacheUsesLz4 ? LZ4MessagePackSerializer.Serialize(Zipmods) : MessagePackSerializer.Serialize(Zipmods));
                 File.WriteAllText(cachePath + ".ver", Info.Metadata.Version.ToString());
+                Logger.LogInfo($"Saved zipmod cache to \"{cachePath}\" in {sw.ElapsedMilliseconds}ms");
             }
             catch (Exception e)
             {
@@ -377,6 +392,7 @@ namespace Sideloader
                 UniversalAutoResolver.GenerateResolutionInfo(manifest, chaListData, gatheredResolutionInfos);
                 Lists.ExternalDataList.Add(chaListData);
             }
+#if !EC
             foreach (var studioListData in zipmod.StudioLists)
             {
                 UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
@@ -391,6 +407,7 @@ namespace Sideloader
                 UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, boneListData);
                 Lists.ExternalStudioDataList.Add(boneListData);
             }
+#endif
         }
 
         /// <summary>

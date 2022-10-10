@@ -7,6 +7,9 @@ using System.Reflection;
 using ICSharpCode.SharpZipLib.Zip;
 using MessagePack;
 using Sideloader.ListLoader;
+#if AI || HS2
+using AIChara;
+#endif
 
 namespace Sideloader
 {
@@ -25,9 +28,11 @@ namespace Sideloader
 
         [Key(10)] public List<ChaListData> CharaLists = new List<ChaListData>();
         [Key(11)] public List<Sideloader.BundleLoadInfo> BundleInfos = new List<Sideloader.BundleLoadInfo>();
+#if !EC
         [Key(12)] public List<Lists.StudioListData> BoneLists = new List<Lists.StudioListData>();
         [Key(13)] public List<Lists.StudioListData> StudioLists = new List<Lists.StudioListData>();
         [Key(14)] public List<Lists.StudioListData> MapLists = new List<Lists.StudioListData>();
+#endif
         [Key(15)] public List<string> PngNames = new List<string>();
 
         [IgnoreMember]
@@ -74,7 +79,7 @@ namespace Sideloader
                 _zipFile = null;
             }
         }
-        
+
         private static readonly MethodInfo _LocateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", AccessTools.all);
 
         public void LoadAllLists()
@@ -119,7 +124,7 @@ namespace Sideloader
 
                         zipmod.CharaLists.Add(chaListData);
                     }
-#if KK || AI || HS2 || KKS
+#if !EC
                     else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                     {
                         if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
@@ -143,7 +148,7 @@ namespace Sideloader
                     {
                         var stream = arc.GetInputStream(entry);
                         var data = Lists.LoadExcelDataCSV(stream, entry.Name);
-                        zipmod.mapLists.Add(data);
+                        zipmod.MapLists.Add(data);
                     }
 #endif
                 }
@@ -164,7 +169,7 @@ namespace Sideloader
                 }
             }
         }
-        
+
         private static void SetPossessNew(ChaListData data)
         {
             for (int i = 0; i < data.lstKey.Count; i++)
