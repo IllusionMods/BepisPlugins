@@ -182,7 +182,7 @@ namespace Sideloader.ListLoader
                 foreach (var modElement in checkItemList.Elements("mod"))
                 {
                     string guid = modElement.Attribute("guid")?.Value;
-                    if (!guid.IsNullOrEmpty())
+                    if (!string.IsNullOrEmpty(guid))
                     {
                         foreach (var categoryElement in modElement.Elements("category"))
                         {

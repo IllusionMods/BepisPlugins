@@ -4,7 +4,8 @@ using Sideloader.ListLoader;
 using Studio;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+
+#pragma warning disable CS0618
 
 namespace Sideloader.AutoResolver
 {
@@ -13,12 +14,12 @@ namespace Sideloader.AutoResolver
         /// <summary>
         /// Extended save ID for Studio animations saved to characters in scenes
         /// </summary>
+        [Obsolete("Unused")]
         public const string UARExtIDStudioAnimation = UARExtID + ".studioanimation";
 
         /// <summary>
         /// All loaded StudioResolveInfo
         /// </summary>
-        //todo
         [Obsolete("Use GetStudioResolveInfos and AddStudioResolutionInfo instead")]
         public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
