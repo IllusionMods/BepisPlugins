@@ -19,66 +19,72 @@ namespace Sideloader.AutoResolver
         /// All loaded StudioResolveInfo
         /// </summary>
         //todo
-        [Obsolete("Use GetStudioResolveInfo and AddStudioResolutionInfo instead")]
+        [Obsolete("Use GetStudioResolveInfos and AddStudioResolutionInfo instead")]
         public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
-
         /// <summary>
-        /// Local Slot to resolve info. Only ResolveItems.
+        /// LocalSlot -> resolve info lookup.
         /// </summary>
-        internal static Dictionary<int, StudioResolveInfo> StudioResolutionInfoLocalSlotLookup = new Dictionary<int, StudioResolveInfo>();
+        internal static Dictionary<int, List<StudioResolveInfo>> StudioResolutionInfoLocalSlotLookup = new Dictionary<int, List<StudioResolveInfo>>();
         /// <summary>
-        /// GUID to Slot to resolve info. Only ResolveItems.
+        /// GUID + Slot -> resolve info lookup.
         /// </summary>
         internal static Dictionary<string, Dictionary<int, List<StudioResolveInfo>>> StudioResolutionInfoGuidLookup = new Dictionary<string, Dictionary<int, List<StudioResolveInfo>>>();
 
         public static void AddStudioResolutionInfo(StudioResolveInfo sri)
         {
-            LoadedStudioResolutionInfo.Add(sri);
             //todo keep last count of LoadedStudioResolutionInfo and if it doesn't match update the lookups? only handle adding new items at the end?
+            LoadedStudioResolutionInfo.Add(sri);
 
-            if (sri.ResolveItem)
+            if (!StudioResolutionInfoLocalSlotLookup.TryGetValue(sri.LocalSlot, out var localSlotList))
             {
-                StudioResolutionInfoLocalSlotLookup.Add(sri.LocalSlot, sri);
-
-                if (!StudioResolutionInfoGuidLookup.TryGetValue(sri.GUID, out var slotLookup))
-                {
-                    slotLookup = new Dictionary<int, List<StudioResolveInfo>>();
-                    StudioResolutionInfoGuidLookup.Add(sri.GUID, slotLookup);
-                }
-
-                if (!slotLookup.TryGetValue(sri.Slot, out var slotList))
-                {
-                    slotList = new List<StudioResolveInfo>();
-                    slotLookup.Add(sri.Slot, slotList);
-                }
-
-                slotList.Add(sri);
+                localSlotList = new List<StudioResolveInfo>();
+                StudioResolutionInfoLocalSlotLookup.Add(sri.LocalSlot, localSlotList);
             }
+            localSlotList.Add(sri);
+
+            if (!StudioResolutionInfoGuidLookup.TryGetValue(sri.GUID, out var slotLookup))
+            {
+                slotLookup = new Dictionary<int, List<StudioResolveInfo>>();
+                StudioResolutionInfoGuidLookup.Add(sri.GUID, slotLookup);
+            }
+
+            if (!slotLookup.TryGetValue(sri.Slot, out var slotList))
+            {
+                slotList = new List<StudioResolveInfo>();
+                slotLookup.Add(sri.Slot, slotList);
+            }
+
+            slotList.Add(sri);
+        }
+
+        private static bool IsResolveItem(StudioResolveInfo sri) => sri.ResolveItem;
+        private static readonly ICollection<StudioResolveInfo> _EmptyResolveInfos = new StudioResolveInfo[0];
+
+        /// <summary>
+        /// Get all resolve infos with a given Local Slot. Optionally only return ResolveItems.
+        /// With <paramref name="onlyResolveItems"/><code>==true</code> in most cases returns a single item so it's fine to use FirstOrDefault.
+        /// </summary>
+        public static IEnumerable<StudioResolveInfo> GetStudioResolveInfos(int localSlot, bool onlyResolveItems)
+        {
+            if (StudioResolutionInfoLocalSlotLookup.TryGetValue(localSlot, out var result))
+                return onlyResolveItems ? result.Where(IsResolveItem) : result;
+            return _EmptyResolveInfos;
         }
 
         /// <summary>
-        /// Local Slot to resolve info. Only searches ResolveItems.
+        /// Get all resolve infos with a given GUID and Slot. Optionally only return ResolveItems.
+        /// With <paramref name="onlyResolveItems"/><code>==true</code> in most cases returns a single item so it's fine to use FirstOrDefault.
         /// </summary>
-        public static StudioResolveInfo GetStudioResolveInfo(int localSlot)
-        {
-            StudioResolutionInfoLocalSlotLookup.TryGetValue(localSlot, out var result);
-            return result;
-        }
-        /// <summary>
-        /// GUID and Slot to resolve info. Only searches ResolveItems.
-        /// </summary>
-        public static ICollection<StudioResolveInfo> GetStudioResolveInfo(string guid, int slot)
+        public static IEnumerable<StudioResolveInfo> GetStudioResolveInfos(string guid, int slot, bool onlyResolveItems)
         {
             if (StudioResolutionInfoGuidLookup.TryGetValue(guid, out var slotLookup))
             {
                 if (slotLookup.TryGetValue(slot, out var result))
-                    return result;
+                    return onlyResolveItems ? result.Where(IsResolveItem) : result;
             }
-            return empty;
+            return _EmptyResolveInfos;
         }
-
-        private static readonly ICollection<StudioResolveInfo> empty = new StudioResolveInfo[0];
 
         internal static void GenerateStudioResolutionInfo(Manifest manifest, Lists.StudioListData data)
         {
@@ -96,7 +102,7 @@ namespace Sideloader.AutoResolver
                     int newSlot;
 
                     //See if the item this bone info cooresponds to has been resolved and set the ID to the same resolved ID
-                    var item = GetStudioResolveInfo(manifest.GUID, slot).FirstOrDefault();
+                    var item = GetStudioResolveInfos(manifest.GUID, slot, true).FirstOrDefault();
                     newSlot = item == null ? slot : item.LocalSlot;
 
                     AddStudioResolutionInfo(new StudioResolveInfo
@@ -227,7 +233,7 @@ namespace Sideloader.AutoResolver
         {
             if (OI is OIItemInfo Item)
             {
-                StudioResolveInfo intResolve = GetStudioResolveInfo(extResolve.GUID, Item.no).FirstOrDefault();
+                StudioResolveInfo intResolve = GetStudioResolveInfos(extResolve.GUID, Item.no, true).FirstOrDefault();
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
@@ -239,7 +245,7 @@ namespace Sideloader.AutoResolver
             }
             else if (OI is OILightInfo Light)
             {
-                StudioResolveInfo intResolve = GetStudioResolveInfo(extResolve.GUID, Light.no).FirstOrDefault();
+                StudioResolveInfo intResolve = GetStudioResolveInfos(extResolve.GUID, Light.no, true).FirstOrDefault();
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
@@ -252,7 +258,7 @@ namespace Sideloader.AutoResolver
             else if (OI is OICharInfo CharInfo)
             {
                 //Resolve the animation ID for the character
-                StudioResolveInfo intResolve = GetStudioResolveInfo(extResolve.GUID, CharInfo.animeInfo.no).FirstOrDefault(x => x.Group == extResolve.Group && x.Category == extResolve.Category);
+                StudioResolveInfo intResolve = GetStudioResolveInfos(extResolve.GUID, CharInfo.animeInfo.no, true).FirstOrDefault(x => x.Group == extResolve.Group && x.Category == extResolve.Category);
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
@@ -402,7 +408,7 @@ namespace Sideloader.AutoResolver
                 if (extData.data.TryGetValue("mapInfoName", out object MapNameData))
                     MapName = (string)MapNameData;
 
-                StudioResolveInfo intResolve = GetStudioResolveInfo(MapGUID, MapID).FirstOrDefault();
+                StudioResolveInfo intResolve = GetStudioResolveInfos(MapGUID, MapID, true).FirstOrDefault();
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
@@ -454,7 +460,7 @@ namespace Sideloader.AutoResolver
                     filterName = (string)filterNameData;
 
 
-                StudioResolveInfo intResolve = GetStudioResolveInfo(filterGUID, filterID).FirstOrDefault();
+                StudioResolveInfo intResolve = GetStudioResolveInfos(filterGUID, filterID, true).FirstOrDefault();
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
@@ -561,7 +567,7 @@ namespace Sideloader.AutoResolver
                 if (extData.data.TryGetValue("bgmInfoName", out object bgmNameData))
                     bgmName = (string)bgmNameData;
 
-                StudioResolveInfo intResolve = GetStudioResolveInfo(bgmGUID, bgmID).FirstOrDefault();
+                StudioResolveInfo intResolve = GetStudioResolveInfos(bgmGUID, bgmID, true).FirstOrDefault();
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)

@@ -182,7 +182,7 @@ namespace Sideloader.AutoResolver
 
                         if (Item.no >= BaseSlotID)
                         {
-                            StudioResolveInfo extResolve = GetStudioResolveInfo(Item.no);
+                            StudioResolveInfo extResolve = GetStudioResolveInfos(Item.no, false).FirstOrDefault();
                             if (extResolve != null)
                             {
                                 StudioResolveInfo intResolve = new StudioResolveInfo
@@ -207,7 +207,7 @@ namespace Sideloader.AutoResolver
                     }
                     else if (oi is OILightInfo Light && Light.no >= BaseSlotID)
                     {
-                        StudioResolveInfo extResolve = GetStudioResolveInfo(Light.no);
+                        StudioResolveInfo extResolve = GetStudioResolveInfos(Light.no, false).FirstOrDefault();
                         if (extResolve != null)
                         {
                             StudioResolveInfo intResolve = new StudioResolveInfo
@@ -232,7 +232,7 @@ namespace Sideloader.AutoResolver
                     else if (oi is OICharInfo CharInfo && CharInfo.animeInfo.no >= BaseSlotID)
                     {
                         //Save the animation data for the character
-                        StudioResolveInfo extResolve = GetStudioResolveInfo(CharInfo.animeInfo.no);
+                        StudioResolveInfo extResolve = GetStudioResolveInfos(CharInfo.animeInfo.no, false).FirstOrDefault();
                         if (extResolve != null)
                         {
                             StudioResolveInfo intResolve = new StudioResolveInfo
@@ -270,7 +270,7 @@ namespace Sideloader.AutoResolver
                 int mapID = GetMapID();
                 if (mapID > BaseSlotID)
                 {
-                    StudioResolveInfo extResolve = GetStudioResolveInfo(mapID);
+                    StudioResolveInfo extResolve = GetStudioResolveInfos(mapID, false).FirstOrDefault();
                     if (extResolve != null)
                     {
                         ExtendedData.Add("mapInfoGUID", extResolve.GUID);
@@ -290,7 +290,7 @@ namespace Sideloader.AutoResolver
                 int filterID = Studio.Studio.Instance.sceneInfo.aceNo;
                 if (filterID > BaseSlotID)
                 {
-                    StudioResolveInfo extResolve = GetStudioResolveInfo(filterID);
+                    StudioResolveInfo extResolve = GetStudioResolveInfos(filterID, false).FirstOrDefault();
                     if (extResolve != null)
                     {
                         ExtendedData.Add("filterInfoGUID", extResolve.GUID);
@@ -329,7 +329,7 @@ namespace Sideloader.AutoResolver
                 int bgmID = Studio.Studio.Instance.sceneInfo.bgmCtrl.no;
                 if (bgmID > BaseSlotID)
                 {
-                    StudioResolveInfo extResolve = GetStudioResolveInfo(bgmID);
+                    StudioResolveInfo extResolve = GetStudioResolveInfos(bgmID, false).FirstOrDefault();
                     if (extResolve != null)
                     {
 
