@@ -10,7 +10,7 @@ namespace Sideloader.ListLoader
     internal static partial class Lists
     {
         internal static HashSet<int> _internalStudioItemList = null;
-        internal static List<StudioListData> ExternalStudioDataList { get; private set; } = new List<StudioListData>();
+        internal static Dictionary<string,List<StudioListData>> ExternalStudioDataList { get; private set; } = new Dictionary<string, List<StudioListData>>();
 
         internal static HashSet<int> InternalStudioItemList
         {

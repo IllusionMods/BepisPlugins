@@ -396,7 +396,12 @@ namespace Sideloader
             foreach (var studioListData in zipmod.StudioLists)
             {
                 UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, studioListData);
-                Lists.ExternalStudioDataList.Add(studioListData);
+                if (!Lists.ExternalStudioDataList.TryGetValue(studioListData.AssetBundleName, out var listOfLists))
+                {
+                    listOfLists = new List<Lists.StudioListData>();
+                    Lists.ExternalStudioDataList.Add(studioListData.AssetBundleName, listOfLists);
+                }
+                listOfLists.Add(studioListData);
             }
             foreach (var mapListData in zipmod.MapLists)
             {
@@ -405,7 +410,12 @@ namespace Sideloader
             foreach (var boneListData in zipmod.BoneLists)
             {
                 UniversalAutoResolver.GenerateStudioResolutionInfo(manifest, boneListData);
-                Lists.ExternalStudioDataList.Add(boneListData);
+                if (!Lists.ExternalStudioDataList.TryGetValue(boneListData.AssetBundleName, out var listOfLists))
+                {
+                    listOfLists = new List<Lists.StudioListData>();
+                    Lists.ExternalStudioDataList.Add(boneListData.AssetBundleName, listOfLists);
+                }
+                listOfLists.Add(boneListData);
             }
 #endif
         }
