@@ -40,7 +40,7 @@ namespace Sideloader.AutoResolver
         /// </summary>
         public const int BaseSlotID = 100000000;
         private static int CurrentSlotID;
-        
+
         /// <summary>
         /// Get a new unique slot ID above <see cref="BaseSlotID"/>. Returns a different unique ID on every call.
         /// </summary>
@@ -62,9 +62,10 @@ namespace Sideloader.AutoResolver
         }
 
         /// <summary>
-        /// All loaded ResolveInfo
+        /// All loaded ResolveInfos.
+        /// Use TryGetResolutionInfo if you need to find a specific item since it's much faster.
         /// </summary>
-        public static IEnumerable<ResolveInfo> LoadedResolutionInfo => _resolveInfoLookupSlot?.SelectMany(x => x) ?? Enumerable.Empty<ResolveInfo>();
+        public static IEnumerable<ResolveInfo> LoadedResolutionInfo { get; private set; } = new ResolveInfo[0];
         /// <summary>
         /// Get the ResolveInfo for an item
         /// </summary>
@@ -146,6 +147,7 @@ namespace Sideloader.AutoResolver
         {
             _resolveInfoLookupSlot = results.ToLookup(info => info.Slot);
             _resolveInfoLookupLocalSlot = results.ToLookup(info => info.LocalSlot);
+            LoadedResolutionInfo = results;
         }
         internal static void SetMigrationInfos(ICollection<MigrationInfo> results)
         {
@@ -510,7 +512,7 @@ namespace Sideloader.AutoResolver
                                                   $"LocalSlot: {newSlot} " +
                                                   $"Property: Ramp " +
                                                   $"CategoryNo: {category} " +
-                                                  $"Count: {LoadedResolutionInfo.Count()}");
+                                                  $"Count: {((ICollection<ResolveInfo>)LoadedResolutionInfo).Count}");
                     }
 
                     results.Add(new ResolveInfo
@@ -541,7 +543,7 @@ namespace Sideloader.AutoResolver
                                                       $"LocalSlot: {newSlot} " +
                                                       $"Property: {propertyKey} " +
                                                       $"CategoryNo: {category} " +
-                                                      $"Count: {LoadedResolutionInfo.Count()}");
+                                                      $"Count: {((ICollection<ResolveInfo>)LoadedResolutionInfo).Count}");
                         }
 
                         return new ResolveInfo
@@ -561,7 +563,7 @@ namespace Sideloader.AutoResolver
                 kv.Value[0] = newSlot.ToString();
             }
         }
-        
+
         internal static void ShowGUIDError(string guid, string author, string website, string name)
         {
             Logging.LogLevel loglevel = Sideloader.MissingModWarning.Value ? Logging.LogLevel.Warning | Logging.LogLevel.Message : Logging.LogLevel.Warning;
@@ -569,30 +571,30 @@ namespace Sideloader.AutoResolver
             if (LoadedResolutionInfo.Any(x => x.GUID == guid))
             {
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(loglevel, "Outdated zipmod! Some items are missing! - " + 
-                                                (string.IsNullOrEmpty(author) ? "" : author + " : ") + 
+                Sideloader.Logger.Log(loglevel, "Outdated zipmod! Some items are missing! - " +
+                                                (string.IsNullOrEmpty(author) ? "" : author + " : ") +
                                                 (string.IsNullOrEmpty(name) ? guid : name));
-                                                
+
                 Sideloader.Logger.LogWarning($"[UAR] WARNING! Outdated mod detected! [{guid}]  {website}");
             }
 #if KK || AI || HS2 || KKS
             else if (StudioResolutionInfoGuidLookup.ContainsKey(guid))
             {
                 //we have the GUID loaded, so the user has an outdated mod
-                Sideloader.Logger.Log(loglevel, "Outdated zipmod! Some items are missing! - " + 
-                                                (string.IsNullOrEmpty(author) ? "" : author + " : ") + 
+                Sideloader.Logger.Log(loglevel, "Outdated zipmod! Some items are missing! - " +
+                                                (string.IsNullOrEmpty(author) ? "" : author + " : ") +
                                                 (string.IsNullOrEmpty(name) ? guid : name));
-                                                
+
                 Sideloader.Logger.LogWarning($"[UAR] WARNING! Outdated mod detected! [{guid}]  {website}");
             }
 #endif
             else
             {
                 //did not find a match, we don't have the mod
-                Sideloader.Logger.Log(loglevel, "Missing zipmod! Some items are missing! - " + 
-                                                (string.IsNullOrEmpty(author) ? "" : author + " : ") + 
+                Sideloader.Logger.Log(loglevel, "Missing zipmod! Some items are missing! - " +
+                                                (string.IsNullOrEmpty(author) ? "" : author + " : ") +
                                                 (string.IsNullOrEmpty(name) ? guid : name));
-                                                
+
                 Sideloader.Logger.LogWarning($"[UAR] WARNING! Missing mod detected! [{guid}]  {website}");
             }
         }

@@ -27,7 +27,7 @@ namespace Sideloader.AutoResolver
                         {
                             if (etceteraSystem.rampId >= BaseSlotID)
                             {
-                                ResolveInfo RampResolveInfo = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.LocalSlot == etceteraSystem.rampId);
+                                ResolveInfo RampResolveInfo = TryGetResolutionInfo("Ramp", etceteraSystem.rampId);
                                 if (RampResolveInfo == null)
                                 {
                                     //ID is a sideloader ID but no resolve info found, set it to the default
@@ -63,7 +63,7 @@ namespace Sideloader.AutoResolver
                         {
                             if (data is EtceteraSystem etceteraSystem)
                             {
-                                ResolveInfo RampResolveInfo = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.LocalSlot == rampId);
+                                ResolveInfo RampResolveInfo = TryGetResolutionInfo("Ramp", rampId);
                                 if (RampResolveInfo != null)
                                 {
                                     //Restore the resolved ID
@@ -100,7 +100,7 @@ namespace Sideloader.AutoResolver
                                 string rampGUID = xmlDoc.Element("System").Element("Etc").Element("rampGUID")?.Value;
                                 if (!rampGUID.IsNullOrWhiteSpace())
                                 {
-                                    ResolveInfo RampResolveInfo = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == etceteraSystem.rampId);
+                                    ResolveInfo RampResolveInfo = TryGetResolutionInfo(etceteraSystem.rampId, "Ramp", rampGUID);
                                     if (RampResolveInfo == null) //Missing mod, reset ID to default
                                         etceteraSystem.rampId = 1;
                                     else //Restore the resolved ID
@@ -127,7 +127,7 @@ namespace Sideloader.AutoResolver
                     string rampIDXML = xmlDoc.Element("System").Element("Etc").Element("rampId")?.Value;
                     if (!rampGUID.IsNullOrWhiteSpace() && !rampIDXML.IsNullOrWhiteSpace() && int.TryParse(rampIDXML, out int rampID))
                     {
-                        ResolveInfo RampResolveInfo = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == rampID);
+                        ResolveInfo RampResolveInfo = TryGetResolutionInfo(rampID, "Ramp", rampGUID);
                         if (RampResolveInfo == null) //Missing mod, reset ID to default
                             __instance.rampG = 1;
                         else //Restore the resolved ID

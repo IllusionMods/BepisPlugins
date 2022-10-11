@@ -506,7 +506,7 @@ namespace Sideloader.AutoResolver
                 if (extData.data.TryGetValue("rampInfoName", out object rampNameData))
                     rampName = (string)rampNameData;
 
-                ResolveInfo intResolve = LoadedResolutionInfo.FirstOrDefault(x => x.Property == "Ramp" && x.GUID == rampGUID && x.Slot == rampID);
+                ResolveInfo intResolve = TryGetResolutionInfo(rampID, "Ramp", rampGUID);
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
