@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using ICSharpCode.SharpZipLib.Zip;
 using Shared;
 using Sideloader.AutoResolver;
 using Sideloader.ListLoader;
@@ -67,8 +66,8 @@ namespace Sideloader
         [UsedImplicitly]
         private void Awake()
         {
-#if KK // Fixes an issue with reading some zips made on Japanese systems. Only needed on .Net 3.5, it doesn't affect newer Unity versions.
-            ZipConstants.DefaultCodePage = 0;
+#if KK      // Fixes an issue with reading some zips made on Japanese systems. Only needed on .Net 3.5, it doesn't affect newer Unity versions.
+            ICSharpCode.SharpZipLib.Zip.ZipConstants.DefaultCodePage = 0;
 #endif
             Logger = base.Logger;
 
@@ -109,25 +108,15 @@ namespace Sideloader
             LoadModsFromDirectories(ModsDirectory, AdditionalModsDirectory.Value);
         }
 
-        internal static string GetRelativeArchiveDir(string archiveDir)
-        {
-            if (archiveDir.StartsWith(ModsDirectory, StringComparison.OrdinalIgnoreCase))
-                return archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
-            else
-                return archiveDir;
-        }
-
-        //var cachePath = @"e:\test.txt";
-        private static string CachePath { get; } = Path.Combine(Paths.CachePath, "sideloader_zipmod_cache.bin");
-
-        // LZ4 ends up about 80ms slower deserializing and 100ms slower serializing, but the file size is reduced from 16MB to 3.5MB. Not sure if it's worth it in that case, depends on drive speed
-        private static bool CacheUsesLz4 { get; } = true;
+        #region Data loading
 
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
             var swTotal = Stopwatch.StartNew();
 
-            #region Find zipmod files on drive
+            // ------------------------------------------------------
+            // Find zipmod files on drive
+            // ------------------------------------------------------
 
             var foundZipfiles = new List<ZipmodInfo>();
             var waitHandle = new ManualResetEvent(false);
@@ -160,38 +149,15 @@ namespace Sideloader
                 }
             });
 
-            #endregion
+            // ------------------------------------------------------
 
-            #region Read cache
-
-            var cachePath = CachePath;
-            var cache = new Dictionary<string, ZipmodInfo>();
-            try
-            {
-                var swCacheRead = Stopwatch.StartNew();
-                if (File.Exists(cachePath))
-                {
-                    var cacheVer = new Version(File.ReadAllText(cachePath + ".ver"));
-                    if (cacheVer != Info.Metadata.Version)
-                        throw new Exception($"Cache version ({cacheVer}) doesn't match Sideloader version ({Info.Metadata.Version}), it has to be regenerated.");
-
-                    using (var fileStream = File.OpenRead(cachePath))
-                    {
-                        cache = CacheUsesLz4 ? LZ4MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream) : MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream);
-                        Logger.LogInfo($"Loaded zipmod cache from \"{cachePath}\" in {swCacheRead.ElapsedMilliseconds}ms");
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.LogWarning("Failed to load cache: " + e);
-            }
-
-            #endregion
+            var cache = LoadCache();
 
             waitHandle.WaitOne();
 
-            #region Load the zipmod metadata either from drive or cache
+            // ------------------------------------------------------
+            // Load the zipmod metadata either from drive or cache
+            // ------------------------------------------------------
 
             var groupedZipmodsToLoad = new Dictionary<string, List<ZipmodInfo>>();
             void AddZipmodToLoad(ZipmodInfo zipmodInfo)
@@ -266,27 +232,13 @@ namespace Sideloader
                 }
             }
 
-            #endregion
+            // ------------------------------------------------------
 
-            #region Write all found zipmod metadata to the cache
+            WriteCache();
 
-            try
-            {
-                var swCacheWrite = Stopwatch.StartNew();
-                // Can NOT serialize in background since AddAllLists->GenerateStudioResolutionInfo modifies StudioResolveInfo.Entries (and possibly others)
-                // todo find a way to serialize in background anyways?
-                File.WriteAllBytes(cachePath, CacheUsesLz4 ? LZ4MessagePackSerializer.Serialize(Zipmods) : MessagePackSerializer.Serialize(Zipmods));
-                File.WriteAllText(cachePath + ".ver", Info.Metadata.Version.ToString());
-                Logger.LogInfo($"Saved zipmod cache to \"{cachePath}\" in {swCacheWrite.ElapsedMilliseconds}ms");
-            }
-            catch (Exception e)
-            {
-                Logger.LogWarning("Failed to save cache: " + e);
-            }
-
-            #endregion
-
-            #region Actually load the zipmods to use in the game from the metadata
+            // ------------------------------------------------------
+            // Actually load the zipmods to use in the game from the metadata
+            // ------------------------------------------------------
 
             var enableModLoadingLogging = DebugLoggingModLoading.Value;
             var modLoadInfoSb = enableModLoadingLogging ? new StringBuilder(1000) : null;
@@ -298,8 +250,7 @@ namespace Sideloader
             var gatheredFaceSkinInfos = new List<FaceSkinInfo>();
 #endif
 
-            // Actually load the mods (only one per GUID, the newest one)
-            // Loop takes around 280ms
+            // Load the mods (only one per GUID, the newest one). Whole loop takes around 280ms for 3800 items.
             foreach (var modGroup in groupedZipmodsToLoad.Values)
             {
                 ZipmodInfo zipmod;
@@ -358,7 +309,7 @@ namespace Sideloader
                 }
             }
 
-            // Past this point is very fast
+            // Past this point everything is very fast
 
             UniversalAutoResolver.SetResolveInfos(gatheredResolutionInfos);
             UniversalAutoResolver.SetMigrationInfos(gatheredMigrationInfos);
@@ -374,7 +325,7 @@ namespace Sideloader
             LoadedManifests = Manifests.Values.AsEnumerable().ToList();
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            #endregion
+            // ------------------------------------------------------
 
             if (enableModLoadingLogging)
                 Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
@@ -468,6 +419,21 @@ namespace Sideloader
             }
         }
 
+        private static void AddBundles(IEnumerable<ZipmodInfo.BundleLoadInfo> bundleInfos)
+        {
+            foreach (var bundleLoadInfo in bundleInfos)
+            {
+                BundleManager.AddBundleLoader(bundleLoadInfo.LoadBundle, bundleLoadInfo.BundleTrimmedPath, out string warning);
+
+                if (!string.IsNullOrEmpty(warning) && DebugLoggingModLoading.Value)
+                    Logger.LogWarning($"{warning} in \"{GetRelativeArchiveDir(bundleLoadInfo.ArchiveFilename)}\"");
+            }
+        }
+
+        #endregion
+
+        #region Public API
+
         /// <summary>
         /// Check whether the asset bundle matches a folder that contains .png files and does not match an existing asset bundle
         /// </summary>
@@ -543,17 +509,6 @@ namespace Sideloader
         /// </summary>
         public static bool IsPng(string pngFile) => PngList.ContainsKey(pngFile);
 
-        private static void AddBundles(IEnumerable<ZipmodInfo.BundleLoadInfo> bundleInfos)
-        {
-            foreach (var bundleLoadInfo in bundleInfos)
-            {
-                BundleManager.AddBundleLoader(bundleLoadInfo.LoadBundle, bundleLoadInfo.BundleTrimmedPath, out string warning);
-
-                if (!string.IsNullOrEmpty(warning) && DebugLoggingModLoading.Value)
-                    Logger.LogWarning($"{warning} in \"{GetRelativeArchiveDir(bundleLoadInfo.ArchiveFilename)}\"");
-            }
-        }
-
         /// <summary>
         /// Try to get ExcelData that was originally in .csv form in the mod
         /// </summary>
@@ -586,6 +541,18 @@ namespace Sideloader
             return false;
         }
 
+        internal static string GetRelativeArchiveDir(string archiveDir)
+        {
+            if (archiveDir.StartsWith(ModsDirectory, StringComparison.OrdinalIgnoreCase))
+                return archiveDir.Substring(ModsDirectory.Length).Trim(' ', '/', '\\');
+            else
+                return archiveDir;
+        }
+
+        #endregion
+
+        #region Asset hooks
+
         private void RedirectHook(IAssetLoadingContext context)
         {
             if (context.Parameters.Name == null || context.Bundle.name == null) return;
@@ -612,7 +579,7 @@ namespace Sideloader
                 }
             }
 
-            if (BundleManager.TryGetObjectFromName(context.Parameters.Name, context.Bundle.name, context.Parameters.Type, out UnityEngine.Object obj))
+            if (BundleManager.TryGetObjectFromName(context.Parameters.Name, context.Bundle.name, context.Parameters.Type, out var obj))
             {
                 context.Asset = obj;
                 context.Complete();
@@ -667,5 +634,128 @@ namespace Sideloader
                 }
             }
         }
+
+        #endregion
+
+        #region Caching
+
+        private static readonly string _CacheName = "sideloader_zipmod_cache.bin";
+        private static readonly string _CacheDirectory = Paths.CachePath;
+        private static readonly string _CachePath = Path.Combine(_CacheDirectory, _CacheName);
+        private void WriteCache()
+        {
+            // Write all found zipmod metadata to the cache
+            // Can NOT serialize in background while AddAllLists->GenerateStudioResolutionInfo is running since it modifies StudioResolveInfo.Entries (and possibly others)
+            try
+            {
+                var swCacheWrite = Stopwatch.StartNew();
+
+                // Clean up old cache files
+                foreach (var file in Directory.GetFiles(_CacheDirectory, _CacheName + ".*"))
+                    File.Delete(file);
+
+                // Serialize in multiple threads to speed things up a little.
+                // Scaling kind of sucks above 2 threads. Cache read: 938ms using 1 thread, 691ms using 2 threads, 665ms using 3 threads
+                // Some items take much longer to serialize/deserialize making threads finish very unevenly, probably manifest size?
+                var threadCount = Mathf.Clamp(Zipmods.Count / 1500, 1, SystemInfo.processorCount);
+                var modsPerThread = (Zipmods.Count / threadCount) + 1;
+
+                var wait = new ManualResetEvent(false);
+                var finished = 0;
+                for (int i = 0; i < threadCount; i++)
+                {
+                    var threadIndex = i;
+                    var modsToSkip = threadIndex * modsPerThread;
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        var filename = _CachePath + "." + threadIndex;
+                        try
+                        {
+                            var toSerialize = Zipmods.Values.Skip(modsToSkip).Take(modsPerThread).ToList();
+                            var serialized = LZ4MessagePackSerializer.Serialize(toSerialize);
+                            File.WriteAllBytes(filename, serialized);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.LogWarning($"Failed to save cache part [{filename}] with error: {e}");
+                        }
+                        finally
+                        {
+                            if (Interlocked.Add(ref finished, 1) >= threadCount)
+                                wait.Set();
+                        }
+                    });
+                }
+
+                File.WriteAllText(_CachePath + ".ver", Info.Metadata.Version.ToString());
+                wait.WaitOne();
+                Logger.LogDebug($"Saved zipmod cache to \"{_CachePath}\" in {swCacheWrite.ElapsedMilliseconds}ms using {threadCount} threads");
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning("Failed to save cache: " + e);
+            }
+        }
+
+        private Dictionary<string, ZipmodInfo> LoadCache()
+        {
+            var cache = new Dictionary<string, ZipmodInfo>();
+            try
+            {
+                var swCacheRead = Stopwatch.StartNew();
+                if (File.Exists(_CachePath + ".ver"))
+                {
+                    var cacheVer = new Version(File.ReadAllText(_CachePath + ".ver"));
+                    if (cacheVer != Info.Metadata.Version)
+                        throw new Exception($"Cache version ({cacheVer}) doesn't match Sideloader version ({Info.Metadata.Version}), it has to be regenerated.");
+
+                    var cachePartFiles = Directory.GetFiles(_CacheDirectory, _CacheName + ".*")
+                                                  .Where(x => !x.EndsWith(".ver", StringComparison.OrdinalIgnoreCase)).ToList();
+                    var wait = new ManualResetEvent(false);
+                    var finished = 0;
+                    for (var i = 0; i < cachePartFiles.Count; i++)
+                    {
+                        var cachePartFile = cachePartFiles[i];
+                        ThreadPool.QueueUserWorkItem(_ =>
+                        {
+                            try
+                            {
+                                using (var fileStream = File.OpenRead(cachePartFile))
+                                {
+                                    // LZ4 ends up about 80ms slower deserializing and 100ms slower serializing, but the file size is reduced from 16MB to 3.5MB.
+                                    // Not sure if it's worth it in that case, depends on drive speed
+                                    var list = LZ4MessagePackSerializer.Deserialize<List<ZipmodInfo>>(fileStream);
+                                    lock (cache)
+                                    {
+                                        foreach (var zipmodInfo in list)
+                                            cache.Add(zipmodInfo.FileName, zipmodInfo);
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.LogWarning($"Failed to load cache part [{cachePartFile}] with error: {e}");
+                            }
+                            finally
+                            {
+                                if (Interlocked.Add(ref finished, 1) >= cachePartFiles.Count)
+                                    wait.Set();
+                            }
+                        });
+                    }
+
+                    wait.WaitOne();
+                    Logger.LogDebug($"Loaded zipmod cache from \"{_CachePath}\" in {swCacheRead.ElapsedMilliseconds}ms using {cachePartFiles.Count} threads");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning("Failed to load cache: " + e);
+            }
+
+            return cache;
+        }
+
+        #endregion
     }
 }
