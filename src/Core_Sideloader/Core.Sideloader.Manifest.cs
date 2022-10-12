@@ -7,7 +7,6 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using MessagePack;
-using System.Runtime.InteropServices.ComTypes;
 #if AI || HS2
 using AIChara;
 #endif
@@ -18,10 +17,37 @@ namespace Sideloader
     /// <summary>
     /// Contains data about the loaded manifest.xml
     /// </summary>
-    [MessagePackObject(true)]
-    public partial class Manifest
+    [MessagePackObject]
+    public class Manifest
     {
-        public int SchemaVer { get; private set; } = 1;
+        /// <summary>
+        /// Version of this manifest.
+        /// </summary>
+        [Key(0)] public int SchemaVer { get; } = 1;
+        /// <summary>
+        /// GUID of the mod.
+        /// </summary>
+        [Key(1)] public string GUID { get; }
+        /// <summary>
+        /// Name of the mod. Only used for display the name of the mod when mods are loaded.
+        /// </summary>
+        [Key(2)] public string Name { get; }
+        /// <summary>
+        /// Version of the mod.
+        /// </summary>
+        [Key(3)] public string Version { get; }
+        /// <summary>
+        /// Author of the mod. Not currently used for anything.
+        /// </summary>
+        [Key(4)] public string Author { get; }
+        /// <summary>
+        /// Website of the mod. Not currently used for anything.
+        /// </summary>
+        [Key(5)] public string Website { get; }
+        /// <summary>
+        /// Description of the mod. Not currently used for anything.
+        /// </summary>
+        [Key(6)] public string Description { get; }
 
         /// <summary>
         /// Parsed contents of the manifest.xml.
@@ -29,42 +55,15 @@ namespace Sideloader
         [IgnoreMember]
         [Obsolete("Use ManifestDocument instead")]
         public readonly XDocument manifestDocument;
-
         /// <summary>
         /// Parsed contents of the manifest.xml.
         /// </summary>
         [IgnoreMember]
         public XDocument ManifestDocument => manifestDocument;
-
         /// <summary>
         /// Raw contents of the manifest.xml.
         /// </summary>
-        public string ManifestString { get; private set; }
-
-        /// <summary>
-        /// GUID of the mod.
-        /// </summary>
-        public string GUID { get; private set; }
-        /// <summary>
-        /// Name of the mod. Only used for display the name of the mod when mods are loaded.
-        /// </summary>
-        public string Name { get; private set; }
-        /// <summary>
-        /// Version of the mod.
-        /// </summary>
-        public string Version { get; private set; }
-        /// <summary>
-        /// Author of the mod. Not currently used for anything.
-        /// </summary>
-        public string Author { get; private set; }
-        /// <summary>
-        /// Website of the mod. Not currently used for anything.
-        /// </summary>
-        public string Website { get; private set; }
-        /// <summary>
-        /// Description of the mod. Not currently used for anything.
-        /// </summary>
-        public string Description { get; private set; }
+        [Key(7)] public string ManifestString { get; }
 
         /// <summary>
         /// Game the mod is made for. If specified, the mod will only load for that game. If not specified will load on any game.
@@ -73,27 +72,25 @@ namespace Sideloader
         [Obsolete("Use Games instead")]
         // OrderByDescending to make sure if a mod supports multiple games, this property will always show the tag for the currently running game
         public string Game => Games.OrderByDescending(x => Array.IndexOf(Sideloader.GameNameList, x.ToLowerInvariant())).FirstOrDefault();
-
         /// <summary>
         /// Games the mod is made for. If specified, the mod will only load for those games. If not specified will load on any game.
         /// </summary>
-        public List<string> Games { get; private set; } = new List<string>();
+        [Key(8)] public List<string> Games { get; }
+
         /// <summary>
         /// List of all migration info for this mod
         /// </summary>
-        public List<MigrationInfo> MigrationList { get; private set; } = new List<MigrationInfo>();
+        [Key(9)] public List<MigrationInfo> MigrationList { get; }
 
 #if AI || HS2
-        public List<HeadPresetInfo> HeadPresetList { get; private set; } = new List<HeadPresetInfo>();
-        public List<FaceSkinInfo> FaceSkinList { get; private set; } = new List<FaceSkinInfo>();
+        [Key(10)] public List<HeadPresetInfo> HeadPresetList { get; }
+        [Key(11)] public List<FaceSkinInfo> FaceSkinList { get; }
 #endif
 
-        internal Manifest(Stream stream)
+        public Manifest(Stream stream)
         {
             using (XmlReader reader = XmlReader.Create(stream))
                 manifestDocument = XDocument.Load(reader);
-
-            ManifestString = manifestDocument.ToString(SaveOptions.DisableFormatting);
 
             if (manifestDocument.Root == null)
                 throw new OperationCanceledException("Manifest.xml is in an invalid format");
@@ -102,7 +99,9 @@ namespace Sideloader
             if (schemaVer != SchemaVer.ToString())
                 throw new OperationCanceledException($"Manifest.xml is in an unknown version: {schemaVer} (supported: {SchemaVer})");
 
-            Games.AddRange(manifestDocument.Root.Elements("game").Select(x => x.Value.Trim()).Where(x => x.Length > 0));
+            ManifestString = manifestDocument.ToString(SaveOptions.DisableFormatting);
+
+            Games = manifestDocument.Root.Elements("game").Select(x => x.Value.Trim()).Where(x => x.Length > 0).ToList();
 
             Description = manifestDocument.Root?.Element("description")?.Value.Trim();
             Website = manifestDocument.Root?.Element("website")?.Value.Trim();
@@ -110,14 +109,20 @@ namespace Sideloader
             Version = manifestDocument.Root?.Element("version")?.Value.Trim();
             Name = manifestDocument.Root?.Element("name")?.Value.Trim();
             GUID = manifestDocument.Root?.Element("guid")?.Value.Trim();
+
+            MigrationList = new List<MigrationInfo>();
+#if AI || HS2
+            HeadPresetList = new List<HeadPresetInfo>();
+            FaceSkinList = new List<FaceSkinInfo>();
+#endif
         }
 
         [SerializationConstructor]
-        public Manifest(int schemaVer, string guid, string name, string version, string author, string website, string description, string manifestString, List<MigrationInfo> migrationList,
+        public Manifest(int schemaVer, string guid, string name, string version, string author, string website, string description, string manifestString, List<string> games, List<MigrationInfo> migrationList
 #if AI || HS2
-                        List<HeadPresetInfo> headPresetList, List<FaceSkinInfo> faceSkinList,
+                        , List<HeadPresetInfo> headPresetList, List<FaceSkinInfo> faceSkinList
 #endif
-                        List<string> games)
+                        )
         {
             SchemaVer = schemaVer;
             GUID = guid;
@@ -126,14 +131,14 @@ namespace Sideloader
             Author = author;
             Website = website;
             Description = description;
-            MigrationList = migrationList;
+            MigrationList = migrationList ?? throw new ArgumentNullException(nameof(migrationList));
 #if AI || HS2
-            HeadPresetList = headPresetList;
-            FaceSkinList = faceSkinList;
+            HeadPresetList = headPresetList ?? throw new ArgumentNullException(nameof(headPresetList));
+            FaceSkinList = faceSkinList ?? throw new ArgumentNullException(nameof(faceSkinList));
 #endif
-            Games = games;
+            Games = games ?? throw new ArgumentNullException(nameof(games));
 
-            ManifestString = manifestString;
+            ManifestString = manifestString ?? throw new ArgumentNullException(nameof(manifestString));
             // todo This adds ~200ms when reading ~3k mods from cache
             using (var reader = new StringReader(manifestString))
                 manifestDocument = XDocument.Load(reader);

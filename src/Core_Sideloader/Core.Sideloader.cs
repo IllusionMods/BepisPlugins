@@ -41,7 +41,7 @@ namespace Sideloader
         /// <summary> Directory from which to load mods </summary>
         public static string ModsDirectory { get; } = Path.Combine(Paths.GameRootPath, "mods");
         /// <summary> Dictionary of loaded zip file name and its zipmod metadata </summary>
-        private static readonly Dictionary<string, ZipmodInfo> Zipmods = new Dictionary<string, ZipmodInfo>();
+        internal static readonly Dictionary<string, ZipmodInfo> Zipmods = new Dictionary<string, ZipmodInfo>();
 
         /// <summary> List of all loaded manifest files </summary>
         public static readonly Dictionary<string, Manifest> Manifests = new Dictionary<string, Manifest>();
@@ -125,7 +125,7 @@ namespace Sideloader
 
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
-            var stopWatch = Stopwatch.StartNew();
+            var swTotal = Stopwatch.StartNew();
 
             #region Find zipmod files on drive
 
@@ -138,6 +138,7 @@ namespace Sideloader
                 {
                     foreach (var modDirectory in modDirectories.Distinct(StringComparer.OrdinalIgnoreCase).Where(Directory.Exists))
                     {
+                        var swFiles = Stopwatch.StartNew();
                         var prevCount = foundZipfiles.Count;
                         foreach (var zipFile in Directory.GetFiles(modDirectory, "*", SearchOption.AllDirectories))
                         {
@@ -146,7 +147,7 @@ namespace Sideloader
                                 foundZipfiles.Add(new ZipmodInfo(zipFile));
                         }
 
-                        Logger.LogInfo("Found " + (foundZipfiles.Count - prevCount) + " zip/zipmod files in directory: " + modDirectory);
+                        Logger.LogInfo($"Found {(foundZipfiles.Count - prevCount)} zip/zipmod files in directory [{modDirectory}] in {swFiles.ElapsedMilliseconds}ms");
                     }
                 }
                 catch (Exception e)
@@ -167,7 +168,7 @@ namespace Sideloader
             var cache = new Dictionary<string, ZipmodInfo>();
             try
             {
-                var sw = Stopwatch.StartNew();
+                var swCacheRead = Stopwatch.StartNew();
                 if (File.Exists(cachePath))
                 {
                     var cacheVer = new Version(File.ReadAllText(cachePath + ".ver"));
@@ -177,7 +178,7 @@ namespace Sideloader
                     using (var fileStream = File.OpenRead(cachePath))
                     {
                         cache = CacheUsesLz4 ? LZ4MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream) : MessagePackSerializer.Deserialize<Dictionary<string, ZipmodInfo>>(fileStream);
-                        Logger.LogInfo($"Loaded zipmod cache from \"{cachePath}\" in {sw.ElapsedMilliseconds}ms");
+                        Logger.LogInfo($"Loaded zipmod cache from \"{cachePath}\" in {swCacheRead.ElapsedMilliseconds}ms");
                     }
                 }
             }
@@ -271,12 +272,12 @@ namespace Sideloader
 
             try
             {
-                var sw = Stopwatch.StartNew();
+                var swCacheWrite = Stopwatch.StartNew();
                 // Can NOT serialize in background since AddAllLists->GenerateStudioResolutionInfo modifies StudioResolveInfo.Entries (and possibly others)
                 // todo find a way to serialize in background anyways?
                 File.WriteAllBytes(cachePath, CacheUsesLz4 ? LZ4MessagePackSerializer.Serialize(Zipmods) : MessagePackSerializer.Serialize(Zipmods));
                 File.WriteAllText(cachePath + ".ver", Info.Metadata.Version.ToString());
-                Logger.LogInfo($"Saved zipmod cache to \"{cachePath}\" in {sw.ElapsedMilliseconds}ms");
+                Logger.LogInfo($"Saved zipmod cache to \"{cachePath}\" in {swCacheWrite.ElapsedMilliseconds}ms");
             }
             catch (Exception e)
             {
@@ -377,7 +378,7 @@ namespace Sideloader
 
             if (enableModLoadingLogging)
                 Logger.LogInfo($"List of loaded mods:\n{modLoadInfoSb}");
-            Logger.LogInfo($"Successfully loaded {Zipmods.Count(x => x.Value.Loaded)} mods out of {Zipmods.Count} archives in {stopWatch.ElapsedMilliseconds}ms");
+            Logger.LogInfo($"Successfully loaded {Zipmods.Count(x => x.Value.Loaded)} mods out of {Zipmods.Count} archives in {swTotal.ElapsedMilliseconds}ms");
 
             var failedPaths = Zipmods.Values.Where(x => !x.Loaded).Select(x => x.RelativeFileName).ToArray();
             if (failedPaths.Length > 0)
@@ -542,64 +543,7 @@ namespace Sideloader
         /// </summary>
         public static bool IsPng(string pngFile) => PngList.ContainsKey(pngFile);
 
-        [MessagePackObject]
-        public class BundleLoadInfo
-        {
-            [SerializationConstructor]
-            public BundleLoadInfo(string archiveFilename, long streamOffset, string bundleFullPath, string bundleTrimmedPath)
-            {
-                ArchiveFilename = archiveFilename;
-                StreamOffset = streamOffset;
-                BundleFullPath = bundleFullPath;
-                BundleTrimmedPath = bundleTrimmedPath;
-            }
-            [Key("archiveFilename")] public string ArchiveFilename { get; private set; }
-            [Key("streamOffset")] public long StreamOffset { get; private set; }
-            [IgnoreMember] public bool CanBeStreamed => StreamOffset > 0;
-            [Key("bundleFullPath")] public string BundleFullPath { get; private set; }
-            [Key("bundleTrimmedPath")] public string BundleTrimmedPath { get; private set; }
-
-            public AssetBundle LoadBundle()
-            {
-                AssetBundle bundle;
-
-                if (CanBeStreamed)
-                {
-                    if (DebugLogging.Value)
-                        Logger.LogDebug($"Streaming \"{BundleFullPath}\" ({GetRelativeArchiveDir(ArchiveFilename)}) unity3d file from disk, offset {StreamOffset}");
-
-                    bundle = AssetBundle.LoadFromFile(ArchiveFilename, 0, (ulong)StreamOffset);
-                }
-                else
-                {
-                    Logger.LogDebug($"Cannot stream \"{BundleFullPath}\" ({GetRelativeArchiveDir(ArchiveFilename)}) unity3d file from disk, loading to RAM instead");
-
-                    var arc = Zipmods[ArchiveFilename].GetZipFile();
-                    var entry = arc.GetEntry(BundleFullPath);
-                    var stream = arc.GetInputStream(entry);
-
-                    byte[] buffer = new byte[entry.Size];
-
-                    _ = stream.Read(buffer, 0, (int)entry.Size);
-
-                    // The line below can either be commented in or out - it doesn't really matter. 
-                    //  - If in: It will generate successive unique CAB-strings for these asset bundles
-                    //  - If out: The CAB of the actual asset bundle will be used if possible, otherwise a random CAB is generated by the Resource Redirector due to the call to 'ResourceRedirection.EnableRandomizeCabIfConflict(-2000, false)'
-                    //BundleManager.RandomizeCAB(buffer);
-
-                    bundle = AssetBundleHelper.LoadFromMemory($"\"{BundleFullPath}\" ({GetRelativeArchiveDir(ArchiveFilename)})", buffer, 0);
-                }
-
-                if (bundle == null)
-                {
-                    Logger.LogError($"Asset bundle \"{BundleFullPath}\" ({GetRelativeArchiveDir(ArchiveFilename)}) failed to load. It might have a conflicting CAB string.");
-                }
-
-                return bundle;
-            }
-        }
-
-        private static void AddBundles(IEnumerable<BundleLoadInfo> bundleInfos)
+        private static void AddBundles(IEnumerable<ZipmodInfo.BundleLoadInfo> bundleInfos)
         {
             foreach (var bundleLoadInfo in bundleInfos)
             {
