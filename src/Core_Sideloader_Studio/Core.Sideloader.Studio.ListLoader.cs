@@ -2,13 +2,15 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
+using MessagePack;
 
 namespace Sideloader.ListLoader
 {
     internal static partial class Lists
     {
         internal static HashSet<int> _internalStudioItemList = null;
-        internal static List<StudioListData> ExternalStudioDataList { get; private set; } = new List<StudioListData>();
+        internal static Dictionary<string,List<StudioListData>> ExternalStudioDataList { get; private set; } = new Dictionary<string, List<StudioListData>>();
 
         internal static HashSet<int> InternalStudioItemList
         {
@@ -27,6 +29,7 @@ namespace Sideloader.ListLoader
             }
         }
 
+        [Pure]
         internal static StudioListData LoadStudioCSV(Stream stream, string fileName, string guid)
         {
             StudioListData data = new StudioListData(fileName);
@@ -64,16 +67,16 @@ namespace Sideloader.ListLoader
                     if (!line.Contains(',')) break;
                     var lineSplit = line.Split(',');
 
-                    data.Entries.Add(FormatList(line.Split(',').ToList(), CategoryOrGroup));
+                    data.Entries.Add(FormatList(lineSplit.ToList(), CategoryOrGroup));
                 }
             }
             return data;
-
+            
             List<string> FormatList(List<string> line, bool categoryOrGroup)
             {
 #if AI || HS2
                 //Convert group and category from KK to AI
-                if (CategoryOrGroup)
+                if (categoryOrGroup)
                 {
                     if (line.Count == 2)
                     {
@@ -88,19 +91,30 @@ namespace Sideloader.ListLoader
             }
         }
 
-        internal class StudioListData
+        [MessagePackObject]
+        public class StudioListData
         {
-            public string FileName { get; private set; }
-            public string FileNameWithoutExtension { get; private set; }
-            public string AssetBundleName { get; private set; }
-            public List<List<string>> Headers = new List<List<string>>();
-            public List<List<string>> Entries = new List<List<string>>();
+            [Key("fileName")] public string FileName { get; private set; }
+            [Key("fileNameWithoutExtension")] public string FileNameWithoutExtension { get; private set; }
+            [Key("assetBundleName")] public string AssetBundleName { get; private set; }
+            [Key("headers")] public List<List<string>> Headers { get; private set; } = new List<List<string>>();
+            [Key("entries")] public List<List<string>> Entries { get; private set; } = new List<List<string>>();
 
             public StudioListData(string fileName)
             {
                 FileName = fileName;
                 FileNameWithoutExtension = Path.GetFileNameWithoutExtension(FileName);
                 AssetBundleName = FileName.Remove(FileName.LastIndexOf('/')).Remove(0, FileName.IndexOf('/') + 1) + ".unity3d";
+            }
+
+            [SerializationConstructor]
+            public StudioListData(string fileName, string fileNameWithoutExtension, string assetBundleName, List<List<string>> headers, List<List<string>> entries)
+            {
+                FileName = fileName;
+                FileNameWithoutExtension = fileNameWithoutExtension;
+                AssetBundleName = assetBundleName;
+                Headers = headers;
+                Entries = entries;
             }
         }
     }

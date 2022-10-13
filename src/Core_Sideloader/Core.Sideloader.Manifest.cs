@@ -3,85 +3,153 @@ using Sideloader.AutoResolver;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using MessagePack;
 #if AI || HS2
 using AIChara;
 #endif
 
+#pragma warning disable CS0618
 namespace Sideloader
 {
     /// <summary>
     /// Contains data about the loaded manifest.xml
     /// </summary>
-    public partial class Manifest
+    [MessagePackObject]
+    public class Manifest
     {
-        private readonly int SchemaVer = 1;
-
         /// <summary>
-        /// Full contents of the manifest.xml.
+        /// Version of this manifest.
         /// </summary>
-        public readonly XDocument manifestDocument;
+        [Key(0)] public int SchemaVer { get; } = 1;
         /// <summary>
         /// GUID of the mod.
         /// </summary>
-        public string GUID => manifestDocument.Root?.Element("guid")?.Value;
+        [Key(1)] public string GUID { get; }
         /// <summary>
         /// Name of the mod. Only used for display the name of the mod when mods are loaded.
         /// </summary>
-        public string Name => manifestDocument.Root?.Element("name")?.Value;
+        [Key(2)] public string Name { get; }
         /// <summary>
         /// Version of the mod.
         /// </summary>
-        public string Version => manifestDocument.Root?.Element("version")?.Value;
+        [Key(3)] public string Version { get; }
         /// <summary>
         /// Author of the mod. Not currently used for anything.
         /// </summary>
-        public string Author => manifestDocument.Root?.Element("author")?.Value;
+        [Key(4)] public string Author { get; }
         /// <summary>
         /// Website of the mod. Not currently used for anything.
         /// </summary>
-        public string Website => manifestDocument.Root?.Element("website")?.Value;
+        [Key(5)] public string Website { get; }
         /// <summary>
         /// Description of the mod. Not currently used for anything.
         /// </summary>
-        public string Description => manifestDocument.Root?.Element("description")?.Value;
+        [Key(6)] public string Description { get; }
+
+        /// <summary>
+        /// Parsed contents of the manifest.xml.
+        /// </summary>
+        [IgnoreMember]
+        [Obsolete("Use ManifestDocument instead")]
+        public readonly XDocument manifestDocument;
+        /// <summary>
+        /// Parsed contents of the manifest.xml.
+        /// </summary>
+        [IgnoreMember]
+        public XDocument ManifestDocument => manifestDocument;
+        /// <summary>
+        /// Raw contents of the manifest.xml.
+        /// </summary>
+        [Key(7)] public string ManifestString { get; }
+
         /// <summary>
         /// Game the mod is made for. If specified, the mod will only load for that game. If not specified will load on any game.
         /// </summary>
+        [IgnoreMember]
         [Obsolete("Use Games instead")]
-        public string Game => manifestDocument.Root?.Element("game")?.Value;
-
-        private readonly List<string> _Games = new List<string>();
+        // OrderByDescending to make sure if a mod supports multiple games, this property will always show the tag for the currently running game
+        public string Game => Games.OrderByDescending(x => Array.IndexOf(Sideloader.GameNameList, x.ToLowerInvariant())).FirstOrDefault();
         /// <summary>
         /// Games the mod is made for. If specified, the mod will only load for those games. If not specified will load on any game.
         /// </summary>
-        public List<string> Games => _Games;
+        [Key(8)] public List<string> Games { get; }
+
         /// <summary>
         /// List of all migration info for this mod
         /// </summary>
-        public List<MigrationInfo> MigrationList = new List<MigrationInfo>();
+        [Key(9)] public List<MigrationInfo> MigrationList { get; }
 
 #if AI || HS2
-        internal List<HeadPresetInfo> HeadPresetList = new List<HeadPresetInfo>();
-        internal List<FaceSkinInfo> FaceSkinList = new List<FaceSkinInfo>();
+        [Key(10)] public List<HeadPresetInfo> HeadPresetList { get; }
+        [Key(11)] public List<FaceSkinInfo> FaceSkinList { get; }
 #endif
 
-        internal Manifest(Stream stream)
+        public Manifest(Stream stream)
         {
             using (XmlReader reader = XmlReader.Create(stream))
                 manifestDocument = XDocument.Load(reader);
 
-            foreach (var element in manifestDocument.Root?.Elements("game"))
-                if (element != null && !element.Value.IsNullOrWhiteSpace())
-                    _Games.Add(element.Value);
+            if (manifestDocument.Root == null)
+                throw new OperationCanceledException("Manifest.xml is in an invalid format");
+
+            var schemaVer = manifestDocument.Root.Attribute("schema-ver")?.Value;
+            if (schemaVer != SchemaVer.ToString())
+                throw new OperationCanceledException($"Manifest.xml is in an unknown version: {schemaVer} (supported: {SchemaVer})");
+
+            ManifestString = manifestDocument.ToString(SaveOptions.DisableFormatting);
+
+            Games = manifestDocument.Root.Elements("game").Select(x => x.Value.Trim()).Where(x => x.Length > 0).ToList();
+
+            Description = manifestDocument.Root?.Element("description")?.Value.Trim();
+            Website = manifestDocument.Root?.Element("website")?.Value.Trim();
+            Author = manifestDocument.Root?.Element("author")?.Value.Trim();
+            Version = manifestDocument.Root?.Element("version")?.Value.Trim();
+            Name = manifestDocument.Root?.Element("name")?.Value.Trim();
+            GUID = manifestDocument.Root?.Element("guid")?.Value.Trim();
+
+            MigrationList = new List<MigrationInfo>();
+#if AI || HS2
+            HeadPresetList = new List<HeadPresetInfo>();
+            FaceSkinList = new List<FaceSkinInfo>();
+#endif
         }
 
-        internal void LoadMigrationInfo()
+        [SerializationConstructor]
+        public Manifest(int schemaVer, string guid, string name, string version, string author, string website, string description, string manifestString, List<string> games, List<MigrationInfo> migrationList
+#if AI || HS2
+                        , List<HeadPresetInfo> headPresetList, List<FaceSkinInfo> faceSkinList
+#endif
+                        )
         {
-            if (manifestDocument.Root?.Element("migrationInfo") == null) return;
+            SchemaVer = schemaVer;
+            GUID = guid;
+            Name = name;
+            Version = version;
+            Author = author;
+            Website = website;
+            Description = description;
+            MigrationList = migrationList ?? throw new ArgumentNullException(nameof(migrationList));
+#if AI || HS2
+            HeadPresetList = headPresetList ?? throw new ArgumentNullException(nameof(headPresetList));
+            FaceSkinList = faceSkinList ?? throw new ArgumentNullException(nameof(faceSkinList));
+#endif
+            Games = games ?? throw new ArgumentNullException(nameof(games));
 
-            foreach (var info in manifestDocument.Root.Element("migrationInfo").Elements("info"))
+            ManifestString = manifestString ?? throw new ArgumentNullException(nameof(manifestString));
+            // todo This adds ~200ms when reading ~3k mods from cache
+            using (var reader = new StringReader(manifestString))
+                manifestDocument = XDocument.Load(reader);
+        }
+
+        private void LoadMigrationInfo()
+        {
+            var migrationInfoElement = manifestDocument?.Root?.Element("migrationInfo");
+            if (migrationInfoElement == null) return;
+
+            foreach (var info in migrationInfoElement.Elements("info"))
             {
                 try
                 {
@@ -132,19 +200,7 @@ namespace Sideloader
             manifest = null;
             try
             {
-                ZipEntry entry = zip.GetEntry("manifest.xml");
-
-                if (entry == null)
-                    throw new OperationCanceledException("Manifest.xml is missing, make sure this is a zipmod");
-
-                manifest = new Manifest(zip.GetInputStream(entry));
-
-                if (manifest.manifestDocument?.Root?.Attribute("schema-ver")?.Value != manifest.SchemaVer.ToString())
-                    throw new OperationCanceledException("Manifest.xml is in an invalid format");
-
-                if (manifest.GUID == null)
-                    throw new OperationCanceledException("Manifest.xml is missing the GUID");
-
+                manifest = LoadFromZip(zip);
                 return true;
             }
             catch (SystemException ex)
@@ -156,9 +212,31 @@ namespace Sideloader
             }
         }
 
-#if AI || HS2
-        internal void LoadHeadPresetInfo()
+        internal static Manifest LoadFromZip(ZipFile zip)
         {
+            ZipEntry entry = zip.GetEntry("manifest.xml");
+
+            if (entry == null)
+                throw new OperationCanceledException("Manifest.xml is missing, make sure this is a zipmod");
+
+            var manifest = new Manifest(zip.GetInputStream(entry));
+
+            if (manifest.GUID == null)
+                throw new OperationCanceledException("Manifest.xml is missing the GUID");
+
+            manifest.LoadMigrationInfo();
+#if AI || HS2
+            manifest.LoadHeadPresetInfo();
+            manifest.LoadFaceSkinInfo();
+#endif
+            return manifest;
+        }
+
+#if AI || HS2
+        private void LoadHeadPresetInfo()
+        {
+            if (manifestDocument?.Root == null) return;
+
             foreach (var info in manifestDocument.Root.Elements("headPresetInfo"))
             {
                 try
@@ -221,8 +299,10 @@ namespace Sideloader
             }
         }
 
-        internal void LoadFaceSkinInfo()
+        private void LoadFaceSkinInfo()
         {
+            if (manifestDocument?.Root == null) return;
+
             foreach (var info in manifestDocument.Root.Elements("faceSkinInfo"))
             {
                 try

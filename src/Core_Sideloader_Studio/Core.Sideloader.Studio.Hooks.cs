@@ -14,7 +14,9 @@ namespace Sideloader
             [HarmonyPostfix, HarmonyPatch(typeof(Studio.Info), nameof(Studio.Info.LoadExcelData))]
             private static void LoadExcelDataPostfix(string _bundlePath, string _fileName, ref ExcelData __result)
             {
-                var studioList = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath && x.FileNameWithoutExtension == _fileName).ToList();
+                if (!Lists.ExternalStudioDataList.TryGetValue(_bundlePath, out var lists)) return;
+
+                var studioList = lists.Where(x => x.FileNameWithoutExtension == _fileName).ToList();
 
                 if (studioList.Count > 0)
                 {
@@ -62,8 +64,10 @@ namespace Sideloader
             [HarmonyPrefix, HarmonyPatch(typeof(Studio.AssetBundleCheck), nameof(Studio.AssetBundleCheck.GetAllFileName))]
             private static bool GetAllFileName(string _assetBundleName, ref string[] __result)
             {
-                var list = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _assetBundleName).Select(y => y.FileNameWithoutExtension.ToLower()).ToArray();
-                if (list.Count() > 0)
+                if (!Lists.ExternalStudioDataList.TryGetValue(_assetBundleName, out var lists)) return true;
+
+                var list = lists.Select(y => y.FileNameWithoutExtension.ToLower()).ToArray();
+                if (list.Length > 0)
                 {
                     __result = list;
                     return false;
@@ -74,8 +78,11 @@ namespace Sideloader
             [HarmonyPrefix, HarmonyPatch(typeof(Studio.Info), nameof(Studio.Info.FindAllAssetName))]
             private static bool FindAllAssetNamePrefix(string _bundlePath, string _regex, ref string[] __result)
             {
-                var list = Lists.ExternalStudioDataList.Where(x => x.AssetBundleName == _bundlePath).Select(x => x.FileNameWithoutExtension).ToList();
-                if (list.Count() > 0)
+                if (!Lists.ExternalStudioDataList.TryGetValue(_bundlePath, out var lists)) return true;
+
+                // This patch gets called millions of times
+                var list = lists.Select(x => x.FileNameWithoutExtension).ToList();
+                if (list.Count > 0)
                 {
                     __result = list.Where(x => Regex.Match(x, _regex, RegexOptions.IgnoreCase).Success).ToArray();
                     return false;
@@ -88,7 +95,7 @@ namespace Sideloader
             {
                 if (path == "studio/info/")
                 {
-                    foreach (string assetBundleName in Lists.ExternalStudioDataList.Select(x => x.AssetBundleName).Distinct())
+                    foreach (string assetBundleName in Lists.ExternalStudioDataList.Keys)
                         if (!__result.Contains(assetBundleName))
                             __result.Add(assetBundleName);
                 }

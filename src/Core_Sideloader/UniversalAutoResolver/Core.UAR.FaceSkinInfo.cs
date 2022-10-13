@@ -1,14 +1,18 @@
-﻿#if AI || HS2
+﻿using MessagePack;
+
+#if AI || HS2
 namespace Sideloader.AutoResolver
 {
-    internal class FaceSkinInfo
+    [MessagePackObject]
+    public class FaceSkinInfo
     {
-        public int SkinSlot;
-        public int SkinLocalSlot;
-        public string SkinGUID;
-        public int HeadSlot;
-        public string HeadGUID;
+        [Key(0)] public int SkinSlot;
+        [Key(1)] public string SkinGUID;
+        [Key(2)] public int HeadSlot;
+        [Key(3)] public string HeadGUID;
+        [IgnoreMember] public int SkinLocalSlot;
 
+        [SerializationConstructor]
         public FaceSkinInfo(int skinID, string skinGUID, int headID, string headGUID)
         {
             SkinSlot = skinID;

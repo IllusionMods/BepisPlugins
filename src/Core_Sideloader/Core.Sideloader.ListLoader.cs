@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using System.Xml.Linq;
+using JetBrains.Annotations;
 #if KK || EC || KKS
 using ChaCustom;
 #elif AI || HS2
@@ -114,6 +115,7 @@ namespace Sideloader.ListLoader
         }
 #endif
 
+        [Pure]
         internal static ChaListData LoadCSV(Stream stream)
         {
             ChaListData chaListData = new ChaListData();
@@ -141,26 +143,32 @@ namespace Sideloader.ListLoader
             return chaListData;
         }
 
-        internal static void LoadExcelDataCSV(string assetBundleName, string assetName, Stream stream)
+#if !EC
+        [Pure]
+        internal static StudioListData LoadExcelDataCSV(Stream stream, string csvFilename)
         {
-            ExcelData excelData = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
-            excelData.list = new List<ExcelData.Param>();
+            var result = new StudioListData(csvFilename);
+
             using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
             {
                 while (!reader.EndOfStream)
                 {
                     string line = reader.ReadLine().Trim();
-
-                    ExcelData.Param param = new ExcelData.Param { list = line.Split(',').ToList() };
-
-                    excelData.list.Add(param);
+                    result.Entries.Add(line.Split(',').ToList());
                 }
             }
-
-            if (!ExternalExcelData.ContainsKey(assetBundleName))
-                ExternalExcelData[assetBundleName] = new Dictionary<string, ExcelData>();
-            ExternalExcelData[assetBundleName][assetName] = excelData;
+            return result;
         }
+        internal static void AddExcelDataCSV(StudioListData data)
+        {
+            ExcelData excelData = (ExcelData)ScriptableObject.CreateInstance(typeof(ExcelData));
+            excelData.list = data.Entries.Select(x=> new ExcelData.Param { list = x}).ToList();
+
+            if (!ExternalExcelData.ContainsKey(data.AssetBundleName))
+                ExternalExcelData[data.AssetBundleName] = new Dictionary<string, ExcelData>();
+            ExternalExcelData[data.AssetBundleName][data.FileNameWithoutExtension] = excelData;
+        }
+#endif
 
         internal static void LoadCheckItemList()
         {
@@ -174,7 +182,7 @@ namespace Sideloader.ListLoader
                 foreach (var modElement in checkItemList.Elements("mod"))
                 {
                     string guid = modElement.Attribute("guid")?.Value;
-                    if (!guid.IsNullOrEmpty())
+                    if (!string.IsNullOrEmpty(guid))
                     {
                         foreach (var categoryElement in modElement.Elements("category"))
                         {
