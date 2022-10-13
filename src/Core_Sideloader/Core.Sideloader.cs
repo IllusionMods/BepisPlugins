@@ -15,6 +15,7 @@ using UnityEngine;
 using XUnity.ResourceRedirector;
 using MessagePack;
 using System.Threading;
+using MessagePack.Resolvers;
 #if AI || HS2
 using AIChara;
 #endif
@@ -422,7 +423,7 @@ namespace Sideloader
             }
         }
 
-        private static void AddBundles(IEnumerable<ZipmodInfo.BundleLoadInfo> bundleInfos)
+        private static void AddBundles(IEnumerable<BundleLoadInfo> bundleInfos)
         {
             foreach (var bundleLoadInfo in bundleInfos)
             {
@@ -679,7 +680,11 @@ namespace Sideloader
                             using (var fileStream = File.OpenWrite(filename))
                             {
                                 var toSerialize = Zipmods.Values.Skip(modsToSkip).Take(modsPerThread).ToList();
+#if KK
                                 LZ4MessagePackSerializer.Serialize(fileStream, toSerialize);
+#else
+                                LZ4MessagePackSerializer.Serialize(fileStream, toSerialize, ContractlessStandardResolverAllowPrivate.Instance);
+#endif
                             }
                         }
                         catch (Exception e)
@@ -732,7 +737,11 @@ namespace Sideloader
                                 {
                                     // LZ4 ends up about 80ms slower deserializing and 100ms slower serializing, but the file size is reduced from 16MB to 3.5MB.
                                     // Not sure if it's worth it in that case, depends on drive speed
+#if KK
                                     var list = LZ4MessagePackSerializer.Deserialize<List<ZipmodInfo>>(fileStream);
+#else
+                                    var list = LZ4MessagePackSerializer.Deserialize<List<ZipmodInfo>>(fileStream, ContractlessStandardResolverAllowPrivate.Instance);
+#endif
                                     lock (cache)
                                     {
                                         foreach (var zipmodInfo in list)
