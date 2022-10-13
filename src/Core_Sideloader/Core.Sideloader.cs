@@ -42,7 +42,7 @@ namespace Sideloader
         /// <summary> Dictionary of loaded zip file name and its zipmod metadata </summary>
         internal static readonly Dictionary<string, ZipmodInfo> Zipmods = new Dictionary<string, ZipmodInfo>();
 
-        /// <summary> List of all loaded manifest files </summary>
+        /// <summary> Dictionary of GUID and loaded manifest files </summary>
         public static readonly Dictionary<string, Manifest> Manifests = new Dictionary<string, Manifest>();
         /// <summary> Dictionary of GUID and loaded zip file name </summary>
         public static readonly Dictionary<string, string> ZipArchives = new Dictionary<string, string>();
