@@ -62,6 +62,7 @@ namespace Sideloader
         internal static ConfigEntry<bool> KeepMissingAccessories { get; private set; }
         internal static ConfigEntry<bool> MigrationEnabled { get; private set; }
         internal static ConfigEntry<string> AdditionalModsDirectory { get; private set; }
+        internal static ConfigEntry<bool> CachingEnabled { get; private set; }
 
         [UsedImplicitly]
         private void Awake()
@@ -98,6 +99,8 @@ namespace Sideloader
                 "Attempt to change the GUID and/or ID of mods based on the data configured in the manifest.xml. Helps keep backwards compatibility when updating mods.");
             AdditionalModsDirectory = Config.Bind("General", "Additional mods directory", FindKoiZipmodDir(),
                 "Additional directory to load zipmods from.");
+            CachingEnabled = Config.Bind("General", "Cache zipmod metadata", true,
+                "Drastically speeds up game startup speed, especially on slow HDDs, by not parsing zipmods unless they get changed. Disable to force sideloader to always read and parse all zipmods.");
 
             if (!Directory.Exists(ModsDirectory))
                 Logger.LogWarning("Could not find the mods directory: " + ModsDirectory);
@@ -654,6 +657,8 @@ namespace Sideloader
                 foreach (var file in Directory.GetFiles(_CacheDirectory, _CacheName + ".*"))
                     File.Delete(file);
 
+                if (!CachingEnabled.Value) return;
+
                 // Serialize in multiple threads to speed things up a little.
                 // Scaling kind of sucks above 2 threads. Cache read: 938ms using 1 thread, 691ms using 2 threads, 665ms using 3 threads
                 // Some items take much longer to serialize/deserialize making threads finish very unevenly, probably manifest size?
@@ -671,9 +676,11 @@ namespace Sideloader
                         var filename = _CachePath + "." + threadIndex;
                         try
                         {
-                            var toSerialize = Zipmods.Values.Skip(modsToSkip).Take(modsPerThread).ToList();
-                            var serialized = LZ4MessagePackSerializer.Serialize(toSerialize);
-                            File.WriteAllBytes(filename, serialized);
+                            using (var fileStream = File.OpenWrite(filename))
+                            {
+                                var toSerialize = Zipmods.Values.Skip(modsToSkip).Take(modsPerThread).ToList();
+                                LZ4MessagePackSerializer.Serialize(fileStream, toSerialize);
+                            }
                         }
                         catch (Exception e)
                         {
@@ -700,6 +707,7 @@ namespace Sideloader
         private Dictionary<string, ZipmodInfo> LoadCache()
         {
             var cache = new Dictionary<string, ZipmodInfo>();
+            if (!CachingEnabled.Value) return cache;
             try
             {
                 var swCacheRead = Stopwatch.StartNew();
