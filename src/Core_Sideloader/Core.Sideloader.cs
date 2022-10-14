@@ -255,7 +255,7 @@ namespace Sideloader
 #endif
 
             // Load the mods (only one per GUID, the newest one). Whole loop takes around 280ms for 3800 items.
-            foreach (var modGroup in groupedZipmodsToLoad.Values)
+            foreach (var modGroup in groupedZipmodsToLoad.OrderBy(x => x.Key).Select(x => x.Value))
             {
                 ZipmodInfo zipmod;
                 // Handle multiple versions/copies of a single zipmod
