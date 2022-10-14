@@ -23,6 +23,8 @@ namespace Sideloader.AutoResolver
         [Obsolete("Use GetStudioResolveInfos and AddStudioResolutionInfo instead")]
         public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
 
+        static int LastLoadedStudioResolutionInfoCount = 0;
+
         /// <summary>
         /// LocalSlot -> resolve info lookup.
         /// </summary>
@@ -30,34 +32,56 @@ namespace Sideloader.AutoResolver
         /// <summary>
         /// GUID + Slot -> resolve info lookup.
         /// </summary>
-        internal static Dictionary<string, Dictionary<int, List<StudioResolveInfo>>> StudioResolutionInfoGuidLookup = new Dictionary<string, Dictionary<int, List<StudioResolveInfo>>>();
+        internal static Dictionary<string, Dictionary<int, List<StudioResolveInfo>>> StudioResolutionInfoGuidLookup = new Dictionary<string, Dictionary<int, List<StudioResolveInfo>>>(StringComparer.OrdinalIgnoreCase);
 
         public static void AddStudioResolutionInfo(StudioResolveInfo sri)
         {
-            //todo keep last count of LoadedStudioResolutionInfo and if it doesn't match update the lookups? only handle adding new items at the end?
-            LoadedStudioResolutionInfo.Add(sri);
+            UpdateLookupsIfNeeded();
 
-            if (!StudioResolutionInfoLocalSlotLookup.TryGetValue(sri.LocalSlot, out var localSlotList))
+            LoadedStudioResolutionInfo.Add(sri);
+            LastLoadedStudioResolutionInfoCount = LoadedStudioResolutionInfo.Count;
+
+            AddToLookups(sri);
+        }
+
+        /// <summary>
+        /// Handle other plugins adding items to LoadedStudioResolutionInfo directly. Assumes items are added to the end, not inserted.
+        /// Necessary for AnimationLoader to work.
+        /// </summary>
+        private static void UpdateLookupsIfNeeded()
+        {
+            while (LastLoadedStudioResolutionInfoCount < LoadedStudioResolutionInfo.Count)
+            {
+                AddToLookups(LoadedStudioResolutionInfo[LastLoadedStudioResolutionInfoCount]);
+                LastLoadedStudioResolutionInfoCount++;
+            }
+        }
+
+        private static void AddToLookups(StudioResolveInfo resolveInfo)
+        {
+            if (!StudioResolutionInfoLocalSlotLookup.TryGetValue(resolveInfo.LocalSlot, out var localSlotList))
             {
                 localSlotList = new List<StudioResolveInfo>();
-                StudioResolutionInfoLocalSlotLookup.Add(sri.LocalSlot, localSlotList);
+                StudioResolutionInfoLocalSlotLookup.Add(resolveInfo.LocalSlot, localSlotList);
             }
-            localSlotList.Add(sri);
 
-            if (!StudioResolutionInfoGuidLookup.TryGetValue(sri.GUID, out var slotLookup))
+            localSlotList.Add(resolveInfo);
+
+            if (!StudioResolutionInfoGuidLookup.TryGetValue(resolveInfo.GUID, out var slotLookup))
             {
                 slotLookup = new Dictionary<int, List<StudioResolveInfo>>();
-                StudioResolutionInfoGuidLookup.Add(sri.GUID, slotLookup);
+                StudioResolutionInfoGuidLookup.Add(resolveInfo.GUID, slotLookup);
             }
 
-            if (!slotLookup.TryGetValue(sri.Slot, out var slotList))
+            if (!slotLookup.TryGetValue(resolveInfo.Slot, out var slotList))
             {
                 slotList = new List<StudioResolveInfo>();
-                slotLookup.Add(sri.Slot, slotList);
+                slotLookup.Add(resolveInfo.Slot, slotList);
             }
 
-            slotList.Add(sri);
+            slotList.Add(resolveInfo);
         }
+
 
         private static bool IsResolveItem(StudioResolveInfo sri) => sri.ResolveItem;
         private static readonly ICollection<StudioResolveInfo> _EmptyResolveInfos = new StudioResolveInfo[0];
@@ -68,6 +92,8 @@ namespace Sideloader.AutoResolver
         /// </summary>
         public static IEnumerable<StudioResolveInfo> GetStudioResolveInfos(int localSlot, bool onlyResolveItems)
         {
+            UpdateLookupsIfNeeded();
+
             if (StudioResolutionInfoLocalSlotLookup.TryGetValue(localSlot, out var result))
                 return onlyResolveItems ? result.Where(IsResolveItem) : result;
             return _EmptyResolveInfos;
@@ -79,6 +105,8 @@ namespace Sideloader.AutoResolver
         /// </summary>
         public static IEnumerable<StudioResolveInfo> GetStudioResolveInfos(string guid, int slot, bool onlyResolveItems)
         {
+            UpdateLookupsIfNeeded();
+
             if (StudioResolutionInfoGuidLookup.TryGetValue(guid, out var slotLookup))
             {
                 if (slotLookup.TryGetValue(slot, out var result))
@@ -259,6 +287,7 @@ namespace Sideloader.AutoResolver
             else if (OI is OICharInfo CharInfo)
             {
                 //Resolve the animation ID for the character
+
                 StudioResolveInfo intResolve = GetStudioResolveInfos(extResolve.GUID, CharInfo.animeInfo.no, true).FirstOrDefault(x => x.Group == extResolve.Group && x.Category == extResolve.Category);
                 if (intResolve != null)
                 {
@@ -374,7 +403,7 @@ namespace Sideloader.AutoResolver
                     if (intResolve != null)
                     {
                         if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{ patternInfo.GUID}] {Item.colors[i].pattern.key}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{patternInfo.GUID}] {Item.colors[i].pattern.key}->{intResolve.LocalSlot}");
                         Item.colors[i].pattern.key = intResolve.LocalSlot;
                     }
                     else if (resolveType == ResolveType.Load)
