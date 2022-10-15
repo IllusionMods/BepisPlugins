@@ -253,7 +253,7 @@ namespace Sideloader
             var gatheredHeadPresetInfos = new List<HeadPresetInfo>();
             var gatheredFaceSkinInfos = new List<FaceSkinInfo>();
 #endif
-
+            var bundlesToLoad = new List<BundleLoadInfo>();
             // Load the mods (only one per GUID, the newest one). Whole loop takes around 280ms for 3800 items.
             foreach (var modGroup in groupedZipmodsToLoad.OrderBy(x => x.Key).Select(x => x.Value))
             {
@@ -288,7 +288,7 @@ namespace Sideloader
                     ZipArchives[manifest.GUID] = zipmod.FileName;
                     Manifests[manifest.GUID] = manifest;
 
-                    AddBundles(zipmod.BundleInfos);
+                    bundlesToLoad.AddRange(zipmod.BundleInfos);
                     AddAllLists(zipmod, gatheredResolutionInfos);
                     BuildPngFolderList(zipmod);
 
@@ -314,6 +314,8 @@ namespace Sideloader
             }
 
             // Past this point everything is very fast
+
+            AddBundles(bundlesToLoad);
 
             UniversalAutoResolver.SetResolveInfos(gatheredResolutionInfos);
             UniversalAutoResolver.SetMigrationInfos(gatheredMigrationInfos);
@@ -423,14 +425,26 @@ namespace Sideloader
             }
         }
 
-        private static void AddBundles(IEnumerable<BundleLoadInfo> bundleInfos)
+        private static void AddBundles(ICollection<BundleLoadInfo> bundleInfos)
         {
+            // If using debug logging, look for duplicate override bundles
+            if (DebugLoggingModLoading.Value)
+            {
+                // ToLookup keeps the order of items
+                foreach (var bundleInfoGroup in bundleInfos.ToLookup(x => x.BundleTrimmedPath))
+                {
+                    if (bundleInfoGroup.Count() > 1)
+                    {
+                        var overrideList = bundleInfoGroup.Select((info, i) => $"{i + 1}: {GetRelativeArchiveDir(info.ArchiveFilename)}");
+                        Logger.LogWarning($"AssetBundle at [{bundleInfoGroup.First().BundleFullPath}] has multiple overrides! " +
+                                          $"Order in which zipmods are searched for assets:\n{string.Join("\n", overrideList.ToArray())}");
+                    }
+                }
+            }
+
             foreach (var bundleLoadInfo in bundleInfos)
             {
-                BundleManager.AddBundleLoader(bundleLoadInfo.LoadBundle, bundleLoadInfo.BundleTrimmedPath, out string warning);
-
-                if (!string.IsNullOrEmpty(warning) && DebugLoggingModLoading.Value)
-                    Logger.LogWarning($"{warning} in \"{GetRelativeArchiveDir(bundleLoadInfo.ArchiveFilename)}\"");
+                BundleManager.AddBundleLoader(bundleLoadInfo.LoadBundle, bundleLoadInfo.BundleTrimmedPath);
             }
         }
 

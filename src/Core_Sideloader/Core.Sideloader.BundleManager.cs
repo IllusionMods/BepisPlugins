@@ -39,20 +39,14 @@ namespace Sideloader
             Buffer.BlockCopy(cabBytes, 36 - origCabLength, assetBundleData, origCabIndex + 4, origCabLength - 4);
         }
 
-        internal static void AddBundleLoader(Func<AssetBundle> func, string path, out string warning)
+        internal static void AddBundleLoader(Func<AssetBundle> func, string path)
         {
-            warning = "";
-
-            if (Bundles.TryGetValue(path, out var lazyList))
+            if (!Bundles.TryGetValue(path, out var lazyList))
             {
-                warning = $"Duplicate asset bundle detected! {path}";
-                lazyList.Add(LazyCustom<AssetBundle>.Create(func));
+                lazyList = new List<LazyCustom<AssetBundle>>();
+                Bundles.Add(path, lazyList);
             }
-            else
-                Bundles.Add(path, new List<LazyCustom<AssetBundle>>
-                {
-                    LazyCustom<AssetBundle>.Create(func)
-                });
+            lazyList.Add(LazyCustom<AssetBundle>.Create(func));
         }
 
         internal static bool TryGetObjectFromName<T>(string name, string assetBundle, out T obj) where T : UnityEngine.Object
@@ -70,10 +64,29 @@ namespace Sideloader
 
             if (Bundles.TryGetValue(assetBundle, out var lazyBundleList))
             {
-                foreach (AssetBundle bundle in lazyBundleList)
+                var found = -1;
+                for (int i = 0; i < lazyBundleList.Count; i++)
                 {
+                    AssetBundle bundle = lazyBundleList[i];
                     if (bundle.Contains(name))
                     {
+                        // If using debug logging, check all override bundles for this asset and warn if multiple copies exist.
+                        // This will force all override bundles to load so it's slower.
+                        if (Sideloader.DebugLoggingModLoading.Value)
+                        {
+                            if (found >= 0)
+                            {
+                                Sideloader.Logger.LogWarning($"Asset [{name}] in bundle [{assetBundle}] is overriden by multiple zipmods! " +
+                                                             $"Only asset from override #{found + 1} will be used! It also exists in override #{i + 1}.");
+                            }
+                            else
+                            {
+                                found = i;
+                                obj = bundle.LoadAsset(name, type);
+                            }
+                            continue;
+                        }
+
                         obj = bundle.LoadAsset(name, type);
                         return true;
                     }
