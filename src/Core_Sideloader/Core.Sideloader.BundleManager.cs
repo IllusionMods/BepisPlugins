@@ -1,6 +1,7 @@
 ﻿using Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using UnityEngine;
@@ -84,6 +85,7 @@ namespace Sideloader
                                 found = i;
                                 obj = bundle.LoadAsset(name, type);
                             }
+
                             continue;
                         }
 
@@ -91,6 +93,9 @@ namespace Sideloader
                         return true;
                     }
                 }
+
+                // Needed for the logging codepath
+                if (found >= 0) return true;
             }
 
             return false;
