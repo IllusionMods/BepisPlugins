@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using BepisPlugins;
 using UnityEngine;
 
 namespace Screencap
@@ -22,7 +23,7 @@ namespace Screencap
         {
             if (equirectangularConverter != null) return;
 
-            var abd = Properties.Resources.EquirectangularConverter;
+            var abd = ResourceUtils.GetEmbeddedResource("EquirectangularConverter.unity3d");
             var ab = AssetBundle.LoadFromMemory(abd);
             equirectangularConverter = new Material(ab.LoadAsset<Shader>("assets/shaders/equirectangularconverter.shader"));
             paddingX = Shader.PropertyToID("_PaddingX");

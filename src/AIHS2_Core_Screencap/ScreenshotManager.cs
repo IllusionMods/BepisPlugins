@@ -104,7 +104,7 @@ namespace Screencap
                 1,
                 new ConfigDescription("Multiplies the UI screenshot resolution from the current game resolution by this amount.\nWarning: Some elements will still be rendered at the original resolution (most notably the interface).", new AcceptableValueRange<int>(1, 8), "Advanced"));
 
-            var ab = AssetBundle.LoadFromMemory(Properties.Resources.composite);
+            var ab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
             _matScale = new Material(ab.LoadAsset<Shader>("resize"));
             ab.Unload(false);

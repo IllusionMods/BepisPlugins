@@ -9,6 +9,7 @@
     <Import_RootNamespace>Core_Screencap</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ScreenshotManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ScreenshotManager.Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ScreenshotManager.NameFormat.cs" />
@@ -16,8 +17,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\I360Render.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\blackout.unity3d" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\composite.unity3d" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\EquirectangularConverter.unity3d" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\rgalpha.unity3d" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\alphaMask.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\blackout.shader" />
+    <None Include="$(MSBuildThisFileDirectory)shader_source\composite.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\EquirectangularConverter.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\Resize.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\rgAlpha2.shader" />

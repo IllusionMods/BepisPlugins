@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq;
+using BepisPlugins;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
@@ -17,25 +18,31 @@ namespace alphaShot
         private Material matMask;
 
         private Material matRgAlpha;
+        private Material matComposite;
 
         private bool InStudio = false;
 
         private void Awake()
         {
-            var abd = Screencap.Properties.Resources.blackout;
+            var abd = ResourceUtils.GetEmbeddedResource("blackout.unity3d");
             var ab = AssetBundle.LoadFromMemory(abd);
             matBlackout = new Material(ab.LoadAsset<Shader>("blackout.shader"));
             matMask = new Material(ab.LoadAsset<Shader>("alphamask.shader"));
             matScale = new Material(ab.LoadAsset<Shader>("resize.shader"));
             ab.Unload(false);
 
-            var rgbd = Screencap.Properties.Resources.rgalpha;
+            var rgbd = ResourceUtils.GetEmbeddedResource("rgalpha.unity3d");
             var rgab = AssetBundle.LoadFromMemory(rgbd);
             matRgAlpha = new Material(rgab.LoadAsset<Shader>("rgAlpha2"));
             rgab.Unload(false);
 
+            var compab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
+            matComposite = new Material(compab.LoadAsset<Shader>("composite"));
+            compab.Unload(false);
 
-            InStudio = SceneManager.GetActiveScene().name == "Studio";
+#if !EC
+            InStudio = Constants.InsideStudio;
+#endif
         }
 
         [Obsolete]
@@ -152,6 +159,27 @@ namespace alphaShot
             renderCam.rect = new Rect(0, 0, 1, 1);
             renderCam.Render();
             renderCam.rect = rect;
+
+#if !EC
+            // Handle studio picture frames by overlaying them on top of the full size image, before it's downscaled
+            if (InStudio &&
+                Studio.Studio.IsInstance() &&
+                Studio.Studio.Instance.frameCtrl != null &&
+                Studio.Studio.Instance.frameCtrl.imageFrame != null &&
+                Studio.Studio.Instance.frameCtrl.imageFrame.mainTexture != null &&
+                Studio.Studio.Instance.frameCtrl.imageFrame.isActiveAndEnabled)
+            {
+                var frame = Studio.Studio.Instance.frameCtrl.imageFrame.mainTexture;
+                matComposite.SetTexture("_Overlay", frame);
+                var prevrt = rt;
+                rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 1);
+                RenderTexture.active = rt;
+                GL.Clear(false, true, Color.clear);
+                Graphics.Blit(prevrt, rt, matComposite);
+                RenderTexture.ReleaseTemporary(prevrt);
+            }
+#endif
+
             RenderTexture.active = rt;
             ss.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0);
             ss.Apply();
