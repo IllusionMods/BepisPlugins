@@ -52,11 +52,12 @@ namespace SliderUnlocker
 
         protected void Awake()
         {
+            Logger = base.Logger;
+
             Minimum = Config.Bind("Slider Limits", "Minimum slider value", -100, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(-500, 0)));
             Maximum = Config.Bind("Slider Limits", "Maximum slider value", 200, new ConfigDescription("Changes will take effect next time the editor is loaded or a character is loaded.", new AcceptableValueRange<int>(100, 500)));
 
             Hooks.InstallHooks();
-            Logger = base.Logger;
         }
 
         /// <summary>
