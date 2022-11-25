@@ -77,7 +77,7 @@ namespace Sideloader
                         {
                             if (found >= 0)
                             {
-                                Sideloader.Logger.LogWarning($"Asset [{name}] in bundle [{assetBundle}] is overriden by multiple zipmods! " +
+                                Sideloader.Logger.LogWarning($"Asset [{name}] in bundle [{assetBundle}] is overridden by multiple zipmods! " +
                                                              $"Only asset from override #{found + 1} will be used! It also exists in override #{i + 1}.");
                             }
                             else
