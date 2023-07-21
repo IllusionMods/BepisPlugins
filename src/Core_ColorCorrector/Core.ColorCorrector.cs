@@ -35,7 +35,7 @@ namespace ColorCorrector
         {
             SaturationEnabled = Config.Bind("Post Processing Settings", "Enable saturation filter", true, new ConfigDescription("Whether default saturation filter will be applied to the game. This setting has no effect in Studio."));
             OverrideBloomStrength = Config.Bind("Post Processing Settings", "Enable bloom strength override", false, new ConfigDescription("Override the strength of the bloom filter. Not active in Studio, control bloom settings through the in game Scene Effects menu."));
-            BloomStrength = Config.Bind("Post Processing Settings", "Bloom strength", DefaultBloomStrength, new ConfigDescription("Strength of the bloom filter.", new AcceptableValueRange<float>(0f, MaxBloomStrength)));
+            BloomStrength = Config.Bind("Post Processing Settings", "Bloom strength", DefaultBloomStrength, new ConfigDescription("Strength of the bloom filter override. Bloom strength override has to be enabled for this setting to have an effect.", new AcceptableValueRange<float>(0f, MaxBloomStrength)));
             SaturationEnabled.SettingChanged += OnSettingChanged;
             OverrideBloomStrength.SettingChanged += OnSettingChanged;
             BloomStrength.SettingChanged += OnSettingChanged;
