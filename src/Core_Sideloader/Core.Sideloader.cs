@@ -261,13 +261,23 @@ namespace Sideloader
                 // Handle multiple versions/copies of a single zipmod
                 if (modGroup.Count > 1)
                 {
-                    // Order by version if available, else use modified dates (less reliable)
-                    // If versions match, prefer mods inside folders or with more descriptive names so modpacks are preferred
-                    var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.Manifest.Version))
-                        ? modGroup.OrderByDescending(x => x.Manifest.Version, new ManifestVersionComparer()).ThenByDescending(x => x.FileName.Length)
-                        : modGroup.OrderByDescending(x => x.LastWriteTime);
+                    List<ZipmodInfo> orderedMods;
+                    try
+                    {
+                        // Order by version if available, else use modified dates (less reliable)
+                        // If versions match, prefer mods inside folders or with more descriptive names so modpacks are preferred
+                        var orderedModsQuery = modGroup.All(x => !string.IsNullOrEmpty(x.Manifest.Version))
+                            ? modGroup.OrderByDescending(x => x.Manifest.Version, new ManifestVersionComparer()).ThenByDescending(x => x.FileName.Length)
+                            : modGroup.OrderByDescending(x => x.LastWriteTime);
 
-                    var orderedMods = orderedModsQuery.ToList();
+                        orderedMods = orderedModsQuery.ToList();
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.LogError($"Failed to sort versions of [{modGroup[0].Manifest.GUID}]: [{string.Join("] , [", modGroup.Select(x => x.Manifest.Version).ToArray())}] with error: {e}");
+                        orderedMods = modGroup;
+                    }
+
                     zipmod = orderedMods[0];
 
                     var modList = string.Join(", ", orderedMods.Skip(1).Select(x => '"' + x.RelativeFileName + '"').ToArray());
