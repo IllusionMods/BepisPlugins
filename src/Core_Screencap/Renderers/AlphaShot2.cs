@@ -4,9 +4,6 @@ using System.IO;
 using System.Linq;
 using BepisPlugins;
 using UnityEngine;
-#if !EC
-using UnityEngine.Rendering.PostProcessing;
-#endif
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
 #pragma warning disable 1591
@@ -196,6 +193,36 @@ namespace alphaShot
 
         #region rgAlpha
 
+        private void DisablePostProcessingCapture(int ResolutionX, int ResolutionY, Behaviour[] disabled, ref RenderTexture rtR, ref RenderTexture rtG)
+        {
+#if !EC
+            var disablePostProcessTypes = new Type[]
+            {
+            typeof(UnityEngine.Rendering.PostProcessing.Bloom),
+            typeof(UnityEngine.Rendering.PostProcessing.Vignette),
+            typeof(UnityEngine.Rendering.PostProcessing.Grain),
+            typeof(UnityEngine.Rendering.PostProcessing.ColorGrading)
+            };
+
+            var volume = GameObject.Find("PostProcessVolume");
+            UnityEngine.Rendering.PostProcessing.PostProcessVolume postProcessVolume = null;
+            if (volume != null)
+                postProcessVolume = volume.GetComponent<UnityEngine.Rendering.PostProcessing.PostProcessVolume>();
+
+            var disabledPostProcessing = new UnityEngine.Rendering.PostProcessing.PostProcessEffectSettings[0];
+            if (postProcessVolume != null)
+                disabledPostProcessing = postProcessVolume.profile.settings.Where(x => x.enabled && disablePostProcessTypes.Contains(x.GetType())).ToArray();
+            foreach (var comp in disabledPostProcessing) comp.enabled.Override(false);
+#endif
+
+            rtR = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
+            rtG = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
+
+#if !EC
+            foreach (var comp in disabledPostProcessing) comp.enabled.Override(true);
+#endif
+        }
+
         private Texture2D CaptureRgAlpha(int ResolutionX, int ResolutionY)
         {
             Camera main = Camera.main;
@@ -211,36 +238,20 @@ namespace alphaShot
             var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
             foreach (var comp in disabled) comp.enabled = false;
 
-            RenderTexture rtR;
-            RenderTexture rtG;
-#if !EC
-            //TODO skip all this if PostProcessing does not exist (only an issue on KK)
-            var disablePostProcessTypes = new Type[]
+            RenderTexture rtR = null;
+            RenderTexture rtG = null;
+
+            try
             {
-            typeof(UnityEngine.Rendering.PostProcessing.Bloom),
-            typeof(UnityEngine.Rendering.PostProcessing.Vignette),
-            typeof(UnityEngine.Rendering.PostProcessing.Grain),
-            typeof(UnityEngine.Rendering.PostProcessing.ColorGrading)
-            };
-
-            var volume = GameObject.Find("PostProcessVolume");
-            PostProcessVolume postProcessVolume = null;
-            if (volume != null)
-                postProcessVolume = volume.GetComponent<UnityEngine.Rendering.PostProcessing.PostProcessVolume>();
-
-            var disabledPostProcessing = new PostProcessEffectSettings[0];
-            if (postProcessVolume != null)
-                disabledPostProcessing = postProcessVolume.profile.settings.Where(x => x.enabled && disablePostProcessTypes.Contains(x.GetType())).ToArray();
-            foreach (var comp in disabledPostProcessing) comp.enabled.Override(false);
-#endif
-
-            rtR = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
-            rtG = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
-
+                //Catching assembly load error fails if this is within the same function
+                DisablePostProcessingCapture(ResolutionX, ResolutionY, disabled, ref rtR, ref rtG);
+            }
+            catch (FileNotFoundException) //PostProcessing runtime is not loaded/installed
+            {
+                rtR = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
+                rtG = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
+            }
             foreach (var comp in disabled) comp.enabled = true;
-#if !EC
-            foreach (var comp in disabledPostProcessing) comp.enabled.Override(true);
-#endif
 
             var rtAlpha = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
             ClearRT(rtAlpha);
