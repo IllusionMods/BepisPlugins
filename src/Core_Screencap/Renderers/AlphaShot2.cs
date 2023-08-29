@@ -196,8 +196,9 @@ namespace alphaShot
         {
             Camera main = Camera.main;
 
-            #region Generate alpha image
+            #region Generate alpha mask image
 
+            // Disable special effects that interfere with transparency
             var disableTypes = new Type[]
             {
                 typeof(BloomAndFlares),
@@ -206,11 +207,55 @@ namespace alphaShot
             };
             var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
             foreach (var comp in disabled) comp.enabled = false;
+#if !EC     
+            object[] disabledPostProcessing = null;
+            // Check if PostProcessingRuntime assembly is present with reflection first
+            if (AppDomain.CurrentDomain.GetAssemblies().Select(x => x.GetName().Name).Any(nam => nam == "Unity.Postprocessing.Runtime" || nam == "PostProcessingRuntime"))
+            {
+                // Wrap everything that references the PostProcessingRuntime assembly in lambdas with captured values so that they get compiled into lazy loaded classes.
+                // As long as this is not called then the code is not loaded and doesn't blow up with FileNotFoundException because of the missing assembly.
+                new Action(() =>
+                {
+                    var disablePostProcessTypes = new Type[]
+                    {
+                        typeof(UnityEngine.Rendering.PostProcessing.Bloom),
+                        typeof(UnityEngine.Rendering.PostProcessing.Vignette),
+                        typeof(UnityEngine.Rendering.PostProcessing.Grain),
+                        typeof(UnityEngine.Rendering.PostProcessing.ColorGrading)
+                    };
 
+                    var volume = GameObject.Find("PostProcessVolume");
+                    if (volume != null)
+                    {
+                        var postProcessVolume = volume.GetComponent<UnityEngine.Rendering.PostProcessing.PostProcessVolume>();
+                        if (postProcessVolume != null)
+                        {
+                            // Have to cast the array to object[] since it's outside of the lambda and if the assembly was missing it would blow up this method
+                            disabledPostProcessing = postProcessVolume.profile.settings.Where(x => x.enabled && disablePostProcessTypes.Contains(x.GetType())).Cast<object>().ToArray();
+                            foreach (UnityEngine.Rendering.PostProcessing.PostProcessEffectSettings comp in disabledPostProcessing)
+                                comp.enabled.Override(false);
+                        }
+                    }
+                }).Invoke();
+            }
+#endif
+
+            // Do composite alpha captures. 2 color composite gives better effects than grayscale alpha, especially on edges and partially transparent things.
             var rtR = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
             var rtG = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
 
+            // Re-enable all disabled effects. Do this ASAP in case something in this method crashes to not corrupt game state.
             foreach (var comp in disabled) comp.enabled = true;
+#if !EC     // See if the assembly exists and there was something to do in the scene
+            if (disabledPostProcessing != null)
+            {
+                new Action(() =>
+                {
+                    foreach (UnityEngine.Rendering.PostProcessing.PostProcessEffectSettings comp in disabledPostProcessing)
+                        comp.enabled.Override(true);
+                }).Invoke();
+            }
+#endif
 
             var rtAlpha = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
             ClearRT(rtAlpha);
@@ -226,6 +271,7 @@ namespace alphaShot
 
             #region Combine color with alpha
 
+            // Generate the actual color capture. All effect can be enabled during this since we already have the alpha mask ready.
             var texColor = PerformCapture(ResolutionX, ResolutionY, false);
 
             var rtOutput = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
