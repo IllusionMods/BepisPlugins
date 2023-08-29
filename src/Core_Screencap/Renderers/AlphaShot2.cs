@@ -240,7 +240,7 @@ namespace alphaShot
             }
 #endif
 
-            // Do composite alpha captures. 2 color composite gives better effects than grayscale alpha, especially on edges.
+            // Do composite alpha captures. 2 color composite gives better effects than grayscale alpha, especially on edges and partially transparent things.
             var rtR = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
             var rtG = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
 
