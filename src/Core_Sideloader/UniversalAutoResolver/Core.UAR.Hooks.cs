@@ -211,11 +211,23 @@ namespace Sideloader.AutoResolver
                         Sideloader.Logger.LogDebug($"External info: {info.GUID} : {info.Property} : {info.Slot}");
                 }
 
+                // Create a property name lookup to speed up saving (on the order of 4 minutes -> 15 seconds when saving fully populated KK game)
+                var extInfoLookup = new Dictionary<string, ResolveInfo>();
+                // To keep backwards compatibility, only the first entry with a given property in the extInfo list should be used if there are multiple.
+                // Achieve this by adding items in reverse so the first instance overwrites the second instance that was already set.
+                // There should be no duplicates most of the time so it's faster to do it this way than check if item exists on each iteration.
+                for (var index = extInfo.Count - 1; index >= 0; index--)
+                {
+                    var info = extInfo[index];
+                    extInfoLookup[info.Property] = info;
+                }
+
                 void ResetStructResolveStructure(Dictionary<CategoryProperty, StructValue<int>> propertyDict, object structure, IEnumerable<ResolveInfo> extInfo2, string propertyPrefix = "")
                 {
                     foreach (var kv in propertyDict)
                     {
-                        var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key}");
+                        // Old and slow: var extResolve = extInfo.FirstOrDefault(x => x.Property == $"{propertyPrefix}{kv.Key}");
+                        extInfoLookup.TryGetValue($"{propertyPrefix}{kv.Key}", out var extResolve);
 
                         if (extResolve != null)
                             kv.Value.SetMethod(structure, extResolve.LocalSlot);
