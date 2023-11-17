@@ -13,11 +13,19 @@ namespace Sideloader.AutoResolver
     [MessagePackObject]
     public class ResolveInfo
     {
+        [IgnoreMember]
+        private string _guid;
+
         /// <summary>
         /// GUID of the mod as defined in the manifest.xml
         /// </summary>
         [Key("ModID")]
-        public string GUID { get; set; }
+        public string GUID
+        {
+            get => _guid;
+            set => _guid = value?.Trim();
+        }
+
         /// <summary>
         /// ID of the item as defined in the mod's list files
         /// </summary>

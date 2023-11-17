@@ -125,7 +125,7 @@ namespace Sideloader
                         )
         {
             SchemaVer = schemaVer;
-            GUID = guid;
+            GUID = guid?.Trim();
             Name = name;
             Version = version;
             Author = author;

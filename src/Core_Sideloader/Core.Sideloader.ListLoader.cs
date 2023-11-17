@@ -181,7 +181,7 @@ namespace Sideloader.ListLoader
                 var checkItemList = checkItemListXML.Element("checkitem");
                 foreach (var modElement in checkItemList.Elements("mod"))
                 {
-                    string guid = modElement.Attribute("guid")?.Value;
+                    string guid = modElement.Attribute("guid")?.Value?.Trim();
                     if (!string.IsNullOrEmpty(guid))
                     {
                         foreach (var categoryElement in modElement.Elements("category"))

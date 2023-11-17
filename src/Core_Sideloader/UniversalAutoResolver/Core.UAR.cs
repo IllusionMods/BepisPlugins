@@ -98,8 +98,12 @@ namespace Sideloader.AutoResolver
         /// <param name="categoryNo">Category number of the item</param>
         /// <param name="guid"></param>
         /// <returns>ResolveInfo</returns>
-        public static ResolveInfo TryGetResolutionInfo(int slot, ChaListDefine.CategoryNo categoryNo, string guid) =>
-            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.CategoryNo == categoryNo && x.GUID == guid);
+        public static ResolveInfo TryGetResolutionInfo(int slot, ChaListDefine.CategoryNo categoryNo, string guid)
+        {
+            guid = guid?.Trim();
+            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.CategoryNo == categoryNo && x.GUID == guid);
+        }
+
         /// <summary>
         /// Get the ResolveInfo for an item
         /// </summary>
@@ -107,8 +111,12 @@ namespace Sideloader.AutoResolver
         /// <param name="property"></param>
         /// <param name="guid"></param>
         /// <returns>ResolveInfo</returns>
-        public static ResolveInfo TryGetResolutionInfo(int slot, string property, string guid) =>
-            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.GUID == guid);
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, string guid)
+        {
+            guid = guid?.Trim();
+            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.GUID == guid);
+        }
+
         /// <summary>
         /// Get the ResolveInfo for an item
         /// </summary>
@@ -117,14 +125,18 @@ namespace Sideloader.AutoResolver
         /// <param name="categoryNo"></param>
         /// <param name="guid"></param>
         /// <returns>ResolveInfo</returns>
-        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo, string guid) =>
-            _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo && x.GUID == guid);
+        public static ResolveInfo TryGetResolutionInfo(int slot, string property, ChaListDefine.CategoryNo categoryNo, string guid)
+        {
+            guid = guid?.Trim();
+            return _resolveInfoLookupSlot?[slot].FirstOrDefault(x => x.Property == property && x.CategoryNo == categoryNo && x.GUID == guid);
+        }
+
         /// <summary>
         /// Get all MigrationInfo for the GUID
         /// </summary>
         /// <param name="guidOld">GUID that will be migrated</param>
         /// <returns>A list of MigrationInfo</returns>
-        public static List<MigrationInfo> GetMigrationInfo(string guidOld) => _migrationInfoLookupGUID?[guidOld].ToList();
+        public static List<MigrationInfo> GetMigrationInfo(string guidOld) => _migrationInfoLookupGUID?[guidOld?.Trim()].ToList();
         /// <summary>
         /// Get all MigrationInfo for the ID
         /// </summary>
@@ -133,12 +145,20 @@ namespace Sideloader.AutoResolver
         public static List<MigrationInfo> GetMigrationInfo(int idOld) => _migrationInfoLookupSlot?[idOld].ToList();
 
 #if AI || HS2
-        internal static HeadPresetInfo TryGetHeadPresetInfo(int slot, string guid, string preset) =>
-            _headPresetInfoLookupSlot?[slot].FirstOrDefault(x => x.HeadGUID == guid && x.Preset == preset);
+        internal static HeadPresetInfo TryGetHeadPresetInfo(int slot, string guid, string preset)
+        {
+            guid = guid?.Trim();
+            return _headPresetInfoLookupSlot?[slot].FirstOrDefault(x => x.HeadGUID == guid && x.Preset == preset);
+        }
+
         internal static void SetHeadPresetInfos(ICollection<HeadPresetInfo> results) => _headPresetInfoLookupSlot = results.ToLookup(info => info.HeadID);
 
-        internal static FaceSkinInfo TryGetFaceSkinInfo(int slot, string guid) =>
-            _faceSkinInfoLookupSlot?[slot].FirstOrDefault(x => x.SkinSlot == slot && x.SkinGUID == guid);
+        internal static FaceSkinInfo TryGetFaceSkinInfo(int slot, string guid)
+        {
+            guid = guid?.Trim();
+            return _faceSkinInfoLookupSlot?[slot].FirstOrDefault(x => x.SkinSlot == slot && x.SkinGUID == guid);
+        }
+
         internal static FaceSkinInfo TryGetFaceSkinInfo(int localSlot) =>
             _faceSkinInfoLookupLocalSlot?[localSlot].FirstOrDefault();
 #endif
