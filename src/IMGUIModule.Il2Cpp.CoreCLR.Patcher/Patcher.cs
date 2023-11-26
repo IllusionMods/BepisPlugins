@@ -53,6 +53,7 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             }
 
             // --- Not Implemented ---
+            // (All of these are avoided by replacing UnityEngine.GUILayout.SelectionGrid instead)
             // UnityEngine.GUIAspectSizer::.ctor(float, Il2CppReferenceArray<GUILayoutOption>)
             // UnityEngine.GUIAspectSizer.CalcHeight()
             // UnityEngine.GUIGridSizer.rows { get; }
