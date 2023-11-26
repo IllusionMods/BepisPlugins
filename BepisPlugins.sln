@@ -143,6 +143,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_ConfigurationManager", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IMGUIModule.Il2Cpp.CoreCLR.Patcher", "src\IMGUIModule.Il2Cpp.CoreCLR.Patcher\IMGUIModule.Il2Cpp.CoreCLR.Patcher.csproj", "{8BFC22DD-BD20-4499-B776-98AF46489A97}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HC_ConfigurationManager", "src\HC_ConfigurationManager\HC_ConfigurationManager.csproj", "{D00F1931-BE72-42ED-934B-E03DD1378257}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -345,6 +347,10 @@ Global
 		{8BFC22DD-BD20-4499-B776-98AF46489A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BFC22DD-BD20-4499-B776-98AF46489A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BFC22DD-BD20-4499-B776-98AF46489A97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D00F1931-BE72-42ED-934B-E03DD1378257}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D00F1931-BE72-42ED-934B-E03DD1378257}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D00F1931-BE72-42ED-934B-E03DD1378257}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D00F1931-BE72-42ED-934B-E03DD1378257}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -419,6 +425,7 @@ Global
 		{346C42E1-4682-40D1-83DF-95B073D2E2D3} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 		{2C8DC4C7-99A4-45E1-B379-E67111810926} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{8BFC22DD-BD20-4499-B776-98AF46489A97} = {2050CFE4-0FCC-4DFB-80A4-CFBE10C80D03}
+		{D00F1931-BE72-42ED-934B-E03DD1378257} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
@@ -507,6 +514,7 @@ Global
 		src\Shared\Shared.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{ce5a9fab-c188-4919-a296-d9b1422169e9}*SharedItemsImports = 13
 		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{cfc6ee58-cd1b-4a21-b281-c6e9d5d0390d}*SharedItemsImports = 13
+		src\Shared\Shared.projitems*{d00f1931-be72-42ed-934b-e03dd1378257}*SharedItemsImports = 5
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4
