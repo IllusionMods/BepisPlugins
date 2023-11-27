@@ -20,12 +20,6 @@
     <DefineConstants>$(DefineConstants);HC</DefineConstants>
   </PropertyGroup>
 
-  
-  <Target Name="AfterBuild" DependsOnTargets="GetMyOutputFiles">
-    <!--Copy one-to-one-->
-    <Copy SourceFiles="@(NativeLibs)" DestinationFiles="@(NativeLibs->'%(Destination)')" />
-  </Target>
-
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Delete Files="$(OutputPath)\HC_ConfigurationManager.deps.json" />
   </Target>

@@ -5,6 +5,10 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>IMGUIModule.Il2Cpp.CoreCLR</RootNamespace>
+    <AssemblyName>HC_IMGUIModule.Il2Cpp.CoreCLR.Patcher</AssemblyName>
+    <OutputPath>..\..\bin\BepInEx\patchers\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -15,11 +19,17 @@
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
   </PropertyGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Delete Files="$(OutputPath)\HC_IMGUIModule.Il2Cpp.CoreCLR.Patcher.deps.json" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668" />
     <PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668" />
     <PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.9.8.2" />
     <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.1" />
   </ItemGroup>
+
+  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
 
 </Project>

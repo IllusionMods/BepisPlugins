@@ -6,6 +6,7 @@ using System.Linq;
 using BepInEx.Preloader.Core.Patching;
 using MonoMod.RuntimeDetour;
 using System.Reflection;
+using BepisPlugins;
 
 namespace IMGUIModule.Il2Cpp.CoreCLR
 {
@@ -14,7 +15,7 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
     {
         public const string GUID = "com.bepis.bepinex.imguimodule.Il2Cpp.CoreCLR.Patcher";
         public const string Name = "IMGUIModule.Il2Cpp.CoreCLR.Patcher";
-        public const string Version = "1.0.0";
+        public const string Version = Metadata.PluginsVersion;
 
 #if DEBUG
         public static new ManualLogSource Log;
