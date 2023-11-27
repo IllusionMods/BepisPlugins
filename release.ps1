@@ -20,9 +20,12 @@ function CreateZip ($element)
 
     Copy-Item -Path ($dir + "\BepInEx\plugins\" + $element + "_BepisPlugins") -Destination ($copy + "\plugins\" + $element + "_BepisPlugins") -Recurse -Force 
     
+    Copy-Item -Path ($dir + "\..\README.md") -Destination ($copy + "\plugins\" + $element + "_BepisPlugins") -Recurse -Force
+    Copy-Item -Path ($dir + "\..\LICENSE") -Destination ($copy + "\plugins\" + $element + "_BepisPlugins") -Recurse -Force
+
     try
     {
-        $ver = "r" + (Get-ChildItem -Path ($copy) -Filter ($element + "_*.dll") -Recurse -Force)[0].VersionInfo.FileVersion.ToString()
+        $ver = "r" + (Get-ChildItem -Path ($copy + "\plugins") -Filter ($element + "_*.dll") -Recurse -Force)[0].VersionInfo.FileVersion.ToString() -replace "([\d+\.]+?\d+)[\.0]*$", '${1}'
     }
     catch 
     {
