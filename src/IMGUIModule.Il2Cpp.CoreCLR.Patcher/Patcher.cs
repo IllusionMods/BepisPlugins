@@ -1,4 +1,6 @@
-﻿#if DEBUG
+﻿// This is based on HC.BepInEx.ConfigurationManager.Il2Cpp.CoreCLR-18.0_beta2_20230821
+// Please let me know if you're the author of this and want to be properly credited.
+#if DEBUG
 using BepInEx.Logging;
 #endif
 using System.Collections.Generic;
