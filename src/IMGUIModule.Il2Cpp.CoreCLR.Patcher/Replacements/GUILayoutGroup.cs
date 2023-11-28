@@ -32,16 +32,16 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
                 int count = entries.Count;
                 if (cursor <= count)
                     return entries[cursor - 1].rect;
-                Debug.LogError(string.Concat(
-                    "Getting control ",
-                    cursor,
-                    "'s position in a group with only ",
-                    count,
-                    " controls when doing ",
-                    Event.current.type));
+                UnityEngine.Debug.LogError(string.Concat(
+                                               "Getting control ",
+                                               cursor,
+                                               "'s position in a group with only ",
+                                               count,
+                                               " controls when doing ",
+                                               Event.current.type));
             }
             else
-                Debug.LogError("You cannot call GetLast immediately after beginning a group.");
+                UnityEngine.Debug.LogError("You cannot call GetLast immediately after beginning a group.");
             return kDummyRect;
         }
     }

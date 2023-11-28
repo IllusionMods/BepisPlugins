@@ -39,7 +39,7 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
                 return selected;
             if (itemsPerRow <= 0)
             {
-                Debug.LogWarning("You are trying to create a SelectionGrid with zero or less elements to be displayed in the horizontal direction. Set itemsPerRow to a positive value.");
+                UnityEngine.Debug.LogWarning("You are trying to create a SelectionGrid with zero or less elements to be displayed in the horizontal direction. Set itemsPerRow to a positive value.");
                 return selected;
             }
             if (contentsEnabled != null && contentsEnabled.Length != contentsLength)
