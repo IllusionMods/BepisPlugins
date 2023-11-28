@@ -24,7 +24,7 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
 #endif
         public static List<IDetour> Detours = new List<IDetour>();
 
-        public override void Initialize()
+        public override void Finalizer()
         {
 #if DEBUG
             Log = base.Log;
