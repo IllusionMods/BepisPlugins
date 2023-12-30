@@ -113,7 +113,7 @@ namespace ConfigurationManagerWrapper
             else
             {
                 _previousWindowState = _manager.DisplayingWindow;
-                _manager.DisplayingWindow = false;
+                _manager.DisplayingWindow = _manager.DisplayingWindow && !_manager.IsWindowFullscreen; // Keep the window open if user dragged it
             }
         }
 
