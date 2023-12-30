@@ -36,8 +36,8 @@
     <DocumentationFile>..\..\bin\BepInEx\plugins\EC_BepisPlugins\EC_Screencap.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.5.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\lib\net35\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\lib\net35\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -48,8 +48,8 @@
       <HintPath>..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp-firstpass.2019.6.6.4\lib\net46\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="BepInEx, Version=5.4.15.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.15\lib\net35\BepInEx.dll</HintPath>
+    <Reference Include="BepInEx, Version=5.4.22.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.22\lib\net35\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="IL, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -116,7 +116,7 @@
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.ScreenCaptureModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.ScreenCaptureModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.ScreenCaptureModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.ScreenCaptureModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.TextRenderingModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.TextRenderingModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.TextRenderingModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.TextRenderingModule.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\build\IllusionLibs.BepInEx.Harmony.targets'))" />
   </Target>
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp.2019.6.6.4\build\IllusionLibs.EmotionCreators.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp.2019.6.6.4\build\IllusionLibs.EmotionCreators.Assembly-CSharp.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp-firstpass.2019.6.6.4\build\IllusionLibs.EmotionCreators.Assembly-CSharp-firstpass.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp-firstpass.2019.6.6.4\build\IllusionLibs.EmotionCreators.Assembly-CSharp-firstpass.targets')" />
@@ -126,5 +126,5 @@
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.ScreenCaptureModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.ScreenCaptureModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.ScreenCaptureModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.ScreenCaptureModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.TextRenderingModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.TextRenderingModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.TextRenderingModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.TextRenderingModule.targets')" />
-  <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\build\IllusionLibs.BepInEx.Harmony.targets')" />
 </Project>

@@ -26,8 +26,8 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668" />
     <PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668" />
-    <PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.9.8.2" />
-    <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.1" />
+    <PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15" />
+    <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3" />
   </ItemGroup>
 
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />

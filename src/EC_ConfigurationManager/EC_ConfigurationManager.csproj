@@ -35,20 +35,20 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.5.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\lib\net35\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\lib\net35\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp.2019.6.6.4\lib\net46\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="BepInEx, Version=5.4.15.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.15\lib\net35\BepInEx.dll</HintPath>
+    <Reference Include="BepInEx, Version=5.4.22.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.BepInEx.5.4.22\lib\net35\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ConfigurationManager, Version=16.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\BepInEx.ConfigurationManager.16.3.0\lib\net35\ConfigurationManager.dll</HintPath>
+    <Reference Include="ConfigurationManager, Version=18.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\BepInEx.ConfigurationManager.18.2.0\lib\net35\ConfigurationManager.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="IL, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -60,6 +60,9 @@
     <Reference Include="TextMeshPro-1.0.55.56.0b12, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.EmotionCreators.TextMeshPro.2019.6.6.4\lib\net46\TextMeshPro-1.0.55.56.0b12.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem, Version=1.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Unity.InputSystem.1.5.0\lib\net35\Unity.InputSystem.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\lib\net46\UnityEngine.dll</HintPath>
@@ -105,7 +108,7 @@
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UI.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.UI.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UI.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.UI.targets'))" />
-    <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\build\IllusionLibs.BepInEx.Harmony.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\build\IllusionLibs.BepInEx.Harmony.targets'))" />
   </Target>
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp.2019.6.6.4\build\IllusionLibs.EmotionCreators.Assembly-CSharp.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.Assembly-CSharp.2019.6.6.4\build\IllusionLibs.EmotionCreators.Assembly-CSharp.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.IL.2019.6.6.4\build\IllusionLibs.EmotionCreators.IL.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.IL.2019.6.6.4\build\IllusionLibs.EmotionCreators.IL.targets')" />
@@ -113,5 +116,5 @@
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.CoreModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.IMGUIModule.targets')" />
   <Import Project="..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UI.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.UI.targets" Condition="Exists('..\..\packages\IllusionLibs.EmotionCreators.UnityEngine.UI.2017.4.24.4\build\IllusionLibs.EmotionCreators.UnityEngine.UI.targets')" />
-  <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.5.4\build\IllusionLibs.BepInEx.Harmony.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\build\IllusionLibs.BepInEx.Harmony.targets" Condition="Exists('..\..\packages\IllusionLibs.BepInEx.Harmony.2.9.0\build\IllusionLibs.BepInEx.Harmony.targets')" />
 </Project>
