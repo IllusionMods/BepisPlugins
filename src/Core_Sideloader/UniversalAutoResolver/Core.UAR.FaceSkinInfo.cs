@@ -1,6 +1,8 @@
-﻿using MessagePack;
+﻿#if AI || HS2 || RG
+using MessagePack;
 
-#if AI || HS2
+#pragma warning disable CS1591
+
 namespace Sideloader.AutoResolver
 {
     [MessagePackObject]

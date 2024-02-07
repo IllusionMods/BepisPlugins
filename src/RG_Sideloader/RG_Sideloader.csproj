@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1B836ECF-9374-47F4-9C09-C230C6E095FA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>RG_Sideloader</RootNamespace>
+    <AssemblyName>RG_Sideloader</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <LangVersion>10.0</LangVersion>
+    <BaseIntermediateOutputPath>$(SolutionDir)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>$(SolutionDir)bin\Debug\BepInEx\plugins\RG_BepisPlugins\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;RG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>$(SolutionDir)bin\Release\BepInEx\plugins\RG_BepisPlugins\</OutputPath>
+    <DefineConstants>TRACE;RG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GameDir>$(registry:HKEY_CURRENT_USER\Software\illusion\RoomGirl\RoomGirl@INSTALLDIR)</GameDir>
+    <StudioDir>$(GameDir)Studio\</StudioDir>
+    <BepInExDir>$(StudioDir)BepInEx\</BepInExDir>
+    <BepInExCoreDir>$(BepInExDir)core\</BepInExCoreDir>
+    <BepInExPluginsDir>$(BepInExDir)plugins\</BepInExPluginsDir>
+    <BepInExUnhollowedDir>$(BepInExDir)unhollowed\</BepInExUnhollowedDir>
+    <MonoManagedDir>$(GameDir)mono\Managed\</MonoManagedDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony" HintPath="$(BepInExCoreDir)0Harmony.dll" Private="False" />
+    <Reference Include="Assembly-CSharp" HintPath="$(BepInExUnhollowedDir)Assembly-CSharp.dll" Private="False" />
+    <Reference Include="Assembly-CSharp-firstpass" HintPath="$(BepInExUnhollowedDir)Assembly-CSharp-firstpass.dll" Private="False" />
+    <Reference Include="BepInEx.Core" HintPath="$(BepInExCoreDir)BepInEx.Core.dll" Private="False" />
+    <Reference Include="BepInEx.IL2CPP" HintPath="$(BepInExCoreDir)BepInEx.IL2CPP.dll" Private="False" />
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.4.2.13, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL" HintPath="..\..\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll" />
+    <Reference Include="IL" HintPath="$(BepInExUnhollowedDir)IL.dll" Private="False" />
+    <Reference Include="Il2Cppmscorlib" HintPath="$(BepInExUnhollowedDir)Il2Cppmscorlib.dll" Private="False" />
+    <Reference Include="Il2CppSystem" HintPath="$(BepInExUnhollowedDir)Il2CppSystem.dll" Private="False" />
+    <Reference Include="Il2CppSystem.Core" HintPath="$(BepInExUnhollowedDir)Il2CppSystem.Core.dll" Private="False" />
+    <Reference Include="MessagePack, Version=1.9.0.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL" HintPath="..\..\packages\MessagePack.1.9.11\lib\net47\MessagePack.dll" />
+    <Reference Include="MonoMod.RuntimeDetour" HintPath="$(BepInExCoreDir)MonoMod.RuntimeDetour.dll" Private="False" />
+    <Reference Include="SemanticVersioning" HintPath="$(BepInExCoreDir)SemanticVersioning.dll" Private="False" />
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" HintPath="..\..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll" Private="False" />
+    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" HintPath="..\..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll" Private="False" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" HintPath="..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll" Private="False" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" HintPath="..\..\packages\System.Runtime.CompilerServices.Unsafe.4.5.3\lib\net461\System.Runtime.CompilerServices.Unsafe.dll" Private="False" />
+    <Reference Include="System.Runtime.Serialization" Private="False" />
+    <Reference Include="System.Runtime.Serialization.Primitives, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" HintPath="..\..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll" Private="False" />
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" HintPath="..\..\packages\System.Threading.Tasks.Extensions.4.5.3\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll" Private="False" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" HintPath="..\..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll" Private="False" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnhollowerBaseLib" HintPath="$(BepInExCoreDir)UnhollowerBaseLib.dll" Private="False" />
+    <Reference Include="UniTask" HintPath="$(BepInExUnhollowedDir)UniTask.dll" Private="False" />
+    <Reference Include="UnityEngine" HintPath="$(BepInExUnhollowedDir)UnityEngine.dll" Private="False" />
+    <Reference Include="UnityEngine.AnimationModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.AnimationModule.dll" Private="False" />
+    <Reference Include="UnityEngine.AssetBundleModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.AssetBundleModule.dll" Private="False" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.CoreModule.dll" Private="False" />
+    <Reference Include="UnityEngine.ImageConversionModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.ImageConversionModule.dll" Private="False" />
+    <Reference Include="UnityEngine.IMGUIModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.IMGUIModule.dll" Private="False" />
+    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.InputLegacyModule.dll" Private="False" />
+    <Reference Include="UnityEngine.ParticleSystemModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.ParticleSystemModule.dll" Private="False" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.TextRenderingModule.dll" Private="False" />
+    <Reference Include="UnityEngine.UI" HintPath="$(BepInExUnhollowedDir)UnityEngine.UI.dll" Private="False" />
+    <Reference Include="XUnity.Common" HintPath="$(BepInExCoreDir)XUnity.Common.dll" Private="False" />
+    <Reference Include="XUnity.ResourceRedirector" HintPath="$(BepInExPluginsDir)XUnity.ResourceRedirector\XUnity.ResourceRedirector.dll" Private="False" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Managed\ChaListData.cs" />
+    <Compile Include="RG.Sideloader.cs" />
+    <Compile Include="XUnity.ResourceRedirector\ResourceRedirectionIl2Cpp.cs" />
+    <Compile Include="XUnity.ResourceRedirector\Hooks\ResourceRedirectorIl2CppFix.cs" />
+    <Compile Include="XUnity.ResourceRedirector\AssetBundleHelperIl2Cpp.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RG_ExtensibleSaveFormat\RG_ExtensibleSaveFormat.csproj">
+      <Project>{d913658a-4844-46de-82d5-c3ae5c87f8c0}</Project>
+      <Name>RG_ExtensibleSaveFormat</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="..\Core_Sideloader\Core_Sideloader.projitems" Label="Shared" />
+  <Import Project="..\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems" Label="Shared" />
+  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

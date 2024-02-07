@@ -1,7 +1,14 @@
-﻿using MessagePack;
+﻿#if !RG
+using MessagePack;
 using System;
 #if AI || HS2
 using AIChara;
+#endif
+#else
+using Chara;
+using MessagePack;
+using System;
+using System.Runtime.CompilerServices;
 #endif
 
 namespace Sideloader.AutoResolver
@@ -69,5 +76,12 @@ namespace Sideloader.AutoResolver
         internal static ResolveInfo Deserialize(byte[] data) => MessagePackSerializer.Deserialize<ResolveInfo>(data);
 
         internal byte[] Serialize() => MessagePackSerializer.Serialize(this);
+
+#if RG
+#pragma warning disable CS1591
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ResolveInfo DeepCopy() => MemberwiseClone() as ResolveInfo;
+#pragma warning restore CS1591
+#endif
     }
 }

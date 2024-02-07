@@ -1,4 +1,5 @@
-﻿using BepInEx.Logging;
+﻿#if !RG
+using BepInEx.Logging;
 using BepisPlugins;
 using MessagePack;
 using MessagePack.Resolvers;
@@ -6,6 +7,15 @@ using System;
 using System.Collections.Generic;
 #if AI || HS2
 using AIChara;
+#endif
+#else
+using BepisPlugins;
+using Chara;
+using MessagePack;
+using MessagePack.Resolvers;
+using System;
+using System.Collections.Generic;
+using System.IO;
 #endif
 
 namespace ExtensibleSaveFormat
@@ -21,9 +31,15 @@ namespace ExtensibleSaveFormat
         public const string PluginName = "Extended Save";
         /// <summary> Plugin version </summary>
         public const string Version = Metadata.PluginsVersion;
+#if !RG
         internal static new ManualLogSource Logger;
         /// <summary> Marker that indicates the extended save region on cards </summary>
         public static string Marker = "KKEx";
+#else
+        /// <summary> Marker that indicates the extended save region on cards </summary>
+        public const string Marker = "KKEx";
+        internal static readonly byte[] MarkerBytes;
+#endif
         /// <summary> Version of the extended save data on cards </summary>
         public static int DataVersion = 3;
         /// <summary>
@@ -35,13 +51,29 @@ namespace ExtensibleSaveFormat
         /// </summary>
         public const string ExtendedSaveDataPropertyName = "ExtendedSaveData";
 
+#if !RG
         internal static WeakKeyDictionary<ChaFile, Dictionary<string, PluginData>> internalCharaDictionary = new WeakKeyDictionary<ChaFile, Dictionary<string, PluginData>>();
 
         internal static WeakKeyDictionary<ChaFileCoordinate, Dictionary<string, PluginData>> internalCoordinateDictionary = new WeakKeyDictionary<ChaFileCoordinate, Dictionary<string, PluginData>>();
+#else
+        internal static Dictionary<IntPtr, Dictionary<string, PluginData>> internalCharaDictionary = new();
+
+        internal static Dictionary<IntPtr, Dictionary<string, PluginData>> internalCoordinateDictionary = new();
+
+        static ExtendedSave()
+        {
+            using var memoryStream = new MemoryStream();
+            using var binaryWriter = new BinaryWriter(memoryStream);
+            binaryWriter.Write(Marker);
+            MarkerBytes = memoryStream.ToArray();
+        }
+#endif
 
         internal void Awake()
         {
+#if !RG
             Logger = base.Logger;
+#endif
             Hooks.InstallHooks();
         }
 
@@ -50,7 +82,12 @@ namespace ExtensibleSaveFormat
         /// </summary>
         /// <param name="file">ChaFile for which to get extended data</param>
         /// <returns>Dictionary of ID, PluginData</returns>
+#if !RG
         public static Dictionary<string, PluginData> GetAllExtendedData(ChaFile file) => internalCharaDictionary.Get(file);
+#else
+        public static Dictionary<string, PluginData> GetAllExtendedData(ChaFile file) =>
+            internalCharaDictionary.TryGetValue(file.Pointer, out var dict) ? dict : null;
+#endif
 
         /// <summary>
         /// Get PluginData for a ChaFile for the specified extended save data ID
@@ -58,6 +95,7 @@ namespace ExtensibleSaveFormat
         /// <param name="file">ChaFile for which to get extended data</param>
         /// <param name="id">ID of the data saved to the card</param>
         /// <returns>PluginData</returns>
+#if !RG
         public static PluginData GetExtendedDataById(ChaFile file, string id)
         {
             if (file == null || id == null)
@@ -67,6 +105,14 @@ namespace ExtensibleSaveFormat
 
             return dict != null && dict.TryGetValue(id, out var extendedSection) ? extendedSection : null;
         }
+#else
+        public static PluginData GetExtendedDataById(ChaFile file, string id) =>
+            file != null && id != null &&
+            internalCharaDictionary.TryGetValue(file.Pointer, out var dict) &&
+            dict.TryGetValue(id, out var extendedSection)
+                ? extendedSection
+                : null;
+#endif
 
         /// <summary>
         /// Set PluginData for a ChaFile for the specified extended save data ID
@@ -74,6 +120,7 @@ namespace ExtensibleSaveFormat
         /// <param name="file">ChaFile for which to set extended data</param>
         /// <param name="id">ID of the data to be saved to the card</param>
         /// <param name="extendedFormatData">PluginData to save to the card</param>
+#if !RG
         public static void SetExtendedDataById(ChaFile file, string id, PluginData extendedFormatData)
         {
             Dictionary<string, PluginData> chaDictionary = internalCharaDictionary.Get(file);
@@ -86,13 +133,26 @@ namespace ExtensibleSaveFormat
 
             chaDictionary[id] = extendedFormatData;
         }
+#else
+        public static void SetExtendedDataById(ChaFile file, string id, PluginData extendedFormatData)
+        {
+            if (!internalCharaDictionary.TryGetValue(file.Pointer, out var dictionary))
+                internalCharaDictionary.Add(file.Pointer, dictionary = new());
+            dictionary[id] = extendedFormatData;
+        }
+#endif
 
         /// <summary>
         /// Get a dictionary of ID, PluginData containing all extended data for a ChaFileCoordinate
         /// </summary>
         /// <param name="file">ChaFileCoordinate for which to get extended data</param>
         /// <returns>Dictionary of ID, PluginData</returns>
+#if !RG
         public static Dictionary<string, PluginData> GetAllExtendedData(ChaFileCoordinate file) => internalCoordinateDictionary.Get(file);
+#else
+        public static Dictionary<string, PluginData> GetAllExtendedData(ChaFileCoordinate file) =>
+            internalCoordinateDictionary.TryGetValue(file.Pointer, out var dict) ? dict : null;
+#endif
 
         /// <summary>
         /// Get PluginData for a ChaFileCoordinate for the specified extended save data ID
@@ -100,6 +160,7 @@ namespace ExtensibleSaveFormat
         /// <param name="file">ChaFileCoordinate for which to get extended data</param>
         /// <param name="id">ID of the data saved to the card</param>
         /// <returns>PluginData</returns>
+#if !RG
         public static PluginData GetExtendedDataById(ChaFileCoordinate file, string id)
         {
             if (file == null || id == null)
@@ -109,6 +170,14 @@ namespace ExtensibleSaveFormat
 
             return dict != null && dict.TryGetValue(id, out var extendedSection) ? extendedSection : null;
         }
+#else
+        public static PluginData GetExtendedDataById(ChaFileCoordinate file, string id) =>
+            file != null && id != null &&
+            internalCoordinateDictionary.TryGetValue(file.Pointer, out var dict) &&
+            dict.TryGetValue(id, out var extendedSection)
+                ? extendedSection
+                : null;
+#endif
 
         /// <summary>
         /// Set PluginData for a ChaFileCoordinate for the specified extended save data ID
@@ -116,6 +185,7 @@ namespace ExtensibleSaveFormat
         /// <param name="file">ChaFileCoordinate for which to set extended data</param>
         /// <param name="id">ID of the data to be saved to the card</param>
         /// <param name="extendedFormatData">PluginData to save to the card</param>
+#if !RG
         public static void SetExtendedDataById(ChaFileCoordinate file, string id, PluginData extendedFormatData)
         {
             Dictionary<string, PluginData> chaDictionary = internalCoordinateDictionary.Get(file);
@@ -128,6 +198,14 @@ namespace ExtensibleSaveFormat
 
             chaDictionary[id] = extendedFormatData;
         }
+#else
+        public static void SetExtendedDataById(ChaFileCoordinate file, string id, PluginData extendedFormatData)
+        {
+            if (!internalCoordinateDictionary.TryGetValue(file.Pointer, out var dictionary))
+                internalCoordinateDictionary.Add(file.Pointer, dictionary = new());
+            dictionary[id] = extendedFormatData;
+        }
+#endif
 
         internal static byte[] MessagePackSerialize<T>(T obj)
         {

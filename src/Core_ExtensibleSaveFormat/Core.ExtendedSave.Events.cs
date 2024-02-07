@@ -1,6 +1,11 @@
-﻿using System;
+﻿#if !RG
+using System;
 #if AI || HS2
 using AIChara;
+#endif
+#else
+using Chara;
+using System;
 #endif
 
 namespace ExtensibleSaveFormat

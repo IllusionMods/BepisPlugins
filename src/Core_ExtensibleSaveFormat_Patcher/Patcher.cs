@@ -1,10 +1,27 @@
-﻿using Mono.Cecil;
+﻿#if !RG
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+#else
+using BepInEx;
+using BepInEx.Bootstrap;
+using BepInEx.IL2CPP;
+using BepInEx.Preloader.Core.Patching;
+using BepisPlugins;
+using Chara;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using System;
+using System.IO;
+using System.Linq;
+#endif
 
 namespace ExtensibleSaveFormat
 {
+#if !RG
     public static class Patcher
     {
         public const string PluginName = "ExtensibleSaveFormat.Patcher";
@@ -14,6 +31,29 @@ namespace ExtensibleSaveFormat
         };
 
         public static void Patch(AssemblyDefinition ass)
+#else
+    [BepInProcess(Constants.GameProcessName)]
+    [BepInProcess(Constants.StudioProcessName)]
+    [PatcherPluginInfo(GUID, PluginName, Version)]
+    public class Patcher : BasePatcher
+    {
+        /// <summary> Plugin GUID </summary>
+        public const string GUID = "com.bepis.bepinex.extendedsave.patcher";
+        /// <summary> Plugin name </summary>
+        public const string PluginName = "ExtensibleSaveFormat.Patcher";
+        /// <summary> Plugin version </summary>
+        public const string Version = Metadata.PluginsVersion;
+
+        public override void Initialize()
+        {
+            var path = Path.GetFullPath(Preloader.IL2CPPUnhollowedPath);
+            if (!TypeLoader.CecilResolver.GetSearchDirectories().Any(item => Path.GetFullPath(item).Equals(path, StringComparison.OrdinalIgnoreCase)))
+                TypeLoader.CecilResolver.AddSearchDirectory(path);
+        }
+
+        [TargetAssembly("Assembly-CSharp.dll")]
+        private void Patch(AssemblyDefinition ass)
+#endif
         {
             TypeDefinition messagePackObject;
 
@@ -181,6 +221,54 @@ namespace ExtensibleSaveFormat
             PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
 #endif
 
+#if RG
+            //Body
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileBody)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //Face
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileFace)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileFace)}/{nameof(ChaFileFace.EyesInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileFace)}/{nameof(ChaFileFace.MakeupInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //Hair
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileHair)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileHair)}/{nameof(ChaFileHair.PartsInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileHair)}/{nameof(ChaFileHair.PartsInfo)}/{nameof(ChaFileHair.PartsInfo.BundleInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileHair)}/{nameof(ChaFileHair.PartsInfo)}/{nameof(ChaFileHair.PartsInfo.ColorInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //Clothes
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileClothes)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileClothes)}/{nameof(ChaFileClothes.PartsInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileClothes)}/{nameof(ChaFileClothes.PartsInfo)}/{nameof(ChaFileClothes.PartsInfo.ColorInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            //Accessory
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileAccessory)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileAccessory)}/{nameof(ChaFileAccessory.PartsInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileAccessory)}/{nameof(ChaFileAccessory.PartsInfo)}/{nameof(ChaFileAccessory.PartsInfo.ColorInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileGameInfo)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileParameter)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+
+            messagePackObject = ass.MainModule.GetType($"{nameof(Chara)}.{nameof(ChaFileStatus)}");
+            PropertyInject(ass, messagePackObject, ExtendedSave.ExtendedSaveDataPropertyName, typeof(object));
+#endif
         }
 
         public static void PropertyInject(AssemblyDefinition assembly, TypeDefinition assemblyTypes, string propertyName, Type returnType)

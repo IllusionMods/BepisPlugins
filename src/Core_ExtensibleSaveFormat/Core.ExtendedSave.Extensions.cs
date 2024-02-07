@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using static ExtensibleSaveFormat.ExtendedSave;
 
+#pragma warning disable CS1591
+
 namespace ExtensibleSaveFormat
 {
     public static class Extensions
@@ -261,6 +263,81 @@ namespace ExtensibleSaveFormat
         public static Dictionary<string, PluginData> GetAllExtendedData(this AIChara.ChaFileParameter2 messagePackObject) => GetExtendedData(messagePackObject);
         public static bool TryGetExtendedDataById(this AIChara.ChaFileParameter2 messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
         public static void SetExtendedDataById(this AIChara.ChaFileParameter2 messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+#endif
+
+#if RG
+        //Body
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileBody messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileBody messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileBody messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        //Face
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileFace messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileFace messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileFace messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileFace.EyesInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileFace.EyesInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileFace.EyesInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileFace.MakeupInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileFace.MakeupInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileFace.MakeupInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        //Hair
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileHair messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileHair messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileHair messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileHair.PartsInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileHair.PartsInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileHair.PartsInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileHair.PartsInfo.BundleInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileHair.PartsInfo.BundleInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileHair.PartsInfo.BundleInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileHair.PartsInfo.ColorInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileHair.PartsInfo.ColorInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileHair.PartsInfo.ColorInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        //Clothes
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileClothes messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileClothes messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileClothes messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileClothes.PartsInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileClothes.PartsInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileClothes.PartsInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileClothes.PartsInfo.ColorInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileClothes.PartsInfo.ColorInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileClothes.PartsInfo.ColorInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        //Accessory
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileAccessory messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileAccessory messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileAccessory messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileAccessory.PartsInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileAccessory.PartsInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileAccessory.PartsInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileAccessory.PartsInfo.ColorInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileAccessory.PartsInfo.ColorInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileAccessory.PartsInfo.ColorInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileGameInfo messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileGameInfo messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileGameInfo messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileParameter messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileParameter messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileParameter messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
+
+        public static Dictionary<string, PluginData> GetAllExtendedData(this Chara.ChaFileStatus messagePackObject) => GetExtendedData(messagePackObject);
+        public static bool TryGetExtendedDataById(this Chara.ChaFileStatus messagePackObject, string id, out PluginData data) => GetExtendedData(messagePackObject, id, out data);
+        public static void SetExtendedDataById(this Chara.ChaFileStatus messagePackObject, string id, PluginData data) => SetExtendedData(messagePackObject, id, data);
 #endif
     }
 }

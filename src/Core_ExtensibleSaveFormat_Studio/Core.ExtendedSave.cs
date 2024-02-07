@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+#pragma warning disable CS1591
+
 namespace ExtensibleSaveFormat
 {
     public partial class ExtendedSave
@@ -52,8 +54,10 @@ namespace ExtensibleSaveFormat
         public static readonly GameNames GameName = GameNames.PlayHome;
 #elif KKS
         public static readonly GameNames GameName = GameNames.KoikatsuSunshine;
+#elif RG
+        public static readonly GameNames GameName = GameNames.RoomGirl;
 #endif
 
-        public enum GameNames { Unknown, Koikatsu, EmotionCreators, AIGirl, HoneySelect2, PlayHome, KoikatsuSunshine }
+        public enum GameNames { Unknown, Koikatsu, EmotionCreators, AIGirl, HoneySelect2, PlayHome, KoikatsuSunshine, RoomGirl }
     }
 }

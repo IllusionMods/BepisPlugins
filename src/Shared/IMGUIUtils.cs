@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if !RG
+using UnityEngine;
 
 namespace Shared
 {
@@ -145,3 +146,4 @@ namespace Shared
         }
     }
 }
+#endif

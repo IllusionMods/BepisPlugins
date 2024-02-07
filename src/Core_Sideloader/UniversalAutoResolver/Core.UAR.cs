@@ -1,4 +1,5 @@
-﻿using Illusion.Extensions;
+﻿#if !RG
+using Illusion.Extensions;
 using Sideloader.ListLoader;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,16 @@ using System.Threading;
 using Logging = BepInEx.Logging;
 #if AI || HS2
 using AIChara;
+#endif
+#else
+using Chara;
+using Illusion.Extensions;
+using Sideloader.ListLoader;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using Logging = BepInEx.Logging;
 #endif
 
 namespace Sideloader.AutoResolver
@@ -29,7 +40,7 @@ namespace Sideloader.AutoResolver
         private static ILookup<int, ResolveInfo> _resolveInfoLookupLocalSlot;
         private static ILookup<string, MigrationInfo> _migrationInfoLookupGUID;
         private static ILookup<int, MigrationInfo> _migrationInfoLookupSlot;
-#if AI || HS2
+#if AI || HS2 || RG
         private static ILookup<int, HeadPresetInfo> _headPresetInfoLookupSlot;
         private static ILookup<int, FaceSkinInfo> _faceSkinInfoLookupSlot;
         private static ILookup<int, FaceSkinInfo> _faceSkinInfoLookupLocalSlot;
@@ -144,7 +155,7 @@ namespace Sideloader.AutoResolver
         /// <returns>A list of MigrationInfo</returns>
         public static List<MigrationInfo> GetMigrationInfo(int idOld) => _migrationInfoLookupSlot?[idOld].ToList();
 
-#if AI || HS2
+#if AI || HS2 || RG
         internal static HeadPresetInfo TryGetHeadPresetInfo(int slot, string guid, string preset)
         {
             guid = guid?.Trim();
@@ -175,7 +186,7 @@ namespace Sideloader.AutoResolver
             _migrationInfoLookupSlot = results.ToLookup(info => info.IDOld);
         }
 
-#if AI || HS2
+#if AI || HS2 || RG
         internal static void SetFaceSkinInfos(ICollection<FaceSkinInfo> results)
         {
             foreach (var info in results)
@@ -253,7 +264,7 @@ namespace Sideloader.AutoResolver
                 {
 #if KK || EC || KKS
                     if (Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
-#elif AI || HS2
+#elif AI || HS2 || RG
                     if (Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
 #endif
                     {
@@ -261,6 +272,8 @@ namespace Sideloader.AutoResolver
                         Lists.InternalDataList[kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo.TryGetValue((int)ChaListDefine.KeyType.MainAB, out string mainAB);
 #elif AI || HS2
                         Lists.InternalDataList[(int)kv.Key.Category][kv.Value.GetMethod(structure)].dictInfo.TryGetValue((int)ChaListDefine.KeyType.MainAB, out string mainAB);
+#elif RG
+                        Lists.InternalDataList[(int)kv.Key.Category][kv.Value.GetMethod(structure)].DictInfo.TryGetValue((int)ChaListDefine.KeyType.MainAB, out string mainAB);
 #endif
                         mainAB = mainAB?.Replace("chara/", "").Replace(".unity3d", "").Replace(kv.Key.Category.ToString() + "_", "").Replace("/", "");
 
@@ -297,7 +310,7 @@ namespace Sideloader.AutoResolver
             //Only attempt compatibility resolve if the ID does not belong to a vanilla item or hard mod
 #if KK || EC || KKS
             if (!Lists.InternalDataList[kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
-#elif AI || HS2
+#elif AI || HS2 || RG
             if (!Lists.InternalDataList[(int)kv.Key.Category].ContainsKey(kv.Value.GetMethod(structure)))
 #endif
             {
@@ -350,15 +363,32 @@ namespace Sideloader.AutoResolver
                 action(StructReference.ChaFileFacePropertiesFemale, file.custom.face, extInfo, "");
                 action(StructReference.ChaFileBodyPropertiesFemale, file.custom.body, extInfo, "");
             }
-
+#elif RG
+            if (file.Parameter.sex == 0)
+            {
+                action(StructReference.ChaFileFacePropertiesMale, file.Custom.face, extInfo, "");
+                action(StructReference.ChaFileBodyPropertiesMale, file.Custom.body, extInfo, "");
+            }
+            else
+            {
+                action(StructReference.ChaFileFacePropertiesFemale, file.Custom.face, extInfo, "");
+                action(StructReference.ChaFileBodyPropertiesFemale, file.Custom.body, extInfo, "");
+            }
 #else
             action(StructReference.ChaFileFaceProperties, file.custom.face, extInfo, "");
             action(StructReference.ChaFileBodyProperties, file.custom.body, extInfo, "");
 #endif
 
+#if !RG
             action(StructReference.ChaFileHairProperties, file.custom.hair, extInfo, "");
+#else
+            if (file.Custom.hair != null)
+                action(StructReference.ChaFileHairProperties, file.Custom.hair, extInfo, "");
+#endif
 #if AI || HS2
             action(StructReference.ChaFileMakeupProperties, file.custom.face.makeup, extInfo, "");
+#elif RG
+            action(StructReference.ChaFileMakeupProperties, file.Custom.face.makeup, extInfo, "");
 #else
             action(StructReference.ChaFileMakeupProperties, file.custom.face.baseMakeup, extInfo, "");
 #endif
@@ -370,6 +400,13 @@ namespace Sideloader.AutoResolver
                 string prefix = $"outfit{i}.";
                 IterateCoordinatePrefixes(action, coordinate, extInfo, file.parameter.sex, prefix);
             }
+#elif RG
+            for (int i = 0; i < file.Coordinate.Length; i++)
+            {
+                var coordinate = file.Coordinate[i];
+                string prefix = $"outfit{i}.";
+                IterateCoordinatePrefixes(action, coordinate, extInfo, file.Parameter.sex, prefix);
+            }
 #else
             IterateCoordinatePrefixes(action, file.coordinate, extInfo, file.parameter.sex, "outfit.");
 #endif
@@ -378,9 +415,12 @@ namespace Sideloader.AutoResolver
         internal static void IterateCoordinatePrefixes(Action<Dictionary<CategoryProperty, StructValue<int>>, object, ICollection<ResolveInfo>, string> action, ChaFileCoordinate coordinate, ICollection<ResolveInfo> extInfo, int sex = -1, string prefix = "")
         {
             prefix = prefix.IsNullOrWhiteSpace() ? string.Empty : prefix;
-#if AI || HS2
+#if AI || HS2 || RG
             if (Sideloader.DebugLoggingResolveInfo.Value)
                 Sideloader.Logger.LogDebug($"Resolving Using Sex: {sex}\n{Environment.StackTrace}");
+#if RG
+            action(StructReference.ChaFileHairProperties, coordinate.hair, extInfo, prefix);
+#endif
 
             if (sex == -1)
                 sex = Hooks.RetrieveSexOnClothes(coordinate?.clothes);
@@ -404,13 +444,13 @@ namespace Sideloader.AutoResolver
             }
         }
 
-#if AI || HS2
+#if AI || HS2 || RG
         internal static void ResolveFaceSkins()
         {
             foreach (var data in Lists.ExternalDataList.Where(x => x.categoryNo == (int)ChaListDefine.CategoryNo.ft_skin_f))
             {
-                int IDIndex = data.lstKey.IndexOf("ID");
-                int headIDIndex = data.lstKey.IndexOf("HeadID");
+                int IDIndex = data.lstKey.FindIndex(s => Enum.TryParse(s, true, out ChaListDefine.KeyType keyType) && keyType == ChaListDefine.KeyType.ID);
+                int headIDIndex = data.lstKey.FindIndex(s => Enum.TryParse(s, true, out ChaListDefine.KeyType keyType) && keyType == ChaListDefine.KeyType.HeadID);
 
                 foreach (var x in data.dictList)
                 {
@@ -441,8 +481,8 @@ namespace Sideloader.AutoResolver
 
             foreach (var data in Lists.ExternalDataList.Where(x => x.categoryNo == (int)ChaListDefine.CategoryNo.mt_skin_f))
             {
-                int IDIndex = data.lstKey.IndexOf("ID");
-                int headIDIndex = data.lstKey.IndexOf("HeadID");
+                int IDIndex = data.lstKey.FindIndex(s => Enum.TryParse(s, true, out ChaListDefine.KeyType keyType) && keyType == ChaListDefine.KeyType.ID);
+                int headIDIndex = data.lstKey.FindIndex(s => Enum.TryParse(s, true, out ChaListDefine.KeyType keyType) && keyType == ChaListDefine.KeyType.HeadID);
 
                 foreach (var x in data.dictList)
                 {
@@ -507,7 +547,7 @@ namespace Sideloader.AutoResolver
             }
         }
 
-        internal static void GenerateResolutionInfo(Manifest manifest, ChaListData data, List<ResolveInfo> results)
+        internal static void GenerateResolutionInfo(Manifest manifest, ChaListData data, List<ResolveInfo> results, Dictionary<string, string> table = null)
         {
             var category = (ChaListDefine.CategoryNo)data.categoryNo;
 
@@ -517,6 +557,7 @@ namespace Sideloader.AutoResolver
             {
                 int newSlot = GetUniqueSlotID();
 
+                var id = kv.Value[0].Trim();
 #if KK || EC || KKS
                 if (data.categoryNo == (int)ChaListDefine.CategoryNo.mt_ramp)
                 {
@@ -528,7 +569,7 @@ namespace Sideloader.AutoResolver
                                                   $"Name: {manifest.Name} " +
                                                   $"Author: {manifest.Author} " +
                                                   $"Website: {manifest.Website} " +
-                                                  $"Slot: {int.Parse(kv.Value[0])} " +
+                                                  $"Slot: {int.Parse(id)} " +
                                                   $"LocalSlot: {newSlot} " +
                                                   $"Property: Ramp " +
                                                   $"CategoryNo: {category} " +
@@ -538,7 +579,7 @@ namespace Sideloader.AutoResolver
                     results.Add(new ResolveInfo
                     {
                         GUID = manifest.GUID,
-                        Slot = int.Parse(kv.Value[0]),
+                        Slot = int.Parse(id),
                         LocalSlot = newSlot,
                         Property = "Ramp",
                         CategoryNo = category,
@@ -559,7 +600,7 @@ namespace Sideloader.AutoResolver
                                                       $"Name: {manifest.Name} " +
                                                       $"Author: {manifest.Author}" +
                                                       $"Website: {manifest.Website}" +
-                                                      $"Slot: {int.Parse(kv.Value[0])} " +
+                                                      $"Slot: {int.Parse(id)} " +
                                                       $"LocalSlot: {newSlot} " +
                                                       $"Property: {propertyKey} " +
                                                       $"CategoryNo: {category} " +
@@ -569,7 +610,7 @@ namespace Sideloader.AutoResolver
                         return new ResolveInfo
                         {
                             GUID = manifest.GUID,
-                            Slot = int.Parse(kv.Value[0]),
+                            Slot = int.Parse(id),
                             LocalSlot = newSlot,
                             Property = propertyKey.ToString(),
                             CategoryNo = category,
@@ -581,6 +622,8 @@ namespace Sideloader.AutoResolver
                 }
 
                 kv.Value[0] = newSlot.ToString();
+                if (table != null)
+                    table[id] = kv.Value[0];
             }
         }
 
@@ -597,7 +640,7 @@ namespace Sideloader.AutoResolver
 
                 Sideloader.Logger.LogWarning($"[UAR] WARNING! Outdated mod detected! [{guid}]  {website}");
             }
-#if KK || AI || HS2 || KKS
+#if KK || AI || HS2 || KKS || RG
             else if (StudioResolutionInfoGuidLookup.ContainsKey(guid))
             {
                 //we have the GUID loaded, so the user has an outdated mod
@@ -619,13 +662,12 @@ namespace Sideloader.AutoResolver
             }
         }
 
-        private static List<string> GetNowSceneNames()
-        {
 #if HS2 || KKS
-            return Manager.Scene.NowSceneNames;
+        private static List<string> GetNowSceneNames() => Manager.Scene.NowSceneNames;
+#elif RG
+        private static List<string> GetNowSceneNames() => Manager.Scene.NowSceneNames.ToManagedList();
 #else
-            return Manager.Scene.Instance.NowSceneNames;
+        private static List<string> GetNowSceneNames() => Manager.Scene.Instance.NowSceneNames;
 #endif
-        }
     }
 }

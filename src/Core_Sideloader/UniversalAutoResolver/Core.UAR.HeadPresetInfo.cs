@@ -1,6 +1,8 @@
-﻿#if AI || HS2
+﻿#if AI || HS2 || RG
 using System.Collections.Generic;
 using MessagePack;
+
+#pragma warning disable CS1591
 
 namespace Sideloader.AutoResolver
 {

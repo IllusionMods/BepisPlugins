@@ -15,7 +15,11 @@ namespace ExtensibleSaveFormat
         public static event SceneEventHandler SceneBeingImported;
 
         /// <summary> PoseEventHandler </summary>
+#if !RG
         public delegate void PoseEventHandler(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar, GameNames gameName);
+#else
+        public delegate void PoseEventHandler(string poseName, PauseCtrl.FileInfo fileInfo, object ociChar, GameNames gameName);
+#endif
         /// <summary> Register methods to trigger on pose being saved </summary>
         public static event PoseEventHandler PoseBeingSaved;
         /// <summary> Register methods to trigger on pose being loaded </summary>
@@ -78,7 +82,11 @@ namespace ExtensibleSaveFormat
             }
         }
 
+#if !RG
         internal static void PoseWriteEvent(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar, GameNames gameName)
+#else
+        internal static void PoseWriteEvent(string poseName, PauseCtrl.FileInfo fileInfo, object ociChar, GameNames gameName)
+#endif
         {
             if (PoseBeingSaved == null)
                 return;
@@ -97,7 +105,11 @@ namespace ExtensibleSaveFormat
             }
         }
 
+#if !RG
         internal static void PoseReadEvent(string poseName, PauseCtrl.FileInfo fileInfo, OCIChar ociChar, GameNames gameName)
+#else
+        internal static void PoseReadEvent(string poseName, PauseCtrl.FileInfo fileInfo, object ociChar, GameNames gameName)
+#endif
         {
             if (PoseBeingLoaded == null)
                 return;

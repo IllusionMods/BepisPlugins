@@ -1,4 +1,5 @@
-﻿#if AI || HS2
+﻿#if AI || HS2 || RG
+#if !RG
 using AIChara;
 using HarmonyLib;
 using System;
@@ -6,7 +7,15 @@ using System.Collections.Generic;
 using System.Linq;
 using static AIChara.ChaFileDefine;
 using CategoryNo = AIChara.ChaListDefine.CategoryNo;
-
+#else
+using Chara;
+using HarmonyLib;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using static Chara.ChaFileDefine;
+using CategoryNo = Chara.ChaListDefine.CategoryNo;
+#endif
 
 namespace Sideloader.AutoResolver
 {

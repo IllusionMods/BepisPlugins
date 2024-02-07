@@ -141,9 +141,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_ExtensibleSaveFormat_Pa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KKS_ConfigurationManager", "src\KKS_ConfigurationManager\KKS_ConfigurationManager.csproj", "{2C8DC4C7-99A4-45E1-B379-E67111810926}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IMGUIModule.Il2Cpp.CoreCLR.Patcher", "src\IMGUIModule.Il2Cpp.CoreCLR.Patcher\IMGUIModule.Il2Cpp.CoreCLR.Patcher.csproj", "{8BFC22DD-BD20-4499-B776-98AF46489A97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IMGUIModule.Il2Cpp.CoreCLR.Patcher", "src\IMGUIModule.Il2Cpp.CoreCLR.Patcher\IMGUIModule.Il2Cpp.CoreCLR.Patcher.csproj", "{8BFC22DD-BD20-4499-B776-98AF46489A97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HC_ConfigurationManager", "src\HC_ConfigurationManager\HC_ConfigurationManager.csproj", "{D00F1931-BE72-42ED-934B-E03DD1378257}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HC_ConfigurationManager", "src\HC_ConfigurationManager\HC_ConfigurationManager.csproj", "{D00F1931-BE72-42ED-934B-E03DD1378257}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RG_Sideloader", "src\RG_Sideloader\RG_Sideloader.csproj", "{1B836ECF-9374-47F4-9C09-C230C6E095FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RG_ExtensibleSaveFormat", "src\RG_ExtensibleSaveFormat\RG_ExtensibleSaveFormat.csproj", "{D913658A-4844-46DE-82D5-C3AE5C87F8C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RG_ExtensibleSaveFormat_Patcher", "src\RG_ExtensibleSaveFormat_Patcher\RG_ExtensibleSaveFormat_Patcher.csproj", "{CE8FF296-8ED1-4525-841F-B8970F2C10FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -351,6 +357,18 @@ Global
 		{D00F1931-BE72-42ED-934B-E03DD1378257}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D00F1931-BE72-42ED-934B-E03DD1378257}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D00F1931-BE72-42ED-934B-E03DD1378257}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B836ECF-9374-47F4-9C09-C230C6E095FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B836ECF-9374-47F4-9C09-C230C6E095FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B836ECF-9374-47F4-9C09-C230C6E095FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B836ECF-9374-47F4-9C09-C230C6E095FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D913658A-4844-46DE-82D5-C3AE5C87F8C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D913658A-4844-46DE-82D5-C3AE5C87F8C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D913658A-4844-46DE-82D5-C3AE5C87F8C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D913658A-4844-46DE-82D5-C3AE5C87F8C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE8FF296-8ED1-4525-841F-B8970F2C10FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE8FF296-8ED1-4525-841F-B8970F2C10FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE8FF296-8ED1-4525-841F-B8970F2C10FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE8FF296-8ED1-4525-841F-B8970F2C10FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -426,6 +444,9 @@ Global
 		{2C8DC4C7-99A4-45E1-B379-E67111810926} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{8BFC22DD-BD20-4499-B776-98AF46489A97} = {2050CFE4-0FCC-4DFB-80A4-CFBE10C80D03}
 		{D00F1931-BE72-42ED-934B-E03DD1378257} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
+		{1B836ECF-9374-47F4-9C09-C230C6E095FA} = {41D78233-6980-465F-BAC5-45FCA6E0562F}
+		{D913658A-4844-46DE-82D5-C3AE5C87F8C0} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
+		{CE8FF296-8ED1-4525-841F-B8970F2C10FB} = {72E9352E-2BEB-493C-9F75-1C12AFA67D6B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
@@ -434,6 +455,9 @@ Global
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
+		src\Core_Sideloader\Core_Sideloader.projitems*{1b836ecf-9374-47f4-9c09-c230c6e095fa}*SharedItemsImports = 4
+		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{1b836ecf-9374-47f4-9c09-c230c6e095fa}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{1b836ecf-9374-47f4-9c09-c230c6e095fa}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{20fd60f3-3086-4a25-876b-e977bda46687}*SharedItemsImports = 13
 		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
@@ -514,10 +538,15 @@ Global
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{cd6453f6-dcde-44d4-b1db-b0b7cdf9bcc9}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{ce5a9fab-c188-4919-a296-d9b1422169e9}*SharedItemsImports = 13
+		src\Core_ExtensibleSaveFormat_Patcher\Core_ExtensibleSaveFormat_Patcher.projitems*{ce8ff296-8ed1-4525-841f-b8970f2c10fb}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{ce8ff296-8ed1-4525-841f-b8970f2c10fb}*SharedItemsImports = 4
 		src\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems*{cfc6ee58-cd1b-4a21-b281-c6e9d5d0390d}*SharedItemsImports = 13
 		src\Shared\Shared.projitems*{d00f1931-be72-42ed-934b-e03dd1378257}*SharedItemsImports = 5
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{d78d6b25-e644-4cfe-9031-a05dfbdc683d}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{d913658a-4844-46de-82d5-c3ae5c87f8c0}*SharedItemsImports = 4
+		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{d913658a-4844-46de-82d5-c3ae5c87f8c0}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{d913658a-4844-46de-82d5-c3ae5c87f8c0}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4
 		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{dcbd8213-8cfe-40a8-8971-fd02e9d556ff}*SharedItemsImports = 4

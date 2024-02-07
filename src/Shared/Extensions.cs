@@ -1,8 +1,28 @@
-﻿using System;
+﻿#if !RG
+using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+#else
+using System;
+using System.Collections.Generic;
+using System.Text;
+#endif
 
+// TODO cleanup
+#if RG
+internal static class NullCheck
+{
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> self) =>
+        self is null || !self.Any();
+
+#if false // unused
+    public static bool IsNullOrEmpty<TKey, TValue>(this Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> self) =>
+        self is null || self.Count <= 0;
+#endif
+}
+#endif
 internal static class Extensions
 {
     /// <summary>
@@ -77,6 +97,7 @@ internal static class Extensions
         return resultStringBuilder.ToString();
     }
 
+#if !RG
     /// <summary>
     /// Find first position of the byte sequence in the stream starting at current position.
     /// Returns position of first byte of the sequence.
@@ -119,4 +140,134 @@ internal static class Extensions
 
         return -1;
     }
+#else
+    /// <summary>
+    /// Find first position of the byte sequence in the stream starting at current position.
+    /// Returns position of first byte of the sequence.
+    /// </summary>
+    internal static long FindPosition(this Il2CppSystem.IO.Stream stream, byte[] byteSequence)
+    {
+        if (stream.CanRead && stream.CanSeek && !byteSequence.IsNullOrEmpty())
+        {
+            var position = stream.Position;
+            var length = stream.Length - position;
+
+            if (byteSequence.Length <= length)
+            {
+                var buffer = new byte[length];
+                stream.Read(buffer, 0, (int)length);
+                stream.Position = position;
+
+                var last = buffer.Length - byteSequence.Length;
+                for (var i = 0; i <= last; i++)
+                {
+                    if (buffer[i] == byteSequence[0])
+                    {
+                        var j = 0;
+                        do
+                        {
+                            if (++j == byteSequence.Length)
+                            {
+                                return position + i;
+                            }
+                        } while (buffer[i + j] == byteSequence[j]);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+#endif
 }
+
+#if RG
+internal static partial class Il2CppListExtensions
+{
+    public static Il2CppSystem.Collections.Generic.List<T> ToIl2CppList<T>(this IEnumerable<T> enumerable)
+    {
+        Il2CppSystem.Collections.Generic.List<T> il2CppList = null;
+        if (enumerable is not null)
+        {
+            il2CppList = new((enumerable as ICollection<T>)?.Count ?? 0);
+            foreach (T item in enumerable)
+                il2CppList.Add(item);
+        }
+        return il2CppList;
+    }
+
+    public static List<T> ToManagedList<T>(this Il2CppSystem.Collections.Generic.List<T> il2CppList)
+    {
+        List<T> list = null;
+        if (il2CppList is not null)
+        {
+            list = new(il2CppList.Count);
+            foreach (T item in il2CppList)
+                list.Add(item);
+        }
+        return list;
+    }
+
+#if false   // unused
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Il2CppSystem.Collections.Generic.IEnumerable<T> AsIl2CppEnumerable<T>(this Il2CppSystem.Collections.Generic.List<T> il2CppList) =>
+        il2CppList is not null ? new Il2CppListEnumerable<T>(il2CppList) : null;
+
+    private class Il2CppListEnumerable<T> : Il2CppSystem.Collections.Generic.IEnumerable<T>
+    {
+        private Il2CppSystem.Collections.Generic.List<T> il2CppList;
+
+        public Il2CppListEnumerable(Il2CppSystem.Collections.Generic.List<T> il2CppList) : base(il2CppList.Pointer) =>
+            this.il2CppList = il2CppList;
+
+        public override Il2CppSystem.Collections.Generic.IEnumerator<T> GetEnumerator() =>
+            il2CppList.System_Collections_Generic_IEnumerable_T__GetEnumerator();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<T> AsEnumerable<T>(this Il2CppSystem.Collections.Generic.List<T> il2CppList) =>
+        il2CppList is not null ? Il2CppListIterator(il2CppList) : null;
+
+    private static IEnumerable<T> Il2CppListIterator<T>(Il2CppSystem.Collections.Generic.List<T> il2CppList)
+    {
+        foreach (T item in il2CppList)
+            yield return item;
+    }
+#endif
+}
+
+#if false   // unused
+internal static class Il2CppDictionaryExtensions
+{
+    public static bool TryGetValue_<TKey, TValue>(this Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> il2CppDictionary, TKey key, out TValue value)
+    {
+        var result = il2CppDictionary.ContainsKey(key);
+        value = result ? il2CppDictionary[key] : default;
+        return result;
+    }
+}
+#endif
+
+internal static partial class Il2CppExceptionExtensions
+{
+    public static Type GetTypeFromMessage(this UnhollowerBaseLib.Il2CppException exception)
+    {
+        const string ignorePrefix = "UnhollowerBaseLib.Il2CppException: ";
+        const int ignorePrefixLength = 35;
+
+        var s = exception.Message;
+        while (s.StartsWith(ignorePrefix))
+            s = s.Substring(ignorePrefixLength);
+        var index = s.IndexOf(':');
+        return index != -1 ? Type.GetType(s.Remove(index)) : null;
+    }
+}
+
+#if false   // unused
+internal static partial class MonoBehaviourExtensions
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Coroutine StartCoroutine(this MonoBehaviour monoBehaviour, IEnumerator routine) =>
+        monoBehaviour.StartCoroutine(routine.WrapToIl2Cpp());
+}
+#endif
+#endif

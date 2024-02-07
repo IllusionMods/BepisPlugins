@@ -46,11 +46,6 @@ namespace BepisPlugins
         internal static bool InsideStudio => Application.productName == StudioProcessName;
         internal const string StudioProcessName = "RoomStudio";
         internal const string GameProcessName = "RoomGirl";
-#elif HC
-        internal static bool InsideStudio => Application.productName == StudioProcessName;
-        internal const string StudioProcessName = "DigitalCraft";
-        internal const string GameProcessName = "HoneyCome";
-        internal const string TrialProcessName = "HoneyComeTrial";
 #endif
     }
 }

@@ -1,6 +1,11 @@
-﻿using MessagePack;
+﻿#if !RG
+using MessagePack;
 #if AI || HS2
 using AIChara;
+#endif
+#else
+using Chara;
+using MessagePack;
 #endif
 
 namespace Sideloader.AutoResolver
