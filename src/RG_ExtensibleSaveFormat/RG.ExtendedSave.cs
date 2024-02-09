@@ -1,15 +1,15 @@
 ﻿using BepInEx;
-using BepInEx.IL2CPP;
-using BepInEx.IL2CPP.Utils.Collections;
 using BepInEx.Logging;
 using BepisPlugins;
 using System.Collections;
-using UnhollowerRuntimeLib;
+using BepInEx.Unity.IL2CPP;
+using BepInEx.Unity.IL2CPP.Utils.Collections;
+using Il2CppInterop.Runtime.Injection;
 using UnityEngine;
 
 namespace ExtensibleSaveFormat
 {
-    [BepInIncompatibility("com.bogus.RGExtendedSave")]
+    [BepInIncompatibility("com.bogus.RGExtendedSave")] //todo separate versions for studio and game, need studio nuget packages
     [BepInProcess(Constants.GameProcessName)]
     [BepInProcess(Constants.StudioProcessName)]
     [BepInPlugin(GUID, PluginName, Version)]

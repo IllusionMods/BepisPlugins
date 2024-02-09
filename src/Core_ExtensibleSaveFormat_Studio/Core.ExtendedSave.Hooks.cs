@@ -1,6 +1,5 @@
 ﻿#if !RG
 using HarmonyLib;
-using Illusion.IO;
 using MessagePack;
 using Studio;
 using System;
@@ -19,7 +18,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using UnhollowerBaseLib;
 using UnityEngine;
 using BinaryReader = Il2CppSystem.IO.BinaryReader;
 using BinaryWriter = Il2CppSystem.IO.BinaryWriter;
@@ -175,15 +173,8 @@ namespace ExtensibleSaveFormat
                         internalSceneDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
                     }
                 }
-#if !RG
                 catch (EndOfStreamException)
                 {
-#else
-                catch (Il2CppException ex)
-                {
-                    if (!typeof(EndOfStreamException).IsAssignableFrom(ex.GetTypeFromMessage()))
-                        throw;
-#endif
                     /* Incomplete/non-existant data */
                 }
                 catch (InvalidOperationException)
@@ -422,15 +413,8 @@ namespace ExtensibleSaveFormat
                         internalPoseDictionary = MessagePackSerializer.Deserialize<Dictionary<string, PluginData>>(bytes);
                     }
                 }
-#if !RG
                 catch (EndOfStreamException)
                 {
-#else
-                catch (Il2CppException ex)
-                {
-                    if (!typeof(EndOfStreamException).IsAssignableFrom(ex.GetTypeFromMessage()))
-                        throw;
-#endif
                     /* Incomplete/non-existant data */
                 }
                 catch (InvalidOperationException)

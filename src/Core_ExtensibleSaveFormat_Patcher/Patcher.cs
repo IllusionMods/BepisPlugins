@@ -10,6 +10,7 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.IL2CPP;
 using BepInEx.Preloader.Core.Patching;
+using BepInEx.Unity.IL2CPP;
 using BepisPlugins;
 using Chara;
 using Mono.Cecil;
@@ -17,7 +18,14 @@ using Mono.Cecil.Cil;
 using System;
 using System.IO;
 using System.Linq;
+using HarmonyLib;
+using Il2CppSystem.IO;
 #endif
+using System.Reflection;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
+using MethodAttributes = Mono.Cecil.MethodAttributes;
+using MethodSemanticsAttributes = Mono.Cecil.MethodSemanticsAttributes;
+using PropertyAttributes = Mono.Cecil.PropertyAttributes;
 
 namespace ExtensibleSaveFormat
 {
@@ -46,9 +54,23 @@ namespace ExtensibleSaveFormat
 
         public override void Initialize()
         {
-            var path = Path.GetFullPath(Preloader.IL2CPPUnhollowedPath);
-            if (!TypeLoader.CecilResolver.GetSearchDirectories().Any(item => Path.GetFullPath(item).Equals(path, StringComparison.OrdinalIgnoreCase)))
-                TypeLoader.CecilResolver.AddSearchDirectory(path);
+            //TODO pretty sure this whole patcher doesn't actually work?
+            try
+            {
+                // Only available since bleeding edge build #680
+                var path = typeof(IL2CPPChainloader).Assembly.GetType("BepInEx.Unity.IL2CPP.Il2CppInteropManager")
+                                                    ?.GetProperty("IL2CPPInteropAssemblyPath", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                                                    ?.GetValue(null) as string;
+                if (path == null) throw new InvalidOperationException("Interop assembly path is not available");
+                
+                if (!TypeLoader.CecilResolver.GetSearchDirectories().Any(item => System.IO.Path.GetFullPath(item).Equals(path, StringComparison.OrdinalIgnoreCase)))
+                    TypeLoader.CecilResolver.AddSearchDirectory(path);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        
         }
 
         [TargetAssembly("Assembly-CSharp.dll")]

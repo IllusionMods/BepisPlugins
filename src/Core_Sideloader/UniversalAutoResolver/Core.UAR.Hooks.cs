@@ -69,7 +69,7 @@ namespace Sideloader.AutoResolver
         public static void PatchAll(this Harmony harmony, Type type, bool ignoreTypeLoadException = true)
         {
             if (ignoreTypeLoadException)
-                harmony.Patch(GetCustomAttributesMethod1, GetCustomAttributesHookMethod);
+                harmony.Patch(GetCustomAttributesMethod1, GetCustomAttributesHookMethod);// todo this catches missing type exceptions from typeof in attribute constructors?
             harmony.CreateClassProcessor(type, allowUnannotatedType: true).Patch();
             if (ignoreTypeLoadException)
                 harmony.Unpatch(GetCustomAttributesMethod1, GetCustomAttributesHookMethod.method);

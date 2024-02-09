@@ -1,76 +1,34 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D913658A-4844-46DE-82D5-C3AE5C87F8C0}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>RG_ExtensibleSaveFormat</RootNamespace>
-    <AssemblyName>RG_ExtensibleSaveFormat</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <LangVersion>10.0</LangVersion>
-    <BaseIntermediateOutputPath>$(SolutionDir)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>$(SolutionDir)bin\Debug\BepInEx\plugins\RG_BepisPlugins\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;RG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>$(SolutionDir)bin\Release\BepInEx\plugins\RG_BepisPlugins\</OutputPath>
-    <DefineConstants>TRACE;RG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GameDir>$(registry:HKEY_CURRENT_USER\Software\illusion\RoomGirl\RoomGirl@INSTALLDIR)</GameDir>
-    <StudioDir>$(GameDir)Studio\</StudioDir>
-    <BepInExDir>$(StudioDir)BepInEx\</BepInExDir>
-    <BepInExCoreDir>$(BepInExDir)core\</BepInExCoreDir>
-    <BepInExPluginsDir>$(BepInExDir)plugins\</BepInExPluginsDir>
-    <BepInExUnhollowedDir>$(BepInExDir)unhollowed\</BepInExUnhollowedDir>
-    <MonoManagedDir>$(GameDir)mono\Managed\</MonoManagedDir>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="0Harmony" HintPath="$(BepInExCoreDir)0Harmony.dll" Private="False" />
-    <Reference Include="Assembly-CSharp" HintPath="$(BepInExUnhollowedDir)Assembly-CSharp.dll" Private="False" />
-    <Reference Include="BepInEx.Core" HintPath="$(BepInExCoreDir)BepInEx.Core.dll" Private="False" />
-    <Reference Include="BepInEx.IL2CPP" HintPath="$(BepInExCoreDir)BepInEx.IL2CPP.dll" Private="False" />
-    <Reference Include="IL" HintPath="$(BepInExUnhollowedDir)IL.dll" Private="False" />
-    <Reference Include="Il2Cppmscorlib" HintPath="$(BepInExUnhollowedDir)Il2Cppmscorlib.dll" Private="False" />
-    <Reference Include="MessagePack, Version=1.9.0.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL" HintPath="..\..\packages\MessagePack.1.9.11\lib\net47\MessagePack.dll" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" HintPath="..\..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll" Private="False" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Runtime.Serialization.Primitives, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" HintPath="..\..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll" Private="False" />
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" HintPath="..\..\packages\System.Threading.Tasks.Extensions.4.5.3\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll" Private="False" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" HintPath="..\..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll" Private="False" />
-    <Reference Include="UnhollowerBaseLib" HintPath="$(BepInExCoreDir)UnhollowerBaseLib.dll" Private="False" />
-    <Reference Include="UnityEngine.CoreModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.CoreModule.dll" Private="False" />
-    <Reference Include="UnityEngine.IMGUIModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.IMGUIModule.dll" Private="False" />
-    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.InputLegacyModule.dll" Private="False" />
-    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(BepInExUnhollowedDir)UnityEngine.TextRenderingModule.dll" Private="False" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Managed\BlockHeader.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RG.ExtendedSave.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="..\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems" Label="Shared" />
-  <Import Project="..\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems" Label="Shared" />
-  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<RootNamespace>BepisPlugins</RootNamespace>
+		
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Nullable>warnings</Nullable>
+		<LangVersion>latest</LangVersion>
+		
+		<OutputPath>$(SolutionDir)bin\Release\BepInEx\plugins\RG_BepisPlugins</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		
+		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+
+		<DebugType>embedded</DebugType>
+		<WarningLevel>9999</WarningLevel>
+
+		<DefineConstants>$(DefineConstants);RG;IL2CPP</DefineConstants>
+	</PropertyGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<Delete Files="$(OutputPath)\$(AssemblyName).deps.json" />
+	</Target>
+
+	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
+
+	<Import Project="..\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems" Label="Shared" />
+
+	<ItemGroup>
+	  <PackageReference Include="IllusionLibs.RoomGirl.All" Version="2023.2.10" />
+	</ItemGroup>
+
 </Project>

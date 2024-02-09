@@ -1,6 +1,4 @@
 ﻿using System;
-using UnhollowerBaseLib;
-using Object = UnityEngine.Object;
 
 namespace Shared
 {
@@ -26,8 +24,8 @@ namespace Shared
             if (_object == null || _object.ToString() == "null")
 #else
             if (_object == null || _object.ToString() == "null" ||
-                _object is Object obj1 && !Object.IsNativeObjectAlive(obj1) ||
-                _object is Il2CppObjectBase obj2 && obj2.WasCollected)
+                _object is UnityEngine.Object obj1 && !UnityEngine.Object.IsNativeObjectAlive(obj1) ||
+                _object is Il2CppInterop.Runtime.InteropTypes.Il2CppObjectBase obj2 && obj2.WasCollected)
 #endif
                 _object = Factory();
         }

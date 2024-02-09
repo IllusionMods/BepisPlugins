@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 #else
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 #endif
@@ -247,20 +248,20 @@ internal static class Il2CppDictionaryExtensions
 }
 #endif
 
-internal static partial class Il2CppExceptionExtensions
-{
-    public static Type GetTypeFromMessage(this UnhollowerBaseLib.Il2CppException exception)
-    {
-        const string ignorePrefix = "UnhollowerBaseLib.Il2CppException: ";
-        const int ignorePrefixLength = 35;
-
-        var s = exception.Message;
-        while (s.StartsWith(ignorePrefix))
-            s = s.Substring(ignorePrefixLength);
-        var index = s.IndexOf(':');
-        return index != -1 ? Type.GetType(s.Remove(index)) : null;
-    }
-}
+//internal static partial class Il2CppExceptionExtensions
+//{
+//    public static Type GetTypeFromMessage(this UnhollowerBaseLib.Il2CppException exception)
+//    {
+//        const string ignorePrefix = "UnhollowerBaseLib.Il2CppException: ";
+//        const int ignorePrefixLength = 35;
+//
+//        var s = exception.Message;
+//        while (s.StartsWith(ignorePrefix))
+//            s = s.Substring(ignorePrefixLength);
+//        var index = s.IndexOf(':');
+//        return index != -1 ? Type.GetType(s.Remove(index)) : null;
+//    }
+//}
 
 #if false   // unused
 internal static partial class MonoBehaviourExtensions

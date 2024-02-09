@@ -32,7 +32,7 @@ namespace Sideloader
 
             try
             {
-                ClassInjector.RegisterTypeInIl2Cpp<MonoBehaviour>();
+                ClassInjector.RegisterTypeInIl2Cpp<MonoBehaviour>(); // todo replace with base.addcomponent
                 var gameObject = new GameObject(nameof(Sideloader));
                 gameObject.hideFlags |= HideFlags.HideAndDontSave;
                 Object.DontDestroyOnLoad(gameObject);
