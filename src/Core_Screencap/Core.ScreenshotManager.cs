@@ -72,7 +72,6 @@ namespace Screencap
         public static ConfigEntry<CameraGuideLinesMode> GuideLinesModes { get; private set; }
         public static ConfigEntry<int> UIShotUpscale { get; private set; }
 
-
         private void InitializeSettings()
         {
             KeyCapture = Config.Bind(

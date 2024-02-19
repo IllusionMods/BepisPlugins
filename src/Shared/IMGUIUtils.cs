@@ -28,7 +28,7 @@ namespace Shared
             }
 
             // It's necessary to make a new GUIStyle here or the texture doesn't show up
-            GUI.Box(boxRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = SolidBoxTex } }); //todo cache style see if less gc
+            GUI.Box(boxRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = SolidBoxTex } });
         }
 
         private static Texture2D TransparentBoxTex { get; set; }
