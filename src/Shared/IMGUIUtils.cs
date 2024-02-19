@@ -31,6 +31,25 @@ namespace Shared
             GUI.Box(boxRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = SolidBoxTex } });
         }
 
+        private static Texture2D TransparentBoxTex { get; set; }
+
+        /// <summary>
+        /// Draw a gray semi-transparent GUI.Box at the specified rect.
+        /// </summary>
+        public static void DrawTransparentBox(Rect boxRect)
+        {
+            if (TransparentBoxTex == null)
+            {
+                var windowBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+                windowBackground.SetPixel(0, 0, new Color(0.4f, 0.4f, 0.4f, 0.7f));
+                windowBackground.Apply();
+                TransparentBoxTex = windowBackground;
+            }
+
+            // It's necessary to make a new GUIStyle here or the texture doesn't show up
+            GUI.Box(boxRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = TransparentBoxTex } });
+        }
+
         /// <summary>
         /// Block input from going through to the game/canvases if the mouse cursor is within the specified Rect.
         /// Use after a GUI.Window call or the window will not be able to get the inputs either.

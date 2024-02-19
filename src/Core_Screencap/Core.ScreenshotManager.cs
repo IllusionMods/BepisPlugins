@@ -69,6 +69,7 @@ namespace Screencap
         public static ConfigEntry<int> JpgQuality { get; private set; }
         public static ConfigEntry<NameFormat> ScreenshotNameFormat { get; private set; }
         public static ConfigEntry<string> ScreenshotNameOverride { get; private set; }
+        public static ConfigEntry<CameraGuideLinesMode> GuideLinesModes { get; private set; }
         public static ConfigEntry<int> UIShotUpscale { get; private set; }
 
         private void InitializeSettings()
@@ -124,7 +125,7 @@ namespace Screencap
                 AlphaMode.rgAlpha,
                 new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
 
-            CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None, 
+            CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None,
                 new ConfigDescription("Only for backwards compatibility, use CaptureAlphaMode instead.", null, new BrowsableAttribute(false)));
             CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.rgAlpha : AlphaMode.None;
             CaptureAlphaMode.SettingChanged += (sender, args) => CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
@@ -183,6 +184,11 @@ namespace Screencap
                 "General", "Screenshot filename Name override",
                 "",
                 new ConfigDescription("Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", null, "Advanced"));
+
+            GuideLinesModes = Config.Bind(
+                "General", "Camera guide lines",
+                CameraGuideLinesMode.Framing | CameraGuideLinesMode.GridThirds,
+                new ConfigDescription("Draws guide lines on the screen to help with framing rendered screenshots. The guide lines are not captured in the rendered screenshot.\nTo show the guide lines, open the quick access settings window.", null, "Advanced"));
 
             UIShotUpscale = Config.Bind(
                 "UI Screenshots", "Screenshot resolution multiplier",
@@ -504,6 +510,8 @@ namespace Screencap
         {
             if (uiShow)
             {
+                DrawGuideLines();
+
                 IMGUIUtils.DrawSolidBox(uiRect);
                 uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "Screenshot settings");
                 IMGUIUtils.EatInputInRect(uiRect);
@@ -649,6 +657,27 @@ namespace Screencap
                 }
                 GUILayout.EndVertical();
 
+                GUILayout.BeginVertical(GUI.skin.box);
+                {
+                    GUILayout.Label("Guide lines");
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUI.changed = false;
+                        var val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0, "Frame");
+                        if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.Framing : GuideLinesModes.Value & ~CameraGuideLinesMode.Framing;
+
+                        GUI.changed = false;
+                        val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0, "3rds");
+                        if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridThirds : GuideLinesModes.Value & ~CameraGuideLinesMode.GridThirds;
+
+                        GUI.changed = false;
+                        val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0, "Phi");
+                        if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridPhi : GuideLinesModes.Value & ~CameraGuideLinesMode.GridPhi;
+                    }
+                    GUILayout.EndHorizontal();
+                }
+                GUILayout.EndVertical();
+
                 if (GUILayout.Button("Open screenshot dir"))
                     Process.Start(screenshotDir);
 
@@ -657,7 +686,77 @@ namespace Screencap
 
                 GUI.DragWindow();
             }
-            #endregion
         }
+
+        private static void DrawGuideLines()
+        {
+            var desiredAspect = ResolutionX.Value / (float)ResolutionY.Value;
+            var screenAspect = Screen.width / (float)Screen.height;
+
+            if (screenAspect > desiredAspect)
+            {
+                var actualWidth = Mathf.RoundToInt(Screen.height * desiredAspect);
+                var barWidth = Mathf.RoundToInt((Screen.width - actualWidth) / 2f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
+                {
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, barWidth, Screen.height));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth, 0, barWidth, Screen.height));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
+                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.3333333f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
+                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.236f);
+            }
+            else
+            {
+                var actualHeight = Mathf.RoundToInt(Screen.width / desiredAspect);
+                var barHeight = Mathf.RoundToInt((Screen.height - actualHeight) / 2f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
+                {
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, Screen.width, barHeight));
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight, Screen.width, barHeight));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
+                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.3333333f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
+                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.236f);
+            }
+
+            void DrawGuides(int offsetX, int offsetY, int viewportWidth, int viewportHeight, float centerRatio)
+            {
+                var sideRatio = (1 - centerRatio) / 2;
+                var secondRatio = sideRatio + centerRatio;
+
+                var firstx = offsetX + viewportWidth * sideRatio;
+                var secondx = offsetX + viewportWidth * secondRatio;
+                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(firstx), offsetY, 1, viewportHeight));
+                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(secondx), offsetY, 1, viewportHeight));
+
+                var firsty = offsetY + viewportHeight * sideRatio;
+                var secondy = offsetY + viewportHeight * secondRatio;
+                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(firsty), viewportWidth, 1));
+                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(secondy), viewportWidth, 1));
+            }
+        }
+
+        [Flags]
+        public enum CameraGuideLinesMode
+        {
+            [Description("No guide lines")]
+            None = 0,
+            [Description("Cropped area")]
+            Framing = 1 << 0,
+            [Description("Rule of thirds")]
+            GridThirds = 1 << 1,
+            [Description("Golden ratio")]
+            GridPhi = 1 << 2,
+        }
+        #endregion
     }
 }
