@@ -549,7 +549,7 @@ namespace Screencap
                     ResolutionYBuffer = GUILayout.TextField(ResolutionYBuffer);
 
                     var focused = GUI.GetNameOfFocusedControl();
-                    if (focused != "X" && focused != "Y")
+                    if (focused != "X" && focused != "Y" || Event.current.keyCode == KeyCode.Return)
                     {
                         if (!int.TryParse(ResolutionXBuffer, out int x))
                             x = ResolutionX.Value;
