@@ -11,7 +11,7 @@ namespace Sideloader
     [BepInIncompatibility("com.bepis.bepinex.resourceredirector")]
     public partial class Sideloader : BaseUnityPlugin
     {
-        internal static readonly string[] GameNameList = { "koikatsu", "koikatu", "コイカツ" };
+        internal static readonly string[] GameNameList = { "koikatsu", "koikatu", "コイカツ", "koikatsu sunshine", "koikatu sunshine", "コイカツ sunshine" };
 
         private static string FindKoiZipmodDir() => string.Empty;
     }

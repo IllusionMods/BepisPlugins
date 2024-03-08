@@ -11,7 +11,7 @@ namespace Sideloader
     [BepInProcess(Constants.StudioProcessName)]
     public partial class Sideloader : BaseUnityPlugin
     {
-        internal static readonly string[] GameNameList = { "koikatsu sunshine", "koikatu sunshine", "コイカツ sunshine" };
+        internal static readonly string[] GameNameList = { "koikatsu sunshine", "koikatu sunshine", "コイカツ sunshine", "koikatsu", "koikatu", "コイカツ" };
         
         private static string FindKoiZipmodDir()
         {
