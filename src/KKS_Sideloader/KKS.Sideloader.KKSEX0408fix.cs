@@ -13,6 +13,13 @@ namespace Sideloader
 {
     public partial class Sideloader
     {
+        /// <summary>
+        /// The EX 0408 and some later updates introduced filename checks of list files.
+        /// If the name isn't a number, it is now ignored. It was done to sort list files by their number.
+        /// These patches sort the files in a compatible way while removing the filename limitation.
+        /// GameInfo.LoadInfo doesn't need fixing since the filename check was always there.
+        /// Program.FindADVBundleFilePath doesn't need fixing since no mods put bundles inside adv/scenario
+        /// </summary>
         internal static class KKSEX0408fix
         {
             public static void ApplyIfNeeded(Harmony harmony)
