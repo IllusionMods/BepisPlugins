@@ -92,7 +92,6 @@ namespace ExtensibleSaveFormat
 
                             if (extendedData != null)
                             {
-                                // Then write our data
                                 binaryWriter.Write(Marker);
                                 binaryWriter.Write(DataVersion);
                                 byte[] data = MessagePackSerializer.Serialize(extendedData);
@@ -103,6 +102,7 @@ namespace ExtensibleSaveFormat
                     }
                     catch (Exception ex)
                     {
+                        Logger.Log(BepInEx.Logging.LogLevel.Message | BepInEx.Logging.LogLevel.Error, "Failed to save the game, the save file may be corrupted! Try saving again in an empty slot.\nError: " + ex.Message);
                         UnityEngine.Debug.LogException(ex);
                     }
                 }));
@@ -116,7 +116,7 @@ namespace ExtensibleSaveFormat
             {
                 // This function should not be called.
                 // Originally called from SaveData.WorldData.Save(), but the original Save() is not called by the patch.
-                throw new System.NotSupportedException("Ported functionality to WorldData.Save patch.");
+                throw new System.NotSupportedException("Do not use this method, use WorldData.Save instead. More info: https://github.com/IllusionMods/BepisPlugins/pull/197");
             }
 
             #endregion
