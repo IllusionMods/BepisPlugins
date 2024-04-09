@@ -56,44 +56,67 @@ namespace ExtensibleSaveFormat
 
             #region Saving
 
-            // Nope, not patching the save lambda, not doing it, noooope
+            [HarmonyPrefix, HarmonyPatch(typeof(SaveData.WorldData), nameof(SaveData.WorldData.Save), typeof(string), typeof(string))]
+            [HarmonyPriority(Priority.Last)]
+            static bool WorldDataSavePrefix(SaveData.WorldData __instance, string path, string fileName)
+            {
+                Illusion.Utils.File.OpenWrite(path + fileName, false, (Action<FileStream>)(f =>
+                {
+                    try
+                    {
+                        using (BinaryWriter binaryWriter = new BinaryWriter((Stream)f))
+                        {
+                            var saveData = __instance;
+
+                            // Data to be written by WorldData.GetBytes
+                            byte[] buffer = MessagePackSerializer.Serialize<WorldData>(saveData);
+                            binaryWriter.Write(buffer.Length);
+                            binaryWriter.Write(buffer);
+                            byte[] bytes1 = SaveData.Player.GetBytes(saveData.player);
+                            binaryWriter.Write(bytes1.Length);
+                            binaryWriter.Write(bytes1);
+                            int count = saveData.heroineList.Count;
+                            binaryWriter.Write(count);
+                            for (int index = 0; index < count; ++index)
+                            {
+                                byte[] bytes2 = Heroine.GetBytes(saveData.heroineList[index]);
+                                binaryWriter.Write(bytes2.Length);
+                                binaryWriter.Write(bytes2);
+                            }
+
+                            SaveDataWriteEvent(__instance);
+                            Logger.Log(BepInEx.Logging.LogLevel.Debug, "SaveData hook!");
+
+                            // Append the ext data
+                            Dictionary<string, PluginData> extendedData = GetAllExtendedData(saveData);
+
+                            if (extendedData != null)
+                            {
+                                // Then write our data
+                                binaryWriter.Write(Marker);
+                                binaryWriter.Write(DataVersion);
+                                byte[] data = MessagePackSerializer.Serialize(extendedData);
+                                binaryWriter.Write(data.Length);
+                                binaryWriter.Write(data);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UnityEngine.Debug.LogException(ex);
+                    }
+                }));
+
+                return false;
+            }
+
+
             [HarmonyPostfix, HarmonyPatch(typeof(WorldData), nameof(WorldData.GetBytes), typeof(WorldData))]
             private static void SaveDataSaveHook(WorldData saveData, ref byte[] __result)
             {
-                try
-                {
-                    SaveDataWriteEvent(saveData);
-
-                    Logger.Log(BepInEx.Logging.LogLevel.Debug, "SaveData hook!");
-
-                    Dictionary<string, PluginData> extendedData = GetAllExtendedData(saveData);
-                    if (extendedData == null)
-                        return;
-
-                    // Append the ext data
-                    using (var ms = new MemoryStream())
-                    {
-                        using (BinaryWriter bw = new BinaryWriter(ms))
-                        {
-                            // Write the original data first
-                            bw.Write(__result);
-
-                            // Then write our data
-                            bw.Write(Marker);
-                            bw.Write(DataVersion);
-                            byte[] data = MessagePackSerializer.Serialize(extendedData);
-                            bw.Write(data.Length);
-                            bw.Write(data);
-                        }
-
-                        // Replace the result, not the most efficient way but save files shouldn't be big enough to matter since it's all done in memory
-                        __result = ms.ToArray();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    UnityEngine.Debug.LogException(ex);
-                }
+                // This function should not be called.
+                // Originally called from SaveData.WorldData.Save(), but the original Save() is not called by the patch.
+                throw new System.NotSupportedException("Ported functionality to WorldData.Save patch.");
             }
 
             #endregion
