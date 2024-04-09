@@ -112,7 +112,7 @@ namespace ExtensibleSaveFormat
 
 
             [HarmonyPostfix, HarmonyPatch(typeof(WorldData), nameof(WorldData.GetBytes), typeof(WorldData))]
-            private static void SaveDataSaveHook(WorldData saveData, ref byte[] __result)
+            private static void WorldDataGetBytesDisableHook(WorldData saveData, ref byte[] __result)
             {
                 // This function should not be called.
                 // Originally called from SaveData.WorldData.Save(), but the original Save() is not called by the patch.
