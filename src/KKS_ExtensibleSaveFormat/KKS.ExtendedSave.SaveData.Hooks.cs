@@ -58,7 +58,7 @@ namespace ExtensibleSaveFormat
 
             [HarmonyPrefix, HarmonyPatch(typeof(SaveData.WorldData), nameof(SaveData.WorldData.Save), typeof(string), typeof(string))]
             [HarmonyPriority(Priority.Last)]
-            static bool WorldDataSavePrefix(SaveData.WorldData __instance, string path, string fileName)
+            private static bool WorldDataSavePrefix(SaveData.WorldData __instance, string path, string fileName)
             {
                 Illusion.Utils.File.OpenWrite(path + fileName, false, (Action<FileStream>)(f =>
                 {
