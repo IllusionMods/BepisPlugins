@@ -61,7 +61,7 @@ namespace Screencap
             }
         }
 
-        public static Texture2D CaptureTex(int width = 1024, Camera renderCam = null, bool faceCameraDirection = true)
+        public static Texture2D CaptureTex(int width = 1024, int cubemapWidth = 512, Camera renderCam = null, bool faceCameraDirection = true, bool isVR180 = false)
         {
             if (renderCam == null)
             {
@@ -79,7 +79,7 @@ namespace Screencap
 
             RenderTexture camTarget = renderCam.targetTexture;
 
-            int cubemapSize = Mathf.Min(Mathf.NextPowerOfTwo(width), 16384);
+            int cubemapSize = Mathf.Min(Mathf.NextPowerOfTwo(cubemapWidth), 16384);
             RenderTexture cubemap = null, equirectangularTexture = null;
             Texture2D output = null;
             try
@@ -87,7 +87,7 @@ namespace Screencap
                 cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0);
                 cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
 
-                equirectangularTexture = RenderTexture.GetTemporary(cubemapSize, cubemapSize / 2, 0);
+                equirectangularTexture = RenderTexture.GetTemporary(width, width / 2, 0);
                 equirectangularTexture.dimension = UnityEngine.Rendering.TextureDimension.Tex2D;
 
                 if (!renderCam.RenderToCubemap(cubemap))
@@ -95,7 +95,7 @@ namespace Screencap
 
                 equirectangularConverter.SetFloat(paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
                 Graphics.Blit(cubemap, equirectangularTexture, equirectangularConverter);
-                output = RtToT2D(equirectangularTexture);
+                output = RtToT2D(equirectangularTexture, isVR180);
 
                 return output;
             }
@@ -113,20 +113,31 @@ namespace Screencap
             }
         }
 
-        public static byte[] Capture(int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true)
+        public static byte[] Capture(int width = 1024, int cubemapWidth = 512, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true, bool isVR180 = false)
         {
-            var output = CaptureTex(width, renderCam, faceCameraDirection);
+            var output = CaptureTex(width, cubemapWidth, renderCam, faceCameraDirection, isVR180);
             var result = encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG(output, 100) : InsertXMPIntoTexture2D_PNG(output);
             UnityEngine.Object.Destroy(output);
             return result;
         }
 
-        private static Texture2D RtToT2D(RenderTexture equirectangularTexture)
+        private static Texture2D RtToT2D(RenderTexture equirectangularTexture, bool isVR180)
         {
             RenderTexture temp = RenderTexture.active;
             RenderTexture.active = equirectangularTexture;
-            var output = new Texture2D(equirectangularTexture.width, equirectangularTexture.height, TextureFormat.RGB24, false);
-            output.ReadPixels(new Rect(0, 0, equirectangularTexture.width, equirectangularTexture.height), 0, 0);
+            Texture2D output;
+
+            if (isVR180)
+            {
+                output = new Texture2D(equirectangularTexture.width / 2, equirectangularTexture.height, TextureFormat.RGB24, false);
+                output.ReadPixels(new Rect(equirectangularTexture.width / 4, 0, equirectangularTexture.width / 2, equirectangularTexture.height), 0, 0);
+            }
+            else
+            {
+                output = new Texture2D(equirectangularTexture.width, equirectangularTexture.height, TextureFormat.RGB24, false);
+                output.ReadPixels(new Rect(0, 0, equirectangularTexture.width, equirectangularTexture.height), 0, 0);
+            }
+
             RenderTexture.active = temp;
             return output;
         }

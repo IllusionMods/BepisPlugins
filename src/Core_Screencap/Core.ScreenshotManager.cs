@@ -57,6 +57,8 @@ namespace Screencap
         public static ConfigEntry<int> ResolutionY { get; private set; }
         public static ConfigEntry<bool> ResolutionAllowExtreme { get; private set; }
         public static ConfigEntry<int> Resolution360 { get; private set; }
+        public static ConfigEntry<int> ResolutionCubemap { get; private set; }
+        public static ConfigEntry<bool> VR180 { get; private set; }
         public static ConfigEntry<int> DownscalingRate { get; private set; }
         public static ConfigEntry<int> CardDownscalingRate { get; private set; }
         public static ConfigEntry<bool> CaptureAlpha { get; private set; }
@@ -110,6 +112,16 @@ namespace Screencap
                 4096,
                 new ConfigDescription("Horizontal resolution (width) of 360 degree/panorama screenshots. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", new AcceptableValueList<int>(1024, 2048, 4096, 8192)));
 
+            ResolutionCubemap = Config.Bind(
+                "360 Screenshots", "360 cubemap resolution",
+                2048,
+                new ConfigDescription("Resolution of cubemap. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", new AcceptableValueList<int>(new int[] { 512, 1024, 2048, 4096, 8192 })));
+
+            VR180 = Config.Bind(
+                "360 Screenshots", "VR180 format",
+                false,
+                new ConfigDescription("Use VR180 format in 3D panorama screenshots."));
+
             DownscalingRate = Config.Bind(
                 "Render Settings", "Screenshot upsampling ratio",
                 2,
@@ -152,12 +164,12 @@ namespace Screencap
 
             EyeSeparation = Config.Bind(
                 "3D Settings", "3D screenshot eye separation",
-                0.18f,
+                0.064f,
                 new ConfigDescription("Distance between the two captured stereoscopic screenshots in arbitrary units.", new AcceptableValueRange<float>(0.01f, 0.5f)));
 
             ImageSeparationOffset = Config.Bind(
                 "3D Settings", "3D screenshot image separation offset",
-                0.25f,
+                0f,
                 new ConfigDescription("Move images in stereoscopic screenshots closer together by this percentage (discards overlapping parts). Useful for viewing with crossed eyes. Does not affect 360 stereoscopic screenshots.", new AcceptableValueRange<float>(0f, 1f)));
 
             FlipEyesIn3DCapture = Config.Bind(
@@ -366,16 +378,16 @@ namespace Screencap
                 Time.timeScale = 0.01f;
                 yield return new WaitForEndOfFrame();
 
-                targetTr.position += targetTr.right * EyeSeparation.Value / 2;
+                targetTr.position -= targetTr.right * EyeSeparation.Value / 2;
                 // Let the game render at the new position
                 yield return new WaitForEndOfFrame();
                 var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
 
-                targetTr.position -= targetTr.right * EyeSeparation.Value;
+                targetTr.position += targetTr.right * EyeSeparation.Value;
                 yield return new WaitForEndOfFrame();
                 var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
 
-                targetTr.position += targetTr.right * EyeSeparation.Value / 2;
+                targetTr.position -= targetTr.right * EyeSeparation.Value / 2;
 
                 ToggleCameraControllers(targetTr, true);
                 Time.timeScale = 1;
@@ -413,7 +425,7 @@ namespace Screencap
             {
                 yield return new WaitForEndOfFrame();
 
-                var output = I360Render.CaptureTex(Resolution360.Value);
+                var output = I360Render.CaptureTex(Resolution360.Value, ResolutionCubemap.Value);
                 var capture = EncodeToXmpFile(output);
 
                 var filename = GetUniqueFilename("360");
@@ -431,16 +443,16 @@ namespace Screencap
                 Time.timeScale = 0.01f;
                 yield return new WaitForEndOfFrame();
 
-                targetTr.position += targetTr.right * EyeSeparation.Value / 2;
+                targetTr.position -= targetTr.right * EyeSeparation.Value / 2;
                 // Let the game render at the new position
                 yield return new WaitForEndOfFrame();
-                var capture = I360Render.CaptureTex(Resolution360.Value);
+                var capture = I360Render.CaptureTex(Resolution360.Value, ResolutionCubemap.Value, null, true, VR180.Value);
 
-                targetTr.position -= targetTr.right * EyeSeparation.Value;
+                targetTr.position += targetTr.right * EyeSeparation.Value;
                 yield return new WaitForEndOfFrame();
-                var capture2 = I360Render.CaptureTex(Resolution360.Value);
+                var capture2 = I360Render.CaptureTex(Resolution360.Value, ResolutionCubemap.Value, null, true, VR180.Value);
 
-                targetTr.position += targetTr.right * EyeSeparation.Value / 2;
+                targetTr.position -= targetTr.right * EyeSeparation.Value / 2;
 
                 ToggleCameraControllers(targetTr, true);
                 Time.timeScale = 1;
@@ -448,10 +460,11 @@ namespace Screencap
                 // Overlap is useless for these so don't use
                 var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, 0) : StitchImages(capture2, capture, 0);
 
-                var filename = GetUniqueFilename("3D-360");
+                var typeName = VR180.Value ? "3D-180" : "3D-360";
+                var filename = GetUniqueFilename(typeName);
                 File.WriteAllBytes(filename, EncodeToXmpFile(result));
 
-                Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D 360 screenshot saved to {filename}");
+                Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"{typeName} screenshot saved to {filename}");
 
                 Destroy(result);
                 Destroy(capture);
@@ -479,6 +492,16 @@ namespace Screencap
 
             var actionScene = GameObject.Find("ActionScene/CameraSystem");
             if (actionScene != null) actionScene.GetComponent<CameraSystem>().ShouldUpdate = enabled;
+#elif EC
+            foreach (var controllerType in new[] { typeof(CameraControl), typeof(CameraControl_Ver2), typeof(BaseCameraControl_Ver2), typeof(BaseCameraControl) })
+            {
+                var cc = targetTr.GetComponents(controllerType);
+                foreach (var c in cc)
+                {
+                    if (c is MonoBehaviour mb)
+                        mb.enabled = enabled;
+                }
+            }
 #endif
         }
 
