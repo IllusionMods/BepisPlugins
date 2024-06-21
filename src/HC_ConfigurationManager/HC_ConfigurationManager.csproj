@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <!--BepInEx.ConfigurationManager is a BepInEx5 package and there's a compatibility warning about .NET version, but it actually works -->
-    <PackageReference Include="BepInEx.ConfigurationManager" Version="18.2.0" />
+    <PackageReference Include="BepInEx.ConfigurationManager" Version="18.2.1" />
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668" />
     <PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668" />
     <PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15" />
