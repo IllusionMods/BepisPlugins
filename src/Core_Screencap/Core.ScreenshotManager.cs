@@ -486,16 +486,12 @@ namespace Screencap
         {
             var xAdjust = (int)(capture.width * overlapOffset);
             var result = new Texture2D((capture.width - xAdjust) * 2, capture.height, TextureFormat.ARGB32, false);
-            for (int x = 0; x < result.width; x++)
-            {
-                var first = x < result.width / 2;
-                var targetX = first ? x : x - capture.width + xAdjust * 2;
-                var targetTex = first ? capture : capture2;
-                for (int y = 0; y < result.height; y++)
-                {
-                    result.SetPixel(x, y, targetTex.GetPixel(targetX, y));
-                }
-            }
+
+            int width = result.width / 2;
+            int height = result.height;
+            result.SetPixels(0, 0, width, height, capture.GetPixels(0, 0, width, height));
+            result.SetPixels(width, 0, width, height, capture2.GetPixels(xAdjust, 0, width, height));
+
             result.Apply();
             return result;
         }
