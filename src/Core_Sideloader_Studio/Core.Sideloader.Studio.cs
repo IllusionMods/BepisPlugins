@@ -12,7 +12,8 @@ namespace Sideloader
             "itemgroup",
             "animegroup",
             "voicegroup",
-            "bone"
+            "bone",
+            "mapcategory"
         };
     }
 }
