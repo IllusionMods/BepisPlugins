@@ -20,8 +20,8 @@ namespace BGMLoader
 
             var parts = context.Parameters.Name.Split('_');
             if (parts.Length != 3) return false;
-            //AIBGM10.ogg or HS2ABGM00.ogg or HS2BGM00.ogg
-            overrideFileName = $"{parts[0].ToUpper()}{parts[1].ToUpper()}{int.Parse(parts[2]):00}.ogg";
+            //AI_BGM_10.ogg or HS2A_BGM_00.ogg or HS2_BGM_00.ogg
+            overrideFileName = $"{parts[0].ToUpper()}_{parts[1].ToUpper()}_{int.Parse(parts[2]):00}.ogg";
             return true;
         }
     }
