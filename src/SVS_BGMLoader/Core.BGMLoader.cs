@@ -48,7 +48,7 @@ namespace BGMLoader
         [HarmonyPatch(typeof(Manager.Sound), nameof(Manager.Sound.Play), typeof(Manager.Sound.Type), typeof(AudioClip), typeof(float))]
         private static void TitleCallOverride(Manager.Sound.Type type, ref AudioClip clip)
         {
-            if (type == Manager.Sound.Type.SystemSE && Regex.IsMatch(clip.name, @"^sv_\d\d\d_se_\d\d\d_\d\d\d$"))
+            if (type == Manager.Sound.Type.SystemSE && clip.name != null && Regex.IsMatch(clip.name, @"^sv_\d\d\d_se_\d\d\d_\d\d\d$"))
             {
                 try
                 {
