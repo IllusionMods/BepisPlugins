@@ -5,32 +5,33 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<RootNamespace>BGMLoader</RootNamespace>
-		<OutputPath>..\..\bin\BepInEx\plugins\HC_BepisPlugins\</OutputPath>
+		<OutputPath>..\..\bin\BepInEx\plugins\SVS_BepisPlugins\</OutputPath>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<DebugType>embedded</DebugType>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-		<DefineConstants>$(DefineConstants);HC</DefineConstants>
+		<DefineConstants>$(DefineConstants);SVS</DefineConstants>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-		<DefineConstants>$(DefineConstants);HC</DefineConstants>
+		<DefineConstants>$(DefineConstants);SVS</DefineConstants>
 	</PropertyGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Delete Files="$(OutputPath)\HC_BGMLoader.deps.json" />
+		<Delete Files="$(OutputPath)\SVS_BGMLoader.deps.json" />
 	</Target>
 
 	<ItemGroup>
 		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668" />
 		<PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668" />
-		<PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15" />
-		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3" />
-		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.AudioModule" Version="2021.3.14.3" />
-		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.UI" Version="2021.3.14.3" />
+		<PackageReference Include="IllusionLibs.SamabakeScramble.Assembly-CSharp" Version="2024.8.30.1" />
+		<PackageReference Include="IllusionLibs.SamabakeScramble.Il2Cppmscorlib" Version="2024.8.30.1" />
+		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine" Version="2021.3.33.1" />
+		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine.AudioModule" Version="2021.3.33.1" />
+		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine.UI" Version="2021.3.33.1" />
 	</ItemGroup>
 
 	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
