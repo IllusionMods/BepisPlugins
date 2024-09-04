@@ -51,6 +51,10 @@ namespace BepisPlugins
         internal const string StudioProcessName = "DigitalCraft";
         internal const string GameProcessName = "HoneyCome";
         internal const string TrialProcessName = "HoneyComeTrial";
+#elif SVS
+        internal static bool InsideStudio => Application.productName == StudioProcessName;
+        internal const string StudioProcessName = "DigitalCraft";
+        internal const string GameProcessName = "SamabakeScramble";
 #endif
     }
 }
