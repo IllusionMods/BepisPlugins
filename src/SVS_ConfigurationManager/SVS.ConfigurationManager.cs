@@ -109,11 +109,12 @@ namespace ConfigurationManagerWrapper
             var original = __instance.transform.FindLoop("btnTitle").transform;
             var copy = Object.Instantiate(original, original.parent);
             copy.name = "btnPluginSettings";
-            copy.gameObject.SetActiveIfDifferent(true);
 
             copy.GetComponentInChildren<TextMeshProUGUI>().text = pluginSettingsText;
 
-            (copy.GetComponent<Button>().onClick ??= new()).AddListener((UnityAction)new System.Action(() =>
+            var button = copy.GetComponent<Button>();
+            button.interactable = true;
+            (button.onClick ??= new()).AddListener((UnityAction)new System.Action(() =>
             {
                 _manager.DisplayingWindow = !_manager.DisplayingWindow;
                 SV.Sound.Play(SystemSE.ok);
