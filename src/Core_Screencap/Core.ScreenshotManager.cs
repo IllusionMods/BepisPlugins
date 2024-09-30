@@ -6,6 +6,7 @@ using BepisPlugins;
 using Illusion.Game;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -70,6 +71,14 @@ namespace Screencap
         public static ConfigEntry<NameFormat> ScreenshotNameFormat { get; private set; }
         public static ConfigEntry<string> ScreenshotNameOverride { get; private set; }
         public static ConfigEntry<int> UIShotUpscale { get; private set; }
+
+        // screenshot setting presets
+
+        public static ConfigEntry<int> presetCount { get; private set; }
+        public static List<ConfigEntry<KeyboardShortcut>> presetKeys { get; private set; } = new List<ConfigEntry<KeyboardShortcut>>();
+        public static List<ConfigEntry<int>> presetResX { get; private set; } = new List<ConfigEntry<int>>();
+        public static List<ConfigEntry<int>> presetResY { get; private set; } = new List<ConfigEntry<int>>();
+        public static List<ConfigEntry<int>> presetDownscaling { get; private set; } = new List<ConfigEntry<int>>();
 
         private void InitializeSettings()
         {
@@ -188,6 +197,21 @@ namespace Screencap
                 "UI Screenshots", "Screenshot resolution multiplier",
                 1,
                 new ConfigDescription("Multiplies the UI screenshot resolution from the current game resolution by this amount.\nWarning: Some elements will still be rendered at the original resolution (most notably the interface).", new AcceptableValueRange<int>(1, 8), "Advanced"));
+
+            // config presets
+            presetCount = Config.Bind(
+                "Presets", "Preset Count",
+                1,
+                new ConfigDescription("Amount of additional screenshot presets. Requires Restart to apply.", new AcceptableValueRange<int>(0, 10), "Advanced"));
+
+
+            for(int i = 0; i < presetCount.Value; i++)
+            {
+                presetKeys.Add(Config.Bind("Presets", $"~{i + 1} - Shortcut", KeyboardShortcut.Empty, new ConfigDescription($"Keyboard Shortcut for Preset #{i + 1}.", null, "Advanced")));
+                presetResX.Add(Config.Bind("Presets", $"~{i + 1} - Res Horizontal", Screen.width, new ConfigDescription($"Horizontal size (width) of rendered screenshots in pixels of Preset #{i + 1}.", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax), "Advanced")));
+                presetResY.Add(Config.Bind("Presets", $"~{i + 1} - Res Vertical", Screen.height, new ConfigDescription($"Vertical size (height) of rendered screenshots in pixels of Preset #{i + 1}.", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax), "Advanced")));
+                presetDownscaling.Add(Config.Bind("Presets", $"~{i + 1} - Upsampling Ratio", 2, new ConfigDescription($"Capture screenshots in a higher resolution and then downscale them to desired size for Preset #{i + 1}. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4), "Advanced")));
+            }
         }
 
         #endregion
@@ -274,6 +298,13 @@ namespace Screencap
             else if (KeyCapture360.Value.IsDown()) StartCoroutine(Take360Screenshot(false));
             else if (KeyCaptureAlphaIn3D.Value.IsDown()) StartCoroutine(TakeCharScreenshot(true));
             else if (KeyCapture360in3D.Value.IsDown()) StartCoroutine(Take360Screenshot(true));
+            else
+            {
+                for (int i = 0; i < presetCount.Value && i < presetKeys.Count; i++)
+                {
+                    if (presetKeys[i].Value.IsDown()) StartCoroutine(TakeCharScreenshot(false, presetResX[i].Value, presetResY[i].Value, presetDownscaling[i].Value));
+                }
+            }
         }
 
         /// <summary>
@@ -320,13 +351,17 @@ namespace Screencap
             Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"UI screenshot saved to {filename}");
         }
 
-        private IEnumerator TakeCharScreenshot(bool in3D)
+        private IEnumerator TakeCharScreenshot(bool in3D, int resX = -1, int resY = -1, int downscaling = -1)
         {
             if (currentAlphaShot == null)
             {
                 Logger.Log(LogLevel.Message, "Can't render a screenshot here, try UI screenshot instead");
                 yield break;
             }
+
+            if (resX <= 0) resX = ResolutionX.Value;
+            if (resY <= 0) resY = ResolutionY.Value;
+            if (downscaling <= 0) downscaling = DownscalingRate.Value;
 
             try { OnPreCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
@@ -344,7 +379,7 @@ namespace Screencap
             if (!in3D)
             {
                 yield return new WaitForEndOfFrame();
-                var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
+                var capture = currentAlphaShot.CaptureTex(resX, resY, downscaling, CaptureAlphaMode.Value);
 
                 var filename = GetUniqueFilename("Render");
                 File.WriteAllBytes(filename, EncodeToFile(capture));
@@ -363,11 +398,11 @@ namespace Screencap
                 targetTr.position += targetTr.right * EyeSeparation.Value / 2;
                 // Let the game render at the new position
                 yield return new WaitForEndOfFrame();
-                var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
+                var capture = currentAlphaShot.CaptureTex(resX, resY, downscaling, CaptureAlphaMode.Value);
 
                 targetTr.position -= targetTr.right * EyeSeparation.Value;
                 yield return new WaitForEndOfFrame();
-                var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
+                var capture2 = currentAlphaShot.CaptureTex(resX, resY, downscaling, CaptureAlphaMode.Value);
 
                 targetTr.position += targetTr.right * EyeSeparation.Value / 2;
 
