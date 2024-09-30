@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>IMGUIModule.Il2Cpp.CoreCLR</RootNamespace>
+    <AssemblyName>IMGUIModule.Il2Cpp.CoreCLR.Patcher</AssemblyName>
+    <OutputPath>..\..\bin\BepInEx\patchers\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Delete Files="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.deps.json" />
+    <Copy SourceFiles="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" DestinationFiles="$(OutputPath)\HC_IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" />
+    <Copy SourceFiles="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" DestinationFiles="$(OutputPath)\SVS_IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668" />
+    <PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668" />
+    <PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15" />
+    <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3" />
+  </ItemGroup>
+
+  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+
+</Project>

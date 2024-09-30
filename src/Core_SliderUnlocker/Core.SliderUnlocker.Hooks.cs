@@ -272,5 +272,20 @@ namespace SliderUnlocker
             AccessTools.Property(typeof(ChaControl), nameof(ChaControl.hiPoly)).SetValue(__instance, __state, null);
         }
 #endif
+
+#if KK || KKS || EC // Prevent eye highlight position from getting clamped
+        [HarmonyTranspiler]
+        [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeSettingEyeHLUpPosY))]
+        [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeSettingEyeHLDownPosY))]
+#if !KK
+        [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeSettingEyeHLUpPosX))]
+        [HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeSettingEyeHLDownPosX))]
+#endif
+        private static IEnumerable<CodeInstruction> UnclampChangeEyeHlTpl(IEnumerable<CodeInstruction> instructions)
+        {
+            return instructions.MethodReplacer(AccessTools.Method(typeof(Mathf), nameof(Mathf.Lerp)),
+                                               AccessTools.Method(typeof(Mathf), nameof(Mathf.LerpUnclamped)));
+        }
+#endif
     }
 }

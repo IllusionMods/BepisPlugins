@@ -486,7 +486,9 @@ namespace Sideloader
         /// <returns>Manifest of the loaded mod or null if mod is not loaded.</returns>
         public static Manifest GetManifest(string guid)
         {
-            if (string.IsNullOrEmpty(guid)) return null;
+            if (guid == null) return null;
+            guid = guid.Trim();
+            if (guid.Length == 0) return null;
 
             Manifests.TryGetValue(guid, out Manifest manifest);
             return manifest;

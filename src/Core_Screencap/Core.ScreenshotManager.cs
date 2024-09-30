@@ -70,6 +70,7 @@ namespace Screencap
         public static ConfigEntry<int> JpgQuality { get; private set; }
         public static ConfigEntry<NameFormat> ScreenshotNameFormat { get; private set; }
         public static ConfigEntry<string> ScreenshotNameOverride { get; private set; }
+        public static ConfigEntry<CameraGuideLinesMode> GuideLinesModes { get; private set; }
         public static ConfigEntry<int> UIShotUpscale { get; private set; }
 
         // screenshot setting presets
@@ -133,7 +134,7 @@ namespace Screencap
                 AlphaMode.rgAlpha,
                 new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
 
-            CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None, 
+            CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None,
                 new ConfigDescription("Only for backwards compatibility, use CaptureAlphaMode instead.", null, new BrowsableAttribute(false)));
             CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.rgAlpha : AlphaMode.None;
             CaptureAlphaMode.SettingChanged += (sender, args) => CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
@@ -192,6 +193,11 @@ namespace Screencap
                 "General", "Screenshot filename Name override",
                 "",
                 new ConfigDescription("Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", null, "Advanced"));
+
+            GuideLinesModes = Config.Bind(
+                "General", "Camera guide lines",
+                CameraGuideLinesMode.Framing | CameraGuideLinesMode.GridThirds,
+                new ConfigDescription("Draws guide lines on the screen to help with framing rendered screenshots. The guide lines are not captured in the rendered screenshot.\nTo show the guide lines, open the quick access settings window.", null, "Advanced"));
 
             UIShotUpscale = Config.Bind(
                 "UI Screenshots", "Screenshot resolution multiplier",
@@ -515,16 +521,12 @@ namespace Screencap
         {
             var xAdjust = (int)(capture.width * overlapOffset);
             var result = new Texture2D((capture.width - xAdjust) * 2, capture.height, TextureFormat.ARGB32, false);
-            for (int x = 0; x < result.width; x++)
-            {
-                var first = x < result.width / 2;
-                var targetX = first ? x : x - capture.width + xAdjust * 2;
-                var targetTex = first ? capture : capture2;
-                for (int y = 0; y < result.height; y++)
-                {
-                    result.SetPixel(x, y, targetTex.GetPixel(targetX, y));
-                }
-            }
+
+            int width = result.width / 2;
+            int height = result.height;
+            result.SetPixels(0, 0, width, height, capture.GetPixels(0, 0, width, height));
+            result.SetPixels(width, 0, width, height, capture2.GetPixels(xAdjust, 0, width, height));
+
             result.Apply();
             return result;
         }
@@ -539,6 +541,8 @@ namespace Screencap
         {
             if (uiShow)
             {
+                DrawGuideLines();
+
                 IMGUIUtils.DrawSolidBox(uiRect);
                 uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "Screenshot settings");
                 IMGUIUtils.EatInputInRect(uiRect);
@@ -547,36 +551,31 @@ namespace Screencap
 
         private void WindowFunction(int windowID)
         {
+            var titleStyle = new GUIStyle
+            {
+                alignment = TextAnchor.MiddleCenter,
+                normal = new GUIStyleState
+                {
+                    textColor = Color.white
+                }
+            };
+
             GUILayout.BeginVertical(GUI.skin.box);
             {
-                GUILayout.Label("Output resolution (W/H)", new GUIStyle
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    normal = new GUIStyleState
-                    {
-                        textColor = Color.white
-                    }
-                });
+                GUILayout.Label("Output resolution (W/H)", titleStyle);
 
                 GUILayout.BeginHorizontal();
                 {
                     GUI.SetNextControlName("X");
                     ResolutionXBuffer = GUILayout.TextField(ResolutionXBuffer);
 
-                    GUILayout.Label("x", new GUIStyle
-                    {
-                        alignment = TextAnchor.LowerCenter,
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    }, GUILayout.ExpandWidth(false));
+                    GUILayout.Label("x", titleStyle, GUILayout.ExpandWidth(false), GUILayout.MinHeight(26));
 
                     GUI.SetNextControlName("Y");
                     ResolutionYBuffer = GUILayout.TextField(ResolutionYBuffer);
 
                     var focused = GUI.GetNameOfFocusedControl();
-                    if (focused != "X" && focused != "Y")
+                    if (focused != "X" && focused != "Y" || Event.current.keyCode == KeyCode.Return)
                     {
                         if (!int.TryParse(ResolutionXBuffer, out int x))
                             x = ResolutionX.Value;
@@ -585,114 +584,217 @@ namespace Screencap
                         ResolutionXBuffer = (ResolutionX.Value = Mathf.Clamp(x, ScreenshotSizeMin, ScreenshotSizeMax)).ToString();
                         ResolutionYBuffer = (ResolutionY.Value = Mathf.Clamp(y, ScreenshotSizeMin, ScreenshotSizeMax)).ToString();
                     }
-                    GUILayout.EndHorizontal();
-
-                    GUILayout.Space(2);
-
-                    if (GUILayout.Button("Set to screen size"))
-                    {
-                        ResolutionX.Value = Screen.width;
-                        ResolutionY.Value = Screen.height;
-                    }
-
-                    if (GUILayout.Button("Rotate 90 degrees"))
-                    {
-                        var curerntX = ResolutionX.Value;
-                        ResolutionX.Value = ResolutionY.Value;
-                        ResolutionY.Value = curerntX;
-                    }
                 }
-                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
 
-                GUILayout.BeginVertical(GUI.skin.box);
+                GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label("Screen upsampling rate", new GUIStyle
+                    if (GUILayout.Button("1:1"))
                     {
-                        alignment = TextAnchor.MiddleCenter,
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    });
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        int downscale = (int)Math.Round(GUILayout.HorizontalSlider(DownscalingRate.Value, 1, 4));
-
-                        GUILayout.Label($"{downscale}x", new GUIStyle
-                        {
-                            alignment = TextAnchor.UpperRight,
-                            normal = new GUIStyleState
-                            {
-                                textColor = Color.white
-                            }
-                        }, GUILayout.ExpandWidth(false));
-                        DownscalingRate.Value = downscale;
+                        var max = Mathf.Max(ResolutionX.Value, ResolutionY.Value);
+                        ResolutionX.Value = max;
+                        ResolutionY.Value = max;
                     }
-                    GUILayout.EndHorizontal();
-
+                    if (GUILayout.Button("4:3"))
+                    {
+                        var max = Mathf.Max(ResolutionX.Value, ResolutionY.Value);
+                        ResolutionX.Value = max;
+                        ResolutionY.Value = Mathf.RoundToInt(max * (3f / 4f));
+                    }
+                    if (GUILayout.Button("16:9"))
+                    {
+                        var max = Mathf.Max(ResolutionX.Value, ResolutionY.Value);
+                        ResolutionX.Value = max;
+                        ResolutionY.Value = Mathf.RoundToInt(max * (9f / 16f));
+                    }
+                    if (GUILayout.Button("6:10"))
+                    {
+                        var max = Mathf.Max(ResolutionX.Value, ResolutionY.Value);
+                        ResolutionX.Value = Mathf.RoundToInt(max * (6f / 10f));
+                        ResolutionY.Value = max;
+                    }
                 }
-                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
 
-                GUILayout.BeginVertical(GUI.skin.box);
+                if (GUILayout.Button("Set to screen size"))
                 {
-                    GUILayout.Label("Card upsampling rate", new GUIStyle
-                    {
-                        alignment = TextAnchor.MiddleCenter,
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    });
-
-                    GUILayout.BeginHorizontal();
-                    {
-                        int carddownscale = (int)Math.Round(GUILayout.HorizontalSlider(CardDownscalingRate.Value, 1, 4));
-
-                        GUILayout.Label($"{carddownscale}x", new GUIStyle
-                        {
-                            alignment = TextAnchor.UpperRight,
-                            normal = new GUIStyleState
-                            {
-                                textColor = Color.white
-                            }
-                        }, GUILayout.ExpandWidth(false));
-                        CardDownscalingRate.Value = carddownscale;
-                    }
-                    GUILayout.EndHorizontal();
+                    ResolutionX.Value = Screen.width;
+                    ResolutionY.Value = Screen.height;
                 }
-                GUILayout.EndVertical();
 
-                GUILayout.BeginVertical(GUI.skin.box);
+                if (GUILayout.Button("Rotate 90 degrees"))
                 {
-                    GUILayout.Label("Transparent background");
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUI.changed = false;
-                        var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
-                        if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
-
-                        GUI.changed = false;
-                        val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.blackout, "Cutout");
-                        if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.blackout;
-
-                        GUI.changed = false;
-                        val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.rgAlpha, "Alpha");
-                        if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.rgAlpha;
-                    }
-                    GUILayout.EndHorizontal();
+                    var curerntX = ResolutionX.Value;
+                    ResolutionX.Value = ResolutionY.Value;
+                    ResolutionY.Value = curerntX;
                 }
-                GUILayout.EndVertical();
-
-                if (GUILayout.Button("Open screenshot dir"))
-                    Process.Start(screenshotDir);
-
-                GUILayout.Space(3);
-                GUILayout.Label("More in Plugin Settings");
-
-                GUI.DragWindow();
             }
-            #endregion
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Screen upsampling rate", titleStyle);
+
+                GUILayout.BeginHorizontal();
+                {
+                    int downscale = (int)Math.Round(GUILayout.HorizontalSlider(DownscalingRate.Value, 1, 4));
+
+                    GUILayout.Label($"{downscale}x", new GUIStyle
+                    {
+                        alignment = TextAnchor.UpperRight,
+                        normal = new GUIStyleState
+                        {
+                            textColor = Color.white
+                        }
+                    }, GUILayout.ExpandWidth(false));
+                    DownscalingRate.Value = downscale;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Card upsampling rate", titleStyle);
+
+                GUILayout.BeginHorizontal();
+                {
+                    int carddownscale = (int)Math.Round(GUILayout.HorizontalSlider(CardDownscalingRate.Value, 1, 4));
+
+                    GUILayout.Label($"{carddownscale}x", new GUIStyle
+                    {
+                        alignment = TextAnchor.UpperRight,
+                        normal = new GUIStyleState
+                        {
+                            textColor = Color.white
+                        }
+                    }, GUILayout.ExpandWidth(false));
+                    CardDownscalingRate.Value = carddownscale;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Transparent background", titleStyle);
+                GUILayout.BeginHorizontal();
+                {
+                    GUI.changed = false;
+                    var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
+                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.blackout, "Cutout");
+                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.blackout;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.rgAlpha, "Alpha");
+                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.rgAlpha;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Guide lines", titleStyle);
+                GUILayout.BeginHorizontal();
+                {
+                    GUI.changed = false;
+                    var val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0, "Frame");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.Framing : GuideLinesModes.Value & ~CameraGuideLinesMode.Framing;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0, "3rds");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridThirds : GuideLinesModes.Value & ~CameraGuideLinesMode.GridThirds;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0, "Phi");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridPhi : GuideLinesModes.Value & ~CameraGuideLinesMode.GridPhi;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            if (GUILayout.Button("Open screenshot dir"))
+                Process.Start(screenshotDir);
+
+            GUILayout.Space(2);
+            GUILayout.Label("More in Plugin Settings");
+
+            GUI.DragWindow();
         }
+
+        private static void DrawGuideLines()
+        {
+            var desiredAspect = ResolutionX.Value / (float)ResolutionY.Value;
+            var screenAspect = Screen.width / (float)Screen.height;
+
+            if (screenAspect > desiredAspect)
+            {
+                var actualWidth = Mathf.RoundToInt(Screen.height * desiredAspect);
+                var barWidth = Mathf.RoundToInt((Screen.width - actualWidth) / 2f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
+                {
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, barWidth, Screen.height));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth, 0, barWidth, Screen.height));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
+                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.3333333f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
+                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.236f);
+            }
+            else
+            {
+                var actualHeight = Mathf.RoundToInt(Screen.width / desiredAspect);
+                var barHeight = Mathf.RoundToInt((Screen.height - actualHeight) / 2f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
+                {
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, Screen.width, barHeight));
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight, Screen.width, barHeight));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
+                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.3333333f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
+                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.236f);
+            }
+
+            void DrawGuides(int offsetX, int offsetY, int viewportWidth, int viewportHeight, float centerRatio)
+            {
+                var sideRatio = (1 - centerRatio) / 2;
+                var secondRatio = sideRatio + centerRatio;
+
+                var firstx = offsetX + viewportWidth * sideRatio;
+                var secondx = offsetX + viewportWidth * secondRatio;
+                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(firstx), offsetY, 1, viewportHeight));
+                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(secondx), offsetY, 1, viewportHeight));
+
+                var firsty = offsetY + viewportHeight * sideRatio;
+                var secondy = offsetY + viewportHeight * secondRatio;
+                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(firsty), viewportWidth, 1));
+                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(secondy), viewportWidth, 1));
+            }
+        }
+
+        [Flags]
+        public enum CameraGuideLinesMode
+        {
+            [Description("No guide lines")]
+            None = 0,
+            [Description("Cropped area")]
+            Framing = 1 << 0,
+            [Description("Rule of thirds")]
+            GridThirds = 1 << 1,
+            [Description("Golden ratio")]
+            GridPhi = 1 << 2,
+        }
+        #endregion
     }
 }

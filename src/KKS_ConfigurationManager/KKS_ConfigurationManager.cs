@@ -67,6 +67,6 @@ namespace ConfigurationManagerWrapper
         private static void OnOpen(ref UniTask __result) => __result.GetAwaiter().OnCompleted(CreateButton);
 
         [HarmonyPostfix, HarmonyPatch(typeof(ConfigScene), nameof(ConfigScene.Unload))]
-        private static void OnClose() => _manager.DisplayingWindow = false;
+        private static void OnClose() => _manager.DisplayingWindow = _manager.DisplayingWindow && !_manager.IsWindowFullscreen; // Keep the window open if user dragged it
     }
 }

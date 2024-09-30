@@ -1,14 +1,10 @@
-
 # BepisPlugins
-A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins for Koikatu / Koikatsu Party, EmotionCreators, AI-Shoujo / AI-Girl, HoneySelect2 and other games by Illusion. Check plugin descriptions below for a full list of included plugins. 
+A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins for Koikatu / Koikatsu Party, EmotionCreators, AI-Shoujo / AI-Girl, HoneySelect2, HoneyCome, SamabakeScramble / Summer Vacation Scramble, and other games by Illusion/Illgames. Check plugin descriptions below for a full list of included plugins. 
 
 If you wish to contribute or need help, check the #help channel on the [Koikatsu discord server](https://discord.gg/hevygx6).
 
-[![GitHub release](https://img.shields.io/github/release/bbepis/BepisPlugins.svg?style=for-the-badge)](https://github.com/bbepis/BepisPlugins/releases)
-[![Github Releases](https://img.shields.io/github/downloads/bbepis/BepisPlugins/latest/total.svg?style=for-the-badge)](https://github.com/bbepis/BepisPlugins/releases)
-
 ### How to install
-0. At least [BepInEx 5.0](https://builds.bepis.io/projects/bepinex_be) is required. Make sure it is installed and working before installing BepisPlugins.
+0. The latest version of BepInEx 5, or in case of HoneyCome of BepInEx 6 (nightly build 668 or later) is required. Make sure it is installed and working before installing BepisPlugins. Latest version of the ConfigurationManager plugin is also recommended to be installed.
 1. Download the latest release archive for your game (specified by the two letter prefix, e.g. AI for AI-Girl) from the releases page above (not the "Clone or download" button).
 2. Extract the archive into your game directory (where the game exe and BepInEx folder are located). Replace old files if asked.
 
@@ -50,7 +46,13 @@ It prevents mods from colliding with each other (i.e. 2 mods have same item IDs 
 ### SliderUnlocker
 Allows user to set values outside of the standard 0-100 range on all sliders in the editor.
 
+### IMGUIModule.Il2Cpp.CoreCLR.Patcher
+(HoneyCome, SamabakeScramble)
+
+Fixes issues with IMGUI caused by the game being IL2CPP that prevent other plugins like ConfigurationManager from being displayed correctly.
+
 ## Removed plugins
+
 ### Configuration Manager
 Moved to https://github.com/BepInEx/BepInEx.ConfigurationManager
 

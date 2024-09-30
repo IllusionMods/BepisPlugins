@@ -107,7 +107,7 @@ namespace Sideloader.AutoResolver
         {
             UpdateLookupsIfNeeded();
 
-            if (StudioResolutionInfoGuidLookup.TryGetValue(guid, out var slotLookup))
+            if (StudioResolutionInfoGuidLookup.TryGetValue(guid.Trim(), out var slotLookup))
             {
                 if (slotLookup.TryGetValue(slot, out var result))
                     return onlyResolveItems ? result.Where(IsResolveItem) : result;
@@ -262,7 +262,7 @@ namespace Sideloader.AutoResolver
         {
             if (OI is OIItemInfo Item)
             {
-                StudioResolveInfo intResolve = GetStudioResolveInfos(extResolve.GUID, Item.no, true).FirstOrDefault();
+                StudioResolveInfo intResolve = GetStudioResolveInfoForItem(extResolve, Item);
                 if (intResolve != null)
                 {
                     if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
@@ -298,6 +298,29 @@ namespace Sideloader.AutoResolver
                 else if (resolveType == ResolveType.Load)
                     ShowGUIDError(extResolve.GUID, extResolve.Author, extResolve.Website, extResolve.Name);
             }
+        }
+
+        private static StudioResolveInfo GetStudioResolveInfoForItem(StudioResolveInfo extResolve, OIItemInfo item)
+        {
+            StudioResolveInfo intResolveFirst = null;
+            foreach (var studioResolveInfo in GetStudioResolveInfos(extResolve.GUID, item.no, true))
+            {
+                // In case of multiple resolve infos with the same GUID and slot, prefer the one with the same group and category as the OIItemInfo (in theory there should always be a match unless the zipmod is missing)
+                if (studioResolveInfo.Group == item.group && studioResolveInfo.Category == item.category)
+                    return studioResolveInfo;
+
+                // If no match was found, use the first one. This is to keep consistency with old versions of Sideloader that didn't check group and category, and always just took the first one.
+                if (intResolveFirst == null)
+                    intResolveFirst = studioResolveInfo;
+            }
+
+            if (intResolveFirst != null)
+            {
+                //if (Sideloader.DebugLogging.Value)
+                Sideloader.Logger.LogWarning($"Resolved (Studio Item) [{extResolve.GUID}] {item.no} does not match category/group of its OIItemInfo! Group:{item.group}->{intResolveFirst.Group} Category:{item.category}->{intResolveFirst.Category}");
+            }
+
+            return intResolveFirst;
         }
 
         /// <summary>
@@ -381,16 +404,17 @@ namespace Sideloader.AutoResolver
                 {
                     if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;
 
-                    var intResolve = TryGetResolutionInfo(Item.pattern[i].key, ChaListDefine.CategoryNo.mt_pattern, patternInfo.GUID);
+                    var patternGUID = patternInfo.GUID?.Trim();
+                    var intResolve = TryGetResolutionInfo(Item.pattern[i].key, ChaListDefine.CategoryNo.mt_pattern, patternGUID);
                     if (intResolve != null)
                     {
                         if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{patternInfo.GUID}] {Item.pattern[i].key}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{patternGUID}] {Item.pattern[i].key}->{intResolve.LocalSlot}");
                         Item.pattern[i].key = intResolve.LocalSlot;
                     }
                     else if (resolveType == ResolveType.Load)
                     {
-                        ShowGUIDError(patternInfo.GUID, patternInfo.Author, patternInfo.Website, patternInfo.Name);
+                        ShowGUIDError(patternGUID, patternInfo.Author, patternInfo.Website, patternInfo.Name);
                         Item.pattern[i].key = BaseSlotID - 1;
                     }
                 }
@@ -399,16 +423,17 @@ namespace Sideloader.AutoResolver
                 {
                     if (!extResolve.ObjectPatternInfo.TryGetValue(i, out var patternInfo)) continue;
 
-                    var intResolve = TryGetResolutionInfo(Item.colors[i].pattern.key, AIChara.ChaListDefine.CategoryNo.st_pattern, patternInfo.GUID);
+                    var patternGUID = patternInfo.GUID?.Trim();
+                    var intResolve = TryGetResolutionInfo(Item.colors[i].pattern.key, AIChara.ChaListDefine.CategoryNo.st_pattern, patternGUID);
                     if (intResolve != null)
                     {
                         if (resolveType == ResolveType.Load && Sideloader.DebugLogging.Value)
-                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{patternInfo.GUID}] {Item.colors[i].pattern.key}->{intResolve.LocalSlot}");
+                            Sideloader.Logger.LogDebug($"Resolving (Studio Item Pattern) [{patternGUID}] {Item.colors[i].pattern.key}->{intResolve.LocalSlot}");
                         Item.colors[i].pattern.key = intResolve.LocalSlot;
                     }
                     else if (resolveType == ResolveType.Load)
                     {
-                        ShowGUIDError(patternInfo.GUID, patternInfo.Author, patternInfo.Website, patternInfo.Name);
+                        ShowGUIDError(patternGUID, patternInfo.Author, patternInfo.Website, patternInfo.Name);
                         Item.colors[i].pattern.key = BaseSlotID - 1;
                     }
                 }

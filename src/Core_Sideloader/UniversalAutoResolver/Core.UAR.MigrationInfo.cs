@@ -47,8 +47,8 @@ namespace Sideloader.AutoResolver
         {
             MigrationType = migrationType;
             Category = category;
-            GUIDOld = guidOld;
-            GUIDNew = guidNew;
+            GUIDOld = guidOld?.Trim();
+            GUIDNew = guidNew?.Trim();
             IDOld = idOld;
             IDNew = idNew;
         }
@@ -56,8 +56,8 @@ namespace Sideloader.AutoResolver
         public MigrationInfo(MigrationType migrationType, string guidOld, string guidNew)
         {
             MigrationType = migrationType;
-            GUIDOld = guidOld;
-            GUIDNew = guidNew;
+            GUIDOld = guidOld?.Trim();
+            GUIDNew = guidNew?.Trim();
         }
     }
 }
