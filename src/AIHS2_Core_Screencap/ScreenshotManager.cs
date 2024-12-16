@@ -57,6 +57,7 @@ namespace Screencap
         private Material _matComposite;
         private Material _matScale;
 
+        private ConfigEntry<bool> ShowCaptureArea { get; set; }
         private ConfigEntry<int> CaptureWidth { get; set; }
         private ConfigEntry<int> CaptureHeight { get; set; }
         private static ConfigEntry<int> Downscaling { get; set; }
@@ -69,6 +70,7 @@ namespace Screencap
 
         private ConfigEntry<KeyboardShortcut> KeyCaptureNormal { get; set; }
         private ConfigEntry<KeyboardShortcut> KeyCaptureRender { get; set; }
+        private ConfigEntry<KeyboardShortcut> KeyShowCaptureArea { get; set; }
 
         private static string GetCaptureFilename()
         {
@@ -85,6 +87,7 @@ namespace Screencap
 
         private void Awake()
         {
+            ShowCaptureArea = Config.Bind("Rendered screenshots", "Show capture area", false, new ConfigDescription("Shows a Frame around the Area that will be captured."));
             CaptureWidth = Config.Bind("Rendered screenshots", "Screenshot width", Screen.width, new ConfigDescription("Screenshot width in pixels", new AcceptableValueRange<int>(1, 10000)));
             CaptureHeight = Config.Bind("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
             Downscaling = Config.Bind("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
@@ -98,6 +101,7 @@ namespace Screencap
 
             KeyCaptureNormal = Config.Bind("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), "Capture a screenshot \"as you see it\". Includes interface and such.");
             KeyCaptureRender = Config.Bind("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), "Capture a rendered screenshot with no interface. Controlled by other settings.");
+            KeyShowCaptureArea = Config.Bind("Hotkeys", "Show capture area", new KeyboardShortcut(KeyCode.F10), "Toggle the red capture area frame.");
 
             UIShotUpscale = Config.Bind(
                 "UI Screenshots", "Screenshot resolution multiplier",
@@ -191,6 +195,53 @@ namespace Screencap
                 else
                     StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(false)));
             }
+            else if (KeyShowCaptureArea.Value.IsDown())
+            {
+                ShowCaptureArea.Value = !ShowCaptureArea.Value;
+            }
+        }
+
+        private void OnGUI()
+        {
+            // Draw capture area
+            if (ShowCaptureArea.Value)
+            {
+                DrawCaptureArea();
+            }
+        }
+
+        /// <summary>
+        /// Draw a semi-transparent red border around the capture area
+        /// </summary>
+        private void DrawCaptureArea()
+        {
+            var width = CaptureWidth.Value;
+            var height = CaptureHeight.Value;
+
+            float screenRatio = (float)Screen.width / Screen.height;
+            float captureRatio = (float)width / height;
+
+            if (screenRatio > captureRatio)
+            {
+                height = Screen.height;
+                width = (int)(height * captureRatio);
+            }
+            else
+            {
+                width = Screen.width;
+                height = (int)(width / captureRatio);
+            }
+
+            var rect = new Rect((Screen.width - width) / 2, (Screen.height - height) / 2, width, height);
+            var color = new Color(1, 0, 0, 0.5f); // Red color with 50% transparency
+
+            GUI.color = color;
+            GUI.depth = -1000;
+            GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width, 4), Texture2D.whiteTexture); // Top border
+            GUI.DrawTexture(new Rect(rect.x, rect.yMax - 4, rect.width, 4), Texture2D.whiteTexture); // Bottom border
+            GUI.DrawTexture(new Rect(rect.x, rect.y, 4, rect.height), Texture2D.whiteTexture); // Left border
+            GUI.DrawTexture(new Rect(rect.xMax - 4, rect.y, 4, rect.height), Texture2D.whiteTexture); // Right border
+            GUI.color = color;
         }
 
         private static void PlayCaptureSound()
