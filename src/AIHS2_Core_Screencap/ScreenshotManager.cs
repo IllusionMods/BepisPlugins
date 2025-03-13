@@ -28,6 +28,12 @@ namespace Screencap
     /// <summary>
     /// Plugin for taking high quality screenshots with optional transparency.
     /// Brought to AI-Shoujo by essu - the local smug, benevolent modder.
+    /// Provides features like:
+    /// - Custom resolution screenshots
+    /// - Transparency support
+    /// - Upsampling for higher quality
+    /// - Guide lines for composition
+    /// - Saved resolution presets
     /// </summary>
     public partial class ScreenshotManager : BaseUnityPlugin
     {
@@ -40,39 +46,27 @@ namespace Screencap
         /// </summary>
         public const string Version = Metadata.PluginsVersion;
 
-        /// <summary>
-        /// Triggered before a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
-        /// </summary>
-        public static event Action OnPreCapture;
-        /// <summary>
-        /// Triggered after a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
-        /// </summary>
-        public static event Action OnPostCapture;
+        #region Config
 
+        /// <summary>
+        /// Maximum allowed screenshot resolution, depends on extreme resolution setting
+        /// </summary>
         private int ScreenshotSizeMax => ResolutionAllowExtreme?.Value == true ? 15360 : 4096;
+        
+        /// <summary>
+        /// Minimum allowed screenshot resolution
+        /// </summary>
         private const int ScreenshotSizeMin = 2;
 
+        /// <summary>
+        /// Directory where screenshots are saved
+        /// </summary>
         private readonly string screenshotDir = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
 
+        /// <summary>
+        /// List of saved resolution presets
+        /// </summary>
         private List<Vector2Int> savedResolutions = new List<Vector2Int>();
-
-        private enum ShadowCascades
-        {
-            Zero = 0,
-            Two = 2,
-            Four = 4,
-            Off
-        }
-
-        private enum DisableAOSetting
-        {
-            Always,
-            WhenUpsampling,
-            Never
-        }
-
-        private Material _matComposite;
-        private Material _matScale;
 
         private ConfigEntry<int> CaptureWidth { get; set; }
         private ConfigEntry<int> CaptureHeight { get; set; }
@@ -95,19 +89,11 @@ namespace Screencap
 
         private ConfigEntry<string> SavedResolutionsConfig { get; set; }
 
-        private static string GetCaptureFilename()
-        {
-            var dir = Path.Combine(Paths.GameRootPath, "UserData", "cap");
-            Directory.CreateDirectory(dir);
-            return Path.Combine(dir,
-#if AI
-                $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
-#elif HS2
-                $"HS2_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
-#endif
-                );
-        }
-
+        /// <summary>
+        /// Initializes plugin settings and configuration options.
+        /// Sets up all configurable parameters like resolution limits, hotkeys,
+        /// and screenshot behavior options.
+        /// </summary>
         private void InitializeSettings()
         {
             Console.WriteLine("Initializing settings");
@@ -194,6 +180,53 @@ namespace Screencap
             LoadSavedResolutions();
         }
 
+        /// <summary>
+        /// Loads previously saved screenshot resolution presets from config.
+        /// Parses the saved string format "(width,height)" into Vector2Int values.
+        /// </summary>
+        private void LoadSavedResolutions()
+        {
+            if (!string.IsNullOrEmpty(SavedResolutionsConfig.Value))
+            {
+                savedResolutions = new List<Vector2Int>();
+
+                // Regex pattern to match (x,y) format
+                Regex regex = new Regex(@"\((\-?\d+),(\-?\d+)\)");
+
+                foreach (Match match in regex.Matches(SavedResolutionsConfig.Value))
+                {
+                    int x = int.Parse(match.Groups[1].Value);
+                    int y = int.Parse(match.Groups[2].Value);
+                    savedResolutions.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        private void SaveSavedResolutions()
+        {
+            SavedResolutionsConfig.Value = "[" + string.Join(", ", savedResolutions.Select(v => $"({v.x},{v.y})")) + "]";
+        }
+
+        private void SaveCurrentResolution()
+        {
+            var resolution = new Vector2Int(CaptureWidth.Value, CaptureHeight.Value);
+            if (!savedResolutions.Contains(resolution))
+            {
+                savedResolutions.Add(resolution);
+                SaveSavedResolutions();
+            }
+        }
+
+        private void DeleteResolution(Vector2Int resolution)
+        {
+            savedResolutions.Remove(resolution);
+            SaveSavedResolutions();
+        }
+
+        #endregion
+
+        #region Unity Methods
+
         private void Awake()
         {
             Console.WriteLine("Awake");
@@ -211,6 +244,26 @@ namespace Screencap
             Console.WriteLine("Applying hooks");
             Hooks.Apply();
         }
+
+        private void Update()
+        {
+            if (KeyGui.Value.IsDown())
+            {
+                uiShow = !uiShow;
+                CaptureWidthBuffer = CaptureWidth.Value.ToString();
+                CaptureHeightBuffer = CaptureHeight.Value.ToString();
+            }
+            else if (KeyCaptureNormal.Value.IsDown())
+            {
+                CaptureScreenshotNormal();
+            }
+            else if (KeyCaptureRender.Value.IsDown())
+            {
+                CaptureScreenshotRender();
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Disable built-in screenshots
@@ -271,23 +324,7 @@ namespace Screencap
             }
         }
 
-        private void Update()
-        {
-            if (KeyGui.Value.IsDown())
-            {
-                uiShow = !uiShow;
-                CaptureWidthBuffer = CaptureWidth.Value.ToString();
-                CaptureHeightBuffer = CaptureHeight.Value.ToString();
-            }
-            else if (KeyCaptureNormal.Value.IsDown())
-            {
-                CaptureScreenshotNormal();
-            }
-            else if (KeyCaptureRender.Value.IsDown())
-            {
-                CaptureScreenshotRender();
-            }
-        }
+        #region Sound Handler
 
         private static void PlayCaptureSound()
         {
@@ -301,25 +338,18 @@ namespace Screencap
 #endif
         }
 
-        private IEnumerator WaitForEndOfFrameThen(Action a)
-        {
-            var sc = QualitySettings.shadowCascades;
+        #endregion
 
-            if (ShadowCascadeOverride.Value != ShadowCascades.Off)
-                QualitySettings.shadowCascades = (int)ShadowCascadeOverride.Value;
+        #region Screenshot Handler
 
-            var lights = FindObjectsOfType<Light>();
-            foreach (var l in lights)
-                l.shadowCustomResolution = CustomShadowResolution.Value;
-
-            yield return new WaitForEndOfFrame();
-            a();
-
-            QualitySettings.shadowCascades = sc;
-
-            foreach (var l in lights)
-                l.shadowCustomResolution = 0;
-        }
+        /// <summary>
+        /// Triggered before a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
+        /// </summary>
+        public static event Action OnPreCapture;
+        /// <summary>
+        /// Triggered after a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
+        /// </summary>
+        public static event Action OnPostCapture;
 
         private void CaptureAndWrite(bool alpha)
         {
@@ -354,6 +384,10 @@ namespace Screencap
             }
         }
 
+        /// <summary>
+        /// Captures an opaque screenshot at specified resolution with optional upsampling.
+        /// Handles depth of field adjustments for the capture.
+        /// </summary>
         private RenderTexture CaptureOpaque(int width, int height, int downscaling)
         {
             var scaledWidth = width * downscaling;
@@ -365,7 +399,9 @@ namespace Screencap
             if (dof != null)
             {
                 dofPrevBlurSize = dof.maxBlurSize;
-                var ratio = Screen.height / (float)scaledHeight; //Use larger of width/height?
+                // Scale blur size proportionally with resolution to maintain consistent DoF effect
+                // Higher resolution needs proportionally larger blur radius
+                var ratio = Screen.height / (float)scaledHeight;
                 dof.maxBlurSize *= ratio * downscaling;
             }
 
@@ -381,6 +417,10 @@ namespace Screencap
             return colour;
         }
 
+        /// <summary>
+        /// Captures a transparent screenshot by disabling background and compositing alpha.
+        /// Temporarily modifies scene settings to achieve transparency.
+        /// </summary>
         private RenderTexture CaptureTransparent(int width, int height, int downscaling)
         {
             var scaledWidth = width * downscaling;
@@ -454,10 +494,74 @@ namespace Screencap
                 StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(false)));
         }
 
+        private IEnumerator WaitForEndOfFrameThen(Action a)
+        {
+            var sc = QualitySettings.shadowCascades;
+
+            if (ShadowCascadeOverride.Value != ShadowCascades.Off)
+                QualitySettings.shadowCascades = (int)ShadowCascadeOverride.Value;
+
+            var lights = FindObjectsOfType<Light>();
+            foreach (var l in lights)
+                l.shadowCustomResolution = CustomShadowResolution.Value;
+
+            yield return new WaitForEndOfFrame();
+            a();
+
+            QualitySettings.shadowCascades = sc;
+
+            foreach (var l in lights)
+                l.shadowCustomResolution = 0;
+        }
+
+        #endregion
+
+        #region File Handler
+        
+        private static string GetCaptureFilename()
+        {
+            var dir = Path.Combine(Paths.GameRootPath, "UserData", "cap");
+            Directory.CreateDirectory(dir);
+            return Path.Combine(dir,
+#if AI
+                $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
+#elif HS2
+                $"HS2_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
+#endif
+                );
+        }
+
+        #endregion
+
+        #region Image Processing
+
+        private Material _matComposite;
+        private Material _matScale;
+
+        private enum ShadowCascades
+        {
+            Zero = 0,
+            Two = 2,
+            Four = 4,
+            Off
+        }
+
+        private enum DisableAOSetting
+        {
+            Always,
+            WhenUpsampling,
+            Never
+        }
+
         private static IEnumerable<AmbientOcclusion> DisableAmbientOcclusion()
         {
             var aos = new List<AmbientOcclusion>();
 
+            // Disable ambient occlusion based on settings:
+            // - Always: Disable regardless of other settings
+            // - WhenUpsampling: Only disable when downscaling > 1 to prevent artifacts
+            // - Never: Keep AO enabled
+            // Returns list of disabled AO components to re-enable later
             if (DisableAO.Value == DisableAOSetting.Always || DisableAO.Value == DisableAOSetting.WhenUpsampling && Downscaling.Value > 1)
                 foreach (var vol in FindObjectsOfType<PostProcessVolume>())
                 {
@@ -472,11 +576,19 @@ namespace Screencap
             return aos;
         }
 
+        /// <summary>
+        /// Scales a render texture to the target resolution using custom shader.
+        /// Used for downscaling high resolution captures to final output size.
+        /// </summary>
         private void ScaleTex(ref RenderTexture rt, int width, int height, int downScaling)
         {
             if (downScaling > 1)
             {
                 var resized = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
+                // Pack downscaling parameters into a Vector4:
+                // xy: downscaling factors for width and height
+                // zw: final target dimensions
+                // This format is required by the resize shader
                 _matScale.SetVector("_KernelAndSize", new Vector4(downScaling, downScaling, width, height));
                 Graphics.Blit(rt, resized, _matScale);
                 RenderTexture.ReleaseTemporary(rt);
@@ -484,6 +596,10 @@ namespace Screencap
             }
         }
 
+        /// <summary>
+        /// Writes the captured RenderTexture to a PNG file asynchronously.
+        /// Handles both RGBA32 (transparent) and RGBAFloat (opaque) formats.
+        /// </summary>
         private IEnumerator WriteTex(RenderTexture rt, bool alpha)
         {
             //Pull texture off of GPU
@@ -511,20 +627,26 @@ namespace Screencap
 
         private static RenderTexture CaptureScreen(int width, int height, bool alpha)
         {
-            // Setup postprocessing effects to work with the capture
+            // Temporarily disable ambient occlusion to prevent artifacts
             var aos = DisableAmbientOcclusion();
 
-            // Do the capture
+            // Select appropriate render texture format:
+            // - ARGB32 for transparent captures (alpha channel needed)
+            // - Default for opaque captures (better color precision)
             var fmt = alpha ? RenderTextureFormat.ARGB32 : RenderTextureFormat.Default;
             var rt = RenderTexture.GetTemporary(width, height, 32, fmt, RenderTextureReadWrite.Default);
 
             var cam = Camera.main;
 
+            // Store original camera settings to restore later
             var oldCf = cam.clearFlags;
             var oldBg = cam.backgroundColor;
             var oldRt = cam.targetTexture;
             var oldRtc = Camera.current.targetTexture;
 
+            // Configure camera for capture:
+            // - For transparent captures: Use solid color clear and transparent background
+            // - For opaque captures: Keep original settings
             cam.clearFlags = alpha ? CameraClearFlags.SolidColor : oldCf;
             cam.backgroundColor = alpha ? new Color(0, 0, 0, 0) : oldBg;
             cam.targetTexture = rt;
@@ -544,50 +666,24 @@ namespace Screencap
             return rt;
         }
         
-        private void LoadSavedResolutions()
-        {
-            if (!string.IsNullOrEmpty(SavedResolutionsConfig.Value))
-            {
-                savedResolutions = new List<Vector2Int>();
+        #endregion
 
-                // Regex pattern to match (x,y) format
-                Regex regex = new Regex(@"\((\-?\d+),(\-?\d+)\)");
-
-                foreach (Match match in regex.Matches(SavedResolutionsConfig.Value))
-                {
-                    int x = int.Parse(match.Groups[1].Value);
-                    int y = int.Parse(match.Groups[2].Value);
-                    savedResolutions.Add(new Vector2Int(x, y));
-                }
-            }
-        }
-
-        private void SaveSavedResolutions()
-        {
-            SavedResolutionsConfig.Value = "[" + string.Join(", ", savedResolutions.Select(v => $"({v.x},{v.y})")) + "]";
-        }
-
-        private void SaveCurrentResolution()
-        {
-            var resolution = new Vector2Int(CaptureWidth.Value, CaptureHeight.Value);
-            if (!savedResolutions.Contains(resolution))
-            {
-                savedResolutions.Add(resolution);
-                SaveSavedResolutions();
-            }
-        }
-
-        private void DeleteResolution(Vector2Int resolution)
-        {
-            savedResolutions.Remove(resolution);
-            SaveSavedResolutions();
-        }
+        #region GUI
 
         private readonly int uiWindowHash = GUID.GetHashCode();
         private Rect uiRect = new Rect(20, Screen.height / 2 - 150, 160, 223);
         private bool uiShow = false;
         private string CaptureWidthBuffer = "", CaptureHeightBuffer = "";
 
+        /// <summary>
+        /// Draws the screenshot settings GUI window.
+        /// Includes controls for:
+        /// - Resolution settings and presets
+        /// - Upsampling options
+        /// - Transparency toggle
+        /// - Guide line settings
+        /// - Screenshot capture buttons
+        /// </summary>
         protected void OnGUI()
         {
             if (uiShow)
@@ -600,18 +696,140 @@ namespace Screencap
             }
         }
 
+        /// <summary>
+        /// Draws composition guide lines on screen based on current settings.
+        /// Supports rule of thirds, golden ratio, and framing guides.
+        /// Adjusts for different aspect ratios between screen and target resolution.
+        /// </summary>
+        private void DrawGuideLines()
+        {
+            // Calculate aspect ratios for proper guide positioning
+            var desiredAspect = CaptureWidth.Value / (float)CaptureHeight.Value;
+            var screenAspect = Screen.width / (float)Screen.height;
+
+            // Handle cases where screen is wider than target
+            if (screenAspect > desiredAspect)
+            {
+                var actualWidth = Mathf.RoundToInt(Screen.height * desiredAspect);
+                var barWidth = Mathf.RoundToInt((Screen.width - actualWidth) / 2f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
+                {
+                    // Draw darkened areas for parts outside capture area
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, barWidth, Screen.height));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth, 0, barWidth, Screen.height));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Border) != 0)
+                {
+                    // Draw border around the capture area
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, 0, actualWidth, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, Screen.height - GuideLineThickness.Value, actualWidth, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, 0, GuideLineThickness.Value, Screen.height));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth - GuideLineThickness.Value, 0, GuideLineThickness.Value, Screen.height));
+                }
+
+                // Draw composition guides
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
+                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.3333333f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
+                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.236f);
+            }
+            else
+            {
+                var actualHeight = Mathf.RoundToInt(Screen.width / desiredAspect);
+                var barHeight = Mathf.RoundToInt((Screen.height - actualHeight) / 2f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
+                {
+                    // Draw darkened areas for parts outside capture area
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, Screen.width, barHeight));
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight, Screen.width, barHeight));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Border) != 0)
+                {
+                    // Draw border around the capture area
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, barHeight, Screen.width, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight - GuideLineThickness.Value, Screen.width, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, barHeight, GuideLineThickness.Value, actualHeight));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - GuideLineThickness.Value, barHeight, GuideLineThickness.Value, actualHeight));
+                }
+
+                // Draw composition guides
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
+                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.3333333f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
+                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.236f);
+            }
+        }
+
+        /// <summary>
+        /// Draws guide lines for composition based on specified ratios.
+        /// Used for both rule of thirds (0.3333) and golden ratio (0.236) guides.
+        /// </summary>
+        /// <param name="offsetX">X offset from screen edge</param>
+        /// <param name="offsetY">Y offset from screen edge</param>
+        /// <param name="viewportWidth">Width of the visible area</param>
+        /// <param name="viewportHeight">Height of the visible area</param>
+        /// <param name="centerRatio">Ratio for guide placement (0.3333 for thirds, 0.236 for golden ratio)</param>
+        private void DrawGuides(int offsetX, int offsetY, int viewportWidth, int viewportHeight, float centerRatio)
+        {
+            // Calculate ratios for guide line placement:
+            // For rule of thirds: centerRatio = 0.3333, resulting in 1/3 divisions
+            // For golden ratio: centerRatio = 0.236, resulting in golden section divisions
+            // sideRatio determines the position of the first line
+            // secondRatio determines the position of the second line
+            var sideRatio = (1 - centerRatio) / 2;
+            var secondRatio = sideRatio + centerRatio;
+
+            // Calculate actual pixel positions for vertical guide lines
+            var firstx = offsetX + viewportWidth * sideRatio;
+            var secondx = offsetX + viewportWidth * secondRatio;
+            IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(firstx), offsetY, GuideLineThickness.Value, viewportHeight));
+            IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(secondx), offsetY, GuideLineThickness.Value, viewportHeight));
+
+            // Calculate actual pixel positions for horizontal guide lines
+            var firsty = offsetY + viewportHeight * sideRatio;
+            var secondy = offsetY + viewportHeight * secondRatio;
+            IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(firsty), viewportWidth, GuideLineThickness.Value));
+            IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(secondy), viewportWidth, GuideLineThickness.Value));
+        }
+
+        /// <summary>
+        /// Logs a screenshot-related message to the game log.
+        /// Uses message or info level based on user preferences.
+        /// </summary>
+        private void LogScreenshotMessage(string text)
+        {
+            if (ScreenshotMessage.Value)
+                Logger.LogMessage(text);
+            else
+                Logger.LogInfo(text);
+        }
+
+        /// <summary>
+        /// Draws the screenshot settings GUI window.
+        /// Includes controls for:
+        /// - Resolution settings and presets
+        /// - Upsampling options
+        /// - Transparency toggle
+        /// - Guide line settings
+        /// - Screenshot capture buttons
+        /// </summary>
         private void WindowFunction(int windowID)
         {
             var titleStyle = new GUIStyle
             { 
-                //alignment = TextAnchor.MiddleCenter,
                 normal = new GUIStyleState
                 {
                     textColor = Color.white
                 }
             };
 
-            //Resolution settings
+            // Resolution settings section
             GUILayout.BeginVertical(GUI.skin.box);
             {
                 GUILayout.Label("Output resolution (W/H)", titleStyle);
@@ -625,6 +843,10 @@ namespace Screencap
                     CaptureHeightBuffer = GUILayout.TextField(CaptureHeightBuffer);
 
                     var focused = GUI.GetNameOfFocusedControl();
+                    // Update resolution values when:
+                    // - Neither width nor height field is focused (user clicked away)
+                    // - User pressed Enter/Return key
+                    // Also clamps values to valid range and handles parsing errors
                     if (focused != "X" && focused != "Y" || Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter)
                     {
                         if (!int.TryParse(CaptureWidthBuffer, out int x))
@@ -637,6 +859,7 @@ namespace Screencap
                 }
                 GUILayout.EndHorizontal();
 
+                // Common aspect ratio buttons
                 GUILayout.BeginHorizontal();
                 {
                     if (GUILayout.Button("1:1"))
@@ -686,6 +909,7 @@ namespace Screencap
             }
             GUILayout.EndVertical();
 
+            // Saved resolutions section
             GUILayout.BeginVertical(GUI.skin.box);
             {
                 GUILayout.Label("Saved Resolutions", titleStyle);
@@ -708,6 +932,7 @@ namespace Screencap
             }
             GUILayout.EndVertical();
 
+            // Upsampling settings section
             GUILayout.BeginVertical(GUI.skin.box);
             {
                 GUILayout.Label("Screen upsampling rate", titleStyle);
@@ -718,7 +943,6 @@ namespace Screencap
 
                     GUILayout.Label($"{downscale}x", new GUIStyle
                     {
-                        //alignment = TextAnchor.UpperRight,
                         normal = new GUIStyleState
                         {
                             textColor = Color.white
@@ -730,6 +954,7 @@ namespace Screencap
             }
             GUILayout.EndVertical();
 
+            // Transparency settings section
             GUILayout.BeginVertical(GUI.skin.box);
             {
                 GUILayout.Label("Transparent background", titleStyle);
@@ -747,6 +972,7 @@ namespace Screencap
             }
             GUILayout.EndVertical();
 
+            // Guide line settings section
             GUILayout.BeginVertical(GUI.skin.box);
             {
                 GUILayout.Label("Guide lines", titleStyle);
@@ -786,6 +1012,7 @@ namespace Screencap
             }
             GUILayout.EndVertical();
 
+            // Action buttons
             if (GUILayout.Button("Open screenshot dir"))
                 Process.Start(screenshotDir);
 
@@ -801,90 +1028,10 @@ namespace Screencap
             GUI.DragWindow();
         }
 
-        private void DrawGuideLines()
-        {
-            var desiredAspect = CaptureWidth.Value / (float)CaptureHeight.Value;
-            var screenAspect = Screen.width / (float)Screen.height;
-
-            if (screenAspect > desiredAspect)
-            {
-                var actualWidth = Mathf.RoundToInt(Screen.height * desiredAspect);
-                var barWidth = Mathf.RoundToInt((Screen.width - actualWidth) / 2f);
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
-                {
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, barWidth, Screen.height));
-                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth, 0, barWidth, Screen.height));
-                }
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.Border) != 0)
-                {
-                    // Draw a border around the screen based on actual height and width with a thickness of GuideLineThickness
-                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, 0, actualWidth, GuideLineThickness.Value));
-                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, Screen.height - GuideLineThickness.Value, actualWidth, GuideLineThickness.Value));
-                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, 0, GuideLineThickness.Value, Screen.height));
-                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth - GuideLineThickness.Value, 0, GuideLineThickness.Value, Screen.height));
-                }
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
-                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.3333333f);
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
-                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.236f);
-            }
-            else
-            {
-                var actualHeight = Mathf.RoundToInt(Screen.width / desiredAspect);
-                var barHeight = Mathf.RoundToInt((Screen.height - actualHeight) / 2f);
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
-                {
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, Screen.width, barHeight));
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight, Screen.width, barHeight));
-                }
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.Border) != 0)
-                {
-                    // Draw a border around the screen based on actual height and width with a thickness of GuideLineThickness
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, barHeight, Screen.width, GuideLineThickness.Value));
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight - GuideLineThickness.Value, Screen.width, GuideLineThickness.Value));
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, barHeight, GuideLineThickness.Value, actualHeight));
-                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - GuideLineThickness.Value, barHeight, GuideLineThickness.Value, actualHeight));
-                }
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
-                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.3333333f);
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
-                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.236f);
-            }
-
-            void DrawGuides(int offsetX, int offsetY, int viewportWidth, int viewportHeight, float centerRatio)
-            {
-                var sideRatio = (1 - centerRatio) / 2;
-                var secondRatio = sideRatio + centerRatio;
-
-                var firstx = offsetX + viewportWidth * sideRatio;
-                var secondx = offsetX + viewportWidth * secondRatio;
-                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(firstx), offsetY, GuideLineThickness.Value, viewportHeight));
-                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(secondx), offsetY, GuideLineThickness.Value, viewportHeight));
-
-                var firsty = offsetY + viewportHeight * sideRatio;
-                var secondy = offsetY + viewportHeight * secondRatio;
-                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(firsty), viewportWidth, GuideLineThickness.Value));
-                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(secondy), viewportWidth, GuideLineThickness.Value));
-            }
-        }
-
-
-        private void LogScreenshotMessage(string text)
-        {
-            if (ScreenshotMessage.Value)
-                Logger.LogMessage(text);
-            else
-                Logger.LogInfo(text);
-        }
-
+        /// <summary>
+        /// Available modes for camera guide lines.
+        /// Can be combined using flags.
+        /// </summary>
         [Flags]
         private enum CameraGuideLinesMode
         {
@@ -899,5 +1046,7 @@ namespace Screencap
             [Description("Grid border")]
             Border = 1 << 3
         }
+
+        #endregion
     }
 }
