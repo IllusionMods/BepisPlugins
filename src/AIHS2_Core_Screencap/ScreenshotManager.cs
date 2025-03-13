@@ -28,6 +28,7 @@ namespace Screencap
     /// <summary>
     /// Plugin for taking high quality screenshots with optional transparency.
     /// Brought to AI-Shoujo by essu - the local smug, benevolent modder.
+    /// Tool Window ported from KK by SuitIThub
     /// Provides features like:
     /// - Custom resolution screenshots
     /// - Transparency support
