@@ -1,17 +1,27 @@
-﻿using BepInEx;
+﻿using ADV.Commands.Base;
+using BepInEx;
 using BepInEx.Configuration;
 using BepisPlugins;
 using HarmonyLib;
 using Pngcs.Unity;
+using Shared;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
+using System.Text.RegularExpressions;
+using static GameCursor;
+using static Illusion.Utils;
+using static UnityEngine.GUI;
+using static UnityStandardAssets.ImageEffects.BloomOptimized;
 
 namespace Screencap
 {
@@ -39,6 +49,13 @@ namespace Screencap
         /// </summary>
         public static event Action OnPostCapture;
 
+        private int ScreenshotSizeMax => ResolutionAllowExtreme?.Value == true ? 15360 : 4096;
+        private const int ScreenshotSizeMin = 2;
+
+        private readonly string screenshotDir = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
+
+        private List<Vector2Int> savedResolutions = new List<Vector2Int>();
+
         private enum ShadowCascades
         {
             Zero = 0,
@@ -57,9 +74,9 @@ namespace Screencap
         private Material _matComposite;
         private Material _matScale;
 
-        private ConfigEntry<bool> ShowCaptureArea { get; set; }
         private ConfigEntry<int> CaptureWidth { get; set; }
         private ConfigEntry<int> CaptureHeight { get; set; }
+        private ConfigEntry<bool> ResolutionAllowExtreme { get; set; }
         private static ConfigEntry<int> Downscaling { get; set; }
         private ConfigEntry<bool> Alpha { get; set; }
         private ConfigEntry<int> CustomShadowResolution { get; set; }
@@ -70,7 +87,13 @@ namespace Screencap
 
         private ConfigEntry<KeyboardShortcut> KeyCaptureNormal { get; set; }
         private ConfigEntry<KeyboardShortcut> KeyCaptureRender { get; set; }
-        private ConfigEntry<KeyboardShortcut> KeyShowCaptureArea { get; set; }
+        private ConfigEntry<KeyboardShortcut> KeyGui { get; set; }
+
+        private ConfigEntry<CameraGuideLinesMode> GuideLinesModes { get; set; }
+
+        private ConfigEntry<int> GuideLineThickness { get; set; }
+
+        private ConfigEntry<string> SavedResolutionsConfig { get; set; }
 
         private static string GetCaptureFilename()
         {
@@ -85,34 +108,107 @@ namespace Screencap
                 );
         }
 
-        private void Awake()
+        private void InitializeSettings()
         {
-            ShowCaptureArea = Config.Bind("Rendered screenshots", "Show capture area", false, new ConfigDescription("Shows a Frame around the Area that will be captured."));
-            CaptureWidth = Config.Bind("Rendered screenshots", "Screenshot width", Screen.width, new ConfigDescription("Screenshot width in pixels", new AcceptableValueRange<int>(1, 10000)));
-            CaptureHeight = Config.Bind("Rendered screenshots", "Screenshot height", Screen.height, new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(1, 10000)));
-            Downscaling = Config.Bind("Rendered screenshots", "Upsampling ratio", 2, new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
-            Alpha = Config.Bind("Rendered screenshots", nameof(Alpha), true, new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
-            ScreenshotMessage = Config.Bind("General", "Show messages on screen", true, new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
+            Console.WriteLine("Initializing settings");
+            ResolutionAllowExtreme = Config.Bind(
+                "Rendered screenshots", "Allow extreme resolutions",
+                false,
+                new ConfigDescription("Raise maximum rendered screenshot resolution cap to 16k. Trying to take a screenshot too high above 4k WILL CRASH YOUR GAME. ALWAYS SAVE BEFORE ATTEMPTING A SCREENSHOT AND MONITOR RAM USAGE AT ALL TIMES. Changes take effect after restarting the game."));
+            
+            CaptureWidth = Config.Bind(
+                "Rendered screenshots", "Screenshot width", 
+                Screen.width, 
+                new ConfigDescription("Screenshot width in pixels", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax)));
 
-            CustomShadowResolution = Config.Bind("Rendered screenshots", "Shadow resolution override", 8192, new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
+            CaptureHeight = Config.Bind(
+                "Rendered screenshots", "Screenshot height", 
+                Screen.height, 
+                new ConfigDescription("Screenshot height in pixels", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax)));
 
-            ShadowCascadeOverride = Config.Bind("Rendered screenshots", "Shadow cascade override", ShadowCascades.Four, new ConfigDescription("When capturing screenshots, different shadow cascade values may look better. Override it or keep the current value."));
-            DisableAO = Config.Bind("Rendered screenshots", "Disable AO", DisableAOSetting.WhenUpsampling, new ConfigDescription("When capturing screenshots, upsampling can cause ambient occlusion to start banding and produce weird effects on the end image. Change this setting to disable AO when capturing the screenshot."));
+            Downscaling = Config.Bind(
+                "Rendered screenshots", "Upsampling ratio", 
+                2, 
+                new ConfigDescription("Render the scene in x times larger resolution, then downscale it to the correct size. Improves screenshot quality at cost of more RAM usage and longer capture times.\n\nBE CAREFUL, SETTING THIS TOO HIGH CAN AND WILL CRASH THE GAME BY RUNNING OUT OF RAM.", new AcceptableValueRange<int>(1, 4)));
 
-            KeyCaptureNormal = Config.Bind("Hotkeys", "Capture normal screenshot", new KeyboardShortcut(KeyCode.F9), "Capture a screenshot \"as you see it\". Includes interface and such.");
-            KeyCaptureRender = Config.Bind("Hotkeys", "Capture rendered screenshot", new KeyboardShortcut(KeyCode.F11), "Capture a rendered screenshot with no interface. Controlled by other settings.");
-            KeyShowCaptureArea = Config.Bind("Hotkeys", "Show capture area", new KeyboardShortcut(KeyCode.F10), "Toggle the red capture area frame.");
+            Alpha = Config.Bind(
+                "Rendered screenshots", nameof(Alpha), 
+                true, 
+                new ConfigDescription("When capturing the screenshot make the background transparent. Only works if the background is a 2D image, not a 3D object like a map."));
+
+            ScreenshotMessage = Config.Bind(
+                "General", "Show messages on screen", 
+                true, 
+                new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
+
+            CustomShadowResolution = Config.Bind(
+                "Rendered screenshots", "Shadow resolution override", 
+                8192, 
+                new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
+
+            ShadowCascadeOverride = Config.Bind(
+                "Rendered screenshots", "Shadow cascade override", 
+                ShadowCascades.Four, 
+                new ConfigDescription("When capturing screenshots, different shadow cascade values may look better. Override it or keep the current value."));
+
+            DisableAO = Config.Bind(
+                "Rendered screenshots", "Disable AO", 
+                DisableAOSetting.WhenUpsampling, 
+                new ConfigDescription("When capturing screenshots, upsampling can cause ambient occlusion to start banding and produce weird effects on the end image. Change this setting to disable AO when capturing the screenshot."));
+
+            KeyCaptureNormal = Config.Bind(
+                "Hotkeys", "Capture normal screenshot", 
+                new KeyboardShortcut(KeyCode.F9),
+                new ConfigDescription("Capture a screenshot \"as you see it\". Includes interface and such."));
+
+            KeyCaptureRender = Config.Bind(
+                "Hotkeys", "Capture rendered screenshot", 
+                new KeyboardShortcut(KeyCode.F11),
+                new ConfigDescription("Capture a rendered screenshot with no interface. Controlled by other settings."));
+
+            KeyGui = Config.Bind(
+                "Hotkeys", "Open settings window",
+                new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift),
+                new ConfigDescription("Open a quick access window with the most common settings."));
+
+            GuideLinesModes = Config.Bind(
+                "General", "Camera guide lines",
+                CameraGuideLinesMode.Framing | CameraGuideLinesMode.GridThirds,
+                new ConfigDescription("Draws guide lines on the screen to help with framing rendered screenshots. The guide lines are not captured in the rendered screenshot.\nTo show the guide lines, open the quick access settings window.", null, "Advanced"));
+
+            GuideLineThickness = Config.Bind(
+                "General", "Guide lines thickness",
+                1,
+                new ConfigDescription("Thickness of the guide lines in pixels.", new AcceptableValueRange<int>(1, 5), "Advanced"));
 
             UIShotUpscale = Config.Bind(
                 "UI Screenshots", "Screenshot resolution multiplier",
                 1,
                 new ConfigDescription("Multiplies the UI screenshot resolution from the current game resolution by this amount.\nWarning: Some elements will still be rendered at the original resolution (most notably the interface).", new AcceptableValueRange<int>(1, 8), "Advanced"));
 
+            SavedResolutionsConfig = Config.Bind(
+                "Rendered screenshots", "Saved Resolutions",
+                string.Empty,
+                new ConfigDescription("List of saved resolutions in JSON format.", null, "Debug"));
+
+            LoadSavedResolutions();
+        }
+
+        private void Awake()
+        {
+            Console.WriteLine("Awake");
+            InitializeSettings();
+
+            CaptureWidth.SettingChanged += (sender, args) => CaptureWidthBuffer = CaptureWidth.Value.ToString();
+            CaptureHeight.SettingChanged += (sender, args) => CaptureHeightBuffer = CaptureHeight.Value.ToString();
+
+            Console.WriteLine("Loading assets");
             var ab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
             _matScale = new Material(ab.LoadAsset<Shader>("resize"));
             ab.Unload(false);
 
+            Console.WriteLine("Applying hooks");
             Hooks.Apply();
         }
 
@@ -125,7 +221,7 @@ namespace Screencap
             {
                 var h = Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
 
-                var msvoType = Type.GetType("UnityEngine.Rendering.PostProcessing.MultiScaleVO, Unity.Postprocessing.Runtime");
+                var msvoType = System.Type.GetType("UnityEngine.Rendering.PostProcessing.MultiScaleVO, Unity.Postprocessing.Runtime");
                 h.Patch(AccessTools.Method(msvoType, "PushAllocCommands"), transpiler: new HarmonyMethod(typeof(Hooks), nameof(AoBandingFix)));
             }
 
@@ -177,71 +273,20 @@ namespace Screencap
 
         private void Update()
         {
-            if (KeyCaptureNormal.Value.IsDown())
+            if (KeyGui.Value.IsDown())
             {
-                PlayCaptureSound();
-
-                var path = GetCaptureFilename();
-                ScreenCapture.CaptureScreenshot(path, UIShotUpscale.Value);
-                StartCoroutine(WaitForEndOfFrameThen(() => LogScreenshotMessage("Writing normal screenshot to " + path.Substring(Paths.GameRootPath.Length))));
+                uiShow = !uiShow;
+                CaptureWidthBuffer = CaptureWidth.Value.ToString();
+                CaptureHeightBuffer = CaptureHeight.Value.ToString();
+            }
+            else if (KeyCaptureNormal.Value.IsDown())
+            {
+                CaptureScreenshotNormal();
             }
             else if (KeyCaptureRender.Value.IsDown())
             {
-                PlayCaptureSound();
-
-                var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Constants.InsideStudio;
-                if (Alpha.Value && alphaAllowed)
-                    StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true)));
-                else
-                    StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(false)));
+                CaptureScreenshotRender();
             }
-            else if (KeyShowCaptureArea.Value.IsDown())
-            {
-                ShowCaptureArea.Value = !ShowCaptureArea.Value;
-            }
-        }
-
-        private void OnGUI()
-        {
-            // Draw capture area
-            if (ShowCaptureArea.Value)
-            {
-                DrawCaptureArea();
-            }
-        }
-
-        /// <summary>
-        /// Draw a semi-transparent red border around the capture area
-        /// </summary>
-        private void DrawCaptureArea()
-        {
-            var width = CaptureWidth.Value;
-            var height = CaptureHeight.Value;
-
-            float screenRatio = (float)Screen.width / Screen.height;
-            float captureRatio = (float)width / height;
-
-            if (screenRatio > captureRatio)
-            {
-                height = Screen.height;
-                width = (int)(height * captureRatio);
-            }
-            else
-            {
-                width = Screen.width;
-                height = (int)(width / captureRatio);
-            }
-
-            var rect = new Rect((Screen.width - width) / 2, (Screen.height - height) / 2, width, height);
-            var color = new Color(1, 0, 0, 0.5f); // Red color with 50% transparency
-
-            GUI.color = color;
-            GUI.depth = -1000;
-            GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width, 4), Texture2D.whiteTexture); // Top border
-            GUI.DrawTexture(new Rect(rect.x, rect.yMax - 4, rect.width, 4), Texture2D.whiteTexture); // Bottom border
-            GUI.DrawTexture(new Rect(rect.x, rect.y, 4, rect.height), Texture2D.whiteTexture); // Left border
-            GUI.DrawTexture(new Rect(rect.xMax - 4, rect.y, 4, rect.height), Texture2D.whiteTexture); // Right border
-            GUI.color = color;
         }
 
         private static void PlayCaptureSound()
@@ -390,6 +435,25 @@ namespace Screencap
             return alpha;
         }
 
+        private void CaptureScreenshotNormal()
+        {
+            PlayCaptureSound();
+            var path = GetCaptureFilename();
+            ScreenCapture.CaptureScreenshot(path, UIShotUpscale.Value);
+            StartCoroutine(WaitForEndOfFrameThen(() => LogScreenshotMessage("Writing normal screenshot to " + path.Substring(Paths.GameRootPath.Length))));
+        }
+
+        private void CaptureScreenshotRender()
+        {
+            PlayCaptureSound();
+
+            var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Constants.InsideStudio;
+            if (Alpha.Value && alphaAllowed)
+                StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true)));
+            else
+                StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(false)));
+        }
+
         private static IEnumerable<AmbientOcclusion> DisableAmbientOcclusion()
         {
             var aos = new List<AmbientOcclusion>();
@@ -479,6 +543,339 @@ namespace Screencap
 
             return rt;
         }
+        
+        private void LoadSavedResolutions()
+        {
+            if (!string.IsNullOrEmpty(SavedResolutionsConfig.Value))
+            {
+                savedResolutions = new List<Vector2Int>();
+
+                // Regex pattern to match (x,y) format
+                Regex regex = new Regex(@"\((\-?\d+),(\-?\d+)\)");
+
+                foreach (Match match in regex.Matches(SavedResolutionsConfig.Value))
+                {
+                    int x = int.Parse(match.Groups[1].Value);
+                    int y = int.Parse(match.Groups[2].Value);
+                    savedResolutions.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        private void SaveSavedResolutions()
+        {
+            SavedResolutionsConfig.Value = "[" + string.Join(", ", savedResolutions.Select(v => $"({v.x},{v.y})")) + "]";
+        }
+
+        private void SaveCurrentResolution()
+        {
+            var resolution = new Vector2Int(CaptureWidth.Value, CaptureHeight.Value);
+            if (!savedResolutions.Contains(resolution))
+            {
+                savedResolutions.Add(resolution);
+                SaveSavedResolutions();
+            }
+        }
+
+        private void DeleteResolution(Vector2Int resolution)
+        {
+            savedResolutions.Remove(resolution);
+            SaveSavedResolutions();
+        }
+
+        private readonly int uiWindowHash = GUID.GetHashCode();
+        private Rect uiRect = new Rect(20, Screen.height / 2 - 150, 160, 223);
+        private bool uiShow = false;
+        private string CaptureWidthBuffer = "", CaptureHeightBuffer = "";
+
+        protected void OnGUI()
+        {
+            if (uiShow)
+            {
+                DrawGuideLines();
+
+                IMGUIUtils.DrawSolidBox(uiRect);
+                uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "Screenshot settings");
+                IMGUIUtils.EatInputInRect(uiRect);
+            }
+        }
+
+        private void WindowFunction(int windowID)
+        {
+            var titleStyle = new GUIStyle
+            { 
+                //alignment = TextAnchor.MiddleCenter,
+                normal = new GUIStyleState
+                {
+                    textColor = Color.white
+                }
+            };
+
+            //Resolution settings
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Output resolution (W/H)", titleStyle);
+
+                GUILayout.BeginHorizontal();
+                {
+                    GUI.SetNextControlName("X");
+                    CaptureWidthBuffer = GUILayout.TextField(CaptureWidthBuffer);
+
+                    GUI.SetNextControlName("Y");
+                    CaptureHeightBuffer = GUILayout.TextField(CaptureHeightBuffer);
+
+                    var focused = GUI.GetNameOfFocusedControl();
+                    if (focused != "X" && focused != "Y" || Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter)
+                    {
+                        if (!int.TryParse(CaptureWidthBuffer, out int x))
+                            x = CaptureWidth.Value;
+                        if (!int.TryParse(CaptureHeightBuffer, out int y))
+                            y = CaptureHeight.Value;
+                        CaptureWidthBuffer = (CaptureWidth.Value = Mathf.Clamp(x, ScreenshotSizeMin, ScreenshotSizeMax)).ToString();
+                        CaptureHeightBuffer = (CaptureHeight.Value = Mathf.Clamp(y, ScreenshotSizeMin, ScreenshotSizeMax)).ToString();
+                    }
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                {
+                    if (GUILayout.Button("1:1"))
+                    {
+                        var max = Mathf.Max(CaptureWidth.Value, CaptureHeight.Value);
+                        CaptureWidth.Value = max;
+                        CaptureHeight.Value = max;
+                    }
+                    if (GUILayout.Button("4:3"))
+                    {
+                        var max = Mathf.Max(CaptureWidth.Value, CaptureHeight.Value);
+                        CaptureWidth.Value = max;
+                        CaptureHeight.Value = Mathf.RoundToInt(max * (3f / 4f));
+                    }
+                    if (GUILayout.Button("16:9"))
+                    {
+                        var max = Mathf.Max(CaptureWidth.Value, CaptureHeight.Value);
+                        CaptureWidth.Value = max;
+                        CaptureHeight.Value = Mathf.RoundToInt(max * (9f / 16f));
+                    }
+                    if (GUILayout.Button("6:10"))
+                    {
+                        var max = Mathf.Max(CaptureWidth.Value, CaptureHeight.Value);
+                        CaptureWidth.Value = Mathf.RoundToInt(max * (6f / 10f));
+                        CaptureHeight.Value = max;
+                    }
+                }
+                GUILayout.EndHorizontal();
+
+                if (GUILayout.Button("Set to screen size"))
+                {
+                    CaptureWidth.Value = Screen.width;
+                    CaptureHeight.Value = Screen.height;
+                }
+
+                if (GUILayout.Button("Rotate 90 degrees"))
+                {
+                    var currentX = CaptureWidth.Value;
+                    CaptureWidth.Value = CaptureHeight.Value;
+                    CaptureHeight.Value = currentX;
+                }
+
+                if (GUILayout.Button("Save current resolution"))
+                {
+                    SaveCurrentResolution();
+                }
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Saved Resolutions", titleStyle);
+                foreach (var resolution in savedResolutions.ToList())
+                {
+                    GUILayout.BeginHorizontal();
+                    {
+                        if (GUILayout.Button($"{resolution.x}x{resolution.y}"))
+                        {
+                            CaptureWidth.Value = resolution.x;
+                            CaptureHeight.Value = resolution.y;
+                        }
+                        if (GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                        {
+                            DeleteResolution(resolution);
+                        }
+                    }
+                    GUILayout.EndHorizontal();
+                }
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Screen upsampling rate", titleStyle);
+
+                GUILayout.BeginHorizontal();
+                {
+                    int downscale = (int)System.Math.Round(GUILayout.HorizontalSlider(Downscaling.Value, 1, 4));
+
+                    GUILayout.Label($"{downscale}x", new GUIStyle
+                    {
+                        //alignment = TextAnchor.UpperRight,
+                        normal = new GUIStyleState
+                        {
+                            textColor = Color.white
+                        }
+                    }, GUILayout.ExpandWidth(false));
+                    Downscaling.Value = downscale;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Transparent background", titleStyle);
+                GUILayout.BeginHorizontal();
+                {
+                    GUI.changed = false;
+                    var val = GUILayout.Toggle(!Alpha.Value, "No");
+                    if (GUI.changed && val) Alpha.Value = false;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle(Alpha.Value, "Yes");
+                    if (GUI.changed && val) Alpha.Value = true;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Guide lines", titleStyle);
+                GUILayout.BeginHorizontal();
+                {
+                    GUILayout.Label("Thickness", GUILayout.ExpandWidth(false));
+                    GUILayout.Space(2);
+                    GuideLineThickness.Value = (int)System.Math.Round(GUILayout.HorizontalSlider(GuideLineThickness.Value, 1, 5));
+                    GUILayout.Label($"{GuideLineThickness.Value}px", new GUIStyle
+                    {
+                        normal = new GUIStyleState
+                        {
+                            textColor = Color.white
+                        }
+                    }, GUILayout.ExpandWidth(false));
+                }
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                {
+                    GUI.changed = false;
+                    var val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0, "Frame");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.Framing : GuideLinesModes.Value & ~CameraGuideLinesMode.Framing;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.Border) != 0, "Border");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.Border : GuideLinesModes.Value & ~CameraGuideLinesMode.Border;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0, "3rds");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridThirds : GuideLinesModes.Value & ~CameraGuideLinesMode.GridThirds;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0, "Phi");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridPhi : GuideLinesModes.Value & ~CameraGuideLinesMode.GridPhi;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndVertical();
+
+            if (GUILayout.Button("Open screenshot dir"))
+                Process.Start(screenshotDir);
+
+            GUILayout.Space(10);
+            if (GUILayout.Button("Capture Normal (F10)"))
+                CaptureScreenshotNormal();
+            if (GUILayout.Button("Capture Render (F11)"))
+                CaptureScreenshotRender();
+
+            GUILayout.Space(2);
+            GUILayout.Label("More in Plugin Settings");
+
+            GUI.DragWindow();
+        }
+
+        private void DrawGuideLines()
+        {
+            var desiredAspect = CaptureWidth.Value / (float)CaptureHeight.Value;
+            var screenAspect = Screen.width / (float)Screen.height;
+
+            if (screenAspect > desiredAspect)
+            {
+                var actualWidth = Mathf.RoundToInt(Screen.height * desiredAspect);
+                var barWidth = Mathf.RoundToInt((Screen.width - actualWidth) / 2f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
+                {
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, barWidth, Screen.height));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth, 0, barWidth, Screen.height));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Border) != 0)
+                {
+                    // Draw a border around the screen based on actual height and width with a thickness of GuideLineThickness
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, 0, actualWidth, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, Screen.height - GuideLineThickness.Value, actualWidth, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, 0, GuideLineThickness.Value, Screen.height));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth - GuideLineThickness.Value, 0, GuideLineThickness.Value, Screen.height));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
+                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.3333333f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
+                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.236f);
+            }
+            else
+            {
+                var actualHeight = Mathf.RoundToInt(Screen.width / desiredAspect);
+                var barHeight = Mathf.RoundToInt((Screen.height - actualHeight) / 2f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
+                {
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, Screen.width, barHeight));
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight, Screen.width, barHeight));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Border) != 0)
+                {
+                    // Draw a border around the screen based on actual height and width with a thickness of GuideLineThickness
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, barHeight, Screen.width, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight - GuideLineThickness.Value, Screen.width, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, barHeight, GuideLineThickness.Value, actualHeight));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - GuideLineThickness.Value, barHeight, GuideLineThickness.Value, actualHeight));
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
+                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.3333333f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
+                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.236f);
+            }
+
+            void DrawGuides(int offsetX, int offsetY, int viewportWidth, int viewportHeight, float centerRatio)
+            {
+                var sideRatio = (1 - centerRatio) / 2;
+                var secondRatio = sideRatio + centerRatio;
+
+                var firstx = offsetX + viewportWidth * sideRatio;
+                var secondx = offsetX + viewportWidth * secondRatio;
+                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(firstx), offsetY, GuideLineThickness.Value, viewportHeight));
+                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(secondx), offsetY, GuideLineThickness.Value, viewportHeight));
+
+                var firsty = offsetY + viewportHeight * sideRatio;
+                var secondy = offsetY + viewportHeight * secondRatio;
+                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(firsty), viewportWidth, GuideLineThickness.Value));
+                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(secondy), viewportWidth, GuideLineThickness.Value));
+            }
+        }
+
 
         private void LogScreenshotMessage(string text)
         {
@@ -486,6 +883,21 @@ namespace Screencap
                 Logger.LogMessage(text);
             else
                 Logger.LogInfo(text);
+        }
+
+        [Flags]
+        private enum CameraGuideLinesMode
+        {
+            [Description("No guide lines")]
+            None = 0,
+            [Description("Cropped area")]
+            Framing = 1 << 0,
+            [Description("Rule of thirds")]
+            GridThirds = 1 << 1,
+            [Description("Golden ratio")]
+            GridPhi = 1 << 2,
+            [Description("Grid border")]
+            Border = 1 << 3
         }
     }
 }
