@@ -97,7 +97,6 @@ namespace Screencap
         /// </summary>
         private void InitializeSettings()
         {
-            Console.WriteLine("Initializing settings");
             ResolutionAllowExtreme = Config.Bind(
                 "Rendered screenshots", "Allow extreme resolutions",
                 false,
@@ -176,7 +175,7 @@ namespace Screencap
             SavedResolutionsConfig = Config.Bind(
                 "Rendered screenshots", "Saved Resolutions",
                 string.Empty,
-                new ConfigDescription("List of saved resolutions in JSON format.", null, "Debug"));
+                new ConfigDescription("List of saved resolutions in JSON format.", null, "Advanced"));
 
             LoadSavedResolutions();
         }
@@ -230,19 +229,16 @@ namespace Screencap
 
         private void Awake()
         {
-            Console.WriteLine("Awake");
             InitializeSettings();
 
             CaptureWidth.SettingChanged += (sender, args) => CaptureWidthBuffer = CaptureWidth.Value.ToString();
             CaptureHeight.SettingChanged += (sender, args) => CaptureHeightBuffer = CaptureHeight.Value.ToString();
 
-            Console.WriteLine("Loading assets");
             var ab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
             _matScale = new Material(ab.LoadAsset<Shader>("resize"));
             ab.Unload(false);
 
-            Console.WriteLine("Applying hooks");
             Hooks.Apply();
         }
 
@@ -1018,9 +1014,9 @@ namespace Screencap
                 Process.Start(screenshotDir);
 
             GUILayout.Space(10);
-            if (GUILayout.Button("Capture Normal (F10)"))
+            if (GUILayout.Button($"Capture Normal ({KeyCaptureNormal.Value})"))
                 CaptureScreenshotNormal();
-            if (GUILayout.Button("Capture Render (F11)"))
+            if (GUILayout.Button($"Capture Render ({KeyCaptureRender.Value})"))
                 CaptureScreenshotRender();
 
             GUILayout.Space(2);
