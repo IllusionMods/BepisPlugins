@@ -159,6 +159,14 @@ namespace Sideloader
 
             waitHandle.WaitOne();
 
+            var misses = foundZipfiles.Count - cache.Count;
+            if (misses > 0)
+            {
+                Logger.LogWarning(CachingEnabled.Value
+                                   ? $"Regenerating zipmod cache for {foundZipfiles.Count - cache.Count}/{foundZipfiles.Count} zipmods! This can take a very long time, please be patient..."
+                                   : "Zipmod cache is disabled so all zipmods will now be loaded! This can take a very long time, please be patient...");
+            }
+
             // ------------------------------------------------------
             // Load the zipmod metadata either from drive or cache
             // ------------------------------------------------------
