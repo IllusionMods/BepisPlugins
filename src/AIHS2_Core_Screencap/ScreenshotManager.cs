@@ -732,6 +732,113 @@ namespace Screencap
 
                 if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
                     DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.236f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Radiating) != 0)
+                {
+                    // Draw radiating lines from center
+                    var centerX = barWidth + actualWidth / 2f;
+                    var centerY = Screen.height / 2f;
+
+                    // Horizontal line
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, centerY - GuideLineThickness.Value/2f, 
+                        actualWidth, GuideLineThickness.Value));
+
+                    // Vertical line
+                    IMGUIUtils.DrawTransparentBox(new Rect(centerX - GuideLineThickness.Value/2f, 0,
+                        GuideLineThickness.Value, Screen.height));
+
+                    // Draw diagonal lines using GL
+                    GL.PushMatrix();
+                    GL.LoadPixelMatrix();
+                    GL.Begin(GL.QUADS);
+                    GL.Color(new Color(1, 1, 1, 0.3f));
+
+                    // Diagonal from top-left to bottom-right
+                    var angle = Mathf.Atan2(Screen.height, actualWidth);
+                    var perpDist = GuideLineThickness.Value / 2f;
+                    var dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    var dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(barWidth + dx, 0 + dy, 0);
+                    GL.Vertex3(barWidth - dx, 0 - dy, 0);
+                    GL.Vertex3(barWidth + actualWidth - dx, Screen.height - dy, 0);
+                    GL.Vertex3(barWidth + actualWidth + dx, Screen.height + dy, 0);
+
+                    // Diagonal from top-right to bottom-left
+                    GL.Vertex3(barWidth + actualWidth + dx, 0 + dy, 0);
+                    GL.Vertex3(barWidth + actualWidth - dx, 0 - dy, 0);
+                    GL.Vertex3(barWidth - dx, Screen.height - dy, 0);
+                    GL.Vertex3(barWidth + dx, Screen.height + dy, 0);
+
+                    GL.End();
+                    GL.PopMatrix();
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.SideV) != 0)
+                {
+                    // Draw V-shaped guides from sides
+                    GL.PushMatrix();
+                    GL.LoadPixelMatrix();
+                    GL.Begin(GL.QUADS);
+                    GL.Color(new Color(1, 1, 1, 0.3f));
+
+                    // Lines from left side to right center
+                    var rightCenterX = barWidth + actualWidth;
+                    var centerY = Screen.height / 2f;
+
+                    // Top left to right center
+                    var angle = Mathf.Atan2(centerY, rightCenterX - barWidth);
+                    var perpDist = GuideLineThickness.Value / 2f;
+                    var dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    var dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(barWidth + dx, 0 + dy, 0);
+                    GL.Vertex3(barWidth - dx, 0 - dy, 0);
+                    GL.Vertex3(rightCenterX - dx, centerY - dy, 0);
+                    GL.Vertex3(rightCenterX + dx, centerY + dy, 0);
+
+                    // Bottom left to right center
+                    angle = Mathf.Atan2(Screen.height - centerY, rightCenterX - barWidth);
+                    dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(barWidth + dx, Screen.height + dy, 0);
+                    GL.Vertex3(barWidth - dx, Screen.height - dy, 0);
+                    GL.Vertex3(rightCenterX - dx, centerY - dy, 0);
+                    GL.Vertex3(rightCenterX + dx, centerY + dy, 0);
+
+                    // Lines from right side to left center
+                    var leftCenterX = barWidth;
+
+                    // Top right to left center
+                    angle = Mathf.Atan2(centerY, barWidth - rightCenterX);
+                    dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(rightCenterX + dx, 0 + dy, 0);
+                    GL.Vertex3(rightCenterX - dx, 0 - dy, 0);
+                    GL.Vertex3(leftCenterX - dx, centerY - dy, 0);
+                    GL.Vertex3(leftCenterX + dx, centerY + dy, 0);
+
+                    // Bottom right to left center
+                    angle = Mathf.Atan2(Screen.height - centerY, barWidth - rightCenterX);
+                    dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(rightCenterX + dx, Screen.height + dy, 0);
+                    GL.Vertex3(rightCenterX - dx, Screen.height - dy, 0);
+                    GL.Vertex3(leftCenterX - dx, centerY - dy, 0);
+                    GL.Vertex3(leftCenterX + dx, centerY + dy, 0);
+
+                    GL.End();
+                    GL.PopMatrix();
+                }
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Cross) != 0)
+                {
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth, (Screen.height / 2f) - GuideLineThickness.Value/2f, actualWidth, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(barWidth + actualWidth/2f - GuideLineThickness.Value/2f, 0, GuideLineThickness.Value, Screen.height));
+                }
             }
             else
             {
@@ -760,6 +867,113 @@ namespace Screencap
 
                 if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
                     DrawGuides(0, barHeight, Screen.width, actualHeight, 0.236f);
+
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Radiating) != 0)
+                {
+                    // Draw radiating lines from center
+                    var centerX = Screen.width / 2f;
+                    var centerY = barHeight + actualHeight / 2f;
+
+                    // Horizontal line
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, centerY - GuideLineThickness.Value/2f, 
+                        Screen.width, GuideLineThickness.Value));
+
+                    // Vertical line
+                    IMGUIUtils.DrawTransparentBox(new Rect(centerX - GuideLineThickness.Value/2f, barHeight,
+                        GuideLineThickness.Value, actualHeight));
+
+                    // Draw diagonal lines using GL
+                    GL.PushMatrix();
+                    GL.LoadPixelMatrix();
+                    GL.Begin(GL.QUADS);
+                    GL.Color(new Color(1, 1, 1, 0.3f));
+
+                    // Diagonal from top-left to bottom-right
+                    var angle = Mathf.Atan2(actualHeight, Screen.width);
+                    var perpDist = GuideLineThickness.Value / 2f;
+                    var dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    var dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(0 + dx, barHeight + dy, 0);
+                    GL.Vertex3(0 - dx, barHeight - dy, 0);
+                    GL.Vertex3(Screen.width - dx, barHeight + actualHeight - dy, 0);
+                    GL.Vertex3(Screen.width + dx, barHeight + actualHeight + dy, 0);
+
+                    // Diagonal from top-right to bottom-left  
+                    GL.Vertex3(Screen.width + dx, barHeight + dy, 0);
+                    GL.Vertex3(Screen.width - dx, barHeight - dy, 0);
+                    GL.Vertex3(0 - dx, barHeight + actualHeight - dy, 0);
+                    GL.Vertex3(0 + dx, barHeight + actualHeight + dy, 0);
+
+                    GL.End();
+                    GL.PopMatrix();
+                }
+            
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.SideV) != 0)
+                {
+                    // Draw V-shaped guides from sides
+                    GL.PushMatrix();
+                    GL.LoadPixelMatrix();
+                    GL.Begin(GL.QUADS);
+                    GL.Color(new Color(1, 1, 1, 0.3f));
+
+                    // Lines from left side to right center
+                    var rightCenterX = Screen.width;
+                    var centerY = barHeight + actualHeight / 2f;
+
+                    // Top left to right center
+                    var angle = Mathf.Atan2(centerY - barHeight, rightCenterX);
+                    var perpDist = GuideLineThickness.Value / 2f;
+                    var dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    var dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(0 + dx, barHeight + dy, 0);
+                    GL.Vertex3(0 - dx, barHeight - dy, 0);
+                    GL.Vertex3(rightCenterX - dx, centerY - dy, 0);
+                    GL.Vertex3(rightCenterX + dx, centerY + dy, 0);
+
+                    // Bottom left to right center
+                    angle = Mathf.Atan2(barHeight + actualHeight - centerY, rightCenterX);
+                    dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(0 + dx, barHeight + actualHeight + dy, 0);
+                    GL.Vertex3(0 - dx, barHeight + actualHeight - dy, 0);
+                    GL.Vertex3(rightCenterX - dx, centerY - dy, 0);
+                    GL.Vertex3(rightCenterX + dx, centerY + dy, 0);
+
+                    // Lines from right side to left center
+                    var leftCenterX = 0;
+
+                    // Top right to left center
+                    angle = Mathf.Atan2(centerY - barHeight, leftCenterX - rightCenterX);
+                    dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(rightCenterX + dx, barHeight + dy, 0);
+                    GL.Vertex3(rightCenterX - dx, barHeight - dy, 0);
+                    GL.Vertex3(leftCenterX - dx, centerY - dy, 0);
+                    GL.Vertex3(leftCenterX + dx, centerY + dy, 0);
+
+                    // Bottom right to left center
+                    angle = Mathf.Atan2(barHeight + actualHeight - centerY, leftCenterX - rightCenterX);
+                    dx = perpDist * Mathf.Cos(angle + Mathf.PI/2);
+                    dy = perpDist * Mathf.Sin(angle + Mathf.PI/2);
+
+                    GL.Vertex3(rightCenterX + dx, barHeight + actualHeight + dy, 0);
+                    GL.Vertex3(rightCenterX - dx, barHeight + actualHeight - dy, 0);
+                    GL.Vertex3(leftCenterX - dx, centerY - dy, 0);
+                    GL.Vertex3(leftCenterX + dx, centerY + dy, 0);
+
+                    GL.End();
+                    GL.PopMatrix();
+                }
+            
+                if ((GuideLinesModes.Value & CameraGuideLinesMode.Cross) != 0)
+                {
+                    IMGUIUtils.DrawTransparentBox(new Rect(0, (Screen.height / 2f) - GuideLineThickness.Value/2f, Screen.width, GuideLineThickness.Value));
+                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width/2f - GuideLineThickness.Value/2f, barHeight, GuideLineThickness.Value, actualHeight));
+                }
             }
         }
 
@@ -830,7 +1044,43 @@ namespace Screencap
             GUILayout.BeginVertical(GUI.skin.box);
             {
                 GUILayout.Label("Output resolution (W/H)", titleStyle);
-
+                GUILayout.BeginHorizontal();
+                {
+                    if (GUILayout.Button("HD"))
+                    {
+                        CaptureWidth.Value = 1280;
+                        CaptureHeight.Value = 720;
+                    }
+                    if (GUILayout.Button("FHD"))
+                    {
+                        CaptureWidth.Value = 1920;
+                        CaptureHeight.Value = 1080;
+                    }
+                    if (GUILayout.Button("WQHD"))
+                    {
+                        CaptureWidth.Value = 2560;
+                        CaptureHeight.Value = 1440;
+                    }
+                    if (GUILayout.Button("4K"))
+                    {
+                        CaptureWidth.Value = 3840;
+                        CaptureHeight.Value = 2160;
+                    }
+                    if (ResolutionAllowExtreme.Value)
+                    {
+                        if (GUILayout.Button("5K"))
+                        {
+                            CaptureWidth.Value = 5120;
+                            CaptureHeight.Value = 2880;
+                        }
+                        if (GUILayout.Button("8K"))
+                        {
+                            CaptureWidth.Value = 7680;
+                            CaptureHeight.Value = 4320;
+                        }
+                    }
+                }
+                GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
                     GUI.SetNextControlName("X");
@@ -1006,6 +1256,22 @@ namespace Screencap
                     if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridPhi : GuideLinesModes.Value & ~CameraGuideLinesMode.GridPhi;
                 }
                 GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                {
+                    GUI.changed = false;
+                    var val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.SideV) != 0, "Side V");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.SideV : GuideLinesModes.Value & ~CameraGuideLinesMode.SideV;
+                    
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.Radiating) != 0, "Radiating");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.Radiating : GuideLinesModes.Value & ~CameraGuideLinesMode.Radiating;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.Cross) != 0, "Cross");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.Cross : GuideLinesModes.Value & ~CameraGuideLinesMode.Cross;
+                }
+                GUILayout.EndHorizontal();
             }
             GUILayout.EndVertical();
 
@@ -1041,7 +1307,13 @@ namespace Screencap
             [Description("Golden ratio")]
             GridPhi = 1 << 2,
             [Description("Grid border")]
-            Border = 1 << 3
+            Border = 1 << 3,
+            [Description("Radiating lines")]
+            Radiating = 1 << 4,
+            [Description("Side V lines")]
+            SideV = 1 << 5,
+            [Description("Cross")]
+            Cross = 1 << 6
         }
 
         #endregion
