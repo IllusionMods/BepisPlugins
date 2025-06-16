@@ -277,7 +277,7 @@ namespace Screencap
             while (screenshotQueue.Count > 0)
             {
                 var coroutine = screenshotQueue.Dequeue();
-                yield return StartCoroutine(coroutine); // 🧠 중요: 완료될 때까지 기다림
+                yield return StartCoroutine(coroutine);
             }
 
             isProcessing = false;
