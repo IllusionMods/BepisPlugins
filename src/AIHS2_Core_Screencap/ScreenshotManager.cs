@@ -460,6 +460,9 @@ namespace Screencap
 
             var alpha = RenderTexture.GetTemporary(scaledWidth, scaledHeight, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 
+            // Prevent previous frames from bleeding through when rapid captures are taken
+            Graphics.Blit(Texture2D.blackTexture, alpha);
+
             _matComposite.SetTexture("_Overlay", mask);
 
             Graphics.Blit(colour, alpha, _matComposite);
