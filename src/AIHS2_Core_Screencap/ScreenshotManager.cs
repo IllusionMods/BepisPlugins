@@ -69,10 +69,6 @@ namespace Screencap
         /// </summary>
         private List<Vector2Int> savedResolutions = new List<Vector2Int>();
 
-        private Queue<IEnumerator> screenshotQueue = new Queue<IEnumerator>();
-
-        private bool isScreenShotProcessing = false;
-
         private ConfigEntry<int> CaptureWidth { get; set; }
         private ConfigEntry<int> CaptureHeight { get; set; }
         private ConfigEntry<bool> ResolutionAllowExtreme { get; set; }
@@ -256,32 +252,14 @@ namespace Screencap
             }
             else if (KeyCaptureNormal.Value.IsDown())
             {
-                // async process for time consuming process
-                screenshotQueue.Enqueue(CaptureScreenshotNormalCoroutine());
-                if (!isScreenShotProcessing)
-                    StartCoroutine(ProcessQueue());
+                CaptureScreenshotNormal();
             }
             else if (KeyCaptureRender.Value.IsDown())
             {
-                // async process for time consuming process
-                screenshotQueue.Enqueue(CaptureScreenshotRenderCoroutine());
-                if (!isScreenShotProcessing)
-                    StartCoroutine(ProcessQueue());
+                CaptureScreenshotRender();
             }
         }
 
-        private IEnumerator ProcessQueue()
-        {
-            isProcessing = true;
-
-            while (screenshotQueue.Count > 0)
-            {
-                var coroutine = screenshotQueue.Dequeue();
-                yield return StartCoroutine(coroutine);
-            }
-
-            isProcessing = false;
-        }
         #endregion
 
         /// <summary>
@@ -482,7 +460,7 @@ namespace Screencap
 
             var alpha = RenderTexture.GetTemporary(scaledWidth, scaledHeight, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 
-            // initialize alpha background color
+            // Prevent previous frames from bleeding through when rapid captures are taken
             Graphics.Blit(Texture2D.blackTexture, alpha);
 
             _matComposite.SetTexture("_Overlay", mask);
@@ -495,29 +473,6 @@ namespace Screencap
             ScaleTex(ref alpha, width, height, downscaling);
 
             return alpha;
-        }
-
-        private IEnumerator CaptureScreenshotNormalCoroutine()
-        {
-            PlayCaptureSound();
-
-            var path = GetCaptureFilename();
-
-            ScreenCapture.CaptureScreenshot(path, UIShotUpscale.Value);
-
-            yield return new WaitForEndOfFrame();
-
-            LogScreenshotMessage("Writing normal screenshot to " + path.Substring(Paths.GameRootPath.Length));
-        }
-
-        private IEnumerator CaptureScreenshotRenderCoroutine()
-        {
-            PlayCaptureSound();
-
-            var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Constants.InsideStudio;
-            bool useAlpha = Alpha.Value && alphaAllowed;
-
-            yield return WaitForEndOfFrameThen(() => CaptureAndWrite(useAlpha));
         }
 
         private void CaptureScreenshotNormal()
