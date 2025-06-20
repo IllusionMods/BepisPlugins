@@ -99,7 +99,7 @@
     <Analyzer Include="..\..\packages\Microsoft.Unity.Analyzers.1.19.0\analyzers\dotnet\cs\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
-  <Import Project="..\AIHS2_Core_Screencap\AIHS2_Core_Screencap.projitems" Label="Shared" />
+  <Import Project="..\Core_Screencap_AIHS2\AIHS2_Core_Screencap.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(TargetPath)" AI</PostBuildEvent>
