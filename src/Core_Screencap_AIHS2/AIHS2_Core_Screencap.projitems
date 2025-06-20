@@ -9,7 +9,6 @@
     <Import_RootNamespace>AIHS2_Core_Screencap</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkCopyBehaviour.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkLoadBehaviour.cs" />

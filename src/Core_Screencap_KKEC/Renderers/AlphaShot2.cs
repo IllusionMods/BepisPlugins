@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Linq;
 using BepisPlugins;
+using Screencap;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
@@ -429,15 +430,5 @@ namespace alphaShot
         }
 
         #endregion
-    }
-
-    public enum AlphaMode
-    {
-        [Description("No transparency")]
-        None = 0,
-        [Description("Cutout transparency (hard edges)")]
-        blackout,
-        [Description("Gradual transparency (has issues with some effects)")]
-        rgAlpha
     }
 }

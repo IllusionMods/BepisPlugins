@@ -18,82 +18,31 @@ using StrayTech;
 
 namespace Screencap
 {
-    /// <summary>
-    /// Plugin for taking high quality screenshots.
-    /// </summary>
     public partial class ScreenshotManager
     {
-        public const string GUID = "com.bepis.bepinex.screenshotmanager";
-        public const string PluginName = "Screenshot Manager";
-        public const string Version = Metadata.PluginsVersion;
-        internal static new ManualLogSource Logger;
-        private static int ScreenshotSizeMax => ResolutionAllowExtreme.Value ? 15360 : 4096;
-        private const int ScreenshotSizeMin = 2;
-
-        public static ScreenshotManager Instance { get; private set; }
-
-        private readonly string screenshotDir = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
         internal AlphaShot2 currentAlphaShot;
-
-        /// <summary>
-        /// Triggered before a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
-        /// </summary>
-        public static event Action OnPreCapture;
-        /// <summary>
-        /// Triggered after a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
-        /// </summary>
-        public static event Action OnPostCapture;
 
         #region Config properties
 
-        public static ConfigEntry<KeyboardShortcut> KeyCapture { get; private set; }
-        public static ConfigEntry<KeyboardShortcut> KeyCaptureAlpha { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCapture360 { get; private set; }
-        public static ConfigEntry<KeyboardShortcut> KeyGui { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCaptureAlphaIn3D { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCapture360in3D { get; private set; }
 
-        public static ConfigEntry<int> ResolutionX { get; private set; }
-        public static ConfigEntry<int> ResolutionY { get; private set; }
-        public static ConfigEntry<bool> ResolutionAllowExtreme { get; private set; }
         public static ConfigEntry<int> Resolution360 { get; private set; }
-        public static ConfigEntry<int> DownscalingRate { get; private set; }
         public static ConfigEntry<int> CardDownscalingRate { get; private set; }
-        public static ConfigEntry<bool> CaptureAlpha { get; private set; }
-        public static ConfigEntry<AlphaMode> CaptureAlphaMode { get; private set; }
-        public static ConfigEntry<bool> ScreenshotMessage { get; private set; }
         public static ConfigEntry<float> EyeSeparation { get; private set; }
         public static ConfigEntry<float> ImageSeparationOffset { get; private set; }
         public static ConfigEntry<bool> FlipEyesIn3DCapture { get; private set; }
         public static ConfigEntry<bool> UseJpg { get; private set; }
         public static ConfigEntry<int> JpgQuality { get; private set; }
-        public static ConfigEntry<NameFormat> ScreenshotNameFormat { get; private set; }
-        public static ConfigEntry<string> ScreenshotNameOverride { get; private set; }
-        public static ConfigEntry<CameraGuideLinesMode> GuideLinesModes { get; private set; }
-        public static ConfigEntry<int> UIShotUpscale { get; private set; }
 
-        private void InitializeSettings()
+        private void InitializeSettings2()
         {
-            KeyCapture = Config.Bind(
-                "Keyboard shortcuts", "Take UI screenshot",
-                new KeyboardShortcut(KeyCode.F9),
-                new ConfigDescription("Capture a simple \"as you see it\" screenshot of the game. Not affected by settings for rendered screenshots."));
-
-            KeyCaptureAlpha = Config.Bind(
-                "Keyboard shortcuts", "Take rendered screenshot",
-                new KeyboardShortcut(KeyCode.F11),
-                new ConfigDescription("Take a screenshot with no interface. Can be configured by other settings to increase quality and turn on transparency."));
-
             KeyCapture360 = Config.Bind(
                 "Keyboard shortcuts",
                 "Take 360 screenshot",
                 new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl),
                 new ConfigDescription("Captures a 360 screenshot around current camera. The created image is in equirectangular format and can be viewed by most 360 image viewers (e.g. Google Cardboard)."));
-
-            KeyGui = Config.Bind(
-                "Keyboard shortcuts", "Open settings window",
-                new KeyboardShortcut(KeyCode.F11, KeyCode.LeftShift),
-                new ConfigDescription("Open a quick access window with the most common settings."));
 
             KeyCaptureAlphaIn3D = Config.Bind(
                 "Keyboard shortcuts", "Take rendered 3D screenshot",
@@ -110,45 +59,10 @@ namespace Screencap
                 4096,
                 new ConfigDescription("Horizontal resolution (width) of 360 degree/panorama screenshots. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", new AcceptableValueList<int>(1024, 2048, 4096, 8192)));
 
-            DownscalingRate = Config.Bind(
-                "Render Settings", "Screenshot upsampling ratio",
-                2,
-                new ConfigDescription("Capture screenshots in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4)));
-
             CardDownscalingRate = Config.Bind(
                 "Render Settings", "Card image upsampling ratio",
                 3,
                 new ConfigDescription("Capture character card images in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4)));
-
-            CaptureAlphaMode = Config.Bind(
-                "Render Settings", "Transparency in rendered screenshots",
-                AlphaMode.rgAlpha,
-                new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
-
-            CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None,
-                new ConfigDescription("Only for backwards compatibility, use CaptureAlphaMode instead.", null, new BrowsableAttribute(false)));
-            CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.rgAlpha : AlphaMode.None;
-            CaptureAlphaMode.SettingChanged += (sender, args) => CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
-
-            ScreenshotMessage = Config.Bind(
-                "General", "Show messages on screen",
-                true,
-                new ConfigDescription("Whether screenshot messages will be displayed on screen. Messages will still be written to the log."));
-
-            ResolutionAllowExtreme = Config.Bind(
-                "Render Output Resolution", "Allow extreme resolutions",
-                false,
-                new ConfigDescription("Raise maximum rendered screenshot resolution cap to 16k. Trying to take a screenshot too high above 4k WILL CRASH YOUR GAME. ALWAYS SAVE BEFORE ATTEMPTING A SCREENSHOT AND MONITOR RAM USAGE AT ALL TIMES. Changes take effect after restarting the game."));
-
-            ResolutionX = Config.Bind(
-                "Render Output Resolution", "Horizontal",
-                Screen.width,
-                new ConfigDescription("Horizontal size (width) of rendered screenshots in pixels. Doesn't affect UI and 360 screenshots.", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax)));
-
-            ResolutionY = Config.Bind(
-                "Render Output Resolution", "Vertical",
-                Screen.height,
-                new ConfigDescription("Vertical size (height) of rendered screenshots in pixels. Doesn't affect UI and 360 screenshots.", new AcceptableValueRange<int>(ScreenshotSizeMin, ScreenshotSizeMax)));
 
             EyeSeparation = Config.Bind(
                 "3D Settings", "3D screenshot eye separation",
@@ -164,7 +78,7 @@ namespace Screencap
                 "3D Settings", "Flip left and right eye",
                 true,
                 new ConfigDescription("Flip left and right eye for cross-eyed viewing. Disable to use the screenshots in most VR image viewers."));
-
+                
             UseJpg = Config.Bind(
                 "JPG Settings", "Save screenshots as .jpg instead of .png",
                 false,
@@ -175,87 +89,19 @@ namespace Screencap
                 100,
                 new ConfigDescription("Lower quality = lower file sizes. Even 100 is worse than a .png file.", new AcceptableValueRange<int>(1, 100)));
 
-            ScreenshotNameFormat = Config.Bind(
-                "General", "Screenshot filename format",
-                NameFormat.NameDateType,
-                new ConfigDescription("Screenshots will be saved with names of the selected format. Name stands for the current game name (CharaStudio, Koikatu, etc.)"));
 
-            ScreenshotNameOverride = Config.Bind(
-                "General", "Screenshot filename Name override",
-                "",
-                new ConfigDescription("Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", null, "Advanced"));
-
-            GuideLinesModes = Config.Bind(
-                "General", "Camera guide lines",
-                CameraGuideLinesMode.Framing | CameraGuideLinesMode.GridThirds,
-                new ConfigDescription("Draws guide lines on the screen to help with framing rendered screenshots. The guide lines are not captured in the rendered screenshot.\nTo show the guide lines, open the quick access settings window.", null, "Advanced"));
-
-            UIShotUpscale = Config.Bind(
-                "UI Screenshots", "Screenshot resolution multiplier",
-                1,
-                new ConfigDescription("Multiplies the UI screenshot resolution from the current game resolution by this amount.\nWarning: Some elements will still be rendered at the original resolution (most notably the interface).", new AcceptableValueRange<int>(1, 8), "Advanced"));
-        }
-
-        #endregion
-
-        protected void Awake()
-        {
-            Instance = this;
-            Logger = base.Logger;
-
-            InitializeSettings();
-
-            ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
-            ResolutionY.SettingChanged += (sender, args) => ResolutionYBuffer = ResolutionY.Value.ToString();
-
-            SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
+                // TODO move
+                SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
             InstallSceenshotHandler();
-
-            if (!Directory.Exists(screenshotDir))
-                Directory.CreateDirectory(screenshotDir);
-
-            Hooks.InstallHooks();
 
             I360Render.Init();
         }
 
-        private string GetUniqueFilename(string capType)
-        {
-            string filename;
+        #endregion
 
-            // Replace needed for Koikatu Party to get ride of the space
-            var productName = Application.productName.Replace(" ", "");
-            if (!string.IsNullOrEmpty(ScreenshotNameOverride.Value))
-                productName = ScreenshotNameOverride.Value;
 
-            var extension = UseJpg.Value ? "jpg" : "png";
 
-            switch (ScreenshotNameFormat.Value)
-            {
-                case NameFormat.NameDate:
-                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                case NameFormat.NameTypeDate:
-                    filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                case NameFormat.NameDateType:
-                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
-                    break;
-                case NameFormat.TypeDate:
-                    filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                case NameFormat.TypeNameDate:
-                    filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                case NameFormat.Date:
-                    filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
-            }
-
-            return Path.GetFullPath(Path.Combine(screenshotDir, filename));
-        }
+      
 
         private static byte[] EncodeToFile(Texture2D result) => UseJpg.Value ? result.EncodeToJPG(JpgQuality.Value) : result.EncodeToPNG();
 
@@ -495,271 +341,5 @@ namespace Screencap
             result.Apply();
             return result;
         }
-
-        #region UI
-        private readonly int uiWindowHash = GUID.GetHashCode();
-        private Rect uiRect = new Rect(20, Screen.height / 2 - 150, 160, 223);
-        private bool uiShow = false;
-        private string ResolutionXBuffer = "", ResolutionYBuffer = "";
-
-        protected void OnGUI()
-        {
-            if (uiShow)
-            {
-                DrawGuideLines();
-
-                IMGUIUtils.DrawSolidBox(uiRect);
-                uiRect = GUILayout.Window(uiWindowHash, uiRect, WindowFunction, "Screenshot settings");
-                IMGUIUtils.EatInputInRect(uiRect);
-            }
-        }
-
-        private void WindowFunction(int windowID)
-        {
-            var titleStyle = new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                normal = new GUIStyleState
-                {
-                    textColor = Color.white
-                }
-            };
-
-            GUILayout.BeginVertical(GUI.skin.box);
-            {
-                GUILayout.Label("Output resolution (W/H)", titleStyle);
-
-                GUILayout.BeginHorizontal();
-                {
-                    GUI.SetNextControlName("X");
-                    ResolutionXBuffer = GUILayout.TextField(ResolutionXBuffer);
-
-                    GUILayout.Label("x", titleStyle, GUILayout.ExpandWidth(false), GUILayout.MinHeight(26));
-
-                    GUI.SetNextControlName("Y");
-                    ResolutionYBuffer = GUILayout.TextField(ResolutionYBuffer);
-
-                    var focused = GUI.GetNameOfFocusedControl();
-                    if (focused != "X" && focused != "Y" || Event.current.keyCode == KeyCode.Return)
-                    {
-                        if (!int.TryParse(ResolutionXBuffer, out int x))
-                            x = ResolutionX.Value;
-                        if (!int.TryParse(ResolutionYBuffer, out int y))
-                            y = ResolutionY.Value;
-                        ResolutionXBuffer = (ResolutionX.Value = Mathf.Clamp(x, ScreenshotSizeMin, ScreenshotSizeMax)).ToString();
-                        ResolutionYBuffer = (ResolutionY.Value = Mathf.Clamp(y, ScreenshotSizeMin, ScreenshotSizeMax)).ToString();
-                    }
-                }
-                GUILayout.EndHorizontal();
-
-                GUILayout.BeginHorizontal();
-                {
-                    if (GUILayout.Button("1:1"))
-                    {
-                        var max = Mathf.Max(ResolutionX.Value, ResolutionY.Value);
-                        ResolutionX.Value = max;
-                        ResolutionY.Value = max;
-                    }
-                    if (GUILayout.Button("4:3"))
-                    {
-                        var max = Mathf.Max(ResolutionX.Value, ResolutionY.Value);
-                        ResolutionX.Value = max;
-                        ResolutionY.Value = Mathf.RoundToInt(max * (3f / 4f));
-                    }
-                    if (GUILayout.Button("16:9"))
-                    {
-                        var max = Mathf.Max(ResolutionX.Value, ResolutionY.Value);
-                        ResolutionX.Value = max;
-                        ResolutionY.Value = Mathf.RoundToInt(max * (9f / 16f));
-                    }
-                    if (GUILayout.Button("6:10"))
-                    {
-                        var max = Mathf.Max(ResolutionX.Value, ResolutionY.Value);
-                        ResolutionX.Value = Mathf.RoundToInt(max * (6f / 10f));
-                        ResolutionY.Value = max;
-                    }
-                }
-                GUILayout.EndHorizontal();
-
-                if (GUILayout.Button("Set to screen size"))
-                {
-                    ResolutionX.Value = Screen.width;
-                    ResolutionY.Value = Screen.height;
-                }
-
-                if (GUILayout.Button("Rotate 90 degrees"))
-                {
-                    var curerntX = ResolutionX.Value;
-                    ResolutionX.Value = ResolutionY.Value;
-                    ResolutionY.Value = curerntX;
-                }
-            }
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical(GUI.skin.box);
-            {
-                GUILayout.Label("Screen upsampling rate", titleStyle);
-
-                GUILayout.BeginHorizontal();
-                {
-                    int downscale = (int)Math.Round(GUILayout.HorizontalSlider(DownscalingRate.Value, 1, 4));
-
-                    GUILayout.Label($"{downscale}x", new GUIStyle
-                    {
-                        alignment = TextAnchor.UpperRight,
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    }, GUILayout.ExpandWidth(false));
-                    DownscalingRate.Value = downscale;
-                }
-                GUILayout.EndHorizontal();
-            }
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical(GUI.skin.box);
-            {
-                GUILayout.Label("Card upsampling rate", titleStyle);
-
-                GUILayout.BeginHorizontal();
-                {
-                    int carddownscale = (int)Math.Round(GUILayout.HorizontalSlider(CardDownscalingRate.Value, 1, 4));
-
-                    GUILayout.Label($"{carddownscale}x", new GUIStyle
-                    {
-                        alignment = TextAnchor.UpperRight,
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    }, GUILayout.ExpandWidth(false));
-                    CardDownscalingRate.Value = carddownscale;
-                }
-                GUILayout.EndHorizontal();
-            }
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical(GUI.skin.box);
-            {
-                GUILayout.Label("Transparent background", titleStyle);
-                GUILayout.BeginHorizontal();
-                {
-                    GUI.changed = false;
-                    var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
-
-                    GUI.changed = false;
-                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.blackout, "Cutout");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.blackout;
-
-                    GUI.changed = false;
-                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.rgAlpha, "Alpha");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.rgAlpha;
-                }
-                GUILayout.EndHorizontal();
-            }
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical(GUI.skin.box);
-            {
-                GUILayout.Label("Guide lines", titleStyle);
-                GUILayout.BeginHorizontal();
-                {
-                    GUI.changed = false;
-                    var val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0, "Frame");
-                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.Framing : GuideLinesModes.Value & ~CameraGuideLinesMode.Framing;
-
-                    GUI.changed = false;
-                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0, "3rds");
-                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridThirds : GuideLinesModes.Value & ~CameraGuideLinesMode.GridThirds;
-
-                    GUI.changed = false;
-                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0, "Phi");
-                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridPhi : GuideLinesModes.Value & ~CameraGuideLinesMode.GridPhi;
-                }
-                GUILayout.EndHorizontal();
-            }
-            GUILayout.EndVertical();
-
-            if (GUILayout.Button("Open screenshot dir"))
-                Process.Start(screenshotDir);
-
-            GUILayout.Space(2);
-            GUILayout.Label("More in Plugin Settings");
-
-            GUI.DragWindow();
-        }
-
-        private static void DrawGuideLines()
-        {
-            var desiredAspect = ResolutionX.Value / (float)ResolutionY.Value;
-            var screenAspect = Screen.width / (float)Screen.height;
-
-            if (screenAspect > desiredAspect)
-            {
-                var actualWidth = Mathf.RoundToInt(Screen.height * desiredAspect);
-                var barWidth = Mathf.RoundToInt((Screen.width - actualWidth) / 2f);
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
-                {
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, barWidth, Screen.height));
-                    IMGUIUtils.DrawTransparentBox(new Rect(Screen.width - barWidth, 0, barWidth, Screen.height));
-                }
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
-                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.3333333f);
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
-                    DrawGuides(barWidth, 0, actualWidth, Screen.height, 0.236f);
-            }
-            else
-            {
-                var actualHeight = Mathf.RoundToInt(Screen.width / desiredAspect);
-                var barHeight = Mathf.RoundToInt((Screen.height - actualHeight) / 2f);
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.Framing) != 0)
-                {
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, 0, Screen.width, barHeight));
-                    IMGUIUtils.DrawTransparentBox(new Rect(0, Screen.height - barHeight, Screen.width, barHeight));
-                }
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0)
-                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.3333333f);
-
-                if ((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0)
-                    DrawGuides(0, barHeight, Screen.width, actualHeight, 0.236f);
-            }
-
-            void DrawGuides(int offsetX, int offsetY, int viewportWidth, int viewportHeight, float centerRatio)
-            {
-                var sideRatio = (1 - centerRatio) / 2;
-                var secondRatio = sideRatio + centerRatio;
-
-                var firstx = offsetX + viewportWidth * sideRatio;
-                var secondx = offsetX + viewportWidth * secondRatio;
-                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(firstx), offsetY, 1, viewportHeight));
-                IMGUIUtils.DrawTransparentBox(new Rect(Mathf.RoundToInt(secondx), offsetY, 1, viewportHeight));
-
-                var firsty = offsetY + viewportHeight * sideRatio;
-                var secondy = offsetY + viewportHeight * secondRatio;
-                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(firsty), viewportWidth, 1));
-                IMGUIUtils.DrawTransparentBox(new Rect(offsetX, Mathf.RoundToInt(secondy), viewportWidth, 1));
-            }
-        }
-
-        [Flags]
-        public enum CameraGuideLinesMode
-        {
-            [Description("No guide lines")]
-            None = 0,
-            [Description("Cropped area")]
-            Framing = 1 << 0,
-            [Description("Rule of thirds")]
-            GridThirds = 1 << 1,
-            [Description("Golden ratio")]
-            GridPhi = 1 << 2,
-        }
-        #endregion
     }
 }

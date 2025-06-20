@@ -11,6 +11,5 @@ namespace Screencap
     [BepInIncompatibility("EdgeDestroyer")]
     public partial class ScreenshotManager
     {
-        private const string PluginName = "Screenshot Manager";
     }
 }

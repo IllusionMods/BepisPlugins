@@ -9,10 +9,8 @@
     <Import_RootNamespace>Core_Screencap</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ScreenshotManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ScreenshotManager.Hooks.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Core.ScreenshotManager.NameFormat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\AlphaShot2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\I360Render.cs" />
   </ItemGroup>
