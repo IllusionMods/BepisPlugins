@@ -1,22 +1,14 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepisPlugins;
-using HarmonyLib;
 using Pngcs.Unity;
-using Shared;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.SceneManagement;
-using System.Text.RegularExpressions;
 
 namespace Screencap
 {
@@ -28,45 +20,34 @@ namespace Screencap
     {
         #region Config properties
 
-
         private ConfigEntry<int> CustomShadowResolution { get; set; }
         private ConfigEntry<ShadowCascades> ShadowCascadeOverride { get; set; }
         private static ConfigEntry<DisableAOSetting> DisableAO { get; set; }
 
-
-
-
-
-        private void InitializeSettings2()
+        private void InitializeGameSpecific()
         {
-          
-            CustomShadowResolution = Config.Bind(
-                "Rendered screenshots", "Shadow resolution override", 
-                8192, 
-                new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
-
-            ShadowCascadeOverride = Config.Bind(
-                "Rendered screenshots", "Shadow cascade override", 
-                ShadowCascades.Four, 
-                new ConfigDescription("When capturing screenshots, different shadow cascade values may look better. Override it or keep the current value."));
-
-            DisableAO = Config.Bind(
-                "Rendered screenshots", "Disable AO", 
-                DisableAOSetting.WhenUpsampling, 
-                new ConfigDescription("When capturing screenshots, upsampling can cause ambient occlusion to start banding and produce weird effects on the end image. Change this setting to disable AO when capturing the screenshot."));
-        
-        //TODO MOVE
             var ab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
             _matScale = new Material(ab.LoadAsset<Shader>("resize"));
             ab.Unload(false);
+
+            CustomShadowResolution = Config.Bind(
+                "Rendered screenshots", "Shadow resolution override",
+                8192,
+                new ConfigDescription("By default, shadow map resolution is computed from its importance on screen. Setting this to a value greater than zero will override that behavior. Please note that the shadow map resolution will still be capped by memory and hardware limits.", new AcceptableValueList<int>(0, 4096, 8192, 16384, 32768)));
+
+            ShadowCascadeOverride = Config.Bind(
+                "Rendered screenshots", "Shadow cascade override",
+                ShadowCascades.Four,
+                new ConfigDescription("When capturing screenshots, different shadow cascade values may look better. Override it or keep the current value."));
+
+            DisableAO = Config.Bind(
+                "Rendered screenshots", "Disable AO",
+                DisableAOSetting.WhenUpsampling,
+                new ConfigDescription("When capturing screenshots, upsampling can cause ambient occlusion to start banding and produce weird effects on the end image. Change this setting to disable AO when capturing the screenshot."));
         }
 
         #endregion
-
-        #region Unity Methods
-
-
 
         private void Update()
         {
@@ -85,83 +66,6 @@ namespace Screencap
                 CaptureScreenshotRender();
             }
         }
-
-        #endregion
-
-        /// <summary>
-        /// Disable built-in screenshots
-        /// </summary>
-        private static class Hooks
-        {
-            public static void InstallHooks()
-            {
-                var h = Harmony.CreateAndPatchAll(typeof(Hooks), GUID);
-
-                var msvoType = System.Type.GetType("UnityEngine.Rendering.PostProcessing.MultiScaleVO, Unity.Postprocessing.Runtime");
-                h.Patch(AccessTools.Method(msvoType, "PushAllocCommands"), transpiler: new HarmonyMethod(typeof(Hooks), nameof(AoBandingFix)));
-            }
-
-#if AI
-            // Hook here instead of hooking GameScreenShot.Capture to not affect the Photo functionality
-            [HarmonyPrefix, HarmonyPatch(typeof(AIProject.Scene.MapScene), nameof(AIProject.Scene.MapScene.CaptureSS))]
-            private static bool CaptureSSOverride() => false;
-#elif HS2
-            public static bool SoundWasPlayed;
-
-            [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), nameof(GameScreenShot.Capture), typeof(string))]
-            private static bool CaptureOverride()
-            {
-                SoundWasPlayed = true;
-                return false;
-            }
-
-            [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), nameof(GameScreenShot.UnityCapture), typeof(string))]
-            private static bool CaptureOverride2()
-            {
-                SoundWasPlayed = true;
-                return false;
-            }
-#endif
-
-            // Separate screenshot class for the studio
-            [HarmonyPrefix, HarmonyPatch(typeof(Studio.GameScreenShot), nameof(Studio.GameScreenShot.Capture), typeof(string))]
-            private static bool StudioCaptureOverride()
-            {
-                return false;
-            }
-
-            // Fix AO banding in downscaled screenshots
-            private static IEnumerable<CodeInstruction> AoBandingFix(IEnumerable<CodeInstruction> instructions)
-            {
-                foreach (var i in instructions)
-                {
-                    if (i.opcode == OpCodes.Ldc_I4_S)
-                    {
-                        if ((int)RenderTextureFormat.RHalf == Convert.ToInt32(i.operand))
-                            i.operand = (sbyte)RenderTextureFormat.RFloat;
-                        else if ((int)RenderTextureFormat.RGHalf == Convert.ToInt32(i.operand))
-                            i.operand = (sbyte)RenderTextureFormat.RGFloat;
-                    }
-                    yield return i;
-                }
-            }
-        }
-
-        #region Sound Handler
-
-        private static void PlayCaptureSound()
-        {
-#if AI
-            Singleton<Manager.Resources>.Instance.SoundPack.Play(AIProject.SoundPack.SystemSE.Photo);
-#elif HS2
-            if (Hooks.SoundWasPlayed)
-                Hooks.SoundWasPlayed = false;
-            else
-                Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.photo);
-#endif
-        }
-
-        #endregion
 
         #region Screenshot Handler
 
@@ -306,7 +210,7 @@ namespace Screencap
 
             var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Constants.InsideStudio;
             if (CaptureAlphaMode.Value != AlphaMode.None && alphaAllowed)
-                StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true, "RenderAlpha")));
+                StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true, "Render")));
             else
                 StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(false, "Render")));
         }
@@ -466,7 +370,7 @@ namespace Screencap
 
             return rt;
         }
-        
+
         #endregion
     }
 }

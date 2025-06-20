@@ -14,18 +14,6 @@ using UnityEngine;
 
 namespace Screencap
 {
-    public enum AlphaMode
-    {
-        [Description("No transparency")]
-        None = 0,
-        [Description("Transparency (default method)")]
-        Default = 2,
-        [Description("Cutout transparency (hard edges)")]
-        blackout = 1,
-        [Description("Gradual transparency (has issues with some effects)")]
-        rgAlpha = 2
-    }
-
     /// <summary>
     /// Plugin for taking high quality screenshots with optional transparency.
     /// Provides features like:
@@ -37,18 +25,6 @@ namespace Screencap
     /// </summary>
     public partial class ScreenshotManager : BaseUnityPlugin
     {
-        public struct SavedResolution
-        {
-            public int x;
-            public int y;
-
-            public SavedResolution(int resolutionXValue, int resolutionYValue)
-            {
-                x = resolutionXValue;
-                y = resolutionYValue;
-            }
-        }
-
         /// <summary>
         /// GUID of the plugin, use with BepInDependency
         /// </summary>
@@ -63,7 +39,7 @@ namespace Screencap
         public const string Version = Metadata.PluginsVersion;
 
         internal static new ManualLogSource Logger;
-        [Obsolete]
+        [Obsolete("Get the instance from Chainloader")]
         public static ScreenshotManager Instance { get; private set; }
 
         /// <summary>
@@ -74,7 +50,7 @@ namespace Screencap
         /// <summary>
         /// Directory where screenshots are saved
         /// </summary>
-        private readonly string screenshotDir = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
+        private readonly string _defaultScreenshotDir = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
 
         /// <summary>
         /// Minimum allowed screenshot resolution
@@ -99,20 +75,16 @@ namespace Screencap
         /// <summary>
         /// List of saved resolution presets
         /// </summary>
-        private List<SavedResolution> savedResolutions = new List<SavedResolution>();
+        private List<SavedResolution> _savedResolutions = new List<SavedResolution>();
         private ConfigEntry<string> SavedResolutionsConfig { get; set; }
-
-
         public static ConfigEntry<KeyboardShortcut> KeyCapture { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCaptureAlpha { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyGui { get; private set; }
-
         private ConfigEntry<int> ResolutionX { get; set; }
         private ConfigEntry<int> ResolutionY { get; set; }
         private ConfigEntry<bool> ResolutionAllowExtreme { get; set; }
-
         public static ConfigEntry<int> DownscalingRate { get; private set; }
-        [Obsolete]
+        [Obsolete("Use CaptureAlphaMode")]
         public static ConfigEntry<bool> CaptureAlpha { get; private set; }
         public static ConfigEntry<AlphaMode> CaptureAlphaMode { get; private set; }
         private static ConfigEntry<int> UIShotUpscale { get; set; }
@@ -127,7 +99,7 @@ namespace Screencap
         /// Sets up all configurable parameters like resolution limits, hotkeys,
         /// and screenshot behavior options.
         /// </summary>
-        private void InitializeSettings()
+        private void InitializeCommon()
         {
             KeyCapture = Config.Bind(
                 "Keyboard shortcuts", "Take UI screenshot",
@@ -179,7 +151,6 @@ namespace Screencap
             CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.Default : AlphaMode.None;
             CaptureAlphaMode.SettingChanged += (sender, args) => CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
 
-
             ScreenshotNameFormat = Config.Bind(
                 "General", "Screenshot filename format",
                 NameFormat.NameDateType,
@@ -209,10 +180,8 @@ namespace Screencap
                 "Rendered screenshots", "Saved Resolutions",
                 string.Empty,
                 new ConfigDescription("List of saved resolutions in JSON format.", null, "Advanced"));
-
+            SavedResolutionsConfig.SettingChanged += (sender, args) => LoadSavedResolutions();
             LoadSavedResolutions();
-
-            InitializeSettings2();
         }
 
         /// <summary>
@@ -223,7 +192,7 @@ namespace Screencap
         {
             if (!string.IsNullOrEmpty(SavedResolutionsConfig.Value))
             {
-                savedResolutions = new List<SavedResolution>();
+                _savedResolutions = new List<SavedResolution>();
 
                 // Regex pattern to match (x,y) format
                 Regex regex = new Regex(@"\((\-?\d+),(\-?\d+)\)");
@@ -232,64 +201,52 @@ namespace Screencap
                 {
                     int x = int.Parse(match.Groups[1].Value);
                     int y = int.Parse(match.Groups[2].Value);
-                    savedResolutions.Add(new SavedResolution(x, y));
+                    _savedResolutions.Add(new SavedResolution(x, y));
                 }
             }
         }
 
         private void SaveSavedResolutions()
         {
-            SavedResolutionsConfig.Value = "[" + string.Join(", ", savedResolutions.Select(v => $"({v.x},{v.y})").ToArray()) + "]";
+            SavedResolutionsConfig.Value = "[" + string.Join(", ", _savedResolutions.Select(v => $"({v.Width},{v.Height})").ToArray()) + "]";
         }
 
         private void SaveCurrentResolution()
         {
             var resolution = new SavedResolution(ResolutionX.Value, ResolutionY.Value);
-            if (!savedResolutions.Contains(resolution))
+            if (!_savedResolutions.Contains(resolution))
             {
-                savedResolutions.Add(resolution);
+                _savedResolutions.Add(resolution);
                 SaveSavedResolutions();
             }
         }
 
         private void DeleteResolution(SavedResolution resolution)
         {
-            savedResolutions.Remove(resolution);
+            _savedResolutions.Remove(resolution);
             SaveSavedResolutions();
         }
 
         #endregion
 
-        protected void Awake()
+        private void Awake()
         {
             Instance = this;
             Logger = base.Logger;
 
-            InitializeSettings();
+            InitializeCommon();
+            InitializeGameSpecific();
 
             ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
             ResolutionY.SettingChanged += (sender, args) => ResolutionYBuffer = ResolutionY.Value.ToString();
 
 
-            if (!Directory.Exists(screenshotDir))
-                Directory.CreateDirectory(screenshotDir);
+            if (!Directory.Exists(_defaultScreenshotDir))
+                Directory.CreateDirectory(_defaultScreenshotDir);
 
             Hooks.InstallHooks();
         }
 
-
-        /*private static string GetCaptureFilename()
-        {
-            var dir = Path.Combine(Paths.GameRootPath, "UserData", "cap");
-            Directory.CreateDirectory(dir);
-            return Path.Combine(dir,
-#if AI
-                                $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
-#elif HS2
-                $"HS2_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
-#endif
-            );
-        }*/
         private string GetUniqueFilename(string capType)
         {
             string filename;
@@ -304,6 +261,9 @@ namespace Screencap
 #else
             var extension = UseJpg.Value ? "jpg" : "png";
 #endif
+            // Legacy AI/HS2 filenames
+            // $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
+            // $"HS2_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
 
             switch (ScreenshotNameFormat.Value)
             {
@@ -329,7 +289,7 @@ namespace Screencap
                     throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
             }
 
-            return Path.GetFullPath(Path.Combine(screenshotDir, filename));
+            return Path.GetFullPath(Path.Combine(_defaultScreenshotDir, filename));
         }
 
 
@@ -829,14 +789,14 @@ namespace Screencap
             GUILayout.BeginVertical(GUI.skin.box);
             {
                 GUILayout.Label("Saved Resolutions", titleStyle);
-                foreach (var resolution in savedResolutions.ToList())
+                foreach (var resolution in _savedResolutions.ToList())
                 {
                     GUILayout.BeginHorizontal();
                     {
-                        if (GUILayout.Button($"{resolution.x}x{resolution.y}"))
+                        if (GUILayout.Button($"{resolution.Width}x{resolution.Height}"))
                         {
-                            ResolutionX.Value = resolution.x;
-                            ResolutionY.Value = resolution.y;
+                            ResolutionX.Value = resolution.Width;
+                            ResolutionY.Value = resolution.Height;
                         }
                         if (GUILayout.Button("X", GUILayout.ExpandWidth(false)))
                         {
@@ -904,7 +864,7 @@ namespace Screencap
                     var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
 #if AI || HS2                    //TODO more generic way?
-GUI.changed = false;
+                    GUI.changed = false;
                     val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.Default, "Yes");
                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.Default;
 #else
@@ -980,13 +940,12 @@ GUI.changed = false;
 
             // Action buttons
             if (GUILayout.Button("Open screenshot dir"))
-                Process.Start(screenshotDir);
+                Process.Start(_defaultScreenshotDir);
 
             GUILayout.Space(3);
             if (GUILayout.Button($"Capture Normal ({KeyCapture.Value})"))
-
 #if AI || HS2
-CaptureScreenshotNormal();
+                CaptureScreenshotNormal();
 #else
                 TakeScreenshot();
 #endif
@@ -1003,32 +962,20 @@ CaptureScreenshotNormal();
             GUI.DragWindow();
         }
 
-        /// <summary>
-        /// Available modes for camera guide lines.
-        /// Can be combined using flags.
-        /// </summary>
-        [Flags]
-        private enum CameraGuideLinesMode
+        private static void PlayCaptureSound()
         {
-            [Description("No guide lines")]
-            None = 0,
-            [Description("Cropped area")]
-            Framing = 1 << 0,
-            [Description("Rule of thirds")]
-            GridThirds = 1 << 1,
-            [Description("Golden ratio")]
-            GridPhi = 1 << 2,
-            [Description("Grid border")]
-            Border = 1 << 3,
-            [Description("Radiating lines")]
-            Radiating = 1 << 4,
-            [Description("Side V lines")]
-            SideV = 1 << 5,
-            [Description("Cross")]
-            Cross = 1 << 6
+#if AI
+            Singleton<Manager.Resources>.Instance.SoundPack.Play(AIProject.SoundPack.SystemSE.Photo);
+#elif HS2
+            if (Hooks.SoundWasPlayed)
+                Hooks.SoundWasPlayed = false;
+            else
+                Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.photo);
+#else
+            Illusion.Game.Utils.Sound.Play(Illusion.Game.SystemSE.photo);
+#endif
         }
 
         #endregion
     }
-
 }

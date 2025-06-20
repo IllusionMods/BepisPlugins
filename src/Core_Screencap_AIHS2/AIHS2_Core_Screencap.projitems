@@ -54,7 +54,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibOutputStreamIs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibOutputStreamMs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibStreamFactory.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScreenshotManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScreenshotManager.AIHS2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScreenshotManager.AIHS2.Hooks.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\composite.unity3d" />

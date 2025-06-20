@@ -9,8 +9,11 @@
     <Import_RootNamespace>Core_Screencap</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AlphaMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CameraGuideLinesMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Core.ScreenshotManager.NameFormat.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SavedResolution.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Screencap.cs" />
   </ItemGroup>
 </Project>

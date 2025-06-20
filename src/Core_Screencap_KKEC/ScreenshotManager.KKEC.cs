@@ -20,8 +20,6 @@ namespace Screencap
 {
     public partial class ScreenshotManager
     {
-        internal AlphaShot2 currentAlphaShot;
-
         #region Config properties
 
         public static ConfigEntry<KeyboardShortcut> KeyCapture360 { get; private set; }
@@ -35,9 +33,15 @@ namespace Screencap
         public static ConfigEntry<bool> FlipEyesIn3DCapture { get; private set; }
         public static ConfigEntry<bool> UseJpg { get; private set; }
         public static ConfigEntry<int> JpgQuality { get; private set; }
+        
 
-        private void InitializeSettings2()
+        private void InitializeGameSpecific()
         {
+            SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
+            InstallSceenshotHandler();
+
+            I360Render.Init();
+
             KeyCapture360 = Config.Bind(
                 "Keyboard shortcuts",
                 "Take 360 screenshot",
@@ -78,7 +82,7 @@ namespace Screencap
                 "3D Settings", "Flip left and right eye",
                 true,
                 new ConfigDescription("Flip left and right eye for cross-eyed viewing. Disable to use the screenshots in most VR image viewers."));
-                
+
             UseJpg = Config.Bind(
                 "JPG Settings", "Save screenshots as .jpg instead of .png",
                 false,
@@ -88,30 +92,20 @@ namespace Screencap
                 "3D Settings", "Quality of .jpg files",
                 100,
                 new ConfigDescription("Lower quality = lower file sizes. Even 100 is worse than a .png file.", new AcceptableValueRange<int>(1, 100)));
-
-
-                // TODO move
-                SceneManager.sceneLoaded += (s, a) => InstallSceenshotHandler();
-            InstallSceenshotHandler();
-
-            I360Render.Init();
         }
 
         #endregion
-
-
-
-      
-
-        private static byte[] EncodeToFile(Texture2D result) => UseJpg.Value ? result.EncodeToJPG(JpgQuality.Value) : result.EncodeToPNG();
-
-        private static byte[] EncodeToXmpFile(Texture2D result) => UseJpg.Value ? I360Render.InsertXMPIntoTexture2D_JPEG(result, JpgQuality.Value) : I360Render.InsertXMPIntoTexture2D_PNG(result);
-
+        
+        internal AlphaShot2 currentAlphaShot;
         private void InstallSceenshotHandler()
         {
             if (!Camera.main || !Camera.main.gameObject) return;
             currentAlphaShot = Camera.main.gameObject.GetOrAddComponent<AlphaShot2>();
         }
+
+        private static byte[] EncodeToFile(Texture2D result) => UseJpg.Value ? result.EncodeToJPG(JpgQuality.Value) : result.EncodeToPNG();
+
+        private static byte[] EncodeToXmpFile(Texture2D result) => UseJpg.Value ? I360Render.InsertXMPIntoTexture2D_JPEG(result, JpgQuality.Value) : I360Render.InsertXMPIntoTexture2D_PNG(result);
 
         protected void Update()
         {
@@ -168,7 +162,7 @@ namespace Screencap
         private IEnumerator TakeScreenshotLog(string filename)
         {
             yield return new WaitForEndOfFrame();
-            Utils.Sound.Play(SystemSE.photo);
+            PlayCaptureSound();
             Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"UI screenshot saved to {filename}");
         }
 
@@ -245,7 +239,7 @@ namespace Screencap
             try { OnPostCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
 
-            Utils.Sound.Play(SystemSE.photo);
+            PlayCaptureSound();
         }
 
         private IEnumerator Take360Screenshot(bool in3D)
@@ -307,7 +301,7 @@ namespace Screencap
             try { OnPostCapture?.Invoke(); }
             catch (Exception ex) { Logger.LogError(ex); }
 
-            Utils.Sound.Play(SystemSE.photo);
+            PlayCaptureSound();
         }
 
         /// <summary>
