@@ -13,7 +13,7 @@ namespace Screencap
                 case AlphaMode.None:
                     return "No";
                 case AlphaMode.Default:
-                    return null;
+                    return "Default";
 #if HS2 || AI
                 case AlphaMode.composite:
                     return "Composite";
