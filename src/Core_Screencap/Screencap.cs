@@ -786,23 +786,13 @@ namespace Screencap
                 GUILayout.Label("Transparent background", titleStyle);
                 GUILayout.BeginHorizontal();
                 {
-                    GUI.changed = false;
-                    var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
-#if AI || HS2                    //TODO more generic way?
-                    GUI.changed = false;
-                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.Default, "Yes");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.Default;
-#else
-                    GUI.changed = false;
-                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.blackout, "Cutout");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.blackout;
-
-                    GUI.changed = false;
-                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.rgAlpha, "Alpha");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.rgAlpha;
-#endif
-
+                    foreach (AlphaMode mode in Enum.GetValues(typeof(AlphaMode)))
+                    {
+                        if(mode == AlphaMode.Default) continue;
+                        GUI.changed = false;
+                        var val = GUILayout.Toggle(CaptureAlphaMode.Value == mode, mode.GetDisplayName());
+                        if (GUI.changed && val) CaptureAlphaMode.Value = (AlphaMode)mode;
+                    }
                 }
                 GUILayout.EndHorizontal();
             }
@@ -879,7 +869,16 @@ namespace Screencap
 #if AI || HS2
                 CaptureScreenshotRender();
 #else
+                StartCoroutine(TakeCharScreenshot(false));
+
+            if (GUILayout.Button($"Capture 360 ({KeyCapture360.Value})"))
+                StartCoroutine(Take360Screenshot(false));
+
+            if (GUILayout.Button($"Capture 3D ({KeyCaptureAlphaIn3D.Value})"))
                 StartCoroutine(TakeCharScreenshot(true));
+
+            if (GUILayout.Button($"Capture 360 3D ({KeyCapture360in3D.Value})"))
+                StartCoroutine(Take360Screenshot(true));
 #endif
 
             GUILayout.Space(2);
