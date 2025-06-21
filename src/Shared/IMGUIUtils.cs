@@ -55,7 +55,7 @@ namespace Shared
             if (TransparentBoxTex == null)
             {
                 var windowBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                windowBackground.SetPixel(0, 0, SolidBoxColor);
+                windowBackground.SetPixel(0, 0, TransparentBoxColor);
                 windowBackground.Apply();
                 TransparentBoxTex = windowBackground;
                 GameObject.DontDestroyOnLoad(windowBackground);

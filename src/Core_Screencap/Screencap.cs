@@ -51,7 +51,7 @@ namespace Screencap
         /// <summary>
         /// Directory where screenshots are saved
         /// </summary>
-        private readonly string _defaultScreenshotDir = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
+        public string ScreenshotDir { get; } = Path.Combine(Paths.GameRootPath, @"UserData\cap\");
 
         /// <summary>
         /// Minimum allowed screenshot resolution
@@ -81,17 +81,17 @@ namespace Screencap
         public static ConfigEntry<KeyboardShortcut> KeyCapture { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCaptureAlpha { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyGui { get; private set; }
-        private ConfigEntry<int> ResolutionX { get; set; }
-        private ConfigEntry<int> ResolutionY { get; set; }
-        private ConfigEntry<bool> ResolutionAllowExtreme { get; set; }
+        public static ConfigEntry<int> ResolutionX { get; set; }
+        public static ConfigEntry<int> ResolutionY { get; set; }
+        public static ConfigEntry<bool> ResolutionAllowExtreme { get; set; }
         public static ConfigEntry<int> DownscalingRate { get; private set; }
         [Obsolete("Use CaptureAlphaMode")]
         public static ConfigEntry<bool> CaptureAlpha { get; private set; }
         public static ConfigEntry<AlphaMode> CaptureAlphaMode { get; private set; }
-        private static ConfigEntry<int> UIShotUpscale { get; set; }
+        public static ConfigEntry<int> UIShotUpscale { get; set; }
         public static ConfigEntry<bool> ScreenshotMessage { get; private set; }
-        private ConfigEntry<CameraGuideLinesMode> GuideLinesModes { get; set; }
-        private ConfigEntry<int> GuideLineThickness { get; set; }
+        public static ConfigEntry<CameraGuideLinesMode> GuideLinesModes { get; set; }
+        public static ConfigEntry<int> GuideLineThickness { get; set; }
         public static ConfigEntry<NameFormat> ScreenshotNameFormat { get; private set; }
         public static ConfigEntry<string> ScreenshotNameOverride { get; private set; }
 
@@ -241,8 +241,8 @@ namespace Screencap
             ResolutionX.SettingChanged += (sender, args) => ResolutionXBuffer = ResolutionX.Value.ToString();
             ResolutionY.SettingChanged += (sender, args) => ResolutionYBuffer = ResolutionY.Value.ToString();
 
-            if (!Directory.Exists(_defaultScreenshotDir))
-                Directory.CreateDirectory(_defaultScreenshotDir);
+            if (!Directory.Exists(ScreenshotDir))
+                Directory.CreateDirectory(ScreenshotDir);
 
             Hooks.InstallHooks();
         }
@@ -289,7 +289,7 @@ namespace Screencap
                     throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
             }
 
-            return Path.GetFullPath(Path.Combine(_defaultScreenshotDir, filename));
+            return Path.GetFullPath(Path.Combine(ScreenshotDir, filename));
         }
 
 
@@ -840,7 +840,7 @@ namespace Screencap
 
             // Action buttons
             if (GUILayout.Button("Open screenshot dir"))
-                Process.Start(_defaultScreenshotDir);
+                Process.Start(ScreenshotDir);
 
             GUILayout.Space(3);
             if (GUILayout.Button($"Capture Normal ({KeyCapture.Value})"))
