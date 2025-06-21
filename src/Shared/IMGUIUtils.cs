@@ -1,12 +1,25 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 namespace Shared
 {
     /// <summary>
     /// Utility methods for working with IMGUI / OnGui.
     /// </summary>
-    internal static class IMGUIUtils
+    public static class IMGUIUtils
     {
+        #region Custom skins
+
+        internal static bool ColorFilterAffectsImgui =>
+#if KK || EC
+            true;
+#else
+            false;
+#endif
+
+        public static Color SolidBoxColor { get; } = ColorFilterAffectsImgui ? new Color(0.84f, 0.84f, 0.84f) : new Color(0.4f, 0.4f, 0.4f);
+        public static Color TransparentBoxColor { get; } = ColorFilterAffectsImgui ? new Color(0.84f, 0.84f, 0.84f, 0.7f) : new Color(0.4f, 0.4f, 0.4f, 0.7f);
+
         private static Texture2D SolidBoxTex { get; set; }
 
         /// <summary>
@@ -22,9 +35,10 @@ namespace Shared
             if (SolidBoxTex == null)
             {
                 var windowBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                windowBackground.SetPixel(0, 0, new Color(0.4f, 0.4f, 0.4f));
+                windowBackground.SetPixel(0, 0, SolidBoxColor);
                 windowBackground.Apply();
                 SolidBoxTex = windowBackground;
+                GameObject.DontDestroyOnLoad(windowBackground);
             }
 
             // It's necessary to make a new GUIStyle here or the texture doesn't show up
@@ -41,14 +55,17 @@ namespace Shared
             if (TransparentBoxTex == null)
             {
                 var windowBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
-                windowBackground.SetPixel(0, 0, new Color(0.4f, 0.4f, 0.4f, 0.7f));
+                windowBackground.SetPixel(0, 0, SolidBoxColor);
                 windowBackground.Apply();
                 TransparentBoxTex = windowBackground;
+                GameObject.DontDestroyOnLoad(windowBackground);
             }
 
             // It's necessary to make a new GUIStyle here or the texture doesn't show up
             GUI.Box(boxRect, GUIContent.none, new GUIStyle { normal = new GUIStyleState { background = TransparentBoxTex } });
         }
+
+        #endregion
 
         /// <summary>
         /// Block input from going through to the game/canvases if the mouse cursor is within the specified Rect.
@@ -64,6 +81,8 @@ namespace Shared
             if (eatRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
                 Input.ResetInputAxes();
         }
+
+        #region Outline controls
 
         /// <summary>
         /// Draw a label with an outline
@@ -137,11 +156,13 @@ namespace Shared
             style.normal.textColor = backupColor;
         }
 
+        /// <inheritdoc cref="DrawLabelWithShadow"/>
         public static void DrawLayoutLabelWithShadow(GUIContent content, GUIStyle style, Color txtColor, Color shadowColor, Vector2 direction, params GUILayoutOption[] options)
         {
             DrawLabelWithShadow(GUILayoutUtility.GetRect(content, style, options), content, style, txtColor, shadowColor, direction);
         }
 
+        /// <inheritdoc cref="DrawLabelWithShadow"/>
         public static bool DrawButtonWithShadow(Rect r, GUIContent content, GUIStyle style, float shadowAlpha, Vector2 direction)
         {
             GUIStyle letters = new GUIStyle(style);
@@ -158,9 +179,166 @@ namespace Shared
             return result;
         }
 
+        /// <inheritdoc cref="DrawLabelWithShadow"/>
         public static bool DrawLayoutButtonWithShadow(GUIContent content, GUIStyle style, float shadowAlpha, Vector2 direction, params GUILayoutOption[] options)
         {
             return DrawButtonWithShadow(GUILayoutUtility.GetRect(content, style, options), content, style, shadowAlpha, direction);
         }
+
+        #endregion
+
+        #region Drag / resize window
+
+        private static bool _resizeHandleClicked;
+        private static Vector3 _resizeClickedPosition;
+        private static Rect _resizeOriginalWindow;
+        private static int _resizeCurrentWindowId;
+
+        /// <summary>
+        /// Handle both dragging and resizing of OnGUI windows.
+        /// Use this instead of GUI.DragWindow(), don't use both at the same time.
+        /// To use, place this at the end of your Window method: _windowRect = IMGUIUtils.DragResizeWindow(windowId, _windowRect);
+        /// </summary>
+        /// <param name="windowId">The ID passed to your window method</param>
+        /// <param name="windowRect">The rect of your window. Make sure to set it to the result of this method</param>
+        public static Rect DragResizeWindow(int windowId, Rect windowRect)
+        {
+            const int visibleAreaSize = 13;
+            const int functionalAreaSize = 25;
+
+            // Draw a visual hint that resizing is possible
+            GUI.Box(new Rect(windowRect.width - visibleAreaSize, windowRect.height - visibleAreaSize, visibleAreaSize, visibleAreaSize), GUIContent.none);
+
+            if (_resizeCurrentWindowId != 0 && _resizeCurrentWindowId != windowId) return windowRect;
+
+            var mousePos = Input.mousePosition;
+            mousePos.y = Screen.height - mousePos.y; // Convert to GUI coords
+
+            var winRect = windowRect;
+            var windowHandle = new Rect(
+                winRect.x + winRect.width - functionalAreaSize,
+                winRect.y + winRect.height - functionalAreaSize,
+                functionalAreaSize,
+                functionalAreaSize);
+
+            // Can't use Input class because inputs inside of window rect might be eaten
+            var mouseButtonDown = Event.current.type == EventType.MouseDown && Event.current.button == 0;
+            if (mouseButtonDown && windowHandle.Contains(mousePos))
+            {
+                _resizeHandleClicked = true;
+                _resizeClickedPosition = mousePos;
+                _resizeOriginalWindow = winRect;
+                _resizeCurrentWindowId = windowId;
+            }
+
+            if (_resizeHandleClicked)
+            {
+                // Resize window by dragging
+                var listWinRect = winRect;
+                listWinRect.width = Mathf.Clamp(_resizeOriginalWindow.width + (mousePos.x - _resizeClickedPosition.x), 100, Screen.width);
+                listWinRect.height = Mathf.Clamp(_resizeOriginalWindow.height + (mousePos.y - _resizeClickedPosition.y), 100, Screen.height);
+                windowRect = listWinRect;
+
+                var mouseButtonUp = Event.current.type == EventType.MouseUp && Event.current.button == 0;
+                if (mouseButtonUp)
+                {
+                    _resizeHandleClicked = false;
+                    _resizeCurrentWindowId = 0;
+                }
+            }
+            else
+            {
+                // Handle dragging only if not resizing else things break
+                GUI.DragWindow();
+            }
+            return windowRect;
+        }
+
+        /// <summary>
+        /// Handle both dragging and resizing of OnGUI windows, as well as eat mouse inputs when cursor is over the window.
+        /// Use this instead of <see cref="GUI.DragWindow(Rect)"/> and <see cref="EatInputInRect"/>. Don't use these methods at the same time as DragResizeEatWindow.
+        /// To use, place this at the end of your Window method: _windowRect = IMGUIUtils.DragResizeEatWindow(windowId, _windowRect);
+        /// </summary>
+        /// <param name="windowId">The ID passed to your window method</param>
+        /// <param name="windowRect">The rect of your window. Make sure to set it to the result of this method</param>
+        public static Rect DragResizeEatWindow(int windowId, Rect windowRect)
+        {
+            var result = DragResizeWindow(windowId, windowRect);
+            EatInputInRect(result);
+            return result;
+        }
+
+        #endregion
+
+        private static GUIStyle _tooltipStyle;
+        private static GUIContent _tooltipContent;
+        private static Texture2D _tooltipBackground;
+        /// <summary>
+        /// Display a tooltip for any GUIContent with the tootlip property set in a given window.
+        /// To use, place this at the end of your Window method: IMGUIUtils.DrawTooltip(_windowRect);
+        /// </summary>
+        /// <param name="area">Area where the tooltip can appear</param>
+        /// <param name="tooltipWidth">Minimum width of the tooltip, can't be larger than area's width</param>
+        public static void DrawTooltip(Rect area, int tooltipWidth = 400)
+        {
+            if (!string.IsNullOrEmpty(GUI.tooltip))
+            {
+                if (_tooltipBackground == null)
+                {
+                    _tooltipBackground = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+                    _tooltipBackground.SetPixel(0, 0, Color.black);
+                    _tooltipBackground.Apply();
+
+                    _tooltipStyle = new GUIStyle
+                    {
+                        normal = new GUIStyleState { textColor = Color.white, background = _tooltipBackground },
+                        wordWrap = true,
+                        //alignment = TextAnchor.MiddleCenter
+                    };
+                    _tooltipContent = new GUIContent();
+                }
+
+                var lines = GUI.tooltip.Split('\n');
+                var longestLine = lines.OrderByDescending(l => l.Length).First();
+
+                _tooltipContent.text = longestLine;
+                _tooltipStyle.CalcMinMaxWidth(_tooltipContent, out var minWidth, out var maxWidth);
+
+                var areaWidth = (int)area.width;
+                if (maxWidth > areaWidth) maxWidth = areaWidth;
+                if (tooltipWidth > areaWidth) tooltipWidth = areaWidth;
+
+                _tooltipContent.text = GUI.tooltip;
+                var height = _tooltipStyle.CalcHeight(_tooltipContent, tooltipWidth) + 10;
+
+                var heightP = height / area.height;
+                //var widthP = maxWidth / areaWidth;
+                var squareWidth = areaWidth * (heightP + 0.05f);
+                if (squareWidth > tooltipWidth)
+                {
+                    tooltipWidth = Mathf.Min((int)maxWidth, (int)squareWidth);
+                    height = _tooltipStyle.CalcHeight(_tooltipContent, tooltipWidth) + 10;
+                }
+
+                var currentEvent = Event.current;
+
+                var x = currentEvent.mousePosition.x + tooltipWidth > area.width
+                    ? area.width - tooltipWidth
+                    : currentEvent.mousePosition.x;
+
+                var y = currentEvent.mousePosition.y + 25 + height > area.height
+                    ? currentEvent.mousePosition.y - height - 15
+                    : currentEvent.mousePosition.y + 25;
+
+                GUI.Box(new Rect(x, y, tooltipWidth, height), GUI.tooltip, _tooltipStyle);
+            }
+        }
+
+        /// <summary>
+        /// Empty GUILayoutOption array. You can use this instead of nothing to avoid allocations.
+        /// For example: <code>GUILayout.Label("Hello world!", IMGUIUtils.EmptyLayoutOptions);</code>
+        /// At that point you might also want to use GUIContent (created once and stored) instead of string.
+        /// </summary>
+        public static GUILayoutOption[] EmptyLayoutOptions = new GUILayoutOption[0];
     }
 }
