@@ -144,12 +144,12 @@ namespace Screencap
 
             CaptureAlphaMode = Config.Bind(
                 "Render Settings", "Transparency in rendered screenshots",
-                AlphaMode.Default,
+                AlphaModeExtensions.GetDefault(),
                 new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
 
             CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None,
                                        new ConfigDescription("Only for backwards compatibility, use CaptureAlphaMode instead.", null, new BrowsableAttribute(false)));
-            CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.Default : AlphaMode.None;
+            CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaModeExtensions.GetDefault() : AlphaMode.None;
             CaptureAlphaMode.SettingChanged += (sender, args) => CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
 
             ScreenshotNameFormat = Config.Bind(
@@ -760,22 +760,29 @@ namespace Screencap
                 GUILayout.Label("Transparent background", titleStyle);
                 GUILayout.BeginHorizontal();
                 {
-                    GUI.changed = false;
-                    var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
-#if AI || HS2                    //TODO more generic way?
-                    GUI.changed = false;
-                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.Default, "Yes");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.Default;
-#else
-                    GUI.changed = false;
-                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.blackout, "Cutout");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.blackout;
+                    foreach (AlphaMode mode in Enum.GetValues(typeof(AlphaMode)))
+                    {
+                        GUI.changed = false;
+                        var val = GUILayout.Toggle(CaptureAlphaMode.Value == mode, mode.GetDisplayName());
+                        if (GUI.changed && val) CaptureAlphaMode.Value = (AlphaMode)mode;
+                    }
 
-                    GUI.changed = false;
-                    val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.rgAlpha, "Alpha");
-                    if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.rgAlpha;
-#endif
+//                     GUI.changed = false;
+//                     var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
+//                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
+// #if AI || HS2                    //TODO more generic way?
+//                     GUI.changed = false;
+//                     val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.Default, "Yes");
+//                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.Default;
+// #else
+//                     GUI.changed = false;
+//                     val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.blackout, "Cutout");
+//                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.blackout;
+
+//                     GUI.changed = false;
+//                     val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.rgAlpha, "Alpha");
+//                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.rgAlpha;
+// #endif
 
                 }
                 GUILayout.EndHorizontal();
@@ -853,7 +860,16 @@ namespace Screencap
 #if AI || HS2
                 CaptureScreenshotRender();
 #else
+                StartCoroutine(TakeCharScreenshot(false));
+
+            if (GUILayout.Button($"Capture 360 ({KeyCapture360.Value})"))
+                StartCoroutine(Take360Screenshot(false));
+
+            if (GUILayout.Button($"Capture 3D ({KeyCaptureAlphaIn3D.Value})"))
                 StartCoroutine(TakeCharScreenshot(true));
+
+            if (GUILayout.Button($"Capture 360 3D ({KeyCapture360in3D.Value})"))
+                StartCoroutine(Take360Screenshot(true));
 #endif
 
             GUILayout.Space(2);
