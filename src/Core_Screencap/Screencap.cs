@@ -762,6 +762,7 @@ namespace Screencap
                 {
                     foreach (AlphaMode mode in Enum.GetValues(typeof(AlphaMode)))
                     {
+                        if(mode == AlphaMode.Default) continue;
                         GUI.changed = false;
                         var val = GUILayout.Toggle(CaptureAlphaMode.Value == mode, mode.GetDisplayName());
                         if (GUI.changed && val) CaptureAlphaMode.Value = (AlphaMode)mode;
