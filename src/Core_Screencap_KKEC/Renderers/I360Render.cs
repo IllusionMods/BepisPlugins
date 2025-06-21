@@ -61,7 +61,7 @@ namespace Screencap
             }
         }
 
-        public static Texture2D CaptureTex(int width = 1024, Camera renderCam = null, bool faceCameraDirection = true)
+        public static RenderTexture CaptureTex(int width = 1024, Camera renderCam = null, bool faceCameraDirection = true)
         {
             if (renderCam == null)
             {
@@ -81,7 +81,6 @@ namespace Screencap
 
             int cubemapSize = Mathf.Min(Mathf.NextPowerOfTwo(width), 16384);
             RenderTexture cubemap = null, equirectangularTexture = null;
-            Texture2D output = null;
             try
             {
                 cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0);
@@ -95,9 +94,8 @@ namespace Screencap
 
                 equirectangularConverter.SetFloat(paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
                 Graphics.Blit(cubemap, equirectangularTexture, equirectangularConverter);
-                output = RtToT2D(equirectangularTexture);
 
-                return output;
+                return equirectangularTexture;
             }
             finally
             {
@@ -106,19 +104,8 @@ namespace Screencap
                 if (cubemap != null)
                     RenderTexture.ReleaseTemporary(cubemap);
 
-                if (equirectangularTexture != null)
-                    RenderTexture.ReleaseTemporary(equirectangularTexture);
-
                 foreach (var comp in disabled) comp.enabled = true;
             }
-        }
-
-        public static byte[] Capture(int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true)
-        {
-            var output = CaptureTex(width, renderCam, faceCameraDirection);
-            var result = encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG(output, 100) : InsertXMPIntoTexture2D_PNG(output);
-            UnityEngine.Object.Destroy(output);
-            return result;
         }
 
         private static Texture2D RtToT2D(RenderTexture equirectangularTexture)

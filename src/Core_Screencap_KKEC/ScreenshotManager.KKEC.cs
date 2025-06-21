@@ -1,20 +1,20 @@
 ﻿using alphaShot;
-using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using BepisPlugins;
-using Illusion.Game;
 using System;
 using System.Collections;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using Shared;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Pngcs.Unity;
+
+
 #if KK || KKS
 using StrayTech;
 #endif
+
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace Screencap
 {
@@ -103,9 +103,40 @@ namespace Screencap
             currentAlphaShot = Camera.main.gameObject.GetOrAddComponent<AlphaShot2>();
         }
 
-        private static byte[] EncodeToFile(Texture2D result) => UseJpg.Value ? result.EncodeToJPG(JpgQuality.Value) : result.EncodeToPNG();
+        private static IEnumerator WriteToFile(RenderTexture result, string filename)
+        {
+            // TODO slow
+            var t2d = alphaShot.AlphaShot2.GetT2D(result);
+            RenderTexture.ReleaseTemporary(result);
+            yield return null;
 
-        private static byte[] EncodeToXmpFile(Texture2D result) => UseJpg.Value ? I360Render.InsertXMPIntoTexture2D_JPEG(result, JpgQuality.Value) : I360Render.InsertXMPIntoTexture2D_PNG(result);
+            if (UseJpg.Value)
+            {
+                // even slower
+                var encoded = t2d.EncodeToJPG(JpgQuality.Value);
+                GameObject.DestroyImmediate(t2d);
+                yield return null;
+                File.WriteAllBytes(filename, encoded);
+            }
+            else
+            {
+                var px = t2d.GetPixels();
+                var width = t2d.width;
+                var height = t2d.height;
+                GameObject.DestroyImmediate(t2d);
+                yield return PNG.WriteAsync(px, width, height, 8, true, false, filename);
+            }
+        }
+
+        private static IEnumerator WriteToXmpFile(RenderTexture result, string filename)
+        {
+            // TODO slow
+            var t2d = alphaShot.AlphaShot2.GetT2D(result);
+            RenderTexture.ReleaseTemporary(result);
+            var bytes = UseJpg.Value ? I360Render.InsertXMPIntoTexture2D_JPEG(t2d, JpgQuality.Value) : I360Render.InsertXMPIntoTexture2D_PNG(t2d);
+            yield return null;
+            File.WriteAllBytes(filename, bytes);
+        }
 
         protected void Update()
         {
@@ -116,38 +147,32 @@ namespace Screencap
                 ResolutionYBuffer = ResolutionY.Value.ToString();
             }
             else if (KeyCaptureAlpha.Value.IsDown()) StartCoroutine(TakeCharScreenshot(false));
-            else if (KeyCapture.Value.IsDown()) TakeScreenshot();
+            else if (KeyCapture.Value.IsDown()) StartCoroutine(TakeScreenshot());
             else if (KeyCapture360.Value.IsDown()) StartCoroutine(Take360Screenshot(false));
             else if (KeyCaptureAlphaIn3D.Value.IsDown()) StartCoroutine(TakeCharScreenshot(true));
             else if (KeyCapture360in3D.Value.IsDown()) StartCoroutine(Take360Screenshot(true));
         }
 
-        /// <summary>
-        /// Capture the screen into a texture based on supplied arguments. Remember to destroy the texture when done with it.
-        /// Can return null if there no 3D camera was found to take the picture with.
-        /// </summary>
-        /// <param name="width">Width of the resulting capture, after downscaling</param>
-        /// <param name="height">Height of the resulting capture, after downscaling</param>
-        /// <param name="downscaling">How much to oversize and then downscale. 1 for none.</param>
-        /// <param name="transparent">Should the capture be transparent</param>
+        [Obsolete("Use the static overload", true)]
         public Texture2D Capture(int width, int height, int downscaling, bool transparent)
+        {
+            var capture = Capture(width, height, downscaling, transparent ? AlphaMode.Default : AlphaMode.None);
+            var t2d = alphaShot.AlphaShot2.GetT2D(capture);
+            RenderTexture.ReleaseTemporary(capture);
+            return t2d;
+        }
+
+        private RenderTexture DoCapture(int width, int height, int downscaling, AlphaMode transparencyMode)
         {
             if (currentAlphaShot == null)
             {
                 Logger.LogDebug("Capture - No camera found");
                 return null;
             }
-
-            try { OnPreCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
-            var capture = currentAlphaShot.CaptureTex(width, height, downscaling, transparent ? AlphaMode.rgAlpha : AlphaMode.None);
-            try { OnPostCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
-
-            return capture;
+            return currentAlphaShot.CaptureTex(width, height, downscaling, transparencyMode);
         }
 
-        private void TakeScreenshot()
+        private IEnumerator TakeScreenshot()
         {
             var filename = GetUniqueFilename("UI");
 #if KK
@@ -155,12 +180,6 @@ namespace Screencap
 #else
             ScreenCapture.CaptureScreenshot(filename, UIShotUpscale.Value);
 #endif
-
-            StartCoroutine(TakeScreenshotLog(filename));
-        }
-
-        private IEnumerator TakeScreenshotLog(string filename)
-        {
             yield return new WaitForEndOfFrame();
             PlayCaptureSound();
             LogScreenshotMessage($"UI screenshot saved to {filename}");
@@ -193,43 +212,40 @@ namespace Screencap
                 var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
 
                 var filename = GetUniqueFilename("Render");
-                File.WriteAllBytes(filename, EncodeToFile(capture));
+                yield return WriteToFile(capture, filename);
                 LogScreenshotMessage($"Character screenshot saved to {filename}");
-
-                Destroy(capture);
             }
             else
             {
                 var targetTr = Camera.main.transform;
-
+                
                 ToggleCameraControllers(targetTr, false);
                 Time.timeScale = 0.01f;
                 yield return new WaitForEndOfFrame();
-
+                
                 targetTr.position += targetTr.right * EyeSeparation.Value / 2;
                 // Let the game render at the new position
                 yield return new WaitForEndOfFrame();
                 var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
-
+                
                 targetTr.position -= targetTr.right * EyeSeparation.Value;
                 yield return new WaitForEndOfFrame();
                 var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
-
+                
                 targetTr.position += targetTr.right * EyeSeparation.Value / 2;
-
+                
                 ToggleCameraControllers(targetTr, true);
                 Time.timeScale = 1;
-
+                
                 var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, ImageSeparationOffset.Value) : StitchImages(capture2, capture, ImageSeparationOffset.Value);
+                
+                RenderTexture.ReleaseTemporary(capture);
+                RenderTexture.ReleaseTemporary(capture2);
 
                 var filename = GetUniqueFilename("3D-Render");
-                File.WriteAllBytes(filename, EncodeToFile(result));
+                yield return WriteToFile(result, filename);
 
                 LogScreenshotMessage($"3D Character screenshot saved to {filename}");
-
-                Destroy(capture);
-                Destroy(capture2);
-                Destroy(result);
             }
 
 #if EC || KKS
@@ -254,14 +270,10 @@ namespace Screencap
                 yield return new WaitForEndOfFrame();
 
                 var output = I360Render.CaptureTex(Resolution360.Value);
-                var capture = EncodeToXmpFile(output);
-
                 var filename = GetUniqueFilename("360");
-                File.WriteAllBytes(filename, capture);
+                yield return WriteToXmpFile(output, filename);
 
                 LogScreenshotMessage($"360 screenshot saved to {filename}");
-
-                Destroy(output);
             }
             else
             {
@@ -289,11 +301,10 @@ namespace Screencap
                 var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, 0) : StitchImages(capture2, capture, 0);
 
                 var filename = GetUniqueFilename("3D-360");
-                File.WriteAllBytes(filename, EncodeToXmpFile(result));
+                yield return WriteToXmpFile(result, filename);
 
                 LogScreenshotMessage($"3D 360 screenshot saved to {filename}");
 
-                Destroy(result);
                 Destroy(capture);
                 Destroy(capture2);
             }
@@ -322,17 +333,19 @@ namespace Screencap
 #endif
         }
 
-        private static Texture2D StitchImages(Texture2D capture, Texture2D capture2, float overlapOffset)
+        private static RenderTexture StitchImages(RenderTexture capture, RenderTexture capture2, float overlapOffset)
         {
             var xAdjust = (int)(capture.width * overlapOffset);
-            var result = new Texture2D((capture.width - xAdjust) * 2, capture.height, TextureFormat.ARGB32, false);
+            var result = RenderTexture.GetTemporary((capture.width - xAdjust) * 2, capture.height, 0, RenderTextureFormat.ARGB32);
 
             int width = result.width / 2;
             int height = result.height;
-            result.SetPixels(0, 0, width, height, capture.GetPixels(0, 0, width, height));
-            result.SetPixels(width, 0, width, height, capture2.GetPixels(xAdjust, 0, width, height));
 
-            result.Apply();
+            //result.SetPixels(0, 0, width, height, capture.GetPixels(0, 0, width, height));
+            Graphics.CopyTexture(capture, 0, 0, 0, 0, width, height, result, 0, 0, 0, 0);
+            //result.SetPixels(width, 0, width, height, capture2.GetPixels(xAdjust, 0, width, height));
+            Graphics.CopyTexture(capture2, 0, 0, xAdjust, 0, width, height, result, 0, 0, width, 0);
+
             return result;
         }
     }

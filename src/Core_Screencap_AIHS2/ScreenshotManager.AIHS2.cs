@@ -69,37 +69,25 @@ namespace Screencap
 
         #region Screenshot Handler
 
-        private void CaptureAndWrite(bool alpha, string capType)
+        private void CaptureAndWrite(AlphaMode alpha, string capType)
         {
             Config.Reload();
             var result = Capture(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, alpha);
             StartCoroutine(WriteTex(result, alpha, capType));
         }
 
-        /// <summary>
-        /// Capture the screen into a texture based on supplied arguments. Remember to RenderTexture.ReleaseTemporary the texture when done with it.
-        /// </summary>
-        /// <param name="width">Width of the resulting capture, after downscaling</param>
-        /// <param name="height">Height of the resulting capture, after downscaling</param>
-        /// <param name="downscaling">How much to oversize and then downscale. 1 for none.</param>
-        /// <param name="transparent">Should the capture be transparent</param>
+        [Obsolete("Use the static overload", true)]
         public RenderTexture Capture(int width, int height, int downscaling, bool transparent)
         {
-            try { OnPreCapture?.Invoke(); }
-            catch (Exception ex) { Logger.LogError(ex); }
+            return Capture(width, height, downscaling, transparent ? AlphaMode.Default : AlphaMode.None);
+        }
 
-            try
-            {
-                if (!transparent)
-                    return CaptureOpaque(width, height, downscaling);
-                else
-                    return CaptureTransparent(width, height, downscaling);
-            }
-            finally
-            {
-                try { OnPostCapture?.Invoke(); }
-                catch (Exception ex) { Logger.LogError(ex); }
-            }
+        private RenderTexture DoCapture(int width, int height, int downscaling, AlphaMode transparencyMode)
+        {
+            if (transparencyMode == AlphaMode.None)
+                return CaptureOpaque(width, height, downscaling);
+            else
+                return CaptureTransparent(width, height, downscaling);
         }
 
         /// <summary>
@@ -210,9 +198,9 @@ namespace Screencap
 
             var alphaAllowed = SceneManager.GetActiveScene().name == "CharaCustom" || Constants.InsideStudio;
             if (CaptureAlphaMode.Value != AlphaMode.None && alphaAllowed)
-                StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(true, "Render")));
+                StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(AlphaMode.Default, "Render")));
             else
-                StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(false, "Render")));
+                StartCoroutine(WaitForEndOfFrameThen(() => CaptureAndWrite(AlphaMode.None, "Render")));
         }
 
         private IEnumerator WaitForEndOfFrameThen(Action a)
@@ -305,20 +293,21 @@ namespace Screencap
         /// Writes the captured RenderTexture to a PNG file asynchronously.
         /// Handles both RGBA32 (transparent) and RGBAFloat (opaque) formats.
         /// </summary>
-        private IEnumerator WriteTex(RenderTexture rt, bool alpha, string capType)
+        private IEnumerator WriteTex(RenderTexture rt, AlphaMode alpha, string capType)
         {
-            //Pull texture off of GPU
-            var req = AsyncGPUReadback.Request(rt, 0, 0, rt.width, 0, rt.height, 0, 1, alpha ? TextureFormat.RGBA32 : TextureFormat.RGBAFloat);
+            // Pull texture off of GPU
+            // Not available on KK/EC/KKS, possibly achievable with https://github.com/SlightlyMad/AsyncTextureReader instead
+            var req = AsyncGPUReadback.Request(rt, 0, 0, rt.width, 0, rt.height, 0, 1, alpha != AlphaMode.None ? TextureFormat.RGBA32 : TextureFormat.RGBAFloat);
             while (!req.done) yield return null;
 
             RenderTexture.ReleaseTemporary(rt);
             string path = GetUniqueFilename(capType);
 
-            LogScreenshotMessage("Writing rendered screenshot to " + path.Substring(Paths.GameRootPath.Length));
+            LogScreenshotMessage("Writing screenshot to " + path.Substring(Paths.GameRootPath.Length));
 
             //Write raw pixel data to a file
             //Uses pngcs Unity fork: https://github.com/andrew-raphael-lukasik/pngcs
-            if (alpha)
+            if (alpha != AlphaMode.None)
             {
                 using (var buffer = req.GetData<Color32>())
                     yield return PNG.WriteAsync(buffer.ToArray(), req.width, req.height, 8, true, false, path);

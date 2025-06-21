@@ -61,11 +61,15 @@ namespace Pngcs.Zlib
             if (deflateStream != null) return;
             // I must create the DeflateStream only if necessary, because of its bug with empty input (sigh)
             // I must create with leaveopen=true always and do the closing myself, because MS moronic implementation of DeflateStream: I cant force a flush of the underlying stream witouth closing (sigh bis)
-            System.IO.Compression.CompressionLevel clevel = CompressionLevel.Optimal;
+#if !KK
+            CompressionLevel clevel = CompressionLevel.Optimal;
             // thaks for the granularity, MS!
             if (compressLevel >= 1 && compressLevel <= 5) clevel = CompressionLevel.Fastest;
             else if (compressLevel == 0) clevel = CompressionLevel.NoCompression;
             deflateStream = new DeflateStream(rawStream, clevel, true);
+#else
+            deflateStream = new DeflateStream(rawStream, CompressionMode.Compress, true);
+#endif
         }
 
         private void DoInit()

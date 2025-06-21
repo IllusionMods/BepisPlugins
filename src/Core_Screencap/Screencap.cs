@@ -40,7 +40,7 @@ namespace Screencap
         public const string Version = Metadata.PluginsVersion;
 
         internal static new ManualLogSource Logger;
-        [Obsolete("Get the instance from Chainloader")]
+        [Obsolete("Use static members or get the instance from Chainloader. Ideally add static APIs that you need in a PR.")]
         public static ScreenshotManager Instance { get; private set; }
 
         /// <summary>
@@ -68,6 +68,32 @@ namespace Screencap
         /// Triggered after a screenshot is captured. For use by plugins adding screen effects incompatible with Screencap.
         /// </summary>
         public static event Action OnPostCapture;
+
+        
+        /// <summary>
+        /// Capture the screen into a texture based on supplied arguments.
+        /// Remember to RenderTexture.ReleaseTemporary the texture when done with it.
+        /// Can return null if no 3D camera was found to take the picture with.
+        /// </summary>
+        /// <param name="width">Width of the resulting capture, after downscaling</param>
+        /// <param name="height">Height of the resulting capture, after downscaling</param>
+        /// <param name="downscaling">How much to oversize and then downscale. 1 for none.</param>
+        /// <param name="transparencyMode">Should the capture be transparent</param>
+        public static RenderTexture Capture(int width, int height, int downscaling, AlphaMode transparencyMode)
+        {
+            try { OnPreCapture?.Invoke(); }
+            catch (Exception ex) { Logger.LogError(ex); }
+
+            try
+            {
+                return Instance.DoCapture(width, height, downscaling, transparencyMode);
+            }
+            finally
+            {
+                try { OnPostCapture?.Invoke(); }
+                catch (Exception ex) { Logger.LogError(ex); }
+            }
+        }
 
         #endregion
 
