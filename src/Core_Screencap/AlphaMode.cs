@@ -1,19 +1,17 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Screencap
 {
-    public static class AlphaModeExtensions
+    internal static class Extensions
     {
         public static string GetDisplayName(this AlphaMode mode)
         {
             switch (mode)
             {
-                default:
                 case AlphaMode.None:
                     return "No";
-                case AlphaMode.Default:
-                    return "Default";
 #if HS2 || AI
                 case AlphaMode.composite:
                     return "Composite";
@@ -23,7 +21,17 @@ namespace Screencap
                 case AlphaMode.rgAlpha:
                     return "Gradual";
 #endif
+                default:
+                    return null;
             };
+        }
+
+        public static readonly AlphaMode MaxValue = (AlphaMode)Enum.GetValues(typeof(AlphaMode)).Cast<int>().Max();
+
+        public static string Truncate(this string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength - 3) + "...";
         }
     }
 
@@ -31,13 +39,12 @@ namespace Screencap
     {
         [Description("No transparency")]
         None = 0,
-#if HS2 || AI
         [Description("Transparency (default method)")]
+#if HS2 || AI
         Default = 1,
         [Description("Composite")]
         composite = 1
 #else
-        [Description("Transparency (default method)")]
         Default = 2,
         [Description("Cutout transparency (hard edges)")]
         blackout = 1,

@@ -192,6 +192,8 @@ namespace Screencap
 
         private IEnumerator TakeScreenshot()
         {
+            PlayCaptureSound();
+
             var filename = GetUniqueFilename("UI");
 #if KK
             Application.CaptureScreenshot(filename, UIShotUpscale.Value);
@@ -199,8 +201,7 @@ namespace Screencap
             ScreenCapture.CaptureScreenshot(filename, UIShotUpscale.Value);
 #endif
             yield return new WaitForEndOfFrame();
-            PlayCaptureSound();
-            LogScreenshotMessage($"UI screenshot saved to {filename}");
+            LogScreenshotMessage($"Saving UI screenshot to {filename}");
         }
 
         private IEnumerator TakeCharScreenshot(bool in3D)
@@ -226,15 +227,19 @@ namespace Screencap
 
             if (!in3D)
             {
+                var filename = GetUniqueFilename("Render");
+                LogScreenshotMessage($"Saving rendered screenshot to {filename}");
+
                 yield return new WaitForEndOfFrame();
                 var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
 
-                var filename = GetUniqueFilename("Render");
                 yield return WriteToFile(capture, filename);
-                LogScreenshotMessage($"Character screenshot saved to {filename}");
             }
             else
             {
+                var filename = GetUniqueFilename("3D-Render");
+                LogScreenshotMessage($"Saving 3D rendered screenshot to {filename}");
+
                 var targetTr = Camera.main.transform;
 
                 ToggleCameraControllers(targetTr, false);
@@ -260,10 +265,7 @@ namespace Screencap
                 RenderTexture.ReleaseTemporary(capture);
                 RenderTexture.ReleaseTemporary(capture2);
 
-                var filename = GetUniqueFilename("3D-Render");
                 yield return WriteToFile(result, filename);
-
-                LogScreenshotMessage($"3D Character screenshot saved to {filename}");
             }
 
 #if EC || KKS
@@ -285,16 +287,20 @@ namespace Screencap
 
             if (!in3D)
             {
+                var filename = GetUniqueFilename("360");
+                LogScreenshotMessage($"Saving 360 screenshot to {filename}");
+
                 yield return new WaitForEndOfFrame();
 
                 var output = I360Render.CaptureTex(Resolution360.Value);
-                var filename = GetUniqueFilename("360");
                 yield return WriteToXmpFile(output, filename);
 
-                LogScreenshotMessage($"360 screenshot saved to {filename}");
             }
             else
             {
+                var filename = GetUniqueFilename("3D-360");
+                LogScreenshotMessage($"Saving 3D 360 screenshot to {filename}");
+
                 var targetTr = Camera.main.transform;
 
                 ToggleCameraControllers(targetTr, false);
@@ -318,10 +324,7 @@ namespace Screencap
                 // Overlap is useless for these so don't use
                 var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, 0) : StitchImages(capture2, capture, 0);
 
-                var filename = GetUniqueFilename("3D-360");
                 yield return WriteToXmpFile(result, filename);
-
-                LogScreenshotMessage($"3D 360 screenshot saved to {filename}");
 
                 Destroy(capture);
                 Destroy(capture2);

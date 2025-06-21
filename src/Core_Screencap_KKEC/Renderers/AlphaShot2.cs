@@ -20,6 +20,7 @@ namespace alphaShot
 
         private Material matRgAlpha;
         private Material matComposite;
+        private Material matOpaque;
 
         private bool InStudio = false;
 
@@ -40,6 +41,10 @@ namespace alphaShot
             var compab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
             matComposite = new Material(compab.LoadAsset<Shader>("composite"));
             compab.Unload(false);
+            
+            var opaqAb = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("opaque.unity3d"));
+            matOpaque = new Material(opaqAb.LoadAsset<Shader>("opaque_screencap.shader"));
+            opaqAb.Unload(false);
 
 #if !EC
             InStudio = Constants.InsideStudio;
@@ -158,18 +163,14 @@ namespace alphaShot
 #endif
             
             renderCam.targetTexture = tt;
-
-            // Get rid of alpha channel because it contains bad data
-            // TODO This is ass, find a way to do this with only RTs
-            var ss = new Texture2D(ResolutionX, ResolutionY, TextureFormat.RGB24, false);
-            ss.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0);
-            ss.Apply();
-
-            Graphics.Blit(ss, rt);
-            GameObject.DestroyImmediate(ss);
+            
+            // Set alpha to solid opaque (Camera.Render gives messed up alpha channel)
+            var rtout = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            Graphics.Blit(rt, rtout, matOpaque);
+            RenderTexture.ReleaseTemporary(rt);
 
             RenderTexture.active = rta;
-            return rt;
+            return rtout;
         }
 
         #region rgAlpha

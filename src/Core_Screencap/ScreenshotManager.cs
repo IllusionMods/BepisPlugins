@@ -69,7 +69,7 @@ namespace Screencap
         /// </summary>
         public static event Action OnPostCapture;
 
-        
+
         /// <summary>
         /// Capture the screen into a texture based on supplied arguments.
         /// Remember to RenderTexture.ReleaseTemporary the texture when done with it.
@@ -175,8 +175,18 @@ namespace Screencap
 
             CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None,
                                        new ConfigDescription("Only for backwards compatibility, use CaptureAlphaMode instead.", null, new BrowsableAttribute(false)));
-            CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.Default : AlphaMode.None;
-            CaptureAlphaMode.SettingChanged += (sender, args) => CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
+            var noUpdate = false;
+            CaptureAlpha.SettingChanged += (sender, args) =>
+            {
+                if (noUpdate) return;
+                CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.Default : AlphaMode.None;
+            };
+            CaptureAlphaMode.SettingChanged += (sender, args) =>
+            {
+                noUpdate = true;
+                CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
+                noUpdate = false;
+            };
 
             ScreenshotNameFormat = Config.Bind(
                 "General", "Screenshot filename format",
@@ -492,7 +502,7 @@ namespace Screencap
             var perpDist = GuideLineThickness.Value / 2f;
             var dx = perpDist * Mathf.Cos(angle + Mathf.PI / 2);
             var dy = perpDist * Mathf.Sin(angle + Mathf.PI / 2);
-            
+
             GL.Vertex3(offsetX + viewportWidth + dx, offsetY + viewportHeight + dy, 0);
             GL.Vertex3(offsetX + viewportWidth - dx, offsetY + viewportHeight - dy, 0);
             GL.Vertex3(offsetX - dx, offsetY - dy, 0);
@@ -697,19 +707,13 @@ namespace Screencap
                     ResolutionY.Value = currentX;
                 }
 
-                if (GUILayout.Button("Save current resolution"))
-                {
-                    SaveCurrentResolution();
-                }
-            }
-            GUILayout.EndVertical();
 
-            // Saved resolutions section
-            if (_savedResolutions.Count > 0)
-            {
+                // Saved resolutions section
                 GUILayout.BeginVertical(GUI.skin.box);
                 {
-                    GUILayout.Label("Saved Resolutions", titleStyle);
+                    if (GUILayout.Button("Save current resolution"))
+                        SaveCurrentResolution();
+
                     for (var i = 0; i < _savedResolutions.Count; i++)
                     {
                         var resolution = _savedResolutions[i];
@@ -730,9 +734,11 @@ namespace Screencap
                         }
                         GUILayout.EndHorizontal();
                     }
+                    GUILayout.EndVertical();
                 }
-                GUILayout.EndVertical();
             }
+            GUILayout.EndVertical();
+
 
             // Upsampling settings section
             GUILayout.BeginVertical(GUI.skin.box);
@@ -754,44 +760,15 @@ namespace Screencap
                     DownscalingRate.Value = downscale;
                 }
                 GUILayout.EndHorizontal();
-            }
-            GUILayout.EndVertical();
 
-#if KK || KKS || EC
-            GUILayout.BeginVertical(GUI.skin.box);
-            {
-                GUILayout.Label("Card upsampling rate", titleStyle);
-
-                GUILayout.BeginHorizontal();
-                {
-                    int carddownscale = (int)Math.Round(GUILayout.HorizontalSlider(CardDownscalingRate.Value, 1, 4));
-
-                    GUILayout.Label($"{carddownscale}x", new GUIStyle
-                    {
-                        alignment = TextAnchor.UpperRight,
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    }, GUILayout.ExpandWidth(false));
-                    CardDownscalingRate.Value = carddownscale;
-                }
-                GUILayout.EndHorizontal();
-            }
-            GUILayout.EndVertical();
-#endif
-            // Transparency settings section
-            GUILayout.BeginVertical(GUI.skin.box);
-            {
                 GUILayout.Label("Transparent background", titleStyle);
                 GUILayout.BeginHorizontal();
                 {
-                    foreach (AlphaMode mode in Enum.GetValues(typeof(AlphaMode)))
+                    for (AlphaMode mode = 0; mode <= Extensions.MaxValue; mode++)
                     {
-                        if(mode == AlphaMode.Default) continue;
                         GUI.changed = false;
                         var val = GUILayout.Toggle(CaptureAlphaMode.Value == mode, mode.GetDisplayName());
-                        if (GUI.changed && val) CaptureAlphaMode.Value = (AlphaMode)mode;
+                        if (GUI.changed && val) CaptureAlphaMode.Value = mode;
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -858,33 +835,32 @@ namespace Screencap
             if (GUILayout.Button("Open screenshot dir"))
                 Process.Start(ScreenshotDir);
 
-            GUILayout.Space(3);
-            if (GUILayout.Button($"Capture Normal ({KeyCapture.Value})"))
+            GUILayout.Label("Hotkeys (check plugin settings)");
+
+            if (GUILayout.Button(new GUIContent("Capture Normal / UI", "Hotkey: " + KeyCapture.Value)))
 #if AI || HS2
                 CaptureScreenshotNormal();
 #else
-                TakeScreenshot();
+                StartCoroutine(TakeScreenshot());
 #endif
-            if (GUILayout.Button($"Capture Render ({KeyCaptureAlpha.Value})"))
+            if (GUILayout.Button(new GUIContent("Capture Render", "Hotkey: " + KeyCaptureAlpha.Value)))
 #if AI || HS2
                 CaptureScreenshotRender();
 #else
                 StartCoroutine(TakeCharScreenshot(false));
 
-            if (GUILayout.Button($"Capture 360 ({KeyCapture360.Value})"))
-                StartCoroutine(Take360Screenshot(false));
-
-            if (GUILayout.Button($"Capture 3D ({KeyCaptureAlphaIn3D.Value})"))
+            if (GUILayout.Button(new GUIContent("Capture Render 3D", "Hotkey: " + KeyCaptureAlphaIn3D.Value)))
                 StartCoroutine(TakeCharScreenshot(true));
 
-            if (GUILayout.Button($"Capture 360 3D ({KeyCapture360in3D.Value})"))
+            if (GUILayout.Button(new GUIContent("Capture 360", "Hotkey: " + KeyCapture360.Value)))
+                StartCoroutine(Take360Screenshot(false));
+
+            if (GUILayout.Button(new GUIContent("Capture 360 3D", "Hotkey: " + KeyCapture360in3D.Value)))
                 StartCoroutine(Take360Screenshot(true));
 #endif
 
-            GUILayout.Space(2);
-            GUILayout.Label("More in Plugin Settings");
-
             GUI.DragWindow();
+            IMGUIUtils.DrawTooltip(uiRect, 170);
         }
 
         /// <summary>

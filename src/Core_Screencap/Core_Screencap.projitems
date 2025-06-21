@@ -12,7 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AlphaMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CameraGuideLinesMode.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Core.ScreenshotManager.NameFormat.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NameFormat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkCopyBehaviour.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkLoadBehaviour.cs" />
@@ -59,6 +59,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibOutputStreamMs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Zlib\ZlibStreamFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SavedResolution.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Screencap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScreenshotManager.cs" />
   </ItemGroup>
 </Project>

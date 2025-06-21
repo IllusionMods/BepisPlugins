@@ -19,6 +19,7 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\composite.unity3d" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\EquirectangularConverter.unity3d" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\rgalpha.unity3d" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\opaque.unity3d" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\alphaMask.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\blackout.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\composite.shader" />

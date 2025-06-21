@@ -293,7 +293,7 @@ namespace Shared
                     {
                         normal = new GUIStyleState { textColor = Color.white, background = _tooltipBackground },
                         wordWrap = true,
-                        //alignment = TextAnchor.MiddleCenter
+                        alignment = TextAnchor.MiddleCenter
                     };
                     _tooltipContent = new GUIContent();
                 }
