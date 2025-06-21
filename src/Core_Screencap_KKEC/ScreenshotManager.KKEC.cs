@@ -33,7 +33,7 @@ namespace Screencap
         public static ConfigEntry<bool> FlipEyesIn3DCapture { get; private set; }
         public static ConfigEntry<bool> UseJpg { get; private set; }
         public static ConfigEntry<int> JpgQuality { get; private set; }
-        
+
 
         private void InitializeGameSpecific()
         {
@@ -95,7 +95,7 @@ namespace Screencap
         }
 
         #endregion
-        
+
         internal AlphaShot2 currentAlphaShot;
         private void InstallSceenshotHandler()
         {
@@ -163,7 +163,7 @@ namespace Screencap
         {
             yield return new WaitForEndOfFrame();
             PlayCaptureSound();
-            Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"UI screenshot saved to {filename}");
+            LogScreenshotMessage($"UI screenshot saved to {filename}");
         }
 
         private IEnumerator TakeCharScreenshot(bool in3D)
@@ -194,7 +194,7 @@ namespace Screencap
 
                 var filename = GetUniqueFilename("Render");
                 File.WriteAllBytes(filename, EncodeToFile(capture));
-                Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"Character screenshot saved to {filename}");
+                LogScreenshotMessage($"Character screenshot saved to {filename}");
 
                 Destroy(capture);
             }
@@ -225,7 +225,7 @@ namespace Screencap
                 var filename = GetUniqueFilename("3D-Render");
                 File.WriteAllBytes(filename, EncodeToFile(result));
 
-                Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D Character screenshot saved to {filename}");
+                LogScreenshotMessage($"3D Character screenshot saved to {filename}");
 
                 Destroy(capture);
                 Destroy(capture2);
@@ -259,7 +259,7 @@ namespace Screencap
                 var filename = GetUniqueFilename("360");
                 File.WriteAllBytes(filename, capture);
 
-                Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"360 screenshot saved to {filename}");
+                LogScreenshotMessage($"360 screenshot saved to {filename}");
 
                 Destroy(output);
             }
@@ -291,7 +291,7 @@ namespace Screencap
                 var filename = GetUniqueFilename("3D-360");
                 File.WriteAllBytes(filename, EncodeToXmpFile(result));
 
-                Logger.Log(ScreenshotMessage.Value ? LogLevel.Message : LogLevel.Info, $"3D 360 screenshot saved to {filename}");
+                LogScreenshotMessage($"3D 360 screenshot saved to {filename}");
 
                 Destroy(result);
                 Destroy(capture);

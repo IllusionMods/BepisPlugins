@@ -20,11 +20,11 @@ namespace Screencap
         GridPhi = 1 << 2,
         [Description("Grid border")]
         Border = 1 << 3,
-        [Description("Radiating lines")]
-        Radiating = 1 << 4,
+        [Description("X lines")]
+        CrossOut = 1 << 4,
         [Description("Side V lines")]
         SideV = 1 << 5,
-        [Description("Cross")]
-        Cross = 1 << 6
+        [Description("Center lines")]
+        CenterLines = 1 << 6
     }
 }
