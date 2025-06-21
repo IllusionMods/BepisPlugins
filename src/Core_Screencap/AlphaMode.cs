@@ -13,8 +13,11 @@ namespace Screencap
                 case AlphaMode.None:
                     return "No";
                 case AlphaMode.Default:
-                    return "Yes";
-#if !(HS2 || AI)
+                    return null;
+#if HS2 || AI
+                case AlphaMode.composite:
+                    return "Composite";
+#else
                 case AlphaMode.blackout:
                     return "Cutout";
                 case AlphaMode.rgAlpha:
@@ -28,13 +31,18 @@ namespace Screencap
     {
         [Description("No transparency")]
         None = 0,
+#if HS2 || AI
         [Description("Transparency (default method)")]
         Default = 1,
-#if !(HS2 || AI)
+        [Description("Composite")]
+        composite = 1
+#else
+        [Description("Transparency (default method)")]
+        Default = 2,
         [Description("Cutout transparency (hard edges)")]
-        blackout = 2,
+        blackout = 1,
         [Description("Gradual transparency (has issues with some effects)")]
-        rgAlpha = 3,
+        rgAlpha = 2,
 #endif
     }
 }
