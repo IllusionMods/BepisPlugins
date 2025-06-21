@@ -766,24 +766,6 @@ namespace Screencap
                         var val = GUILayout.Toggle(CaptureAlphaMode.Value == mode, mode.GetDisplayName());
                         if (GUI.changed && val) CaptureAlphaMode.Value = (AlphaMode)mode;
                     }
-
-//                     GUI.changed = false;
-//                     var val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.None, "No");
-//                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.None;
-// #if AI || HS2                    //TODO more generic way?
-//                     GUI.changed = false;
-//                     val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.Default, "Yes");
-//                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.Default;
-// #else
-//                     GUI.changed = false;
-//                     val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.blackout, "Cutout");
-//                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.blackout;
-
-//                     GUI.changed = false;
-//                     val = GUILayout.Toggle(CaptureAlphaMode.Value == AlphaMode.rgAlpha, "Alpha");
-//                     if (GUI.changed && val) CaptureAlphaMode.Value = AlphaMode.rgAlpha;
-// #endif
-
                 }
                 GUILayout.EndHorizontal();
             }
