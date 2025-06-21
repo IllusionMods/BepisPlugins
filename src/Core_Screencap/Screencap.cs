@@ -144,12 +144,12 @@ namespace Screencap
 
             CaptureAlphaMode = Config.Bind(
                 "Render Settings", "Transparency in rendered screenshots",
-                AlphaModeExtensions.GetDefault(),
+                AlphaMode.Default,
                 new ConfigDescription("Replaces background with transparency in rendered image. Works only if there are no 3D objects covering the background (e.g. the map). Works well in character creator and studio."));
 
             CaptureAlpha = Config.Bind("Obsolete", "Transparency in rendered screenshots", CaptureAlphaMode.Value != AlphaMode.None,
                                        new ConfigDescription("Only for backwards compatibility, use CaptureAlphaMode instead.", null, new BrowsableAttribute(false)));
-            CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaModeExtensions.GetDefault() : AlphaMode.None;
+            CaptureAlpha.SettingChanged += (sender, args) => CaptureAlphaMode.Value = CaptureAlpha.Value ? AlphaMode.Default : AlphaMode.None;
             CaptureAlphaMode.SettingChanged += (sender, args) => CaptureAlpha.Value = CaptureAlphaMode.Value != AlphaMode.None;
 
             ScreenshotNameFormat = Config.Bind(

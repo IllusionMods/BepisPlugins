@@ -12,10 +12,9 @@ namespace Screencap
                 default:
                 case AlphaMode.None:
                     return "No";
-#if AI || HS2
                 case AlphaMode.Default:
                     return "Yes";
-#else
+#if !(HS2 || AI)
                 case AlphaMode.blackout:
                     return "Cutout";
                 case AlphaMode.rgAlpha:
@@ -23,29 +22,19 @@ namespace Screencap
 #endif
             };
         }
-
-        public static AlphaMode GetDefault()
-        {
-#if AI || HS2
-            return AlphaMode.Default;
-#else
-            return AlphaMode.blackout;
-#endif
-        }
     }
 
     public enum AlphaMode
     {
         [Description("No transparency")]
         None = 0,
-#if AI || HS2
         [Description("Transparency (default method)")]
         Default = 1,
-#else
+#if !(HS2 || AI)
         [Description("Cutout transparency (hard edges)")]
-        blackout = 1,
+        blackout = 2,
         [Description("Gradual transparency (has issues with some effects)")]
-        rgAlpha = 2,
+        rgAlpha = 3,
 #endif
     }
 }
