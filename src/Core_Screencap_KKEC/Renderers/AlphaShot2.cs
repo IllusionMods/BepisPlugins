@@ -129,7 +129,6 @@ namespace alphaShot
 
             var rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             RenderTexture.active = rt;
-            GL.Clear(false, true, new Color(0, 0, 0, 1));
 
             var rect = renderCam.rect;
 
@@ -137,7 +136,7 @@ namespace alphaShot
             renderCam.rect = new Rect(0, 0, 1, 1);
             renderCam.Render();
             renderCam.rect = rect;
-
+            
 #if !EC
             // Handle studio picture frames by overlaying them on top of the full size image, before it's downscaled
             if (InStudio &&
@@ -157,10 +156,19 @@ namespace alphaShot
                 RenderTexture.ReleaseTemporary(prevrt);
             }
 #endif
-
+            
             renderCam.targetTexture = tt;
-            RenderTexture.active = rta;
 
+            // Get rid of alpha channel because it contains bad data
+            // TODO This is ass, find a way to do this with only RTs
+            var ss = new Texture2D(ResolutionX, ResolutionY, TextureFormat.RGB24, false);
+            ss.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0);
+            ss.Apply();
+
+            Graphics.Blit(ss, rt);
+            GameObject.DestroyImmediate(ss);
+
+            RenderTexture.active = rta;
             return rt;
         }
 
@@ -231,7 +239,7 @@ namespace alphaShot
             }
 #endif
 
-            var rtAlpha = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
+            var rtAlpha = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             ClearRT(rtAlpha);
 
             matRgAlpha.SetTexture("_green", rtG);
@@ -293,7 +301,7 @@ namespace alphaShot
             var rect = main.rect;
             var backgroundColor = main.backgroundColor;
             var clearFlags = main.clearFlags;
-            var temporary = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
+            var temporary = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             ClearRT(temporary);
 
             main.clearFlags = CameraClearFlags.Color;

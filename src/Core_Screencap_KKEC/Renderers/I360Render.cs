@@ -83,10 +83,10 @@ namespace Screencap
             RenderTexture cubemap = null, equirectangularTexture = null;
             try
             {
-                cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0);
+                cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
 
-                equirectangularTexture = RenderTexture.GetTemporary(cubemapSize, cubemapSize / 2, 0);
+                equirectangularTexture = RenderTexture.GetTemporary(cubemapSize, cubemapSize / 2, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 equirectangularTexture.dimension = UnityEngine.Rendering.TextureDimension.Tex2D;
 
                 if (!renderCam.RenderToCubemap(cubemap))

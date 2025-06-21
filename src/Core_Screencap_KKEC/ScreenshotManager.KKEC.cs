@@ -103,12 +103,20 @@ namespace Screencap
             currentAlphaShot = Camera.main.gameObject.GetOrAddComponent<AlphaShot2>();
         }
 
-        private static IEnumerator WriteToFile(RenderTexture result, string filename)
+        private static IEnumerator WriteToFile(Texture result, string filename)
         {
-            // TODO slow
-            var t2d = alphaShot.AlphaShot2.GetT2D(result);
-            RenderTexture.ReleaseTemporary(result);
-            yield return null;
+            Texture2D t2d;
+            if (result is RenderTexture rrt)
+            {
+                // TODO slow
+                t2d = alphaShot.AlphaShot2.GetT2D(rrt);
+                RenderTexture.ReleaseTemporary(rrt);
+                yield return null;
+            }
+            else
+            {
+                t2d = (Texture2D)result;
+            }
 
             if (UseJpg.Value)
             {
@@ -128,11 +136,21 @@ namespace Screencap
             }
         }
 
-        private static IEnumerator WriteToXmpFile(RenderTexture result, string filename)
+        private static IEnumerator WriteToXmpFile(Texture result, string filename)
         {
-            // TODO slow
-            var t2d = alphaShot.AlphaShot2.GetT2D(result);
-            RenderTexture.ReleaseTemporary(result);
+            Texture2D t2d;
+            if (result is RenderTexture rrt)
+            {
+                // TODO slow
+                t2d = alphaShot.AlphaShot2.GetT2D(rrt);
+                RenderTexture.ReleaseTemporary(rrt);
+                yield return null;
+            }
+            else
+            {
+                t2d = (Texture2D)result;
+            }
+
             var bytes = UseJpg.Value ? I360Render.InsertXMPIntoTexture2D_JPEG(t2d, JpgQuality.Value) : I360Render.InsertXMPIntoTexture2D_PNG(t2d);
             yield return null;
             File.WriteAllBytes(filename, bytes);
@@ -218,27 +236,27 @@ namespace Screencap
             else
             {
                 var targetTr = Camera.main.transform;
-                
+
                 ToggleCameraControllers(targetTr, false);
                 Time.timeScale = 0.01f;
                 yield return new WaitForEndOfFrame();
-                
+
                 targetTr.position += targetTr.right * EyeSeparation.Value / 2;
                 // Let the game render at the new position
                 yield return new WaitForEndOfFrame();
                 var capture = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
-                
+
                 targetTr.position -= targetTr.right * EyeSeparation.Value;
                 yield return new WaitForEndOfFrame();
                 var capture2 = currentAlphaShot.CaptureTex(ResolutionX.Value, ResolutionY.Value, DownscalingRate.Value, CaptureAlphaMode.Value);
-                
+
                 targetTr.position += targetTr.right * EyeSeparation.Value / 2;
-                
+
                 ToggleCameraControllers(targetTr, true);
                 Time.timeScale = 1;
-                
+
                 var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, ImageSeparationOffset.Value) : StitchImages(capture2, capture, ImageSeparationOffset.Value);
-                
+
                 RenderTexture.ReleaseTemporary(capture);
                 RenderTexture.ReleaseTemporary(capture2);
 
@@ -333,18 +351,32 @@ namespace Screencap
 #endif
         }
 
-        private static RenderTexture StitchImages(RenderTexture capture, RenderTexture capture2, float overlapOffset)
+        private static Texture2D StitchImages(RenderTexture capture, RenderTexture capture2, float overlapOffset)
         {
             var xAdjust = (int)(capture.width * overlapOffset);
-            var result = RenderTexture.GetTemporary((capture.width - xAdjust) * 2, capture.height, 0, RenderTextureFormat.ARGB32);
+            // TODO This is ass slow, probably needs a custom shader
+            // Graphics.CopyTexture would be great but it doesn't work because source and dest textures are different size
+            var result = new Texture2D((capture.width - xAdjust) * 2, capture.height, TextureFormat.ARGB32, false);
 
             int width = result.width / 2;
             int height = result.height;
 
-            //result.SetPixels(0, 0, width, height, capture.GetPixels(0, 0, width, height));
-            Graphics.CopyTexture(capture, 0, 0, 0, 0, width, height, result, 0, 0, 0, 0);
-            //result.SetPixels(width, 0, width, height, capture2.GetPixels(xAdjust, 0, width, height));
-            Graphics.CopyTexture(capture2, 0, 0, xAdjust, 0, width, height, result, 0, 0, width, 0);
+            var t2d = new Texture2D(capture.width, capture.height);
+            var rta = RenderTexture.active;
+
+            RenderTexture.active = capture;
+            t2d.ReadPixels(new Rect(0, 0, capture.width, capture.height), 0, 0);
+            result.SetPixels(0, 0, width, height, t2d.GetPixels(0, 0, width, height));
+
+            RenderTexture.active = capture2;
+            t2d.ReadPixels(new Rect(0, 0, capture2.width, capture2.height), 0, 0);
+            result.SetPixels(width, 0, width, height, t2d.GetPixels(xAdjust, 0, width, height));
+
+            GameObject.DestroyImmediate(t2d);
+
+            result.Apply();
+
+            RenderTexture.active = rta;
 
             return result;
         }
