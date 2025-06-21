@@ -719,7 +719,7 @@ namespace Screencap
                         var resolution = _savedResolutions[i];
                         GUILayout.BeginHorizontal();
                         {
-                            if (GUILayout.Button($"{resolution.Width}x{resolution.Height}"))
+                            if (GUILayout.Button($"{resolution.Width} x {resolution.Height}"))
                             {
                                 ResolutionX.Value = resolution.Width;
                                 ResolutionY.Value = resolution.Height;
@@ -739,6 +739,11 @@ namespace Screencap
             }
             GUILayout.EndVertical();
 
+            var slidebarTextStyle = new GUIStyle
+            {
+                alignment = TextAnchor.UpperRight,
+                normal = new GUIStyleState { textColor = Color.white }
+            };
 
             // Upsampling settings section
             GUILayout.BeginVertical(GUI.skin.box);
@@ -749,22 +754,17 @@ namespace Screencap
                 {
                     int downscale = (int)System.Math.Round(GUILayout.HorizontalSlider(DownscalingRate.Value, 1, 4));
 
-                    GUILayout.Label($"{downscale}x", new GUIStyle
-                    {
-                        alignment = TextAnchor.UpperRight,
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    }, GUILayout.ExpandWidth(false));
+                    GUILayout.Label($"{downscale}x", slidebarTextStyle, GUILayout.ExpandWidth(false));
                     DownscalingRate.Value = downscale;
                 }
                 GUILayout.EndHorizontal();
 
+                GUILayout.Space(3);
+
                 GUILayout.Label("Transparent background", titleStyle);
                 GUILayout.BeginHorizontal();
                 {
-                    for (AlphaMode mode = 0; mode <= Extensions.MaxValue; mode++)
+                    for (AlphaMode mode = 0; mode <= Extensions.AlphaModeMaxValue; mode++)
                     {
                         GUI.changed = false;
                         var val = GUILayout.Toggle(CaptureAlphaMode.Value == mode, mode.GetDisplayName());
@@ -781,16 +781,10 @@ namespace Screencap
                 GUILayout.Label("Guide lines", titleStyle);
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label("Thickness", GUILayout.ExpandWidth(false));
+                    GUILayout.Label("Thickness", slidebarTextStyle, GUILayout.ExpandWidth(false));
                     GUILayout.Space(2);
                     GuideLineThickness.Value = (int)System.Math.Round(GUILayout.HorizontalSlider(GuideLineThickness.Value, 1, 5));
-                    GUILayout.Label($"{GuideLineThickness.Value}px", new GUIStyle
-                    {
-                        normal = new GUIStyleState
-                        {
-                            textColor = Color.white
-                        }
-                    }, GUILayout.ExpandWidth(false));
+                    GUILayout.Label($"{GuideLineThickness.Value}px", slidebarTextStyle, GUILayout.ExpandWidth(false));
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
@@ -804,28 +798,28 @@ namespace Screencap
                     if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.Border : GuideLinesModes.Value & ~CameraGuideLinesMode.Border;
 
                     GUI.changed = false;
-                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0, "3rds");
-                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridThirds : GuideLinesModes.Value & ~CameraGuideLinesMode.GridThirds;
-
-                    GUI.changed = false;
-                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0, "Phi");
-                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridPhi : GuideLinesModes.Value & ~CameraGuideLinesMode.GridPhi;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.CenterLines) != 0, "Center");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.CenterLines : GuideLinesModes.Value & ~CameraGuideLinesMode.CenterLines;
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 {
                     GUI.changed = false;
-                    var val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.SideV) != 0, "SideV");
+                    var val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridThirds) != 0, "3rds");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridThirds : GuideLinesModes.Value & ~CameraGuideLinesMode.GridThirds;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.GridPhi) != 0, "Phi");
+                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.GridPhi : GuideLinesModes.Value & ~CameraGuideLinesMode.GridPhi;
+
+                    GUI.changed = false;
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.SideV) != 0, "SideV");
                     if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.SideV : GuideLinesModes.Value & ~CameraGuideLinesMode.SideV;
 
                     GUI.changed = false;
-                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.CrossOut) != 0, "Crossout");
+                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.CrossOut) != 0, "X-out");
                     if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.CrossOut : GuideLinesModes.Value & ~CameraGuideLinesMode.CrossOut;
-
-                    GUI.changed = false;
-                    val = GUILayout.Toggle((GuideLinesModes.Value & CameraGuideLinesMode.CenterLines) != 0, "Center");
-                    if (GUI.changed) GuideLinesModes.Value = val ? GuideLinesModes.Value | CameraGuideLinesMode.CenterLines : GuideLinesModes.Value & ~CameraGuideLinesMode.CenterLines;
                 }
                 GUILayout.EndHorizontal();
             }

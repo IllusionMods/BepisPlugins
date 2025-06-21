@@ -108,8 +108,8 @@ namespace Screencap
             Texture2D t2d;
             if (result is RenderTexture rrt)
             {
-                // TODO slow
-                t2d = alphaShot.AlphaShot2.GetT2D(rrt);
+                // TODO slow, could possibly be avoided with https://github.com/yangrc1234/UnityOpenGLAsyncReadback
+                t2d = rrt.CopyToTexture2D();
                 RenderTexture.ReleaseTemporary(rrt);
                 yield return null;
             }
@@ -120,7 +120,7 @@ namespace Screencap
 
             if (UseJpg.Value)
             {
-                // even slower
+                // TODO even slower
                 var encoded = t2d.EncodeToJPG(JpgQuality.Value);
                 GameObject.DestroyImmediate(t2d);
                 yield return null;
@@ -138,11 +138,11 @@ namespace Screencap
 
         private static IEnumerator WriteToXmpFile(Texture result, string filename)
         {
+            // TODO This path is not async at all
             Texture2D t2d;
             if (result is RenderTexture rrt)
             {
-                // TODO slow
-                t2d = alphaShot.AlphaShot2.GetT2D(rrt);
+                t2d = rrt.CopyToTexture2D();
                 RenderTexture.ReleaseTemporary(rrt);
                 yield return null;
             }
@@ -175,7 +175,7 @@ namespace Screencap
         public Texture2D Capture(int width, int height, int downscaling, bool transparent)
         {
             var capture = Capture(width, height, downscaling, transparent ? AlphaMode.Default : AlphaMode.None);
-            var t2d = alphaShot.AlphaShot2.GetT2D(capture);
+            var t2d = capture.CopyToTexture2D();
             RenderTexture.ReleaseTemporary(capture);
             return t2d;
         }
@@ -323,11 +323,11 @@ namespace Screencap
 
                 // Overlap is useless for these so don't use
                 var result = FlipEyesIn3DCapture.Value ? StitchImages(capture, capture2, 0) : StitchImages(capture2, capture, 0);
+                
+                RenderTexture.ReleaseTemporary(capture);
+                RenderTexture.ReleaseTemporary(capture2);
 
                 yield return WriteToXmpFile(result, filename);
-
-                Destroy(capture);
-                Destroy(capture2);
             }
 
             try { OnPostCapture?.Invoke(); }

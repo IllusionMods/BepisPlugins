@@ -42,7 +42,7 @@ namespace Screencap
 
             //Downsample texture
             var result = ScreenshotManager.Instance.currentAlphaShot.LanczosTex(t2d, nw, nh);
-            var result2D = alphaShot.AlphaShot2.GetT2D(result);
+            var result2D = result.CopyToTexture2D();
             RenderTexture.ReleaseTemporary(result);
             encoded = result2D.EncodeToPNG();
             GameObject.DestroyImmediate(result2D);

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
 using BepisPlugins;
 using Screencap;
@@ -241,7 +240,7 @@ namespace alphaShot
 #endif
 
             var rtAlpha = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
-            ClearRT(rtAlpha);
+            rtAlpha.ClearRenderTexture();
 
             matRgAlpha.SetTexture("_green", rtG);
             Graphics.Blit(rtR, rtAlpha, matRgAlpha);
@@ -275,25 +274,6 @@ namespace alphaShot
             return rtOutput;
         }
 
-        private static void ClearRT(RenderTexture rt)
-        {
-            var targetTexture = RenderTexture.active;
-            RenderTexture.active = rt;
-            GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
-            RenderTexture.active = targetTexture;
-        }
-
-        public static Texture2D GetT2D(RenderTexture renderTexture)
-        {
-            var currentActiveRT = RenderTexture.active;
-            RenderTexture.active = renderTexture;
-            var tex = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.ARGB32, false);
-            tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
-            tex.Apply();
-            RenderTexture.active = currentActiveRT;
-            return tex;
-        }
-
         public RenderTexture PerformRgCapture(int ResolutionX, int ResolutionY, Color bg)
         {
             Camera main = Camera.main;
@@ -303,7 +283,7 @@ namespace alphaShot
             var backgroundColor = main.backgroundColor;
             var clearFlags = main.clearFlags;
             var temporary = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
-            ClearRT(temporary);
+            temporary.ClearRenderTexture();
 
             main.clearFlags = CameraClearFlags.Color;
             main.backgroundColor = bg;

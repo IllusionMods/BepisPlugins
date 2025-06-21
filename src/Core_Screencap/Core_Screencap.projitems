@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AlphaMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CameraGuideLinesMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NameFormat.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkCopyBehaviour.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Pngcs\Chunks\ChunkHelper.cs" />
