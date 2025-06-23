@@ -8,6 +8,5 @@ namespace Screencap
     [BepInProcess(Constants.VRProcessName)]
     [BepInProcess(Constants.VRProcessNameSteam)]
     [BepInProcess(Constants.StudioProcessName)]
-    [BepInPlugin(GUID, PluginName, Version)]
-    public partial class ScreenshotManager : BaseUnityPlugin { }
+    public partial class ScreenshotManager { }
 }

@@ -2,7 +2,7 @@
 
 namespace Screencap
 {
-    public static partial class Hooks
+    internal static partial class Hooks
     {
         [HarmonyPrefix, HarmonyPatch(typeof(GameScreenShot), nameof(GameScreenShot.CreateCaptureFileName))]
         private static bool CreateCaptureFileNamePreHook() => false;

@@ -1,5 +1,4 @@
-﻿using BepInEx.Logging;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,22 +13,24 @@ namespace Screencap
     /// <summary>
     /// Code ported from https://github.com/yasirkula/Unity360ScreenshotCapture/
     /// </summary>
-    public static class I360Render
+    internal static class I360Render
     {
-        private static Material equirectangularConverter = null;
-        private static int paddingX;
+        private static Material _equirectangularConverter;
+        private static int _paddingX;
+        private static Harmony _hi;
 
-        public static void Init()
+        private static void Init()
         {
-            if (equirectangularConverter != null) return;
+            if (_equirectangularConverter != null) return;
 
             var abd = ResourceUtils.GetEmbeddedResource("EquirectangularConverter.unity3d");
             var ab = AssetBundle.LoadFromMemory(abd);
-            equirectangularConverter = new Material(ab.LoadAsset<Shader>("assets/shaders/equirectangularconverter.shader"));
-            paddingX = Shader.PropertyToID("_PaddingX");
+            _equirectangularConverter = new Material(ab.LoadAsset<Shader>("assets/shaders/equirectangularconverter.shader"));
+            _paddingX = Shader.PropertyToID("_PaddingX");
             ab.Unload(false);
 
-            Harmony.CreateAndPatchAll(typeof(I360Render), nameof(I360Render));
+            if (_hi == null)
+                _hi = Harmony.CreateAndPatchAll(typeof(I360Render), nameof(I360Render));
         }
 
         // Fix mirrors messing up the capture by blindly inverting culling
@@ -38,7 +39,7 @@ namespace Screencap
         {
             var prop = typeof(GL).GetProperty(nameof(GL.invertCulling), AccessTools.all);
             if (prop == null)
-                ScreenshotManager.Logger.Log(LogLevel.Error, "Failed to find GL.invertCulling " + new StackTrace());
+                ScreenshotManager.Logger.LogError("Failed to find GL.invertCulling " + new StackTrace());
 
             foreach (var codeInstruction in instructions)
             {
@@ -61,15 +62,18 @@ namespace Screencap
             }
         }
 
-        public static Texture2D CaptureTex(int width = 1024, Camera renderCam = null, bool faceCameraDirection = true)
+        public static RenderTexture CaptureTex(int width = 1024, Camera renderCam = null, bool faceCameraDirection = true)
         {
+            Init();
+
             if (renderCam == null)
             {
                 renderCam = Camera.main;
-                if (renderCam == null) throw new Exception("No camera detected");
+                if (renderCam == null)
+                    throw new Exception("No camera detected");
             }
 
-            var disableTypes = new Type[]
+            var disableTypes = new[]
             {
                 typeof(UnityStandardAssets.ImageEffects.VignetteAndChromaticAberration),
                 typeof(UnityStandardAssets.ImageEffects.DepthOfField)
@@ -80,24 +84,22 @@ namespace Screencap
             RenderTexture camTarget = renderCam.targetTexture;
 
             int cubemapSize = Mathf.Min(Mathf.NextPowerOfTwo(width), 16384);
-            RenderTexture cubemap = null, equirectangularTexture = null;
-            Texture2D output = null;
+            RenderTexture cubemap = null, equirectangularTexture;
             try
             {
-                cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0);
+                cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
 
-                equirectangularTexture = RenderTexture.GetTemporary(cubemapSize, cubemapSize / 2, 0);
+                equirectangularTexture = RenderTexture.GetTemporary(cubemapSize, cubemapSize / 2, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 equirectangularTexture.dimension = UnityEngine.Rendering.TextureDimension.Tex2D;
 
                 if (!renderCam.RenderToCubemap(cubemap))
-                    throw new Exception("Rendering to cubemap is not supported on device/platform");
+                    throw new Exception("Rendering to cubemap is not supported on the current camera");
 
-                equirectangularConverter.SetFloat(paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
-                Graphics.Blit(cubemap, equirectangularTexture, equirectangularConverter);
-                output = RtToT2D(equirectangularTexture);
+                _equirectangularConverter.SetFloat(_paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
+                Graphics.Blit(cubemap, equirectangularTexture, _equirectangularConverter);
 
-                return output;
+                return equirectangularTexture;
             }
             finally
             {
@@ -106,40 +108,19 @@ namespace Screencap
                 if (cubemap != null)
                     RenderTexture.ReleaseTemporary(cubemap);
 
-                if (equirectangularTexture != null)
-                    RenderTexture.ReleaseTemporary(equirectangularTexture);
-
                 foreach (var comp in disabled) comp.enabled = true;
             }
-        }
-
-        public static byte[] Capture(int width = 1024, bool encodeAsJPEG = true, Camera renderCam = null, bool faceCameraDirection = true)
-        {
-            var output = CaptureTex(width, renderCam, faceCameraDirection);
-            var result = encodeAsJPEG ? InsertXMPIntoTexture2D_JPEG(output, 100) : InsertXMPIntoTexture2D_PNG(output);
-            UnityEngine.Object.Destroy(output);
-            return result;
-        }
-
-        private static Texture2D RtToT2D(RenderTexture equirectangularTexture)
-        {
-            RenderTexture temp = RenderTexture.active;
-            RenderTexture.active = equirectangularTexture;
-            var output = new Texture2D(equirectangularTexture.width, equirectangularTexture.height, TextureFormat.RGB24, false);
-            output.ReadPixels(new Rect(0, 0, equirectangularTexture.width, equirectangularTexture.height), 0, 0);
-            RenderTexture.active = temp;
-            return output;
         }
 
         #region XMP Injection
         private const string XMP_NAMESPACE_JPEG = "http://ns.adobe.com/xap/1.0/";
         private const string XMP_CONTENT_TO_FORMAT_JPEG = "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\"> <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"> <rdf:Description rdf:about=\"\" xmlns:GPano=\"http://ns.google.com/photos/1.0/panorama/\" GPano:UsePanoramaViewer=\"True\" GPano:CaptureSoftware=\"Unity3D\" GPano:StitchingSoftware=\"Unity3D\" GPano:ProjectionType=\"equirectangular\" GPano:PoseHeadingDegrees=\"180.0\" GPano:InitialViewHeadingDegrees=\"0.0\" GPano:InitialViewPitchDegrees=\"0.0\" GPano:InitialViewRollDegrees=\"0.0\" GPano:InitialHorizontalFOVDegrees=\"{0}\" GPano:CroppedAreaLeftPixels=\"0\" GPano:CroppedAreaTopPixels=\"0\" GPano:CroppedAreaImageWidthPixels=\"{1}\" GPano:CroppedAreaImageHeightPixels=\"{2}\" GPano:FullPanoWidthPixels=\"{1}\" GPano:FullPanoHeightPixels=\"{2}\"/></rdf:RDF></x:xmpmeta>";
         private const string XMP_CONTENT_TO_FORMAT_PNG = "XML:com.adobe.xmp\0\0\0\0\0<?xpacket begin=\"ï»¿\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?><x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xmptk=\"Adobe XMP Core 5.1.0-jc003\"> <rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"> <rdf:Description rdf:about=\"\" xmlns:GPano=\"http://ns.google.com/photos/1.0/panorama/\" xmlns:xmp=\"http://ns.adobe.com/xap/1.0/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:xmpMM=\"http://ns.adobe.com/xap/1.0/mm/\" xmlns:stEvt=\"http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\" xmlns:tiff=\"http://ns.adobe.com/tiff/1.0/\" xmlns:exif=\"http://ns.adobe.com/exif/1.0/\"> <GPano:UsePanoramaViewer>True</GPano:UsePanoramaViewer> <GPano:CaptureSoftware>Unity3D</GPano:CaptureSoftware> <GPano:StitchingSoftware>Unity3D</GPano:StitchingSoftware> <GPano:ProjectionType>equirectangular</GPano:ProjectionType> <GPano:PoseHeadingDegrees>180.0</GPano:PoseHeadingDegrees> <GPano:InitialViewHeadingDegrees>0.0</GPano:InitialViewHeadingDegrees> <GPano:InitialViewPitchDegrees>0.0</GPano:InitialViewPitchDegrees> <GPano:InitialViewRollDegrees>0.0</GPano:InitialViewRollDegrees> <GPano:InitialHorizontalFOVDegrees>{0}</GPano:InitialHorizontalFOVDegrees> <GPano:CroppedAreaLeftPixels>0</GPano:CroppedAreaLeftPixels> <GPano:CroppedAreaTopPixels>0</GPano:CroppedAreaTopPixels> <GPano:CroppedAreaImageWidthPixels>{1}</GPano:CroppedAreaImageWidthPixels> <GPano:CroppedAreaImageHeightPixels>{2}</GPano:CroppedAreaImageHeightPixels> <GPano:FullPanoWidthPixels>{1}</GPano:FullPanoWidthPixels> <GPano:FullPanoHeightPixels>{2}</GPano:FullPanoHeightPixels> <tiff:Orientation>1</tiff:Orientation> <exif:PixelXDimension>{1}</exif:PixelXDimension> <exif:PixelYDimension>{2}</exif:PixelYDimension> </rdf:Description></rdf:RDF></x:xmpmeta><?xpacket end=\"w\"?>";
-        private static uint[] CRC_TABLE_PNG = null;
+        private static uint[] CRC_TABLE_PNG;
 
-        public static byte[] InsertXMPIntoTexture2D_JPEG(Texture2D image, int quality) => DoTheHardWork_JPEG(image.EncodeToJPG(quality), image.width, image.height);
+        public static byte[] InsertXMPIntoTexture2D_JPEG(byte[] fileBytes, int imageWidth, int imageHeight) => DoTheHardWork_JPEG(fileBytes, imageWidth, imageHeight);
 
-        public static byte[] InsertXMPIntoTexture2D_PNG(Texture2D image) => DoTheHardWork_PNG(image.EncodeToPNG(), image.width, image.height);
+        public static byte[] InsertXMPIntoTexture2D_PNG(byte[] fileBytes, int imageWidth, int imageHeight) => DoTheHardWork_PNG(fileBytes, imageWidth, imageHeight);
 
         #region JPEG Encoding
         private static byte[] DoTheHardWork_JPEG(byte[] fileBytes, int imageWidth, int imageHeight)

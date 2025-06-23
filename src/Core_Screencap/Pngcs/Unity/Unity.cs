@@ -1,66 +1,45 @@
-using System.Threading.Tasks;
+using System.Collections;
+using System.Threading;
+using BepInEx;
 using UnityEngine;
 
 namespace Pngcs.Unity
 {
     internal static class PNG
     {
-        public static async Task WriteAsync
-        (
-            Color[] pixels,
-            int width,
-            int height,
-            int bitDepth,
-            bool alpha,
-            bool greyscale,
-            string filePath
-        )
+        public static IEnumerator WriteAsync(Color[] pixels, int width, int height, int bitDepth, bool alpha, bool greyscale, string filePath)
         {
+            Thread t;
             try
             {
-                await Task.Run(() =>
-                    Write(
-                        pixels: pixels,
-                        width: width,
-                        height: height,
-                        bitDepth: bitDepth,
-                        alpha: alpha,
-                        greyscale: greyscale,
-                        filePath: filePath
-                    )
-                );
+                t = new Thread(() => Write(pixels, width, height, bitDepth, alpha, greyscale, filePath));
+                t.Start();
             }
-            catch (System.Exception ex) { Debug.LogException(ex); await Task.CompletedTask; }//kills debugger execution loop on exception
-            finally { await Task.CompletedTask; }
-        }
+            catch (System.Exception ex)
+            {
+                Screencap.ScreenshotManager.Logger.LogError(ex);
+                yield break;
+            }
 
-        public static async Task WriteAsync
-        (
-            Color32[] pixels,
-            int width,
-            int height,
-            int bitDepth,
-            bool alpha,
-            bool greyscale,
-            string filePath
-        )
+            while (t.IsAlive)
+                yield return null; // wait for the thread to finish
+        }
+        public static IEnumerator WriteAsync(Color32[] pixels, int width, int height, int bitDepth, bool alpha, bool greyscale, string filePath)
         {
+            Thread t;
             try
             {
-                await Task.Run(() =>
-                    Write(
-                        pixels: pixels,
-                        width: width,
-                        height: height,
-                        bitDepth: bitDepth,
-                        alpha: alpha,
-                        greyscale: greyscale,
-                        filePath: filePath
-                    )
-                );
+                t = new Thread(() => Write(pixels, width, height, bitDepth, alpha, greyscale, filePath));
+                t.Start();
             }
-            catch (System.Exception ex) { Debug.LogException(ex); await Task.CompletedTask; }//kills debugger execution loop on exception
-            finally { await Task.CompletedTask; }
+            catch (System.Exception ex)
+            {
+                Screencap.ScreenshotManager.Logger.LogError(ex);
+                yield break;
+            }
+
+            while (t.IsAlive)
+                yield return null; // wait for the thread to finish
         }
 
         public static void Write
@@ -256,7 +235,7 @@ namespace Pngcs.Unity
                 case 8: return byte.MaxValue;
                 case 16: return ushort.MaxValue;
                 case 32: return uint.MaxValue;
-                default: throw new System.Exception($"bitDepth '{ bitDepth }' not implemented");
+                default: throw new System.Exception($"bitDepth '{bitDepth}' not implemented");
             }
         }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Screencap
 {
-    public static partial class Hooks
+    internal static partial class Hooks
     {
         /// <summary> Chara card Render/Downsample rate.</summary>
         private static int CardRenderRate => ScreenshotManager.CardDownscalingRate.Value;
@@ -41,9 +41,11 @@ namespace Screencap
             var nh = t2d.height / CardRenderRate;
 
             //Downsample texture
-            var result = ScreenshotManager.Instance.currentAlphaShot.LanczosTex(t2d, nw, nh);
-            encoded = result.EncodeToPNG();
-            Object.Destroy(result);
+            var result = alphaShot.AlphaShot2.LanczosTex(t2d, nw, nh);
+            var result2D = result.CopyToTexture2D();
+            RenderTexture.ReleaseTemporary(result);
+            encoded = result2D.EncodeToPNG();
+            GameObject.DestroyImmediate(result2D);
         }
     }
 }
