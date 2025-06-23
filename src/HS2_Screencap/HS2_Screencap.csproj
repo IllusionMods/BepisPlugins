@@ -83,12 +83,24 @@
       <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.CoreModule.2018.4.11.4\lib\net46\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.2018.4.11.4\lib\net46\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.IMGUIModule.2018.4.11.4\lib\net46\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ScreenCaptureModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.ScreenCaptureModule.2018.4.11.4\lib\net46\UnityEngine.ScreenCaptureModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.2018.4.11.4\lib\net46\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.4\lib\net46\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -127,6 +139,9 @@
     <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.2020.5.29.5\build\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.2020.5.29.5\build\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.5\build\IllusionLibs.HoneySelect2.IL.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.5\build\IllusionLibs.HoneySelect2.IL.targets'))" />
     <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.5\build\IllusionLibs.HoneySelect2.Sirenix.Serialization.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.5\build\IllusionLibs.HoneySelect2.Sirenix.Serialization.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.UI.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.UI.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.targets'))" />
+    <Error Condition="!Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.targets'))" />
   </Target>
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.Unity.Postprocessing.Runtime.2018.4.11.4\build\IllusionLibs.HoneySelect2.Unity.Postprocessing.Runtime.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.Unity.Postprocessing.Runtime.2018.4.11.4\build\IllusionLibs.HoneySelect2.Unity.Postprocessing.Runtime.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AssetBundleModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.AssetBundleModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.AssetBundleModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.AssetBundleModule.targets')" />
@@ -139,4 +154,7 @@
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.2020.5.29.5\build\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.2020.5.29.5\build\IllusionLibs.HoneySelect2.Assembly-CSharp-firstpass.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.5\build\IllusionLibs.HoneySelect2.IL.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.IL.2020.5.29.5\build\IllusionLibs.HoneySelect2.IL.targets')" />
   <Import Project="..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.5\build\IllusionLibs.HoneySelect2.Sirenix.Serialization.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.Sirenix.Serialization.2020.5.29.5\build\IllusionLibs.HoneySelect2.Sirenix.Serialization.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.UI.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.UI.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.UI.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.TextRenderingModule.targets')" />
+  <Import Project="..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.targets" Condition="Exists('..\..\packages\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.2018.4.11.4\build\IllusionLibs.HoneySelect2.UnityEngine.ImageConversionModule.targets')" />
 </Project>
