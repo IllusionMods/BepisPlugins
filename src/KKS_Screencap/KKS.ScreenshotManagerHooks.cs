@@ -2,7 +2,7 @@
 
 namespace Screencap
 {
-    public static partial class Hooks
+    internal static partial class Hooks
     {
         /// <summary>
         /// Cancel the vanilla screenshot

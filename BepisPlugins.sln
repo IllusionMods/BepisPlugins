@@ -151,6 +151,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SVS_ConfigurationManager", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVS_BGMLoader", "src\SVS_BGMLoader\SVS_BGMLoader.csproj", "{7589ADA2-68F4-4404-BE7F-BCEBF04DA99D}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Screencap", "src\Core_Screencap\Core_Screencap.shproj", "{E416E580-DB6C-46B0-A51C-6FEF22036204}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -447,6 +449,7 @@ Global
 		{C4B11A58-93BC-45FD-99F9-30AF3E6AF294} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 		{035907C1-0012-4581-81A4-4D0857EFE025} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{7589ADA2-68F4-4404-BE7F-BCEBF04DA99D} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
+		{E416E580-DB6C-46B0-A51C-6FEF22036204} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
@@ -457,6 +460,7 @@ Global
 		src\Shared\Shared.projitems*{0a11411e-7798-4303-8e65-97421a30cd1a}*SharedItemsImports = 4
 		src\Core_InputUnlocker\Core_InputUnlocker.projitems*{134e383f-6e78-460d-b76a-3baab8ebf54b}*SharedItemsImports = 13
 		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{20fd60f3-3086-4a25-876b-e977bda46687}*SharedItemsImports = 13
+		src\Core_Screencap\Core_Screencap.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Core_Screencap_AIHS2\AIHS2_Core_Screencap.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{2c5bcf22-76b1-42d5-b078-fa8bd529bfd5}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{2c8dc4c7-99a4-45e1-b379-e67111810926}*SharedItemsImports = 4
@@ -490,6 +494,7 @@ Global
 		src\Shared\Shared.projitems*{68bdab7c-92f1-41d8-a0ab-f8f4a98c44ec}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Patcher\Core_ExtensibleSaveFormat_Patcher.projitems*{68efa368-2416-45a3-9641-ca6ce963be21}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6979c7c4-91fe-4fd5-8f74-101cc533b238}*SharedItemsImports = 4
+		src\Core_Screencap\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		src\Core_Screencap_KKEC\Core_Screencap.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{6a9d08c0-4482-4d1a-9368-9f41b7126f9e}*SharedItemsImports = 4
 		src\Core_Sideloader\Core_Sideloader.projitems*{737a4054-4a2b-48e9-842a-a38d24361435}*SharedItemsImports = 4
@@ -515,11 +520,13 @@ Global
 		src\Shared\Shared.projitems*{91eb6d62-371c-4cb1-8f0e-0a49c3328dce}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Patcher\Core_ExtensibleSaveFormat_Patcher.projitems*{943efdfa-d903-4103-b5c5-e1bf118b6dcd}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Patcher\Core_ExtensibleSaveFormat_Patcher.projitems*{9d051aba-f4c3-4702-a7c9-5a25d19c32d5}*SharedItemsImports = 4
+		src\Core_Screencap\Core_Screencap.projitems*{9d07ebd3-3dc3-4a28-b42a-9e81f0808f90}*SharedItemsImports = 4
 		src\Core_Screencap_KKEC\Core_Screencap.projitems*{9d07ebd3-3dc3-4a28-b42a-9e81f0808f90}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9d07ebd3-3dc3-4a28-b42a-9e81f0808f90}*SharedItemsImports = 4
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9db058d4-cf5a-4280-9150-a62c22fc3cb0}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{9ec1e476-6a6c-43df-b6ed-3dff94f446fc}*SharedItemsImports = 4
+		src\Core_Screencap\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Core_Screencap_KKEC\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{ac5e9b43-cbb4-4cb8-8411-5425576f2055}*SharedItemsImports = 4
@@ -550,6 +557,8 @@ Global
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{e1074dcd-cc19-4c67-b799-eb534c885018}*SharedItemsImports = 13
 		src\Core_BGMLoader\Core_BGMLoader.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{e26ec117-ec2c-4b61-a2b8-c6d56230e6a9}*SharedItemsImports = 4
+		src\Core_Screencap\Core_Screencap.projitems*{e416e580-db6c-46b0-a51c-6fef22036204}*SharedItemsImports = 13
+		src\Core_Screencap\Core_Screencap.projitems*{e426eec2-98ca-4abd-804b-3c1bd20bee9c}*SharedItemsImports = 4
 		src\Core_Screencap_AIHS2\AIHS2_Core_Screencap.projitems*{e426eec2-98ca-4abd-804b-3c1bd20bee9c}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{e426eec2-98ca-4abd-804b-3c1bd20bee9c}*SharedItemsImports = 4
 		src\Core_Screencap_KKEC\Core_Screencap.projitems*{eabcca02-ea25-4451-935b-b293d8bd02dd}*SharedItemsImports = 13

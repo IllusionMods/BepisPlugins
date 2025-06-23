@@ -1,100 +1,116 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
 using BepisPlugins;
+using Screencap;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityStandardAssets.ImageEffects;
-#pragma warning disable 1591
 
 //code by essu
 namespace alphaShot
 {
-    [Obsolete("Avoid using AlphaShot2 directly since it might get changed in the future. Use ScreenshotManager.Capture instead", false)]
-    public class AlphaShot2 : MonoBehaviour
+    internal class AlphaShot2 : MonoBehaviour
     {
-        private Material matScale;
-        private Material matBlackout;
-        private Material matMask;
+        #region Materials
 
-        private Material matRgAlpha;
-        private Material matComposite;
-
-        private bool InStudio = false;
-
-        private void Awake()
+        private static Material _matScale;
+        private static Material _matBlackout;
+        private static Material _matMask;
+        private static Material MatScale
+        {
+            get
+            {
+                if (!_matScale) LoadBundleBlackout();
+                return _matScale;
+            }
+        }
+        private static Material MatBlackout
+        {
+            get
+            {
+                if (!_matBlackout) LoadBundleBlackout();
+                return _matBlackout;
+            }
+        }
+        private static Material MatMask
+        {
+            get
+            {
+                if (!_matMask) LoadBundleBlackout();
+                return _matMask;
+            }
+        }
+        private static void LoadBundleBlackout()
         {
             var abd = ResourceUtils.GetEmbeddedResource("blackout.unity3d");
             var ab = AssetBundle.LoadFromMemory(abd);
-            matBlackout = new Material(ab.LoadAsset<Shader>("blackout.shader"));
-            matMask = new Material(ab.LoadAsset<Shader>("alphamask.shader"));
-            matScale = new Material(ab.LoadAsset<Shader>("resize.shader"));
+            _matBlackout = new Material(ab.LoadAsset<Shader>("blackout.shader"));
+            _matMask = new Material(ab.LoadAsset<Shader>("alphamask.shader"));
+            _matScale = new Material(ab.LoadAsset<Shader>("resize.shader"));
             ab.Unload(false);
+        }
+#if !EC
+        private static Material _matComposite;
+        private static Material MatComposite
+        {
+            get
+            {
+                if (!_matComposite) LoadBundleComposite();
+                return _matComposite;
+            }
+        }
+        private static void LoadBundleComposite()
+        {
+            var compab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
+            _matComposite = new Material(compab.LoadAsset<Shader>("composite"));
+            compab.Unload(false);
+        }
+#endif
+        private static Material _matRgAlpha;
 
+        private static Material MatRgAlpha
+        {
+            get
+            {
+                if (!_matRgAlpha) LoadBundleRgalpha();
+                return _matRgAlpha;
+            }
+        }
+
+        private static void LoadBundleRgalpha()
+        {
             var rgbd = ResourceUtils.GetEmbeddedResource("rgalpha.unity3d");
             var rgab = AssetBundle.LoadFromMemory(rgbd);
-            matRgAlpha = new Material(rgab.LoadAsset<Shader>("rgAlpha2"));
+            _matRgAlpha = new Material(rgab.LoadAsset<Shader>("rgAlpha2"));
             rgab.Unload(false);
-
-            var compab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
-            matComposite = new Material(compab.LoadAsset<Shader>("composite"));
-            compab.Unload(false);
-
-#if !EC
-            InStudio = Constants.InsideStudio;
-#endif
         }
 
-        [Obsolete]
-        public byte[] Lanczos(Texture input, int ResolutionX, int ResolutionY)
-        {
-            var t2d = LanczosTex(input, ResolutionX, ResolutionY);
-            var ret = t2d.EncodeToPNG();
-            Destroy(t2d);
-            return ret;
-        }
+        #endregion
 
-        public Texture2D LanczosTex(Texture input, int ResolutionX, int ResolutionY)
+        public static RenderTexture LanczosTex(Texture input, int resolutionX, int resolutionY)
         {
-            matScale.SetVector("_KernelAndSize", new Vector4(5, 5, ResolutionX, ResolutionY));
-            var rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            MatScale.SetVector("_KernelAndSize", new Vector4(5, 5, resolutionX, resolutionY));
+            var rt = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             var prev = RenderTexture.active;
             RenderTexture.active = rt;
             GL.Clear(false, true, new Color(0, 0, 0, 0));
-            Graphics.Blit(input, rt, matScale);
-            DestroyImmediate(input);
-            var t2d = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
-            t2d.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0, false);
-            t2d.Apply();
+            Graphics.Blit(input, rt, MatScale);
+            if (input is RenderTexture rtInput)
+                RenderTexture.ReleaseTemporary(rtInput);
+            else
+                Destroy(input);
             RenderTexture.active = prev;
-            RenderTexture.ReleaseTemporary(rt);
-            return t2d;
+            return rt;
         }
 
-        [Obsolete]
-        public byte[] Capture(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
-        {
-            var fullSizeCapture = CaptureTex(ResolutionX, ResolutionY, DownscalingRate, Transparent ? AlphaMode.blackout : AlphaMode.None);
-            var ret = fullSizeCapture.EncodeToPNG();
-            Destroy(fullSizeCapture);
-            return ret;
-        }
-
-        [Obsolete]
-        public Texture2D CaptureTex(int ResolutionX, int ResolutionY, int DownscalingRate, bool Transparent)
-        {
-            return CaptureTex(ResolutionX, ResolutionY, DownscalingRate, Transparent ? AlphaMode.blackout : AlphaMode.None);
-        }
-
-        public Texture2D CaptureTex(int ResolutionX, int ResolutionY, int DownscalingRate, AlphaMode mode)
+        public RenderTexture CaptureTex(int resolutionX, int resolutionY, int downscalingRate, AlphaMode mode)
         {
             Shader.SetGlobalTexture("_AlphaMask", Texture2D.whiteTexture);
             Shader.SetGlobalInt("_alpha_a", 1);
             Shader.SetGlobalInt("_alpha_b", 1);
             Shader.SetGlobalInt("_LineWidthS", 1);
-            Texture2D fullSizeCapture;
-            int newWidth = ResolutionX * DownscalingRate;
-            int newHeight = ResolutionY * DownscalingRate;
+            RenderTexture fullSizeCapture;
+            int newWidth = resolutionX * downscalingRate;
+            int newHeight = resolutionY * downscalingRate;
 
             // Fix depth of field
             float orgBlurSize = 0.0f;
@@ -109,7 +125,9 @@ namespace alphaShot
             {
                 bool CanTakeAlpha()
                 {
-                    if (InStudio) return true;
+#if !EC
+                    if (Constants.InsideStudio) return true;
+#endif
                     var sceneName = SceneManager.GetActiveScene().name;
                     return sceneName == "CustomScene" || sceneName == "HEditScene" || sceneName == "HPlayScene";
                 }
@@ -139,20 +157,21 @@ namespace alphaShot
                 dof.maxBlurSize = orgBlurSize;
             }
 
-            if (DownscalingRate > 1)
-                return LanczosTex(fullSizeCapture, ResolutionX, ResolutionY);
+            if (downscalingRate > 1)
+                return LanczosTex(fullSizeCapture, resolutionX, resolutionY);
 
             return fullSizeCapture;
         }
 
-        private Texture2D CaptureOpaque(int ResolutionX, int ResolutionY)
+        private RenderTexture CaptureOpaque(int resolutionX, int resolutionY)
         {
             var renderCam = Camera.main;
             var tt = renderCam.targetTexture;
             var rta = RenderTexture.active;
 
-            var rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 1);
-            var ss = new Texture2D(ResolutionX, ResolutionY, TextureFormat.RGB24, false);
+            var rt = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            RenderTexture.active = rt;
+
             var rect = renderCam.rect;
 
             renderCam.targetTexture = rt;
@@ -162,7 +181,7 @@ namespace alphaShot
 
 #if !EC
             // Handle studio picture frames by overlaying them on top of the full size image, before it's downscaled
-            if (InStudio &&
+            if (Constants.InsideStudio &&
                 Studio.Studio.IsInstance() &&
                 Studio.Studio.Instance.frameCtrl != null &&
                 Studio.Studio.Instance.frameCtrl.imageFrame != null &&
@@ -170,39 +189,40 @@ namespace alphaShot
                 Studio.Studio.Instance.frameCtrl.imageFrame.isActiveAndEnabled)
             {
                 var frame = Studio.Studio.Instance.frameCtrl.imageFrame.mainTexture;
-                matComposite.SetTexture("_Overlay", frame);
+                MatComposite.SetTexture("_Overlay", frame);
                 var prevrt = rt;
-                rt = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 1);
+                rt = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 RenderTexture.active = rt;
                 GL.Clear(false, true, Color.clear);
-                Graphics.Blit(prevrt, rt, matComposite);
+                Graphics.Blit(prevrt, rt, MatComposite);
                 RenderTexture.ReleaseTemporary(prevrt);
             }
 #endif
 
-            RenderTexture.active = rt;
-            ss.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0);
-            ss.Apply();
             renderCam.targetTexture = tt;
-            RenderTexture.active = rta;
+
+            // Set alpha to solid opaque (Camera.Render gives messed up alpha channel)
+            var rtout = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            Graphics.Blit(rt, rtout, BundleLoader.MatOpaque);
             RenderTexture.ReleaseTemporary(rt);
 
-            return ss;
+            RenderTexture.active = rta;
+            return rtout;
         }
 
         #region rgAlpha
 
-        private Texture2D CaptureRgAlpha(int ResolutionX, int ResolutionY)
+        private RenderTexture CaptureRgAlpha(int resolutionX, int resolutionY)
         {
             Camera main = Camera.main;
 
             #region Generate alpha mask image
 
             // Disable special effects that interfere with transparency
-            var disableTypes = new Type[]
+            var disableTypes = new[]
             {
-                typeof(BloomAndFlares),
-                typeof(VignetteAndChromaticAberration),
+                typeof(UnityStandardAssets.ImageEffects.BloomAndFlares),
+                typeof(UnityStandardAssets.ImageEffects.VignetteAndChromaticAberration),
                 typeof(AmplifyColorEffect),
             };
             var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
@@ -216,7 +236,7 @@ namespace alphaShot
                 // As long as this is not called then the code is not loaded and doesn't blow up with FileNotFoundException because of the missing assembly.
                 new Action(() =>
                 {
-                    var disablePostProcessTypes = new Type[]
+                    var disablePostProcessTypes = new[]
                     {
                         typeof(UnityEngine.Rendering.PostProcessing.Bloom),
                         typeof(UnityEngine.Rendering.PostProcessing.Vignette),
@@ -241,8 +261,8 @@ namespace alphaShot
 #endif
 
             // Do composite alpha captures. 2 color composite gives better effects than grayscale alpha, especially on edges and partially transparent things.
-            var rtR = PerformRgCapture(ResolutionX, ResolutionY, Color.red);
-            var rtG = PerformRgCapture(ResolutionX, ResolutionY, Color.green);
+            var rtR = PerformRgCapture(resolutionX, resolutionY, Color.red);
+            var rtG = PerformRgCapture(resolutionX, resolutionY, Color.green);
 
             // Re-enable all disabled effects. Do this ASAP in case something in this method crashes to not corrupt game state.
             foreach (var comp in disabled) comp.enabled = true;
@@ -257,11 +277,11 @@ namespace alphaShot
             }
 #endif
 
-            var rtAlpha = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
-            ClearRT(rtAlpha);
+            var rtAlpha = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            rtAlpha.ClearRenderTexture();
 
-            matRgAlpha.SetTexture("_green", rtG);
-            Graphics.Blit(rtR, rtAlpha, matRgAlpha);
+            MatRgAlpha.SetTexture("_green", rtG);
+            Graphics.Blit(rtR, rtAlpha, MatRgAlpha);
             //System.IO.File.WriteAllBytes("e:\\alphaRTex.png", GetT2D(alphaRTex).EncodeToPNG());
 
             RenderTexture.ReleaseTemporary(rtR);
@@ -272,51 +292,27 @@ namespace alphaShot
             #region Combine color with alpha
 
             // Generate the actual color capture. All effect can be enabled during this since we already have the alpha mask ready.
-            var texColor = PerformCapture(ResolutionX, ResolutionY, false);
+            var texColor = PerformCapture(resolutionX, resolutionY, false);
 
-            var rtOutput = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            var rtOutput = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             var prev = RenderTexture.active;
             RenderTexture.active = rtOutput;
             GL.Clear(false, true, new Color(0, 0, 0, 0));
 
-            matMask.SetTexture("_Mask", rtAlpha);
-            Graphics.Blit(texColor, rtOutput, matMask);
+            MatMask.SetTexture("_Mask", rtAlpha);
+            Graphics.Blit(texColor, rtOutput, MatMask);
 
-            Destroy(texColor);
+            RenderTexture.ReleaseTemporary(texColor);
             RenderTexture.ReleaseTemporary(rtAlpha);
 
-            var texOutput = new Texture2D(ResolutionX, ResolutionY, TextureFormat.ARGB32, false);
-            texOutput.ReadPixels(new Rect(0, 0, ResolutionX, ResolutionY), 0, 0, false);
-            texOutput.Apply();
-
             RenderTexture.active = prev;
-            RenderTexture.ReleaseTemporary(rtOutput);
 
             #endregion
 
-            return texOutput;
+            return rtOutput;
         }
 
-        private static void ClearRT(RenderTexture rt)
-        {
-            var targetTexture = RenderTexture.active;
-            RenderTexture.active = rt;
-            GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
-            RenderTexture.active = targetTexture;
-        }
-
-        private static Texture2D GetT2D(RenderTexture renderTexture)
-        {
-            var currentActiveRT = RenderTexture.active;
-            RenderTexture.active = renderTexture;
-            var tex = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.ARGB32, false);
-            tex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
-            tex.Apply();
-            RenderTexture.active = currentActiveRT;
-            return tex;
-        }
-
-        public RenderTexture PerformRgCapture(int ResolutionX, int ResolutionY, Color bg)
+        public RenderTexture PerformRgCapture(int resolutionX, int resolutionY, Color bg)
         {
             Camera main = Camera.main;
             RenderTexture active = RenderTexture.active;
@@ -324,8 +320,8 @@ namespace alphaShot
             var rect = main.rect;
             var backgroundColor = main.backgroundColor;
             var clearFlags = main.clearFlags;
-            var temporary = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.ARGB32);
-            ClearRT(temporary);
+            var temporary = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            temporary.ClearRenderTexture();
 
             main.clearFlags = CameraClearFlags.Color;
             main.backgroundColor = bg;
@@ -346,44 +342,41 @@ namespace alphaShot
 
         #region blackout
 
-        private Texture2D CaptureAlpha(int ResolutionX, int ResolutionY)
+        private RenderTexture CaptureAlpha(int resolutionX, int resolutionY)
         {
             var main = Camera.main;
 
-            var disableTypes = new Type[]
+            var disableTypes = new[]
             {
-                typeof(BloomAndFlares),
-                typeof(VignetteAndChromaticAberration),
+                typeof(UnityStandardAssets.ImageEffects.BloomAndFlares),
+                typeof(UnityStandardAssets.ImageEffects.VignetteAndChromaticAberration),
                 typeof(AmplifyColorEffect),
             };
             var disabled = main.gameObject.GetComponents<Behaviour>().Where(x => x.enabled && disableTypes.Contains(x.GetType())).ToArray();
             foreach (var comp in disabled) comp.enabled = false;
 
-            var texture2D = PerformCapture(ResolutionX, ResolutionY, true);
+            var capture1 = PerformCapture(resolutionX, resolutionY, true);
 
             foreach (var comp in disabled) comp.enabled = true;
 
-            var texture2D2 = PerformCapture(ResolutionX, ResolutionY, false);
+            var capture2 = PerformCapture(resolutionX, resolutionY, false);
 
-            var rt = RenderTexture.GetTemporary(texture2D.width, texture2D.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            var rt = RenderTexture.GetTemporary(capture1.width, capture1.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
 
             var prev = RenderTexture.active;
             RenderTexture.active = rt;
             GL.Clear(false, true, new Color(0, 0, 0, 0));
-            matMask.SetTexture("_Mask", texture2D);
-            Graphics.Blit(texture2D2, rt, matMask);
-            Destroy(texture2D);
-            Destroy(texture2D2);
-            var texture2D3 = new Texture2D(rt.width, rt.height, TextureFormat.ARGB32, false);
-            texture2D3.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0, false);
-            texture2D3.Apply();
+            MatMask.SetTexture("_Mask", capture1);
+            Graphics.Blit(capture2, rt, MatMask);
             RenderTexture.active = prev;
-            RenderTexture.ReleaseTemporary(rt);
 
-            return texture2D3;
+            RenderTexture.ReleaseTemporary(capture1);
+            RenderTexture.ReleaseTemporary(capture2);
+
+            return rt;
         }
 
-        public Texture2D PerformCapture(int ResolutionX, int ResolutionY, bool CaptureMask)
+        public RenderTexture PerformCapture(int resolutionX, int resolutionY, bool captureMask)
         {
             var renderCam = Camera.main;
             var targetTexture = renderCam.targetTexture;
@@ -391,21 +384,20 @@ namespace alphaShot
             var rect = renderCam.rect;
             var backgroundColor = renderCam.backgroundColor;
             var clearFlags = renderCam.clearFlags;
-            var t2d = new Texture2D(ResolutionX, ResolutionY, TextureFormat.RGB24, false);
-            var rt_temp = RenderTexture.GetTemporary(ResolutionX, ResolutionY, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 1);
+            var rtTemp = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Default, 1);
 
             renderCam.clearFlags = CameraClearFlags.SolidColor;
-            renderCam.targetTexture = rt_temp;
+            renderCam.targetTexture = rtTemp;
             renderCam.rect = new Rect(0, 0, 1, 1);
 
             var lc = Shader.GetGlobalColor(ChaShader._LineColorG);
-            if (CaptureMask)
+            if (captureMask)
             {
                 Shader.SetGlobalColor(ChaShader._LineColorG, new Color(.5f, .5f, .5f, 0f));
                 GL.Clear(true, true, Color.white);
                 renderCam.backgroundColor = Color.white;
                 renderCam.renderingPath = RenderingPath.VertexLit;
-                renderCam.RenderWithShader(matBlackout.shader, null);
+                renderCam.RenderWithShader(MatBlackout.shader, null);
                 Shader.SetGlobalColor(ChaShader._LineColorG, lc);
             }
             else
@@ -417,27 +409,13 @@ namespace alphaShot
             renderCam.targetTexture = targetTexture;
             renderCam.rect = rect;
 
-            RenderTexture.active = rt_temp;
-            t2d.ReadPixels(new Rect(0f, 0f, ResolutionX, ResolutionY), 0, 0);
-            t2d.Apply();
             RenderTexture.active = rta;
             renderCam.backgroundColor = backgroundColor;
             renderCam.clearFlags = clearFlags;
-            RenderTexture.ReleaseTemporary(rt_temp);
 
-            return t2d;
+            return rtTemp;
         }
 
         #endregion
-    }
-
-    public enum AlphaMode
-    {
-        [Description("No transparency")]
-        None = 0,
-        [Description("Cutout transparency (hard edges)")]
-        blackout,
-        [Description("Gradual transparency (has issues with some effects)")]
-        rgAlpha
     }
 }

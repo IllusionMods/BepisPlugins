@@ -2,7 +2,7 @@
 
 namespace Screencap
 {
-    public static partial class Hooks
+    internal static partial class Hooks
     {
         [HarmonyPrefix, HarmonyPatch(typeof(EmocreScreenShot), nameof(EmocreScreenShot.ScreenShot))]
         private static bool EmocreScreenShotPreHook() => false;

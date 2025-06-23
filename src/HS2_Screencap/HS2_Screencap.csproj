@@ -105,7 +105,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AI.ScreenshotManager.cs" />
+    <Compile Include="HS2.ScreenshotManager.cs" />
+    <Compile Include="HS2.ScreenshotManager.Hooks.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -120,6 +121,7 @@
   </ItemGroup>
   <Import Project="..\Core_Screencap_AIHS2\AIHS2_Core_Screencap.projitems" Label="Shared" />
   <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+  <Import Project="..\Core_Screencap\Core_Screencap.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST "$(SolutionDir)PostBuild.bat" CALL "$(SolutionDir)PostBuild.bat" "$(TargetPath)" HS2</PostBuildEvent>
