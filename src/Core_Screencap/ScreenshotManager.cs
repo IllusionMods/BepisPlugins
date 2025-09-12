@@ -342,9 +342,9 @@ namespace Screencap
                 new ConfigDescription("Horizontal resolution (width) of 360 degree/panorama screenshots. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", new AcceptableValueList<int>(1024, 2048, 4096, 8192)));
             
             is180 = Config.Bind(
-                "360 Screenshots", "180 instead of 360",
+                "360 Screenshots", "Use 180° mode instead of 360°",
                 false,
-                new ConfigDescription("Flip left and right eye for cross-eyed viewing. Disable to use the screenshots in most VR image viewers."));
+                new ConfigDescription("Enable this to generate 180° screenshots. The output images will have a 1:1 aspect ratio."));
 
             KeyCaptureAlphaIn3D = Config.Bind(
                 "Keyboard shortcuts", "Take rendered 3D screenshot",
