@@ -90,7 +90,7 @@ namespace Screencap
             int cubemapSize = Mathf.Min(Mathf.NextPowerOfTwo(width), 16384);
             RenderTexture cubemap = null, equirectangularTexture;
             try
-            {                
+            {
                 cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
                 if (is180)
@@ -107,12 +107,15 @@ namespace Screencap
                 if (!renderCam.RenderToCubemap(cubemap))
                     throw new Exception("Rendering to cubemap is not supported on the current camera");
 
-                //_equirectangularConverter.SetFloat(_paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);//unused?
-                if (faceCameraDirection && is180) 
-                {        
-                    _equirectangularConverter.SetMatrix(cameraRotationMatrixID, renderCam.transform.localToWorldMatrix);// pass camera rotation to shader                    
+                _equirectangularConverter.SetFloat(_paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
+                
+                if (faceCameraDirection && is180)
+                {
+                    // Apply camera rotation so the 180° screenshot follows the camera direction.
+                    // Could also apply to 360° mode.
+                    _equirectangularConverter.SetMatrix(cameraRotationMatrixID, renderCam.transform.localToWorldMatrix);                 
                 }
-                _equirectangularConverter.SetInt(is180ID, is180 ? 1 : 0); // can't pass bool
+                _equirectangularConverter.SetInt(is180ID, is180 ? 1 : 0);
                 Graphics.Blit(cubemap, equirectangularTexture, _equirectangularConverter);
 
                 return equirectangularTexture;

@@ -242,7 +242,6 @@ namespace Screencap
         public static ConfigEntry<KeyboardShortcut> KeyCapture360 { get; private set; }
         public static ConfigEntry<int> Resolution360 { get; private set; }
         public static ConfigEntry<bool> is180 { get; private set; }
-
         public static ConfigEntry<KeyboardShortcut> KeyCaptureAlphaIn3D { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCapture360in3D { get; private set; }
         public static ConfigEntry<float> EyeSeparation { get; private set; }

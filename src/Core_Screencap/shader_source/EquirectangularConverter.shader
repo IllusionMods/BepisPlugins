@@ -23,7 +23,7 @@ Shader "Hidden/CubemapToEquirectangular" {
 				#define TWOPI 6.283185307179587
 
 				float4x4 _CameraRotationMatrix = (1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
-				int _is180 = 0; //can't pass bool
+				int _is180 = 0;
 
 				struct v2f {
 					float4 pos : POSITION;
@@ -52,12 +52,12 @@ Shader "Hidden/CubemapToEquirectangular" {
 						phi = i.uv.x+PI/2;
 					}
 					float3 unit = float3(0,0,0);
-					
 					unit.x = sin(phi) * sin(theta) * -1;
 					unit.y = cos(theta) * -1;
 					unit.z = cos(phi) * sin(theta) * -1;
-
-					unit = mul(_CameraRotationMatrix, float4(unit.x, unit.y, unit.z, 0)).xyz;  //changed for camera rotaion
+					
+					// Rotate the unit vector by the camera rotation matrix so it aligns with the camera direction
+					unit = mul(_CameraRotationMatrix, float4(unit.x, unit.y, unit.z, 0)).xyz;
 
 					return texCUBE(_MainTex, unit);
 				}
