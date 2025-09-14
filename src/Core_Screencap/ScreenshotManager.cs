@@ -141,7 +141,7 @@ namespace Screencap
         {
             try
             {
-                return I360Render.CaptureTex(resolution ?? Resolution360.Value, faceCameraDirection: faceCameraDirection);
+                return I360Render.CaptureTex(resolution ?? Resolution360.Value, faceCameraDirection: faceCameraDirection,is180: is180.Value);
             }
             catch (Exception ex)
             {
@@ -241,7 +241,7 @@ namespace Screencap
 
         public static ConfigEntry<KeyboardShortcut> KeyCapture360 { get; private set; }
         public static ConfigEntry<int> Resolution360 { get; private set; }
-
+        public static ConfigEntry<bool> is180 { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCaptureAlphaIn3D { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCapture360in3D { get; private set; }
         public static ConfigEntry<float> EyeSeparation { get; private set; }
@@ -339,6 +339,11 @@ namespace Screencap
                 "360 Screenshots", "360 screenshot resolution",
                 4096,
                 new ConfigDescription("Horizontal resolution (width) of 360 degree/panorama screenshots. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", new AcceptableValueList<int>(1024, 2048, 4096, 8192)));
+            
+            is180 = Config.Bind(
+                "360 Screenshots", "Use 180 mode instead of 360",
+                false,
+                new ConfigDescription("Enable this to generate 180Â° screenshots. The output images will have a 1:1 aspect ratio."));
 
             KeyCaptureAlphaIn3D = Config.Bind(
                 "Keyboard shortcuts", "Take rendered 3D screenshot",
@@ -348,7 +353,7 @@ namespace Screencap
             KeyCapture360in3D = Config.Bind(
                 "Keyboard shortcuts", "Take 360 3D screenshot",
                 new KeyboardShortcut(KeyCode.F11, KeyCode.LeftControl, KeyCode.LeftShift),
-                new ConfigDescription("Captures a 360 screenshot around current camera in stereoscopic 3D (2 captures for each eye in one image). These images can be viewed by image viewers supporting 3D stereo format (e.g. VR Media Player - 360° Viewer)."));
+                new ConfigDescription("Captures a 360 screenshot around current camera in stereoscopic 3D (2 captures for each eye in one image). These images can be viewed by image viewers supporting 3D stereo format (e.g. VR Media Player - 360ï¿½ Viewer)."));
 
             EyeSeparation = Config.Bind(
                 "3D Settings", "3D screenshot eye separation",
