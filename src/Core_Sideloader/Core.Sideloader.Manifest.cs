@@ -83,10 +83,19 @@ namespace Sideloader
         [Key(9)] public List<MigrationInfo> MigrationList { get; }
 
 #if AI || HS2
+        /// <summary>
+        /// List of all head preset info for this mod
+        /// </summary>
         [Key(10)] public List<HeadPresetInfo> HeadPresetList { get; }
+        /// <summary>
+        /// List of all face skin info for this mod
+        /// </summary>
         [Key(11)] public List<FaceSkinInfo> FaceSkinList { get; }
 #endif
 
+        /// <summary>
+        /// Create new manifest from a stream.
+        /// </summary>
         public Manifest(Stream stream)
         {
             using (XmlReader reader = XmlReader.Create(stream))
@@ -117,6 +126,9 @@ namespace Sideloader
 #endif
         }
 
+        /// <summary>
+        /// Create new manifest from scratch.
+        /// </summary>
         [SerializationConstructor]
         public Manifest(int schemaVer, string guid, string name, string version, string author, string website, string description, string manifestString, List<string> games, List<MigrationInfo> migrationList
 #if AI || HS2

@@ -29,6 +29,7 @@
     <PackageReference Include="BepInEx.ConfigurationManager" Version="18.2.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile</IncludeAssets>
+      <NoWarn>NU1701</NoWarn>
     </PackageReference>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668">
       <PrivateAssets>all</PrivateAssets>
@@ -57,7 +58,6 @@
     <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 

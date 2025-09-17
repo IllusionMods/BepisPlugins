@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using MessagePack;
 
+#pragma warning disable CS1591 // TODO Missing XML comment for publicly visible type or member
+
 namespace Sideloader.AutoResolver
 {
     [MessagePackObject]

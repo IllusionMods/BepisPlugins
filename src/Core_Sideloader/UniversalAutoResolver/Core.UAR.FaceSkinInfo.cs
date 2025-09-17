@@ -1,5 +1,7 @@
 ﻿using MessagePack;
 
+#pragma warning disable CS1591 // TODO Missing XML comment for publicly visible type or member
+
 #if AI || HS2
 namespace Sideloader.AutoResolver
 {
