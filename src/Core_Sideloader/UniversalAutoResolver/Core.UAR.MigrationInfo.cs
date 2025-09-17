@@ -49,7 +49,7 @@ namespace Sideloader.AutoResolver
         /// <param name="category">Category of the item.</param>
         /// <param name="guidOld">GUID of the item to perform migration on.</param>
         /// <param name="guidNew">GUID to migrate to.</param>
-        /// <param name="idOld">TheID of the item to perform migration on.</param>
+        /// <param name="idOld">The ID of the item to perform migration on.</param>
         /// <param name="idNew">ID to migrate to.</param>
         [SerializationConstructor]
         public MigrationInfo(MigrationType migrationType, ChaListDefine.CategoryNo category, string guidOld, string guidNew, int idOld, int idNew)
