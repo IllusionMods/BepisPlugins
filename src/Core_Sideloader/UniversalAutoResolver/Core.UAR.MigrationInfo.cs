@@ -42,6 +42,15 @@ namespace Sideloader.AutoResolver
         [Key(5)]
         public int IDNew;
 
+        /// <summary>
+        /// Create a new MigrationInfo.
+        /// </summary>
+        /// <param name="migrationType">Type of migration to perform.</param>
+        /// <param name="category">Category of the item.</param>
+        /// <param name="guidOld">GUID of the item to perform migration on.</param>
+        /// <param name="guidNew">GUID to migrate to.</param>
+        /// <param name="idOld">The ID of the item to perform migration on.</param>
+        /// <param name="idNew">ID to migrate to.</param>
         [SerializationConstructor]
         public MigrationInfo(MigrationType migrationType, ChaListDefine.CategoryNo category, string guidOld, string guidNew, int idOld, int idNew)
         {
@@ -53,6 +62,7 @@ namespace Sideloader.AutoResolver
             IDNew = idNew;
         }
 
+        /// <inheritdoc cref="MigrationInfo(MigrationType,ChaListDefine.CategoryNo,string,string,int,int)"/>
         public MigrationInfo(MigrationType migrationType, string guidOld, string guidNew)
         {
             MigrationType = migrationType;

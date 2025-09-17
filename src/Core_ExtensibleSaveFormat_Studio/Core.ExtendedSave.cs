@@ -54,6 +54,14 @@ namespace ExtensibleSaveFormat
         public static readonly GameNames GameName = GameNames.KoikatsuSunshine;
 #endif
 
-        public enum GameNames { Unknown, Koikatsu, EmotionCreators, AIGirl, HoneySelect2, PlayHome, KoikatsuSunshine }
+        /// <summary>
+        /// Short names of supported games.
+        /// </summary>
+        public enum GameNames
+        {
+#pragma warning disable CS1591
+            Unknown, Koikatsu, EmotionCreators, AIGirl, HoneySelect2, PlayHome, KoikatsuSunshine
+#pragma warning restore CS1591
+        }
     }
 }

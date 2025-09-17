@@ -34,6 +34,9 @@ namespace Sideloader.AutoResolver
         /// </summary>
         internal static Dictionary<string, Dictionary<int, List<StudioResolveInfo>>> StudioResolutionInfoGuidLookup = new Dictionary<string, Dictionary<int, List<StudioResolveInfo>>>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// Register a new StudioResolveInfo.
+        /// </summary>
         public static void AddStudioResolutionInfo(StudioResolveInfo sri)
         {
             UpdateLookupsIfNeeded();

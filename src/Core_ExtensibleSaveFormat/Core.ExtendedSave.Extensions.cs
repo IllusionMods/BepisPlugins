@@ -4,6 +4,9 @@ using static ExtensibleSaveFormat.ExtendedSave;
 
 namespace ExtensibleSaveFormat
 {
+    /// <summary>
+    /// Extension methods for getting and setting extended save data.
+    /// </summary>
     public static class Extensions
     {
         private static Dictionary<string, PluginData> GetExtendedData(object messagePackObject)
@@ -85,6 +88,10 @@ namespace ExtensibleSaveFormat
                 Logger.LogError(ex);
             }
         }
+
+// TODO Maybe add the docs at some point?
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 #if KK || KKS || EC
         //Body
         public static Dictionary<string, PluginData> GetAllExtendedData(this ChaFileBody messagePackObject) => GetExtendedData(messagePackObject);
