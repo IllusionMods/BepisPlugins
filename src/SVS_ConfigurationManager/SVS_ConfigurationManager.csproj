@@ -26,14 +26,43 @@
 
 	<ItemGroup>
 		<!--BepInEx.ConfigurationManager is a BepInEx5 package and there's a compatibility warning about .NET version, but it actually works -->
-		<PackageReference Include="BepInEx.ConfigurationManager" Version="18.3.0" />
-		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668" />
-		<PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668" />
-		<PackageReference Include="IllusionLibs.SamabakeScramble.Assembly-CSharp" Version="2024.8.30.1" />
-		<PackageReference Include="IllusionLibs.SamabakeScramble.Il2Cppmscorlib" Version="2024.8.30.1" />
-		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine" Version="2021.3.33.1" />
-		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine.AudioModule" Version="2021.3.33.1" />
-		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine.UI" Version="2021.3.33.1" />
+		<PackageReference Include="BepInEx.ConfigurationManager" Version="18.3.0">
+		  <ExcludeAssets>all</ExcludeAssets>
+		  <IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668">
+		  <ExcludeAssets>all</ExcludeAssets>
+		  <IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668">
+		  <ExcludeAssets>all</ExcludeAssets>
+		  <IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="IllusionLibs.SamabakeScramble.Assembly-CSharp" Version="2024.8.30.1">
+		  <ExcludeAssets>all</ExcludeAssets>
+		  <IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="IllusionLibs.SamabakeScramble.Il2Cppmscorlib" Version="2024.8.30.1">
+		  <ExcludeAssets>all</ExcludeAssets>
+		  <IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine" Version="2021.3.33.1">
+		  <ExcludeAssets>all</ExcludeAssets>
+		  <IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine.AudioModule" Version="2021.3.33.1">
+		  <ExcludeAssets>all</ExcludeAssets>
+		  <IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="IllusionLibs.SamabakeScramble.UnityEngine.UI" Version="2021.3.33.1">
+		  <ExcludeAssets>all</ExcludeAssets>
+		  <IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <ExcludeAssets>all</ExcludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
