@@ -19,7 +19,7 @@ namespace BGMLoader
         public static string IntroClipsDirectory = Path.Combine(Paths.PluginPath, "introclips");
 
         private static ManualLogSource Logger = null!;
-        private static FileInfo[]? _clips;
+        private static FileInfo[] _clips;
 
         public override void Load()
         {

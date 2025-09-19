@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <RootNamespace>IMGUIModule.Il2Cpp.CoreCLR</RootNamespace>
     <AssemblyName>IMGUIModule.Il2Cpp.CoreCLR.Patcher</AssemblyName>
     <OutputPath>..\..\bin\BepInEx\patchers\</OutputPath>
