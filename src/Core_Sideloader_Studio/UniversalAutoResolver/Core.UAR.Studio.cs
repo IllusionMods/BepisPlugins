@@ -3,6 +3,7 @@ using HarmonyLib;
 using Sideloader.ListLoader;
 using Studio;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 #pragma warning disable CS0618
@@ -17,13 +18,18 @@ namespace Sideloader.AutoResolver
         [Obsolete("Unused")]
         public const string UARExtIDStudioAnimation = UARExtID + ".studioanimation";
 
+        private static readonly List<StudioResolveInfo> _LoadedStudioResolutionInfos = new List<StudioResolveInfo>();
+        private static int _lastLoadedStudioResolutionInfoCount = 0;
         /// <summary>
         /// All loaded StudioResolveInfo
         /// </summary>
-        [Obsolete("Use GetStudioResolveInfos and AddStudioResolutionInfo instead")]
-        public static List<StudioResolveInfo> LoadedStudioResolutionInfo = new List<StudioResolveInfo>();
-
-        static int LastLoadedStudioResolutionInfoCount = 0;
+        [Obsolete("Use GetStudioResolveInfos, AddStudioResolutionInfo, and LoadedStudioResolutionInfos instead", true)]
+        public static List<StudioResolveInfo> LoadedStudioResolutionInfo = _LoadedStudioResolutionInfos;
+        /// <summary>
+        /// All loaded studio resolve infos as a read-only collection.
+        /// If you want to add a new StudioResolveInfo, use <see cref="AddStudioResolutionInfo"/> instead.
+        /// </summary>
+        public static ReadOnlyCollection<StudioResolveInfo> LoadedStudioResolutionInfos { get; } = _LoadedStudioResolutionInfos.AsReadOnly();
 
         /// <summary>
         /// LocalSlot -> resolve info lookup.
@@ -41,8 +47,8 @@ namespace Sideloader.AutoResolver
         {
             UpdateLookupsIfNeeded();
 
-            LoadedStudioResolutionInfo.Add(sri);
-            LastLoadedStudioResolutionInfoCount = LoadedStudioResolutionInfo.Count;
+            _LoadedStudioResolutionInfos.Add(sri);
+            _lastLoadedStudioResolutionInfoCount = _LoadedStudioResolutionInfos.Count;
 
             AddToLookups(sri);
         }
@@ -53,10 +59,10 @@ namespace Sideloader.AutoResolver
         /// </summary>
         private static void UpdateLookupsIfNeeded()
         {
-            while (LastLoadedStudioResolutionInfoCount < LoadedStudioResolutionInfo.Count)
+            while (_lastLoadedStudioResolutionInfoCount < _LoadedStudioResolutionInfos.Count)
             {
-                AddToLookups(LoadedStudioResolutionInfo[LastLoadedStudioResolutionInfoCount]);
-                LastLoadedStudioResolutionInfoCount++;
+                AddToLookups(_LoadedStudioResolutionInfos[_lastLoadedStudioResolutionInfoCount]);
+                _lastLoadedStudioResolutionInfoCount++;
             }
         }
 
@@ -211,7 +217,7 @@ namespace Sideloader.AutoResolver
                                                   $"Website: {manifest.Website} " +
                                                   $"Slot: {int.Parse(entry[0])} " +
                                                   $"LocalSlot: {newSlot} " +
-                                                  $"Count: {LoadedStudioResolutionInfo.Count}");
+                                                  $"Count: {_LoadedStudioResolutionInfos.Count}");
                     }
 
                     entry[0] = newSlot.ToString();
@@ -336,7 +342,7 @@ namespace Sideloader.AutoResolver
                 if (!Lists.InternalStudioItemList.Contains(Item.no))
                 {
                     //Item does not exist in the item list, probably a missing hard mod. See if we have a sideloader mod with the same ID
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Item.no);
+                    StudioResolveInfo intResolve = _LoadedStudioResolutionInfos.FirstOrDefault(x => x.ResolveItem && x.Slot == Item.no);
                     if (intResolve != null)
                     {
                         //Found a match
@@ -355,7 +361,7 @@ namespace Sideloader.AutoResolver
             {
                 if (!Singleton<Info>.Instance.dicLightLoadInfo.TryGetValue(Light.no, out Info.LightLoadInfo lightLoadInfo))
                 {
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == Light.no);
+                    StudioResolveInfo intResolve = _LoadedStudioResolutionInfos.FirstOrDefault(x => x.ResolveItem && x.Slot == Light.no);
                     if (intResolve != null)
                     {
                         //Found a match
@@ -381,7 +387,7 @@ namespace Sideloader.AutoResolver
                 //Animation does not exist in the animation list, probably a missing hard mod. See if we have a sideloader mod with the same ID, Group, and Category
                 if (!animationFound)
                 {
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == CharInfo.animeInfo.no && x.Group == CharInfo.animeInfo.group && x.Category == CharInfo.animeInfo.category);
+                    StudioResolveInfo intResolve = _LoadedStudioResolutionInfos.FirstOrDefault(x => x.ResolveItem && x.Slot == CharInfo.animeInfo.no && x.Group == CharInfo.animeInfo.group && x.Category == CharInfo.animeInfo.category);
                     if (intResolve != null)
                     {
                         //Found a match
@@ -481,7 +487,7 @@ namespace Sideloader.AutoResolver
                 if (!Singleton<Info>.Instance.dicMapLoadInfo.TryGetValue(MapID, out Info.MapLoadInfo mapInfo))
                 {
                     //Map ID saved to the scene doesn't exist in the map list, try compatibility resolving
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID);
+                    StudioResolveInfo intResolve = _LoadedStudioResolutionInfos.FirstOrDefault(x => x.ResolveItem && x.Slot == MapID);
                     if (intResolve != null)
                     {
                         //Found a matching sideloader mod
@@ -533,7 +539,7 @@ namespace Sideloader.AutoResolver
                 if (!Info.Instance.dicFilterLoadInfo.TryGetValue(filterID, out Info.LoadCommonInfo filterInfo))
                 {
                     //Filter ID saved to the scene doesn't exist in the filter list, try compatibility resolving
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == filterID);
+                    StudioResolveInfo intResolve = _LoadedStudioResolutionInfos.FirstOrDefault(x => x.ResolveItem && x.Slot == filterID);
                     if (intResolve != null)
                     {
                         //Found a matching sideloader mod
@@ -640,7 +646,7 @@ namespace Sideloader.AutoResolver
                 if (!Singleton<Info>.Instance.dicBGMLoadInfo.TryGetValue(bgmID, out Info.LoadCommonInfo bgmInfo))
                 {
                     //BGM ID saved to the scene doesn't exist in the bgm list, try compatibility resolving
-                    StudioResolveInfo intResolve = LoadedStudioResolutionInfo.FirstOrDefault(x => x.ResolveItem && x.Slot == bgmID);
+                    StudioResolveInfo intResolve = _LoadedStudioResolutionInfos.FirstOrDefault(x => x.ResolveItem && x.Slot == bgmID);
                     if (intResolve != null)
                     {
                         //Found a matching sideloader mod
