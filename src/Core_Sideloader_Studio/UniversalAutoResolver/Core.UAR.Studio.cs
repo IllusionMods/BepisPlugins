@@ -28,6 +28,7 @@ namespace Sideloader.AutoResolver
         /// <summary>
         /// All loaded studio resolve infos as a read-only collection.
         /// If you want to add a new StudioResolveInfo, use <see cref="AddStudioResolutionInfo"/> instead.
+        /// If you want to find a specific resolve info, use GetStudioResolveInfos instead since it is much faster than iterating.
         /// </summary>
         public static ReadOnlyCollection<StudioResolveInfo> LoadedStudioResolutionInfos { get; } = _LoadedStudioResolutionInfos.AsReadOnly();
 
