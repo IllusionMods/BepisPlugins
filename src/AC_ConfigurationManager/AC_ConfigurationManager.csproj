@@ -34,7 +34,6 @@
 		<PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 	</ItemGroup>
 
