@@ -22,6 +22,7 @@
     <Delete Files="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.deps.json" />
     <Copy SourceFiles="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" DestinationFiles="$(OutputPath)\HC_IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" />
     <Copy SourceFiles="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" DestinationFiles="$(OutputPath)\SVS_IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" />
+    <Copy SourceFiles="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" DestinationFiles="$(OutputPath)\AC_IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" />
   </Target>
 
   <ItemGroup>
