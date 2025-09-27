@@ -48,11 +48,9 @@ namespace BGMLoader
         [HarmonyPatch(typeof(Manager.Sound), nameof(Manager.Sound.Play), typeof(Manager.Sound.Loader))]
         private static bool TitleCallOverride(Manager.Sound.Loader loader)
         {
-            Console.WriteLine($"XX {loader.Type} | {loader.Asset}");
             var newClip = TryGetIntroclip(loader.Type, loader.Asset);
             if (newClip != null)
             {
-                Console.WriteLine($"XX hit");
                 Manager.Sound.Play(loader.Type, newClip, loader.FadeTime);
                 return false;
             }
@@ -64,7 +62,6 @@ namespace BGMLoader
         [HarmonyPatch(typeof(Manager.Sound), nameof(Manager.Sound.Play), typeof(Manager.Sound.Type), typeof(AudioClip), typeof(float))]
         private static void TitleCallOverride(Manager.Sound.Type type, ref AudioClip clip)
         {
-            Console.WriteLine($"{type} | {clip.name}");
             var newclip = TryGetIntroclip(type, clip?.name);
             if (newclip != null) clip = newclip;
         }
