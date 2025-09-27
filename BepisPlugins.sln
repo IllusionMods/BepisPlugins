@@ -153,6 +153,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVS_BGMLoader", "src\SVS_BG
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Core_Screencap", "src\Core_Screencap\Core_Screencap.shproj", "{E416E580-DB6C-46B0-A51C-6FEF22036204}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AC_ConfigurationManager", "src\AC_ConfigurationManager\AC_ConfigurationManager.csproj", "{AC97AC2E-7A2D-54E1-266C-C988BF38C855}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AC_BGMLoader", "src\AC_BGMLoader\AC_BGMLoader.csproj", "{610EC8BC-128C-BCAA-A55C-71E5327E7788}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -371,6 +375,14 @@ Global
 		{7589ADA2-68F4-4404-BE7F-BCEBF04DA99D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7589ADA2-68F4-4404-BE7F-BCEBF04DA99D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7589ADA2-68F4-4404-BE7F-BCEBF04DA99D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC97AC2E-7A2D-54E1-266C-C988BF38C855}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC97AC2E-7A2D-54E1-266C-C988BF38C855}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC97AC2E-7A2D-54E1-266C-C988BF38C855}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC97AC2E-7A2D-54E1-266C-C988BF38C855}.Release|Any CPU.Build.0 = Release|Any CPU
+		{610EC8BC-128C-BCAA-A55C-71E5327E7788}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{610EC8BC-128C-BCAA-A55C-71E5327E7788}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{610EC8BC-128C-BCAA-A55C-71E5327E7788}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{610EC8BC-128C-BCAA-A55C-71E5327E7788}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -450,6 +462,8 @@ Global
 		{035907C1-0012-4581-81A4-4D0857EFE025} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 		{7589ADA2-68F4-4404-BE7F-BCEBF04DA99D} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 		{E416E580-DB6C-46B0-A51C-6FEF22036204} = {408D8BC2-DF6B-4ABA-A90F-D79616019BF4}
+		{AC97AC2E-7A2D-54E1-266C-C988BF38C855} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
+		{610EC8BC-128C-BCAA-A55C-71E5327E7788} = {BF4829EE-3EC0-4B70-8E8C-26C7C4E9BD43}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
@@ -486,6 +500,7 @@ Global
 		src\Shared\Shared.projitems*{4bef27b4-5aac-4ab1-b43f-e85c484fc326}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Patcher\Core_ExtensibleSaveFormat_Patcher.projitems*{4d791704-c6d4-4330-a394-3c7c0433a1dd}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Patcher\Core_ExtensibleSaveFormat_Patcher.projitems*{5fbb99f7-d478-4bf1-bce4-47f0b1501142}*SharedItemsImports = 13
+		src\Shared\Shared.projitems*{610ec8bc-128c-bcaa-a55c-71e5327e7788}*SharedItemsImports = 5
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{61e63b45-1d21-44f7-9b01-f5209c05ffb4}*SharedItemsImports = 13
 		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{66214bd2-6da6-49cd-8c74-63da9e643259}*SharedItemsImports = 13
 		src\Core_ColorCorrector\Core_ColorCorrector.projitems*{6809b5dc-358c-45c5-b04c-0b7027596a8b}*SharedItemsImports = 4
@@ -530,6 +545,7 @@ Global
 		src\Core_Screencap_KKEC\Core_Screencap.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{a16c8de3-1851-46a9-8866-9d8663e0a76f}*SharedItemsImports = 4
 		src\Shared\Shared.projitems*{ac5e9b43-cbb4-4cb8-8411-5425576f2055}*SharedItemsImports = 4
+		src\Shared\Shared.projitems*{ac97ac2e-7a2d-54e1-266c-c988bf38c855}*SharedItemsImports = 5
 		src\Shared\Shared.projitems*{b0903672-629b-4c21-bae3-6fbe587f4344}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat\Core_ExtensibleSaveFormat.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
 		src\Core_ExtensibleSaveFormat_Studio\Core_ExtensibleSaveFormat_Studio.projitems*{b9eabbb2-4a92-4672-9b5a-658fdf8ace3f}*SharedItemsImports = 4
