@@ -19,8 +19,6 @@ Loads custom BGMs and clips played on game startup. Stock audio is replaced duri
 [Tutorial on how to replace sound clips and background music using BGMLoader.](https://github.com/IllusionMods/BepisPlugins/wiki/BGM-Loader)
 
 ### ColorCorrector
-(Koikatsu)
-
 Allows configuration of some post-processing filters. (change of bloom amount, disable saturation filter)
 
 ### ExtensibleSaveFormat
@@ -37,6 +35,8 @@ Loads mods packaged in .zip archives from the Mods directory without modifying t
 
 It prevents mods from colliding with each other (i.e. 2 mods have same item IDs and can't coexist; sideloader automatically assigns correct IDs). It also makes it easy to disable/remove mods with no lasting effects on your game install (just remove the .zip, no game files are changed at any point).
 
+> Note: Sideloader is not available for games by Illgames because of technical reasons (IL2CPP). You will have to use [SardineTail](https://github.com/MaybeSamigroup/SVS-SardineTail/wiki) for them instead.
+
 [More information and tutorial on sideloader-compatible mod creation.](https://github.com/IllusionMods/BepisPlugins/wiki/1-Introduction-to-zipmod-format)
 
 [Step-by-step guide for creating a simple texture mod.](https://github.com/IllusionMods/BepisPlugins/wiki/2-How-to-create-a-simple-zipmod)
@@ -47,8 +47,6 @@ It prevents mods from colliding with each other (i.e. 2 mods have same item IDs 
 Allows user to set values outside of the standard 0-100 range on all sliders in the editor.
 
 ### IMGUIModule.Il2Cpp.CoreCLR.Patcher
-(HoneyCome, SamabakeScramble)
-
 Fixes issues with IMGUI caused by the game being IL2CPP that prevent other plugins like ConfigurationManager from being displayed correctly.
 
 ## Removed plugins
