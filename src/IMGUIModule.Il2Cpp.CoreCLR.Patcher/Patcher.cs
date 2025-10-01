@@ -9,6 +9,7 @@ using BepInEx.Preloader.Core.Patching;
 using MonoMod.RuntimeDetour;
 using System.Reflection;
 using BepisPlugins;
+using IMGUIModule.Il2Cpp.CoreCLR.Replacements;
 
 namespace IMGUIModule.Il2Cpp.CoreCLR
 {
@@ -97,6 +98,8 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             // UnityEngine.ObjectGUIState.Destroy()
             // UnityEngine.ScrollViewState.ScrollTowards(Rect, float)
             // UnityEngine.ScrollViewState.ScrollNeeded(Rect)
+
+            LayoutedWindowFix.ApplyIfNeeded(Detours);
         }
 
         public static void Free(bool undo = false)
