@@ -32,14 +32,14 @@ namespace BGMLoader
                     var dir = Directory.CreateDirectory(IntroClipsDirectory);
                     _clips = dir.GetFiles("*.wav", SearchOption.AllDirectories);
                     Logger.LogInfo("Found " + _clips.Length + " custom intro clips");
+                    if (_clips.Length > 0)
+                        Harmony.CreateAndPatchAll(typeof(BGMLoader), GUID);
                 }
                 catch (Exception e)
                 {
                     Logger.LogError("Failed to load custom intro clips - " + e);
                 }
             });
-
-            Harmony.CreateAndPatchAll(typeof(BGMLoader), GUID);
         }
 
         [HarmonyPrefix]
@@ -50,22 +50,19 @@ namespace BGMLoader
             {
                 try
                 {
-                    if (_clips != null)
-                    {
-                        var pick = _clips[UnityEngine.Random.Range(0, _clips.Length)];
-                        var clipData = File.ReadAllBytes(pick.FullName);
-                        var clip = WavUtility.ToAudioClip(clipData); // slowest step mostly because of AudioClip calls
+                    var pick = _clips[UnityEngine.Random.Range(0, _clips.Length)];
+                    var clipData = File.ReadAllBytes(pick.FullName);
+                    var clip = WavUtility.ToAudioClip(clipData); // slowest step mostly because of AudioClip calls
 
-                        var source = Manager.Sound.Play(Manager.Sound.Type.SystemSE, clip);
+                    var source = Manager.Sound.Play(Manager.Sound.Type.SystemSE, clip);
 
-                        // Fix popping sound at start/end in clips that don't have enough silence at the start and end (Unity issue)
-                        // no easy way to fix the end popping sound, but this is good enough
-                        source.time = 0.05f;
+                    // Fix popping sound at start/end in clips that don't have enough silence at the start and end (Unity issue)
+                    // no easy way to fix the end popping sound, but this is good enough
+                    source.time = 0.05f;
 
-                        Logger.LogInfo("Playing custom intro clip - " + pick.Name);
+                    Logger.LogInfo("Playing custom intro clip - " + pick.Name);
 
-                        return false;
-                    }
+                    return false;
                 }
                 catch (Exception e)
                 {
