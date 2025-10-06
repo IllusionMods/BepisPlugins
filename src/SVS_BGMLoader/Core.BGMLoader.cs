@@ -35,7 +35,8 @@ namespace BGMLoader
                     var dir = Directory.CreateDirectory(IntroClipsDirectory);
                     _clips = dir.GetFiles("*.wav", SearchOption.AllDirectories);
                     Logger.LogInfo("Found " + _clips.Length + " custom intro clips");
-                    Harmony.CreateAndPatchAll(typeof(BGMLoader), GUID);
+                    if (_clips.Length > 0)
+                        Harmony.CreateAndPatchAll(typeof(BGMLoader), GUID);
                 }
                 catch (Exception e)
                 {
@@ -61,7 +62,7 @@ namespace BGMLoader
 
                     // BUG Some clips are not giving sound, but they are playing
                     clip = WavUtility.ToAudioClip(clipData); // slowest step mostly because of AudioClip calls
-                    
+
                     Logger.LogInfo("Playing custom intro clip - " + pick.Name);
                 }
                 catch (Exception e)

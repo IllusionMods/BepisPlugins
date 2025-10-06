@@ -35,7 +35,8 @@ namespace BGMLoader
                     var dir = Directory.CreateDirectory(IntroClipsDirectory);
                     _clips = dir.GetFiles("*.wav", SearchOption.AllDirectories);
                     Logger.LogInfo("Found " + _clips.Length + " custom intro clips");
-                    Harmony.CreateAndPatchAll(typeof(BGMLoader), GUID);
+                    if (_clips.Length > 0)
+                        Harmony.CreateAndPatchAll(typeof(BGMLoader), GUID);
                 }
                 catch (Exception e)
                 {
