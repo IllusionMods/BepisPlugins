@@ -15,6 +15,7 @@ using UnityEngine;
 using XUnity.ResourceRedirector;
 using MessagePack;
 using System.Threading;
+using HarmonyLib;
 using MessagePack.Resolvers;
 #if AI || HS2
 using AIChara;
@@ -176,16 +177,20 @@ namespace Sideloader
             {
                 if (!zipmodInfo.Valid) return;
 
-                if (!groupedZipmodsToLoad.TryGetValue(zipmodInfo.Manifest.GUID, out var ziplist))
+                lock (groupedZipmodsToLoad)
                 {
-                    ziplist = new List<ZipmodInfo>(1);
-                    groupedZipmodsToLoad[zipmodInfo.Manifest.GUID] = ziplist;
-                }
+                    if (!groupedZipmodsToLoad.TryGetValue(zipmodInfo.Manifest.GUID, out var ziplist))
+                    {
+                        ziplist = new List<ZipmodInfo>(1);
+                        groupedZipmodsToLoad[zipmodInfo.Manifest.GUID] = ziplist;
+                    }
 
-                ziplist.Add(zipmodInfo);
+                    ziplist.Add(zipmodInfo);
+                }
             }
 
-            // Very fast
+            var needToBeLoaded = new List<ZipmodInfo>();
+
             foreach (var newInfo in foundZipfiles)
             {
                 cache.TryGetValue(newInfo.FileName, out var cachedInfo);
@@ -197,9 +202,9 @@ namespace Sideloader
                     if (cachedInfo.Error != null)
                     {
                         if (cachedInfo.Error.StartsWith("Skipping"))
-                            Logger.LogInfo(cachedInfo.Error);
+                            lock (Logger) Logger.LogInfo(cachedInfo.Error);
                         else
-                            Logger.LogError(cachedInfo.Error);
+                            lock (Logger) Logger.LogError(cachedInfo.Error);
                     }
                     else
                     {
@@ -208,14 +213,22 @@ namespace Sideloader
                 }
                 else
                 {
+                    if (cache.Count > 0 && DebugLogging.Value)
+                        lock (Logger) Logger.LogDebug($"Cache MISS for {newInfo.FileName}  -  {(cachedInfo != null ? "size/date changed" : "new file")}");
+
+                    // Add to the mod list first so that it gets saved to the cache even if it throws an exception
+                    Zipmods.Add(newInfo.FileName, newInfo);
+
+                    needToBeLoaded.Add(newInfo);
+                }
+            }
+
+            if (needToBeLoaded.Count > 0)
+            {
+                bool LoadingThread(ZipmodInfo newInfo)
+                {
                     try
                     {
-                        if (cache.Count > 0 && DebugLogging.Value)
-                            Logger.LogDebug($"Cache MISS for {newInfo.FileName}  -  {(cachedInfo != null ? "size/date changed" : "entry missing")}");
-
-                        // Add to the mod list first so that it gets saved to the cache even if it throws an exception
-                        Zipmods.Add(newInfo.FileName, newInfo);
-
                         var archive = newInfo.GetZipFile();
 
                         newInfo.Manifest = Manifest.LoadFromZip(archive);
@@ -226,27 +239,52 @@ namespace Sideloader
                         newInfo.LoadAllLists();
 
                         AddZipmodToLoad(newInfo);
+                        return true;
                     }
                     catch (PlatformNotSupportedException)
                     {
                         var msg = $"Skipping archive \"{newInfo.RelativeFileName}\" because it's meant for {string.Join(", ", newInfo.Manifest.Games.ToArray())}";
-                        Logger.LogInfo(msg);
+                        lock (Logger) Logger.LogInfo(msg);
                         newInfo.Error = msg;
                         newInfo.Dispose();
+                        return false;
                     }
                     catch (Exception ex)
                     {
-                        var msg = $"Failed to load archive \"{newInfo.RelativeFileName}\" with error: {ex}";
-                        Logger.LogError(msg);
+                        var isIoError = ex is OperationCanceledException || ex is IOException || ex is UnauthorizedAccessException || ex is System.Security.SecurityException || ex is ICSharpCode.SharpZipLib.Zip.ZipException;
+                        var msg = $"Failed to load archive \"{newInfo.RelativeFileName}\" with error: {(isIoError ? ex.Message : ex.ToString())}";
+                        lock (Logger) Logger.LogError(msg);
                         newInfo.Error = msg;
                         newInfo.Dispose();
+                        return false;
                     }
                 }
+
+                var waitedFor = Stopwatch.StartNew();
+                var loadedSoFar = 0;
+                needToBeLoaded.RunParallel(LoadingThread).Do(success =>
+                {
+                    // This method is meant to ensure there is always something logged to show that loading is still ongoing
+                    // Doing this also ensures that BepInEx.SplashScreen does not time out thinking the game has hung
+                    loadedSoFar++;
+                    if (!success)
+                    {
+                        // An error message has been logged so no need to log for now
+                        waitedFor.Reset();
+                        waitedFor.Start();
+                    }
+                    else if (waitedFor.ElapsedMilliseconds > 10000) // This time check is free, it can be spammed
+                    {
+                        // Enough time passed since last log that it can look like the game is hanging, so show some life
+                        lock (Logger) Logger.LogInfo($"Still loading zipmods, please wait... ({loadedSoFar} / {needToBeLoaded.Count} done)");
+                        waitedFor.Reset();
+                        waitedFor.Start();
+                    }
+                });
+
+                // Only write the cache if anything actually changed
+                WriteCache();
             }
-
-            // ------------------------------------------------------
-
-            WriteCache();
 
             // ------------------------------------------------------
             // Actually load the zipmods to use in the game from the metadata
@@ -754,7 +792,7 @@ namespace Sideloader
                 {
                     var cacheVer = new Version(File.ReadAllText(_CachePath + ".ver"));
                     if (cacheVer != Info.Metadata.Version)
-                        throw new Exception($"Cache version ({cacheVer}) doesn't match Sideloader version ({Info.Metadata.Version}), it has to be regenerated.");
+                        throw new OperationCanceledException($"Cache version ({cacheVer}) doesn't match Sideloader version ({Info.Metadata.Version}), it has to be regenerated.");
 
                     var cachePartFiles = Directory.GetFiles(_CacheDirectory, _CacheName + ".*")
                                                   .Where(x => !x.EndsWith(".ver", StringComparison.OrdinalIgnoreCase)).ToList();
@@ -801,7 +839,7 @@ namespace Sideloader
             }
             catch (Exception e)
             {
-                Logger.LogWarning("Failed to load cache: " + e);
+                Logger.LogWarning("Failed to load cache: " + (e is OperationCanceledException ? e.Message : e.ToString()));
             }
 
             return cache;
