@@ -15,6 +15,7 @@ using UnityEngine;
 using XUnity.ResourceRedirector;
 using MessagePack;
 using System.Threading;
+using HarmonyLib;
 using MessagePack.Resolvers;
 #if AI || HS2
 using AIChara;
@@ -114,7 +115,6 @@ namespace Sideloader
 
         #region Data loading
 
-        private static volatile int _runningLoadCount;
         private void LoadModsFromDirectories(params string[] modDirectories)
         {
             var swTotal = Stopwatch.StartNew();
@@ -189,7 +189,8 @@ namespace Sideloader
                 }
             }
 
-            _runningLoadCount = 0;
+            var needToBeLoaded = new List<ZipmodInfo>();
+
             foreach (var newInfo in foundZipfiles)
             {
                 cache.TryGetValue(newInfo.FileName, out var cachedInfo);
@@ -219,55 +220,54 @@ namespace Sideloader
                     // Add to the mod list first so that it gets saved to the cache even if it throws an exception
                     Zipmods.Add(newInfo.FileName, newInfo);
 
-                    Interlocked.Increment(ref _runningLoadCount);
-                    ThreadPool.QueueUserWorkItem(LoadingThread, newInfo);
-                    void LoadingThread(object state)
-                    {
-                        var newInfoLocal = (ZipmodInfo)state;
-                        try
-                        {
-                            var archive = newInfoLocal.GetZipFile();
-
-                            newInfoLocal.Manifest = Manifest.LoadFromZip(archive);
-                            //Skip the mod if it is not for this game
-                            if (newInfoLocal.Manifest.Games.Count != 0 && !newInfoLocal.Manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains)) throw new PlatformNotSupportedException();
-
-                            newInfoLocal.LoadAllLists();
-
-                            AddZipmodToLoad(newInfoLocal);
-                        }
-                        catch (PlatformNotSupportedException)
-                        {
-                            var msg = $"Skipping archive \"{newInfoLocal.RelativeFileName}\" because it's meant for {string.Join(", ", newInfoLocal.Manifest.Games.ToArray())}";
-                            lock (Logger) Logger.LogInfo(msg);
-                            newInfoLocal.Error = msg;
-                            newInfoLocal.Dispose();
-                        }
-                        catch (Exception ex)
-                        {
-                            var isIoError = ex is OperationCanceledException || ex is IOException || ex is UnauthorizedAccessException || ex is System.Security.SecurityException;
-                            var msg = $"Failed to load archive \"{newInfoLocal.RelativeFileName}\" with error: {(isIoError ? ex.Message : ex.ToString())}";
-                            lock (Logger) Logger.LogError(msg);
-                            newInfoLocal.Error = msg;
-                            newInfoLocal.Dispose();
-                        }
-                        finally
-                        {
-                            Interlocked.Decrement(ref _runningLoadCount);
-                        }
-                    }
+                    needToBeLoaded.Add(newInfo);
                 }
             }
 
-            var waitedFor = 0;
-            while (_runningLoadCount > 0)
+            if (needToBeLoaded.Count > 0)
             {
-                Thread.Sleep(100);
-                if (waitedFor++ > 20)
+                bool LoadingThread(ZipmodInfo newInfo)
                 {
-                    lock (Logger) Logger.LogInfo($"Still loading zipmods ({_runningLoadCount} left), please wait...");
-                    waitedFor = 0;
+                    try
+                    {
+                        var archive = newInfo.GetZipFile();
+
+                        newInfo.Manifest = Manifest.LoadFromZip(archive);
+                        //Skip the mod if it is not for this game
+                        if (newInfo.Manifest.Games.Count != 0 && !newInfo.Manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains)) throw new PlatformNotSupportedException();
+
+                        newInfo.LoadAllLists();
+
+                        AddZipmodToLoad(newInfo);
+                    }
+                    catch (PlatformNotSupportedException)
+                    {
+                        var msg = $"Skipping archive \"{newInfo.RelativeFileName}\" because it's meant for {string.Join(", ", newInfo.Manifest.Games.ToArray())}";
+                        lock (Logger) Logger.LogInfo(msg);
+                        newInfo.Error = msg;
+                        newInfo.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        var isIoError = ex is OperationCanceledException || ex is IOException || ex is UnauthorizedAccessException || ex is System.Security.SecurityException;
+                        var msg = $"Failed to load archive \"{newInfo.RelativeFileName}\" with error: {(isIoError ? ex.Message : ex.ToString())}";
+                        lock (Logger) Logger.LogError(msg);
+                        newInfo.Error = msg;
+                        newInfo.Dispose();
+                    }
+                    return true;
                 }
+
+                var waitedFor = Stopwatch.StartNew();
+                needToBeLoaded.RunParallel(LoadingThread).Do(b =>
+                {
+                    if (waitedFor.ElapsedMilliseconds > 2000)
+                    {
+                        lock (Logger) Logger.LogInfo($"Still loading zipmods, please wait...");
+                        waitedFor.Reset();
+                        waitedFor.Start();
+                    }
+                });
             }
 
             // ------------------------------------------------------
