@@ -234,7 +234,8 @@ namespace Sideloader
 
                         newInfo.Manifest = Manifest.LoadFromZip(archive);
                         //Skip the mod if it is not for this game
-                        if (newInfo.Manifest.Games.Count != 0 && !newInfo.Manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains)) throw new PlatformNotSupportedException();
+                        if (newInfo.Manifest.Games.Count != 0 && !newInfo.Manifest.Games.Select(x => x.ToLower()).Any(GameNameList.Contains))
+                            throw new PlatformNotSupportedException();
 
                         newInfo.LoadAllLists();
 
