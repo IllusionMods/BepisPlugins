@@ -780,7 +780,7 @@ namespace Sideloader
                 {
                     var cacheVer = new Version(File.ReadAllText(_CachePath + ".ver"));
                     if (cacheVer != Info.Metadata.Version)
-                        throw new Exception($"Cache version ({cacheVer}) doesn't match Sideloader version ({Info.Metadata.Version}), it has to be regenerated.");
+                        throw new OperationCanceledException($"Cache version ({cacheVer}) doesn't match Sideloader version ({Info.Metadata.Version}), it has to be regenerated.");
 
                     var cachePartFiles = Directory.GetFiles(_CacheDirectory, _CacheName + ".*")
                                                   .Where(x => !x.EndsWith(".ver", StringComparison.OrdinalIgnoreCase)).ToList();
@@ -827,7 +827,7 @@ namespace Sideloader
             }
             catch (Exception e)
             {
-                Logger.LogWarning("Failed to load cache: " + e);
+                Logger.LogWarning("Failed to load cache: " + (e is OperationCanceledException ? e.Message : e.ToString()));
             }
 
             return cache;
