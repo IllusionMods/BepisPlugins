@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using HarmonyLib;
@@ -78,19 +79,19 @@ namespace Sideloader
         }
 
         private static readonly MethodInfo _LocateZipEntryMethodInfo = typeof(ZipFile).GetMethod("LocateEntry", AccessTools.all);
-
         public void LoadAllLists()
         {
             var zipmod = this;
             var arc = zipmod.GetZipFile();
             var manifest = zipmod.Manifest;
 
-            // Find bundles in the archive
             foreach (ZipEntry entry in arc)
             {
-                if (entry.Name.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase))
+                var fullName = entry.Name;
+                // Find bundles in the archive
+                if (fullName.EndsWith(".unity3d", StringComparison.OrdinalIgnoreCase))
                 {
-                    string assetBundlePath = entry.Name;
+                    string assetBundlePath = fullName;
 
                     if (assetBundlePath.Contains('/'))
                         assetBundlePath = assetBundlePath.Remove(0, assetBundlePath.IndexOf('/') + 1);
@@ -98,71 +99,68 @@ namespace Sideloader
                     if (entry.CompressionMethod == CompressionMethod.Stored)
                     {
                         long index = (long)_LocateZipEntryMethodInfo.Invoke(arc, new object[] { entry });
-                        zipmod.BundleInfos.Add(new BundleLoadInfo(arc.Name, index, entry.Name, assetBundlePath));
+                        zipmod.BundleInfos.Add(new BundleLoadInfo(arc.Name, index, fullName, assetBundlePath));
                     }
                     else
                     {
-                        zipmod.BundleInfos.Add(new BundleLoadInfo(arc.Name, -1, entry.Name, assetBundlePath));
+                        zipmod.BundleInfos.Add(new BundleLoadInfo(arc.Name, -1, fullName, assetBundlePath));
                     }
                 }
-            }
-
-            // Find all list files in the archive
-            foreach (ZipEntry entry in arc)
-            {
-                try
+                // Find all list files in the archive
+                else if (fullName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (entry.Name.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                    try
                     {
-                        var stream = arc.GetInputStream(entry);
-                        var chaListData = Lists.LoadCSV(stream);
+                        if (fullName.StartsWith("abdata/list/characustom", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var stream = arc.GetInputStream(entry);
+                            var chaListData = Lists.LoadCSV(stream);
 
-                        SetPossessNew(chaListData);
+                            SetPossessNew(chaListData);
 
-                        zipmod.CharaLists.Add(chaListData);
-                    }
+                            zipmod.CharaLists.Add(chaListData);
+                        }
 #if !EC
-                    else if (entry.Name.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (Path.GetFileNameWithoutExtension(entry.Name).ToLower().StartsWith("itembonelist_"))
+                        else if (fullName.StartsWith("abdata/studio/info", StringComparison.OrdinalIgnoreCase))
                         {
-                            var stream = arc.GetInputStream(entry);
-                            var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
+                            if (Path.GetFileNameWithoutExtension(fullName).ToLower().StartsWith("itembonelist_"))
+                            {
+                                var stream = arc.GetInputStream(entry);
+                                var studioListData = Lists.LoadStudioCSV(stream, fullName, manifest.GUID);
 
-                            zipmod.BoneLists.Add(studioListData);
-                        }
-                        else
-                        {
-                            var stream = arc.GetInputStream(entry);
-                            var studioListData = Lists.LoadStudioCSV(stream, entry.Name, manifest.GUID);
+                                zipmod.BoneLists.Add(studioListData);
+                            }
+                            else
+                            {
+                                var stream = arc.GetInputStream(entry);
+                                var studioListData = Lists.LoadStudioCSV(stream, fullName, manifest.GUID);
 
-                            zipmod.StudioLists.Add(studioListData);
+                                zipmod.StudioLists.Add(studioListData);
+                            }
                         }
-                    }
 #endif
 #if AI || HS2
-                    else if (entry.Name.StartsWith("abdata/list/map/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var stream = arc.GetInputStream(entry);
-                        var data = Lists.LoadExcelDataCSV(stream, entry.Name);
-                        zipmod.MapLists.Add(data);
-                    }
+                        else if (fullName.StartsWith("abdata/list/map/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var stream = arc.GetInputStream(entry);
+                            var data = Lists.LoadExcelDataCSV(stream, fullName);
+                            zipmod.MapLists.Add(data);
+                        }
 #endif
+                    }
+                    catch (Exception ex)
+                    {
+                        Sideloader.Logger.LogError($"Failed to load list file \"{fullName}\" from archive \"{Sideloader.GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
+                    }
                 }
-                catch (Exception ex)
+                // Find all png files in the archive
+                else if (fullName.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
                 {
-                    Sideloader.Logger.LogError($"Failed to load list file \"{entry.Name}\" from archive \"{Sideloader.GetRelativeArchiveDir(arc.Name)}\" with error: {ex}");
-                }
-            }
-
-            // Get filenames of all .png files in this archive that are inside an abdata folder.
-            foreach (ZipEntry entry in arc)
-            {
-                //Only list folders for .pngs in abdata folder
-                //i.e. skip preview pics or character cards that might be included with the mod
-                if (entry.Name.StartsWith("abdata/", StringComparison.OrdinalIgnoreCase) && entry.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                {
-                    zipmod.PngNames.Add(entry.Name);
+                    // Only list folders for .pngs in abdata folder, i.e. skip preview pics or character cards that might be included with the mod
+                    if (fullName.StartsWith("abdata/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        zipmod.PngNames.Add(fullName);
+                    }
                 }
             }
         }
