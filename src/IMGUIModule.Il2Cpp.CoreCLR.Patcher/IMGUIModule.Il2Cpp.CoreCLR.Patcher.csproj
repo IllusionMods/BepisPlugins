@@ -19,10 +19,10 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Delete Files="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.deps.json" />
-    <Copy SourceFiles="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" DestinationFiles="$(OutputPath)\HC_IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" />
-    <Copy SourceFiles="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" DestinationFiles="$(OutputPath)\SVS_IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" />
-    <Copy SourceFiles="$(OutputPath)\IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" DestinationFiles="$(OutputPath)\AC_IMGUIModule.Il2Cpp.CoreCLR.Patcher.dll" />
+    <Delete Files="$(OutputPath)\$(AssemblyName).deps.json" />
+    <!--<Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFiles="$(OutputPath)\HC_$(AssemblyName).dll" />
+    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFiles="$(OutputPath)\SVS_$(AssemblyName).dll" />
+    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFiles="$(OutputPath)\AC_$(AssemblyName).dll" />-->
   </Target>
 
   <ItemGroup>
@@ -34,25 +34,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>compile</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.UI" Version="2021.3.14.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
-
-  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
 
 </Project>

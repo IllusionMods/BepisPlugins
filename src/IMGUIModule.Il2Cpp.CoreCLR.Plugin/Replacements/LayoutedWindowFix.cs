@@ -13,12 +13,12 @@ namespace IMGUIModule.Il2Cpp.CoreCLR.Replacements
     {
         public static void ApplyIfNeeded(List<IDetour> detours)
         {
-            //var layoutedWindowType = typeof(GUILayout).GetNestedType(nameof(GUILayout.LayoutedWindow), AccessTools.all);
-            //if (layoutedWindowType == null)
+            if(typeof(GUILayout).GetNestedType(nameof(GUILayout.LayoutedWindow), AccessTools.all) != null) return;
 
-            Console.WriteLine("AAAAAAAAAAAAAA");
-            // BUG: doesn't work no matter what method of patching is used because LayoutedWindow is missing and so the patching backend crashes on instructions using it before we can do anything about it
-            // The only way around this is to cecil edit the interop assembly to stub out GUILayout.DoWindow beforehand
+            Console.WriteLine("AAAAAAAAAAAAAAA");
+
+            // No matter what method of patching is used this will crash because LayoutedWindow is missing and so the patching backend crashes on instructions using it before we can do anything about it
+            // The only way around this is to cecil edit the interop assembly to stub out GUILayout.DoWindow beforehand, which is done in the Patcher project
             detours.Add(new Detour(from: AccessTools.Method(typeof(GUILayout), nameof(GUILayout.DoWindow)),
                                    to: AccessTools.Method(typeof(LayoutedWindowFix), nameof(LayoutedWindowFix.DoWindow))));
         }
