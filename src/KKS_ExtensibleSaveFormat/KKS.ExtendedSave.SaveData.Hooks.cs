@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection.Emit;
@@ -116,7 +116,7 @@ namespace ExtensibleSaveFormat
             {
                 // This function should not be called.
                 // Originally called from SaveData.WorldData.Save(), but the original Save() is not called by the patch.
-                throw new System.NotSupportedException("Do not use this method, use WorldData.Save instead. More info: https://github.com/IllusionMods/BepisPlugins/pull/197");
+                throw new System.NotSupportedException("Do not use this method, use WorldData.Save instead. More info: https://gitgoon.dev/IllusionMods/BepisPlugins/pull/197");
             }
 
             #endregion

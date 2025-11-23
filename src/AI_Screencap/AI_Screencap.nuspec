@@ -4,7 +4,7 @@
     <id>ScreenshotManager.AIGirl</id>
     <version>$version$</version>
     <authors>IllusionMods</authors>
-    <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
+    <projectUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Utility for capturing screenshots</description>
     <developmentDependency>true</developmentDependency>

@@ -16,7 +16,7 @@ Note: Not all plugins might be available for a given game (not yet ported by any
 ### BGMLoader
 Loads custom BGMs and clips played on game startup. Stock audio is replaced during runtime by custom clips from BepInEx\BGM and BepInEx\IntroClips directories.
 
-[Tutorial on how to replace sound clips and background music using BGMLoader.](https://github.com/IllusionMods/BepisPlugins/wiki/BGM-Loader)
+[Tutorial on how to replace sound clips and background music using BGMLoader.](https://gitgoon.dev/IllusionMods/BepisPlugins/wiki/BGM-Loader)
 
 ### ColorCorrector
 Allows configuration of some post-processing filters. (change of bloom amount, disable saturation filter)
@@ -37,11 +37,11 @@ It prevents mods from colliding with each other (i.e. 2 mods have same item IDs 
 
 > Note: Sideloader is not available for games by Illgames because of technical reasons (IL2CPP). You will have to use [SardineTail](https://github.com/MaybeSamigroup/SVS-SardineTail/wiki) for them instead.
 
-[More information and tutorial on sideloader-compatible mod creation.](https://github.com/IllusionMods/BepisPlugins/wiki/1-Introduction-to-zipmod-format)
+[More information and tutorial on sideloader-compatible mod creation.](https://gitgoon.dev/IllusionMods/BepisPlugins/wiki/1-Introduction-to-zipmod-format)
 
-[Step-by-step guide for creating a simple texture mod.](https://github.com/IllusionMods/BepisPlugins/wiki/2-How-to-create-a-simple-zipmod)
+[Step-by-step guide for creating a simple texture mod.](https://gitgoon.dev/IllusionMods/BepisPlugins/wiki/2-How-to-create-a-simple-zipmod)
 
-[Tool for automatically converting old list mods to sideloader-compatible form.](https://github.com/IllusionMods/ZipStudio/releases)
+[Tool for automatically converting old list mods to sideloader-compatible form.](https://gitgoon.dev/IllusionMods/ZipStudio/releases)
 
 ### SliderUnlocker
 Allows user to set values outside of the standard 0-100 range on all sliders in the editor.

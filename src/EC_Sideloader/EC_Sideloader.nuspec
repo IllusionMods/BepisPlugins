@@ -4,7 +4,7 @@
     <id>Sideloader.EmotionCreators</id>
     <version>$version$</version>
     <authors>IllusionMods</authors>
-    <projectUrl>https://github.com/IllusionMods/BepisPlugins</projectUrl>
+    <projectUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Loads mods packaged in .zip archives from the Mods directory without modifying the game files at all</description>
     <developmentDependency>true</developmentDependency>
