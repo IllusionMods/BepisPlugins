@@ -23,7 +23,7 @@ namespace ConfigurationManagerWrapper
     [BepInPlugin(GUID, PluginName, Version)]
     public class ConfigurationManagerWrapper : BasePlugin
     {
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = Constants.Version;
         public const string GUID = "AC_" + ConfigurationManager.ConfigurationManager.GUID;
         public const string PluginName = "Configuration Manager wrapper for HoneyCome";
 

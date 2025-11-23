@@ -26,7 +26,7 @@ namespace ExtensibleSaveFormat
         /// <summary> Plugin name </summary>
         public const string PluginName = "Extended Save";
         /// <summary> Plugin version </summary>
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = Constants.Version;
         internal static new ManualLogSource Logger;
         /// <summary> Marker that indicates the extended save region on cards </summary>
         public static string Marker = "PHEx";

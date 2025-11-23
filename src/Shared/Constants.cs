@@ -2,7 +2,7 @@
 
 namespace BepisPlugins
 {
-    internal static class Constants
+    internal static partial class Constants
     {
 #if AI
         internal static bool InsideStudio => Application.productName == StudioProcessName;

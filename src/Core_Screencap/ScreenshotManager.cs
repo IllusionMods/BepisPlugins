@@ -43,7 +43,7 @@ namespace Screencap
         /// <summary>
         /// Version of the plugin, use with BepInDependency
         /// </summary>
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = Constants.Version;
 
         /// <summary>
         /// Directory where screenshots are saved.

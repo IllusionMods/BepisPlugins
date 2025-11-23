@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Config\AlphaMode.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BundleLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CameraGuideLines.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Config\CameraGuideLinesType.cs" />

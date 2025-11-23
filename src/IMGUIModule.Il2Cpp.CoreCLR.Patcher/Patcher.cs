@@ -17,7 +17,7 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
     {
         public const string GUID = "com.bepis.bepinex.imguimodule.Il2Cpp.CoreCLR.Patcher";
         public const string Name = "IMGUIModule.Il2Cpp.CoreCLR.Patcher";
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = Constants.Version;
 
 #if DEBUG
         public static new ManualLogSource Log;

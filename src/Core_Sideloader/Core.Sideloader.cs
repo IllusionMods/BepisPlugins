@@ -36,7 +36,7 @@ namespace Sideloader
         /// <summary> Plugin name </summary>
         public const string PluginName = "Sideloader";
         /// <summary> Plugin version </summary>
-        public const string Version = BepisPlugins.Metadata.PluginsVersion;
+        public const string Version = BepisPlugins.Constants.Version;
         internal static new ManualLogSource Logger;
 
         /// <summary> Directory from which to load mods </summary>

@@ -19,7 +19,7 @@ namespace ConfigurationManagerWrapper
     [BepInPlugin(GUID, PluginName, Version)]
     public class ConfigurationManagerWrapper : BaseUnityPlugin
     {
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = Constants.Version;
         public const string GUID = "HS_" + ConfigurationManager.ConfigurationManager.GUID;
         public const string PluginName = "Configuration Manager wrapper for HoneySelect";
         internal const float Offset = 0.18f;

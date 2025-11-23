@@ -15,7 +15,7 @@ namespace ColorCorrector
     {
         public const string GUID = "com.bepis.bepinex.colorcorrector";
         public const string PluginName = "Color Filter Remover";
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = Constants.Version;
 
         private ConfigEntry<bool> SaturationEnabled { get; set; }
         private ConfigEntry<bool> OverrideBloomStrength { get; set; }

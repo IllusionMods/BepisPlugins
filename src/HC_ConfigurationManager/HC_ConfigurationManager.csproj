@@ -1,64 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>ConfigurationManagerWrapper</RootNamespace>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>ConfigurationManagerWrapper</RootNamespace>
-    <OutputPath>..\..\bin\BepInEx\plugins\HC_BepisPlugins\</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <DebugType>embedded</DebugType>
-  </PropertyGroup>
+	<ItemGroup>
+		<!--BepInEx.ConfigurationManager is a BepInEx5 package and there's a compatibility warning about .NET version, but it actually works -->
+		<PackageReference Include="BepInEx.ConfigurationManager" Version="18.2.1">
+			<NoWarn>NU1701</NoWarn>
+		</PackageReference>
+		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668"/>
+		<PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668"/>
+		<PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15"/>
+		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3"/>
+		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.AudioModule" Version="2021.3.14.3"/>
+		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.UI" Version="2021.3.14.3"/>
+	</ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <DefineConstants>$(DefineConstants);HC</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-    <DefineConstants>$(DefineConstants);HC</DefineConstants>
-  </PropertyGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Delete Files="$(OutputPath)\HC_ConfigurationManager.deps.json" />
-  </Target>
-
-  <ItemGroup>
-    <!--BepInEx.ConfigurationManager is a BepInEx5 package and there's a compatibility warning about .NET version, but it actually works -->
-    <PackageReference Include="BepInEx.ConfigurationManager" Version="18.2.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-      <NoWarn>NU1701</NoWarn>
-    </PackageReference>
-    <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.AudioModule" Version="2021.3.14.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.UI" Version="2021.3.14.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>compile</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
 </Project>

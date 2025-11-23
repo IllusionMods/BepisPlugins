@@ -22,7 +22,7 @@ namespace SliderUnlocker
     public partial class SliderUnlocker
     {
         public const string GUID = "com.bepis.bepinex.sliderunlocker";
-        internal const string Version = Metadata.PluginsVersion;
+        internal const string Version = Constants.Version;
         public const string PluginName = "Slider Unlocker";
 
         internal static new ManualLogSource Logger;

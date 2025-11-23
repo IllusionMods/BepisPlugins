@@ -18,7 +18,7 @@ namespace BGMLoader
     {
         public const string GUID = "com.bepis.bgmloader";
         public const string PluginName = "BGM Loader";
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = Constants.Version;
         public static string IntroClipsDirectory = Path.Combine(Paths.PluginPath, "introclips");
 
         private static ManualLogSource Logger = null!;

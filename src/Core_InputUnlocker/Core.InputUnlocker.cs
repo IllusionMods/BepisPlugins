@@ -11,7 +11,7 @@ namespace InputUnlocker
     {
         public const string GUID = "com.bepis.bepinex.inputunlocker";
         public const string PluginName = "Input Length Unlocker";
-        public const string Version = Metadata.PluginsVersion;
+        public const string Version = Constants.Version;
 
         protected void Awake()
         {
