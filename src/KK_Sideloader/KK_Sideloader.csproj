@@ -53,7 +53,7 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 
-		<PackageReference Include="SharpZipLib" Version="(,1.0)" />
+		<PackageReference Include="SharpZipLib" Version="[0.86.0,1.0)" NoWarn="NU1904, NU1903, NU1902" />
 	</ItemGroup>
 
 	<Import Project="..\Shared\Shared.projitems" Label="Shared" />

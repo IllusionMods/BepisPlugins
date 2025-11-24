@@ -68,7 +68,7 @@
 			<IncludeAssets>compile</IncludeAssets>
 		</PackageReference>
 
-		<PackageReference Include="SharpZipLib" Version="(,1.4)" />
+		<PackageReference Include="SharpZipLib" Version="[1.0,1.4)" NoWarn="NU1904, NU1903, NU1902" />
 	</ItemGroup>
 
 	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
