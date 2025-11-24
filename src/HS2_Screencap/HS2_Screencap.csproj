@@ -4,6 +4,16 @@
 		<OutputType>Library</OutputType>
 		<RootNamespace>Screencap</RootNamespace>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<!-- NuGet packaging properties -->
+		<PackageId>ScreenshotManager.HoneySelect2</PackageId>
+		<PackageVersion>$(Version)</PackageVersion>
+		<PackageDescription>Utility for capturing screenshots</PackageDescription>
+		<PackageProjectUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</PackageProjectUrl>
+		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+		<PackageCopyright>$(Copyright)</PackageCopyright>
+		<Company>IllusionMods</Company>
+		<RepositoryUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -4,6 +4,16 @@
 		<OutputType>Library</OutputType>
 		<RootNamespace>ExtensibleSaveFormat</RootNamespace>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<!-- NuGet packaging properties -->
+		<PackageId>ExtensibleSaveFormat.AIGirl</PackageId>
+		<PackageVersion>$(Version)</PackageVersion>
+		<PackageDescription>Allows additional data to be saved to character, coordinate and scene cards</PackageDescription>
+		<PackageProjectUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</PackageProjectUrl>
+		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+		<PackageCopyright>$(Copyright)</PackageCopyright>
+		<Company>IllusionMods</Company>
+		<RepositoryUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
 	<ItemGroup>
