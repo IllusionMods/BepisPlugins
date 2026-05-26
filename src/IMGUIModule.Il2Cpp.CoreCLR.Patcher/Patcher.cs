@@ -46,6 +46,7 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             // UnityEngine.GUI.EndScrollView
             // UnityEngine.GUI.ScrollTo
             // UnityEngine.GUI.ScrollTowards
+            // UnityEngine.GUI.DoTextField
             foreach (MethodInfo to in typeof(GUI).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public))
             {
                 MethodInfo from = to.Name != nameof(GUI.DoButtonGrid)

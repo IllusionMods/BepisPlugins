@@ -328,5 +328,240 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
 
         public static bool ScrollTowards(Rect position, float maxDelta) =>
             GetTopScrollView()?.ScrollTowards(position, maxDelta) ?? false;
+
+        public static void DoTextField(Rect position, int id, GUIContent content, bool multiline, int maxLength, GUIStyle style, string secureText, char maskChar)
+        {
+            GUIUtility.CheckOnGUI();
+            if (maxLength >= 0 && content.text.Length > maxLength)
+            {
+                content.text = content.text.Substring(0, maxLength);
+            }
+            TextEditor textEditor = (TextEditor)GUIStateObjects.GetStateObject(typeof(TextEditor), id);
+            textEditor.text = content.text;
+            textEditor.SaveBackup();
+            textEditor.position = position;
+            textEditor.style = style;
+            textEditor.multiline = multiline;
+            textEditor.controlID = id;
+            textEditor.DetectFocusChange();
+            if (TouchScreenKeyboard.isRequiredToForceOpen)
+            {
+                HandleTextFieldEventForDesktopWithForcedKeyboard(position, id, content, multiline, maxLength, style, secureText, textEditor);
+            }
+            else if (TouchScreenKeyboard.isSupported && !TouchScreenKeyboard.isInPlaceEditingAllowed)
+            {
+                HandleTextFieldEventForTouchscreen(position, id, content, multiline, maxLength, style, secureText, maskChar, textEditor);
+            }
+            else
+            {
+                HandleTextFieldEventForDesktop(position, id, content, multiline, maxLength, style, textEditor);
+            }
+            textEditor.UpdateScrollOffsetIfNeeded(Event.current);
+        }
+
+        private static void HandleTextFieldEventForTouchscreen(Rect position, int id, GUIContent content, bool multiline, int maxLength, GUIStyle style, string secureText, char maskChar, TextEditor editor)
+        {
+            Event current = Event.current;
+            switch (current.type)
+            {
+            case EventType.MouseDown:
+                if (position.Contains(current.mousePosition))
+                {
+                    GUIUtility.hotControl = id;
+                    if (s_HotTextField != -1 && s_HotTextField != id)
+                    {
+                        TextEditor textEditor = (TextEditor)GUIStateObjects.GetStateObject(typeof(TextEditor), s_HotTextField);
+                        textEditor.keyboardOnScreen = null;
+                    }
+                    s_HotTextField = id;
+                    if (GUIUtility.keyboardControl != id)
+                    {
+                        GUIUtility.keyboardControl = id;
+                    }
+                    editor.keyboardOnScreen = TouchScreenKeyboard.Open(secureText ?? content.text, TouchScreenKeyboardType.Default, autocorrection: true, multiline, secureText != null);
+                    current.Use();
+                }
+                break;
+            case EventType.Repaint:
+            {
+                if (editor.keyboardOnScreen != null)
+                {
+                    content.text = editor.keyboardOnScreen.text;
+                    if (maxLength >= 0 && content.text.Length > maxLength)
+                    {
+                        content.text = content.text.Substring(0, maxLength);
+                    }
+                    if (editor.keyboardOnScreen.status != TouchScreenKeyboard.Status.Visible)
+                    {
+                        editor.keyboardOnScreen = null;
+                        changed = true;
+                    }
+                }
+                string text = content.text;
+                if (secureText != null)
+                {
+                    content.text = PasswordFieldGetStrToShow(text, maskChar);
+                }
+                style.Draw(position, content, id, on: false);
+                content.text = text;
+                break;
+            }
+            }
+        }
+
+        private static void HandleTextFieldEventForDesktop(Rect position, int id, GUIContent content, bool multiline, int maxLength, GUIStyle style, TextEditor editor)
+        {
+            Event current = Event.current;
+            bool flag = false;
+            switch (current.type)
+            {
+            case EventType.MouseDown:
+                if (position.Contains(current.mousePosition))
+                {
+                    GUIUtility.hotControl = id;
+                    GUIUtility.keyboardControl = id;
+                    editor.m_HasFocus = true;
+                    editor.MoveCursorToPosition(Event.current.mousePosition);
+                    if (Event.current.clickCount == 2 && skin.settings.doubleClickSelectsWord)
+                    {
+                        editor.SelectCurrentWord();
+                        editor.DblClickSnap(TextEditor.DblClickSnapping.WORDS);
+                        editor.MouseDragSelectsWholeWords(on: true);
+                    }
+                    if (Event.current.clickCount == 3 && skin.settings.tripleClickSelectsLine)
+                    {
+                        editor.SelectCurrentParagraph();
+                        editor.MouseDragSelectsWholeWords(on: true);
+                        editor.DblClickSnap(TextEditor.DblClickSnapping.PARAGRAPHS);
+                    }
+                    current.Use();
+                }
+                break;
+            case EventType.MouseDrag:
+                if (GUIUtility.hotControl == id)
+                {
+                    if (current.shift)
+                    {
+                        editor.MoveCursorToPosition(Event.current.mousePosition);
+                    }
+                    else
+                    {
+                        editor.SelectToPosition(Event.current.mousePosition);
+                    }
+                    current.Use();
+                }
+                break;
+            case EventType.MouseUp:
+                if (GUIUtility.hotControl == id)
+                {
+                    editor.MouseDragSelectsWholeWords(on: false);
+                    GUIUtility.hotControl = 0;
+                    current.Use();
+                }
+                break;
+            case EventType.KeyDown:
+            {
+                if (GUIUtility.keyboardControl != id)
+                {
+                    return;
+                }
+                if (editor.HandleKeyEvent(current))
+                {
+                    current.Use();
+                    flag = true;
+                    content.text = editor.text;
+                    break;
+                }
+                if (current.keyCode == KeyCode.Tab || current.character == '\t')
+                {
+                    return;
+                }
+                char character = current.character;
+                if (character == '\n' && !multiline && !current.alt)
+                {
+                    return;
+                }
+                Font font = style.font;
+                if (!font)
+                {
+                    font = skin.font;
+                }
+                if (font.HasCharacter(character) || character == '\n')
+                {
+                    editor.Insert(character);
+                    flag = true;
+                }
+                else if (character == '\0')
+                {
+                    if (GUIUtility.compositionString.Length > 0)
+                    {
+                        editor.ReplaceSelection("");
+                        flag = true;
+                    }
+                    current.Use();
+                }
+                break;
+            }
+            case EventType.Repaint:
+                if (GUIUtility.keyboardControl != id)
+                {
+                    style.Draw(position, content, id, on: false);
+                }
+                else
+                {
+                    editor.DrawCursor(content.text);
+                }
+                break;
+            }
+            if (GUIUtility.keyboardControl == id)
+            {
+                GUIUtility.textFieldInput = true;
+            }
+            if (flag)
+            {
+                changed = true;
+                content.text = editor.text;
+                if (maxLength >= 0 && content.text.Length > maxLength)
+                {
+                    content.text = content.text.Substring(0, maxLength);
+                }
+                current.Use();
+            }
+        }
+
+        private static void HandleTextFieldEventForDesktopWithForcedKeyboard(Rect position, int id, GUIContent content, bool multiline, int maxLength, GUIStyle style, string secureText, TextEditor editor)
+        {
+            bool flag = false;
+            if (Event.current.type == EventType.Repaint)
+            {
+                if (s_HotTextField != -1 && s_HotTextField != id)
+                {
+                    TextEditor textEditor = (TextEditor)GUIStateObjects.GetStateObject(typeof(TextEditor), s_HotTextField);
+                    textEditor.keyboardOnScreen.active = false;
+                    textEditor.keyboardOnScreen = null;
+                }
+                if (editor.keyboardOnScreen != null)
+                {
+                    if (GUIUtility.keyboardControl != id || !Application.isFocused)
+                    {
+                        editor.keyboardOnScreen.active = false;
+                        editor.keyboardOnScreen = null;
+                    }
+                    else if (!editor.keyboardOnScreen.active)
+                    {
+                        flag = true;
+                    }
+                }
+                else if (GUIUtility.keyboardControl == id && Application.isFocused)
+                {
+                    flag = true;
+                }
+            }
+            if (flag)
+            {
+                editor.keyboardOnScreen = TouchScreenKeyboard.Open(secureText ?? content.text, TouchScreenKeyboardType.Default, autocorrection: true, multiline, secureText != null);
+            }
+            HandleTextFieldEventForDesktop(position, id, content, multiline, maxLength, style, editor);
+        }
     }
 }
