@@ -5,8 +5,8 @@ If you wish to contribute or need help, check the #help channel on the [Koikatsu
 
 ### How to install
 1. Install the latest version of [BepInEx](https://github.com/BepInEx/BepInEx). Make sure it is installed and working before installing BepisPlugins.
-   a. For HoneySelect2 and games older than it, get BepInEx 5.
-   b. For RoomGirl/HoneyCome and games newer than it, get BepInEx 6 (nightly build 668 or later).
+   - For HoneySelect2 and games older than it, get BepInEx 5.
+   - For RoomGirl/HoneyCome and games newer than it, get BepInEx 6 (nightly build 668 or later).
 2. Install the latest version of the [ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager) plugin.
 3. Download the latest release archive for your game (specified by the two letter prefix, e.g. AI for AI-Girl) from the releases page (not the "Clone or download" button).
 4. Extract the archive into your game directory (where the game exe and BepInEx folder are located). Replace old files if asked.
