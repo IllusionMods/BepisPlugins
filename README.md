@@ -4,9 +4,12 @@ A collection of essential [BepInEx](https://github.com/BepInEx/BepInEx) plugins 
 If you wish to contribute or need help, check the #help channel on the [Koikatsu discord server](https://discord.gg/hevygx6).
 
 ### How to install
-0. The latest version of BepInEx 5, or in case of HoneyCome of BepInEx 6 (nightly build 668 or later) is required. Make sure it is installed and working before installing BepisPlugins. Latest version of the ConfigurationManager plugin is also recommended to be installed.
-1. Download the latest release archive for your game (specified by the two letter prefix, e.g. AI for AI-Girl) from the releases page above (not the "Clone or download" button).
-2. Extract the archive into your game directory (where the game exe and BepInEx folder are located). Replace old files if asked.
+1. Install the latest version of [BepInEx](https://github.com/BepInEx/BepInEx). Make sure it is installed and working before installing BepisPlugins.
+   a. For HoneySelect2 and games older than it, get BepInEx 5.
+   b. For RoomGirl/HoneyCome and games newer than it, get BepInEx 6 (nightly build 668 or later).
+2. Install the latest version of the [ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager) plugin.
+3. Download the latest release archive for your game (specified by the two letter prefix, e.g. AI for AI-Girl) from the releases page (not the "Clone or download" button).
+4. Extract the archive into your game directory (where the game exe and BepInEx folder are located). Replace old files if asked.
 
 ## Plugin descriptions
 You can see more information about some of the plugins by checking their config files in `BepInEx\config` (or by using the in-game [ConfigurationManager plugin](https://github.com/BepInEx/BepInEx.ConfigurationManager)).
