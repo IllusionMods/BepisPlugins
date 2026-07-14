@@ -238,6 +238,7 @@ namespace Screencap
         public static ConfigEntry<int> GuideLineThickness { get; private set; }
         public static ConfigEntry<NameFormat> ScreenshotNameFormat { get; private set; }
         public static ConfigEntry<string> ScreenshotNameOverride { get; private set; }
+        public static ConfigEntry<string> FilenamePrefix { get; private set; }
 
         public static ConfigEntry<KeyboardShortcut> KeyCapture360 { get; private set; }
         public static ConfigEntry<int> Resolution360 { get; private set; }
@@ -314,6 +315,11 @@ namespace Screencap
                 "General", "Screenshot filename Name override",
                 "",
                 new ConfigDescription("Forces the Name part of the filename to always be this instead of varying depending on the name of the current game. Use \"Koikatsu\" to get the old filename behaviour.", null, "Advanced"));
+
+            FilenamePrefix = Config.Bind(
+                "General", "Filename prefix",
+                "",
+                new ConfigDescription("Optional text prepended to screenshot filenames. Handy as a per-scene tag (e.g. \"outfit1_pose1\") to keep captures sorted. Editable in the quick access settings window. Leave empty to disable."));
 
             GuideLinesModes = Config.Bind(
                 "General", "Camera guide lines",
@@ -486,6 +492,14 @@ namespace Screencap
 
             var extension = useJpg ? "jpg" : "png";
 
+            var prefix = FilenamePrefix.Value;
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                foreach (var c in Path.GetInvalidFileNameChars())
+                    prefix = prefix.Replace(c, '_');
+                prefix += "-";
+            }
+
             // Legacy AI/HS2 filenames
             // $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
             // $"HS2_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
@@ -514,7 +528,7 @@ namespace Screencap
                     throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
             }
 
-            return Path.GetFullPath(Path.Combine(ScreenshotDir, filename));
+            return Path.GetFullPath(Path.Combine(ScreenshotDir, prefix + filename));
         }
 
         private static IEnumerator TakeUIScreenshot()
@@ -599,6 +613,14 @@ namespace Screencap
                     textColor = Color.white
                 }
             };
+
+            // Scene name section
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
+                GUILayout.Label("Filename prefix", titleStyle);
+                FilenamePrefix.Value = GUILayout.TextField(FilenamePrefix.Value);
+            }
+            GUILayout.EndVertical();
 
             // Resolution settings section
             GUILayout.BeginVertical(GUI.skin.box);
