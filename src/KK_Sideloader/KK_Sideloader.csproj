@@ -53,7 +53,9 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 
-		<PackageReference Include="SharpZipLib" Version="[0.86.0,1.0)" NoWarn="NU1904, NU1903, NU1902" />
+		<!-- Pinned to 0.86.0: net35 can't use SharpZipLib 1.x (needs net45+), and no patched net35 build exists.
+		     CVEs are in extract to disk helpers which Sideloader never calls, so this is safe. -->
+		<PackageReference Include="SharpZipLib" Version="[0.86.0,1.0)" NoWarn="NU1903, NU1902" />
 	</ItemGroup>
 
 	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
