@@ -320,6 +320,13 @@ namespace Screencap
                 "General", "Filename prefix",
                 "",
                 new ConfigDescription("Optional text prepended to screenshot filenames. Handy as a per-scene tag (e.g. \"outfit1_pose1\") to keep captures sorted. Editable in the quick access settings window. Leave empty to disable."));
+            FilenamePrefix.SettingChanged += (s, e) =>
+            {
+                var sanitized = FilenamePrefix.Value;
+                foreach (var c in Path.GetInvalidFileNameChars())
+                    sanitized = sanitized.Replace(c, '_');
+                if (sanitized != FilenamePrefix.Value) FilenamePrefix.Value = sanitized;
+            };
 
             GuideLinesModes = Config.Bind(
                 "General", "Camera guide lines",
@@ -484,6 +491,8 @@ namespace Screencap
 
         #region Capture methods
 
+        private static string _lastCaptureFilename;
+
         private static string GetUniqueFilename(string capType, bool useJpg)
         {
             var productName = !string.IsNullOrEmpty(ScreenshotNameOverride.Value)
@@ -494,11 +503,10 @@ namespace Screencap
 
             var prefix = FilenamePrefix.Value;
             if (!string.IsNullOrEmpty(prefix))
-            {
-                foreach (var c in Path.GetInvalidFileNameChars())
-                    prefix = prefix.Replace(c, '_');
                 prefix += "-";
-            }
+
+            var now = DateTime.Now;
+            var date = now.ToString("yyyy-MM-dd_HH-mm-ss");
 
             // Legacy AI/HS2 filenames
             // $"AI_{DateTime.Now:yyyy-MM-dd-HH-mm-ss-fff}.png"
@@ -507,28 +515,35 @@ namespace Screencap
             switch (ScreenshotNameFormat.Value)
             {
                 case NameFormat.NameDate:
-                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    filename = $"{productName}-{date}.{extension}";
                     break;
                 case NameFormat.NameTypeDate:
-                    filename = $"{productName}-{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    filename = $"{productName}-{capType}-{date}.{extension}";
                     break;
                 case NameFormat.NameDateType:
-                    filename = $"{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{capType}.{extension}";
+                    filename = $"{productName}-{date}-{capType}.{extension}";
                     break;
                 case NameFormat.TypeDate:
-                    filename = $"{capType}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    filename = $"{capType}-{date}.{extension}";
                     break;
                 case NameFormat.TypeNameDate:
-                    filename = $"{capType}-{productName}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    filename = $"{capType}-{productName}-{date}.{extension}";
                     break;
                 case NameFormat.Date:
-                    filename = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.{extension}";
+                    filename = $"{date}.{extension}";
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("Unhandled screenshot filename format - " + ScreenshotNameFormat.Value);
             }
 
-            return Path.GetFullPath(Path.Combine(ScreenshotDir, prefix + filename));
+            var basePath = Path.GetFullPath(Path.Combine(ScreenshotDir, prefix + filename));
+
+            var fullPath = basePath == _lastCaptureFilename
+                ? basePath.Substring(0, basePath.Length - extension.Length - 1) + "_" + now.ToString("fff") + "." + extension
+                : basePath;
+            _lastCaptureFilename = basePath;
+
+            return fullPath;
         }
 
         private static IEnumerator TakeUIScreenshot()

@@ -109,7 +109,7 @@ namespace Screencap
                 var t2d = result.CopyToTexture2D();
                 RenderTexture.ReleaseTemporary(result);
                 yield return null;
-                var px = t2d.GetPixels();
+                var px = t2d.GetPixels32();
                 GameObject.DestroyImmediate(t2d);
 #else
                 var req = UnityEngine.Rendering.AsyncGPUReadback.Request(result, 0, 0, result.width, 0, result.height, 0, 1, TextureFormat.RGBA32);
