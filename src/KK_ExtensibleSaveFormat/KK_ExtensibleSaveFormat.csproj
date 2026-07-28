@@ -6,6 +6,7 @@
 		<AssemblyName>ExtensibleSaveFormat</AssemblyName>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<!-- NuGet packaging properties -->
+		<IsPackable>true</IsPackable>
 		<PackageId>ExtensibleSaveFormat.Koikatu</PackageId>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageDescription>Allows additional data to be saved to character, coordinate and scene cards</PackageDescription>

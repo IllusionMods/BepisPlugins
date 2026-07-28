@@ -4,6 +4,7 @@
 		<RootNamespace>Screencap</RootNamespace>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<!-- NuGet packaging properties -->
+		<IsPackable>true</IsPackable>
 		<PackageId>ScreenshotManager.AIGirl</PackageId>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageDescription>Utility for capturing screenshots</PackageDescription>

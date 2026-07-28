@@ -6,6 +6,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AssemblyName>Screencap</AssemblyName>
 		<!-- NuGet packaging properties -->
+		<IsPackable>true</IsPackable>
 		<PackageId>ScreenshotManager.Koikatu</PackageId>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageDescription>Utility for capturing screenshots</PackageDescription>

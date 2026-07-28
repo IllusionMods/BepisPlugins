@@ -6,6 +6,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<AssemblyName>Sideloader</AssemblyName>
 		<!-- NuGet packaging properties -->
+		<IsPackable>true</IsPackable>
 		<PackageId>Sideloader.Koikatu</PackageId>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageDescription>Loads mods packaged in .zip archives from the Mods directory without modifying the game files at all</PackageDescription>

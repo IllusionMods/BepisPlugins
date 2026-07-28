@@ -23,6 +23,9 @@
 		<DebugSymbols>true</DebugSymbols>
 		<DebugType>embedded</DebugType>
 		<FileAlignment>512</FileAlignment>
+
+		<!-- Disable packing by default, individual projects can override with <IsPackable>true</IsPackable> -->
+		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

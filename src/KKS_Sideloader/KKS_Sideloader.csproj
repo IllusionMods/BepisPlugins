@@ -5,6 +5,7 @@
 		<RootNamespace>Sideloader</RootNamespace>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<!-- NuGet packaging properties -->
+		<IsPackable>true</IsPackable>
 		<PackageId>Sideloader.KoikatsuSunshine</PackageId>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageDescription>Loads mods packaged in .zip archives from the Mods directory without modifying the game files at all</PackageDescription>
