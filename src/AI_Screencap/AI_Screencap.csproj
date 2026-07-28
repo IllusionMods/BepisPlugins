@@ -8,11 +8,11 @@
 		<PackageId>ScreenshotManager.AIGirl</PackageId>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageDescription>Utility for capturing screenshots</PackageDescription>
-		<PackageProjectUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/IllusionMods/BepisPlugins</PackageProjectUrl>
 		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
 		<PackageCopyright>$(Copyright)</PackageCopyright>
 		<Company>IllusionMods</Company>
-		<RepositoryUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</RepositoryUrl>
+		<RepositoryUrl>https://github.com/IllusionMods/BepisPlugins</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 

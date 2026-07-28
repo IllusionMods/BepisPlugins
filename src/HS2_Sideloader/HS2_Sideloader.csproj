@@ -9,11 +9,11 @@
 		<PackageId>Sideloader.HoneySelect2</PackageId>
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageDescription>Loads mods packaged in .zip archives from the Mods directory without modifying the game files at all</PackageDescription>
-		<PackageProjectUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/IllusionMods/BepisPlugins</PackageProjectUrl>
 		<PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
 		<PackageCopyright>$(Copyright)</PackageCopyright>
 		<Company>IllusionMods</Company>
-		<RepositoryUrl>https://gitgoon.dev/IllusionMods/BepisPlugins</RepositoryUrl>
+		<RepositoryUrl>https://github.com/IllusionMods/BepisPlugins</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
 
