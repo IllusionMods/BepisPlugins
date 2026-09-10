@@ -40,6 +40,8 @@
 		<None Include="..\..\README.md" Link="README.md" Visible="false">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+
+		<PackageReference Include="Microsoft.Unity.Analyzers" Version="1.27.0"/>
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(MSBuildProjectName.IndexOf(_))' != '-1'">

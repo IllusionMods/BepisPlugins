@@ -12,7 +12,6 @@
 		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3"/>
 		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.AudioModule" Version="2021.3.14.3"/>
 		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.UI" Version="2021.3.14.3"/>
-		<PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0"/>
 	</ItemGroup>
 
 	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
