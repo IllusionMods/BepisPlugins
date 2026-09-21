@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿#if !Patcher
+using System.Linq;
 using UnityEngine;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -350,3 +351,4 @@ namespace Shared
         public static GUILayoutOption[] EmptyLayoutOptions = new GUILayoutOption[0];
     }
 }
+#endif

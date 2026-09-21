@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using System.Runtime.InteropServices;
+using HarmonyLib;
 using UnityEngine;
 using static UnityEngine.GUI;
 
@@ -344,7 +345,9 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             textEditor.multiline = multiline;
             textEditor.controlID = id;
             textEditor.DetectFocusChange();
-            if (TouchScreenKeyboard.isRequiredToForceOpen)
+
+            var isRequiredToForceOpen = typeof(TouchScreenKeyboard).GetProperty("isRequiredToForceOpen", AccessTools.all)?.GetValue(null);
+            if (isRequiredToForceOpen is true)
             {
                 HandleTextFieldEventForDesktopWithForcedKeyboard(position, id, content, multiline, maxLength, style, secureText, textEditor);
             }

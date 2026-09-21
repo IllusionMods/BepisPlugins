@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using HarmonyLib;
 using UnityEngine;
 
 namespace IMGUIModule.Il2Cpp.CoreCLR
@@ -1465,7 +1467,7 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
         {
             if (selectIndex != cursorIndex && !isPasswordField)
             {
-                string systemCopyBuffer = style.Internal_GetSelectedRenderedText(
+                    string systemCopyBuffer = GetSelectedRenderedText(
                     localPosition,
                     m_Content,
                     selectIndex,
@@ -1475,9 +1477,45 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             }
         }
 
+        private string GetSelectedRenderedText(Rect localPosition, GUIContent content, int selectIndex, int cursorIndex)
+        {
+            // Try reflection first
+            var method = typeof(GUIStyle).GetMethod(
+                "Internal_GetSelectedRenderedText",
+                AccessTools.all,
+                null,
+                new[] { typeof(Rect), typeof(GUIContent), typeof(int), typeof(int) },
+                null
+            );
+
+            if (method != null)
+            {
+                try
+                {
+                    return (string)method.Invoke(style, new object[] { localPosition, content, selectIndex, cursorIndex });
+                }
+                catch
+                {
+                    // Fall through to fallback implementation
+                }
+            }
+
+            // Fallback: extract text using indices
+            int start = Mathf.Min(selectIndex, cursorIndex);
+            int end = Mathf.Max(selectIndex, cursorIndex);
+
+            if (start >= end || start < 0 || end > text.Length)
+            {
+                return string.Empty;
+            }
+
+            return text.Substring(start, end - start);
+        }
+
         internal Rect[] GetHyperlinksRect()
         {
-            return style.Internal_GetHyperlinksRect(localPosition, m_Content);
+            //return style.Internal_GetHyperlinksRect(localPosition, m_Content);
+            return Array.Empty<Rect>();
         }
 
         private static string ReplaceNewlinesWithSpaces(string value)

@@ -5,6 +5,7 @@
 		<RootNamespace>IMGUIModule.Il2Cpp.CoreCLR</RootNamespace>
 		<AssemblyName>IMGUIModule.Il2Cpp.CoreCLR.Patcher</AssemblyName>
 		<OutputPath>..\..\bin\BepInEx\patchers\</OutputPath>
+		<DefineConstants>$(DefineConstants);Patcher</DefineConstants>
 	</PropertyGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -15,11 +16,8 @@
 	</Target>
 
 	<ItemGroup>
-		<PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.668"/>
-		<PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.668"/>
-		<PackageReference Include="IllusionLibs.HoneyCome.Assembly-CSharp" Version="2023.99.12.15"/>
-		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine" Version="2021.3.14.3"/>
-		<PackageReference Include="IllusionLibs.HoneyCome.UnityEngine.UI" Version="2021.3.14.3"/>
+		<PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.787"/>
+		<PackageReference Include="IllusionLibs.AmanatsuLocation.AllPackages" Version="*"/>
 	</ItemGroup>
 
 	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
