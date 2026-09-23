@@ -16,6 +16,7 @@
 	<ItemGroup>
 		<PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.787" />
 		<PackageReference Include="IllusionLibs.AmanatsuLocation.AllPackages" Version="*" />
+		<PackageReference Include="IllusionLibs.AmanatsuLocation.Optional" Version="*" />
 	</ItemGroup>
 
 	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
