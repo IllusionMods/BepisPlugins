@@ -24,8 +24,8 @@ namespace ConfigurationManagerWrapper
     public class ConfigurationManagerWrapper : BasePlugin
     {
         public const string Version = Constants.Version;
-        public const string GUID = "HC_" + ConfigurationManager.ConfigurationManager.GUID;
-        public const string PluginName = "Configuration Manager wrapper for HoneyCome";
+        public const string GUID = "SVS_" + ConfigurationManager.ConfigurationManager.GUID;
+        public const string PluginName = "Configuration Manager wrapper for SamabakeScramble";
 
         // localization table
         private static ReadOnlyDictionary<string, string> localizePluginSettings = new(

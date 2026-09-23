@@ -25,7 +25,7 @@ namespace ConfigurationManagerWrapper
     {
         public const string Version = Constants.Version;
         public const string GUID = "AC_" + ConfigurationManager.ConfigurationManager.GUID;
-        public const string PluginName = "Configuration Manager wrapper for HoneyCome";
+        public const string PluginName = "Configuration Manager wrapper for Aicomi";
 
         // localization table
         private static ReadOnlyDictionary<string, string> localizePluginSettings = new(
