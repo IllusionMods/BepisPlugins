@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>be50387c-197b-4487-a530-59520a6a21cf</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Core_IMGUIModule.Patcher</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Patcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUI.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUI.GUIStateObjects.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUI.ScrollViewState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUI.SliderHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUI.SliderState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUILayout.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUILayout.GUIGridSizer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUILayoutGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\GUIStateObjects.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Replacements\TextEditor.cs" />
+  </ItemGroup>
+</Project>

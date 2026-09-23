@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<RootNamespace>IMGUIModule.Il2Cpp.CoreCLR</RootNamespace>
+		<OutputPath>..\..\bin\BepInEx\patchers\</OutputPath>
+		<DefineConstants>$(DefineConstants);Patcher</DefineConstants>
+
+		<AssemblyName>SVS_IMGUIModule.Il2Cpp.CoreCLR.Patcher</AssemblyName>
+	</PropertyGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Delete Files="$(OutputPath)\SVS_IMGUIModule.Il2Cpp.CoreCLR.Patcher.deps.json" />
+	</Target>
+
+	<ItemGroup>
+		<PackageReference Include="BepInEx.Unity.Mono.Preloader" Version="6.0.0-be.787" />
+		<PackageReference Include="IllusionLibs.SamabakeScramble.AllPackages" Version="*" />
+	</ItemGroup>
+
+	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
+
+	<Import Project="..\Core_IMGUIModule.Patcher\Core_IMGUIModule.Patcher.projitems" Label="Shared" />
+</Project>

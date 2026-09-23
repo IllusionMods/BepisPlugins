@@ -173,7 +173,11 @@ namespace Shared
         /// <inheritdoc cref="DrawLabelWithShadow"/>
         public static bool DrawButtonWithShadow(Rect r, GUIContent content, GUIStyle style, float shadowAlpha, Vector2 direction)
         {
+#if AL
+            GUIStyle letters = new GUIStyle(style.m_Ptr); //TODO does this actually work?
+#else
             GUIStyle letters = new GUIStyle(style);
+#endif
             letters.normal.background = null;
             letters.hover.background = null;
             letters.active.background = null;

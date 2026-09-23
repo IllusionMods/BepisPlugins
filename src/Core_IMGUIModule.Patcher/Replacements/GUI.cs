@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using System.Runtime.InteropServices;
+using HarmonyLib;
 using UnityEngine;
 using static UnityEngine.GUI;
 
@@ -344,11 +345,16 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             textEditor.multiline = multiline;
             textEditor.controlID = id;
             textEditor.DetectFocusChange();
+
+#if !AL
+            // Not available in AmaLoca
             if (TouchScreenKeyboard.isRequiredToForceOpen)
             {
                 HandleTextFieldEventForDesktopWithForcedKeyboard(position, id, content, multiline, maxLength, style, secureText, textEditor);
             }
-            else if (TouchScreenKeyboard.isSupported && !TouchScreenKeyboard.isInPlaceEditingAllowed)
+            else 
+#endif
+            if (TouchScreenKeyboard.isSupported && !TouchScreenKeyboard.isInPlaceEditingAllowed)
             {
                 HandleTextFieldEventForTouchscreen(position, id, content, multiline, maxLength, style, secureText, maskChar, textEditor);
             }
@@ -364,48 +370,48 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             Event current = Event.current;
             switch (current.type)
             {
-            case EventType.MouseDown:
-                if (position.Contains(current.mousePosition))
-                {
-                    GUIUtility.hotControl = id;
-                    if (s_HotTextField != -1 && s_HotTextField != id)
+                case EventType.MouseDown:
+                    if (position.Contains(current.mousePosition))
                     {
-                        TextEditor textEditor = (TextEditor)GUIStateObjects.GetStateObject(typeof(TextEditor), s_HotTextField);
-                        textEditor.keyboardOnScreen = null;
+                        GUIUtility.hotControl = id;
+                        if (s_HotTextField != -1 && s_HotTextField != id)
+                        {
+                            TextEditor textEditor = (TextEditor)GUIStateObjects.GetStateObject(typeof(TextEditor), s_HotTextField);
+                            textEditor.keyboardOnScreen = null;
+                        }
+                        s_HotTextField = id;
+                        if (GUIUtility.keyboardControl != id)
+                        {
+                            GUIUtility.keyboardControl = id;
+                        }
+                        editor.keyboardOnScreen = TouchScreenKeyboard.Open(secureText ?? content.text, TouchScreenKeyboardType.Default, autocorrection: true, multiline, secureText != null);
+                        current.Use();
                     }
-                    s_HotTextField = id;
-                    if (GUIUtility.keyboardControl != id)
+                    break;
+                case EventType.Repaint:
                     {
-                        GUIUtility.keyboardControl = id;
+                        if (editor.keyboardOnScreen != null)
+                        {
+                            content.text = editor.keyboardOnScreen.text;
+                            if (maxLength >= 0 && content.text.Length > maxLength)
+                            {
+                                content.text = content.text.Substring(0, maxLength);
+                            }
+                            if (editor.keyboardOnScreen.status != TouchScreenKeyboard.Status.Visible)
+                            {
+                                editor.keyboardOnScreen = null;
+                                changed = true;
+                            }
+                        }
+                        string text = content.text;
+                        if (secureText != null)
+                        {
+                            content.text = PasswordFieldGetStrToShow(text, maskChar);
+                        }
+                        style.Draw(position, content, id, on: false);
+                        content.text = text;
+                        break;
                     }
-                    editor.keyboardOnScreen = TouchScreenKeyboard.Open(secureText ?? content.text, TouchScreenKeyboardType.Default, autocorrection: true, multiline, secureText != null);
-                    current.Use();
-                }
-                break;
-            case EventType.Repaint:
-            {
-                if (editor.keyboardOnScreen != null)
-                {
-                    content.text = editor.keyboardOnScreen.text;
-                    if (maxLength >= 0 && content.text.Length > maxLength)
-                    {
-                        content.text = content.text.Substring(0, maxLength);
-                    }
-                    if (editor.keyboardOnScreen.status != TouchScreenKeyboard.Status.Visible)
-                    {
-                        editor.keyboardOnScreen = null;
-                        changed = true;
-                    }
-                }
-                string text = content.text;
-                if (secureText != null)
-                {
-                    content.text = PasswordFieldGetStrToShow(text, maskChar);
-                }
-                style.Draw(position, content, id, on: false);
-                content.text = text;
-                break;
-            }
             }
         }
 
@@ -415,103 +421,103 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             bool flag = false;
             switch (current.type)
             {
-            case EventType.MouseDown:
-                if (position.Contains(current.mousePosition))
-                {
-                    GUIUtility.hotControl = id;
-                    GUIUtility.keyboardControl = id;
-                    editor.m_HasFocus = true;
-                    editor.MoveCursorToPosition(Event.current.mousePosition);
-                    if (Event.current.clickCount == 2 && skin.settings.doubleClickSelectsWord)
+                case EventType.MouseDown:
+                    if (position.Contains(current.mousePosition))
                     {
-                        editor.SelectCurrentWord();
-                        editor.DblClickSnap(TextEditor.DblClickSnapping.WORDS);
-                        editor.MouseDragSelectsWholeWords(on: true);
-                    }
-                    if (Event.current.clickCount == 3 && skin.settings.tripleClickSelectsLine)
-                    {
-                        editor.SelectCurrentParagraph();
-                        editor.MouseDragSelectsWholeWords(on: true);
-                        editor.DblClickSnap(TextEditor.DblClickSnapping.PARAGRAPHS);
-                    }
-                    current.Use();
-                }
-                break;
-            case EventType.MouseDrag:
-                if (GUIUtility.hotControl == id)
-                {
-                    if (current.shift)
-                    {
+                        GUIUtility.hotControl = id;
+                        GUIUtility.keyboardControl = id;
+                        editor.m_HasFocus = true;
                         editor.MoveCursorToPosition(Event.current.mousePosition);
+                        if (Event.current.clickCount == 2 && skin.settings.doubleClickSelectsWord)
+                        {
+                            editor.SelectCurrentWord();
+                            editor.DblClickSnap(TextEditor.DblClickSnapping.WORDS);
+                            editor.MouseDragSelectsWholeWords(on: true);
+                        }
+                        if (Event.current.clickCount == 3 && skin.settings.tripleClickSelectsLine)
+                        {
+                            editor.SelectCurrentParagraph();
+                            editor.MouseDragSelectsWholeWords(on: true);
+                            editor.DblClickSnap(TextEditor.DblClickSnapping.PARAGRAPHS);
+                        }
+                        current.Use();
+                    }
+                    break;
+                case EventType.MouseDrag:
+                    if (GUIUtility.hotControl == id)
+                    {
+                        if (current.shift)
+                        {
+                            editor.MoveCursorToPosition(Event.current.mousePosition);
+                        }
+                        else
+                        {
+                            editor.SelectToPosition(Event.current.mousePosition);
+                        }
+                        current.Use();
+                    }
+                    break;
+                case EventType.MouseUp:
+                    if (GUIUtility.hotControl == id)
+                    {
+                        editor.MouseDragSelectsWholeWords(on: false);
+                        GUIUtility.hotControl = 0;
+                        current.Use();
+                    }
+                    break;
+                case EventType.KeyDown:
+                    {
+                        if (GUIUtility.keyboardControl != id)
+                        {
+                            return;
+                        }
+                        if (editor.HandleKeyEvent(current))
+                        {
+                            current.Use();
+                            flag = true;
+                            content.text = editor.text;
+                            break;
+                        }
+                        if (current.keyCode == KeyCode.Tab || current.character == '\t')
+                        {
+                            return;
+                        }
+                        char character = current.character;
+                        if (character == '\n' && !multiline && !current.alt)
+                        {
+                            return;
+                        }
+                        Font font = style.font;
+                        if (!font)
+                        {
+                            font = skin.font;
+                        }
+                        if (font.HasCharacter(character) || character == '\n')
+                        {
+                            editor.Insert(character);
+                            flag = true;
+                        }
+                        else if (character == '\0')
+                        {
+                            if (GUIUtility.compositionString.Length > 0)
+                            {
+                                editor.ReplaceSelection("");
+                                flag = true;
+                            }
+                            current.Use();
+                        }
+                        break;
+                    }
+                case EventType.Repaint:
+                    if (GUIUtility.keyboardControl != id)
+                    {
+                        style.Draw(position, content, id, on: false);
                     }
                     else
                     {
-                        editor.SelectToPosition(Event.current.mousePosition);
+                        editor.DrawCursor(content.text);
                     }
-                    current.Use();
-                }
-                break;
-            case EventType.MouseUp:
-                if (GUIUtility.hotControl == id)
-                {
-                    editor.MouseDragSelectsWholeWords(on: false);
-                    GUIUtility.hotControl = 0;
-                    current.Use();
-                }
-                break;
-            case EventType.KeyDown:
-            {
-                if (GUIUtility.keyboardControl != id)
-                {
-                    return;
-                }
-                if (editor.HandleKeyEvent(current))
-                {
-                    current.Use();
-                    flag = true;
-                    content.text = editor.text;
                     break;
-                }
-                if (current.keyCode == KeyCode.Tab || current.character == '\t')
-                {
-                    return;
-                }
-                char character = current.character;
-                if (character == '\n' && !multiline && !current.alt)
-                {
-                    return;
-                }
-                Font font = style.font;
-                if (!font)
-                {
-                    font = skin.font;
-                }
-                if (font.HasCharacter(character) || character == '\n')
-                {
-                    editor.Insert(character);
-                    flag = true;
-                }
-                else if (character == '\0')
-                {
-                    if (GUIUtility.compositionString.Length > 0)
-                    {
-                        editor.ReplaceSelection("");
-                        flag = true;
-                    }
-                    current.Use();
-                }
-                break;
-            }
-            case EventType.Repaint:
-                if (GUIUtility.keyboardControl != id)
-                {
-                    style.Draw(position, content, id, on: false);
-                }
-                else
-                {
-                    editor.DrawCursor(content.text);
-                }
-                break;
             }
             if (GUIUtility.keyboardControl == id)
             {

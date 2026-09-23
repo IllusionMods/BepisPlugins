@@ -3,6 +3,7 @@
 #if DEBUG
 using BepInEx.Logging;
 #endif
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Preloader.Core.Patching;
@@ -13,7 +14,7 @@ using BepisPlugins;
 namespace IMGUIModule.Il2Cpp.CoreCLR
 {
     [PatcherPluginInfo(GUID, Name, Version)]
-    public class Patcher : BasePatcher
+    public partial class Patcher : BasePatcher
     {
         public const string GUID = "com.bepis.bepinex.imguimodule.Il2Cpp.CoreCLR.Patcher";
         public const string Name = "IMGUIModule.Il2Cpp.CoreCLR.Patcher";

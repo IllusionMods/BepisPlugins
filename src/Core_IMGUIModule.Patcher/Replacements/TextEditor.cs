@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using HarmonyLib;
 using UnityEngine;
 
 namespace IMGUIModule.Il2Cpp.CoreCLR
@@ -1465,19 +1467,64 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
         {
             if (selectIndex != cursorIndex && !isPasswordField)
             {
-                string systemCopyBuffer = style.Internal_GetSelectedRenderedText(
-                    localPosition,
-                    m_Content,
-                    selectIndex,
-                    cursorIndex
-                );
+                string systemCopyBuffer = GetSelectedRenderedText(
+                localPosition,
+                m_Content,
+                selectIndex,
+                cursorIndex
+            );
                 GUIUtility.systemCopyBuffer = systemCopyBuffer;
             }
         }
 
+        private string GetSelectedRenderedText(Rect localPosition, GUIContent content, int selectIndex, int cursorIndex)
+        {
+#if !AL
+            // Not available in AmaLoca
+            return style.Internal_GetSelectedRenderedText(localPosition, content, selectIndex, cursorIndex);
+#else
+            // Try reflection first
+            var method = typeof(GUIStyle).GetMethod(
+                "Internal_GetSelectedRenderedText",
+                AccessTools.all,
+                null,
+                new[] { typeof(Rect), typeof(GUIContent), typeof(int), typeof(int) },
+                null
+            );
+
+            if (method != null)
+            {
+                try
+                {
+                    return (string)method.Invoke(style, new object[] { localPosition, content, selectIndex, cursorIndex });
+                }
+                catch
+                {
+                    // Fall through to fallback implementation
+                }
+            }
+
+            // Fallback: extract text using indices
+            int start = Mathf.Min(selectIndex, cursorIndex);
+            int end = Mathf.Max(selectIndex, cursorIndex);
+
+            if (start >= end || start < 0 || end > text.Length)
+            {
+                return string.Empty;
+            }
+
+            return text.Substring(start, end - start);
+#endif
+        }
+
         internal Rect[] GetHyperlinksRect()
         {
+#if AL
+            return Array.Empty<Rect>();
+#else
+            // Not available in AmaLoca
             return style.Internal_GetHyperlinksRect(localPosition, m_Content);
+#endif
         }
 
         private static string ReplaceNewlinesWithSpaces(string value)
