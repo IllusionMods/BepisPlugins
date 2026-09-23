@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>ConfigurationManagerWrapper</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!--BepInEx.ConfigurationManager is a BepInEx5 package and there's a compatibility warning about .NET version, but it actually works -->
+		<PackageReference Include="BepInEx.ConfigurationManager" Version="18.3.0">
+			<NoWarn>NU1701</NoWarn>
+		</PackageReference>
+		<PackageReference Include="IllusionLibs.AmanatsuLocation.AllPackages" Version="*" />
+		<PackageReference Include="IllusionLibs.AmanatsuLocation.Optional" Version="*" />
+	</ItemGroup>
+
+	<Import Project="..\Shared\Shared.projitems" Label="Shared" />
+</Project>

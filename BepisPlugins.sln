@@ -171,6 +171,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SVS_IMGUIModule.Patcher", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AL_IMGUIModule.Patcher", "src\AL_IMGUIModule.Patcher\AL_IMGUIModule.Patcher.csproj", "{C845C59B-F9EC-A68E-02F2-029889DBE012}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AL_ConfigurationManager", "src\AL_ConfigurationManager\AL_ConfigurationManager.csproj", "{7675D02E-5524-54C6-1D24-946977CB2CA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -409,6 +411,10 @@ Global
 		{C845C59B-F9EC-A68E-02F2-029889DBE012}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C845C59B-F9EC-A68E-02F2-029889DBE012}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C845C59B-F9EC-A68E-02F2-029889DBE012}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7675D02E-5524-54C6-1D24-946977CB2CA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7675D02E-5524-54C6-1D24-946977CB2CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7675D02E-5524-54C6-1D24-946977CB2CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7675D02E-5524-54C6-1D24-946977CB2CA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -485,6 +491,7 @@ Global
 		{BE50387C-197B-4487-A530-59520A6A21CF} = {D5CECA00-64B3-417D-932E-50953DEE41D7}
 		{406DEBF5-6D17-978A-F319-1FC13623C73C} = {D5CECA00-64B3-417D-932E-50953DEE41D7}
 		{C845C59B-F9EC-A68E-02F2-029889DBE012} = {D5CECA00-64B3-417D-932E-50953DEE41D7}
+		{7675D02E-5524-54C6-1D24-946977CB2CA0} = {66C8608F-4585-4E2C-8E8C-F4FDCC2CE382}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3F10C8B-FD6C-43DA-94B4-1D9688BBE11B}
@@ -551,6 +558,7 @@ Global
 		src\Core_Sideloader\Core_Sideloader.projitems*{75c19265-0ba8-4373-9254-22fb6102788d}*SharedItemsImports = 5
 		src\Core_Sideloader_Studio\Core_Sideloader_Studio.projitems*{75c19265-0ba8-4373-9254-22fb6102788d}*SharedItemsImports = 5
 		src\Shared\Shared.projitems*{75c19265-0ba8-4373-9254-22fb6102788d}*SharedItemsImports = 5
+		src\Shared\Shared.projitems*{7675d02e-5524-54c6-1d24-946977cb2ca0}*SharedItemsImports = 5
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7cba15ab-52d1-4506-a7bf-9d23060ecf5d}*SharedItemsImports = 13
 		src\Core_SliderUnlocker\Core_SliderUnlocker.projitems*{7e5e61f6-fd7d-4fe0-bfcd-c19346b7ef36}*SharedItemsImports = 5
 		src\Shared\Shared.projitems*{7e5e61f6-fd7d-4fe0-bfcd-c19346b7ef36}*SharedItemsImports = 5
