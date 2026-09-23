@@ -1,5 +1,5 @@
 # BepisPlugins
-A collection of essential BepInEx plugins for Koikatu / Koikatsu Party, EmotionCreators, AI-Shoujo / AI-Girl, HoneySelect2, HoneyCome, SamabakeScramble / Summer Vacation Scramble, Aicomi and other games by Illusion/Illgames. Check plugin descriptions below for a full list of included plugins. 
+A collection of essential BepInEx plugins for Koikatu / Koikatsu Party, EmotionCreators, AI-Shoujo / AI-Girl, HoneySelect2, HoneyCome, SamabakeScramble / Summer Vacation Scramble, Aicomi, AmanatsuLocation and other games by Illusion/Illgames. Check plugin descriptions below for a full list of included plugins. 
 
 ## How to install
 1. Install the latest version of [BepInEx](https://github.com/BepInEx/BepInEx). Make sure it is installed and working before installing BepisPlugins.
@@ -67,7 +67,8 @@ It prevents mods from colliding with each other thanks to the UniversalAutoResol
 Allows user to set values outside of the standard 0-100 range on all sliders in the editor.
 
 ### IMGUIModule.Il2Cpp.CoreCLR.Patcher
-Fixes issues with IMGUI caused by the game being IL2CPP that prevent other plugins like ConfigurationManager from being displayed correctly.
+Fixes issues preventing IMGUI plugin windows (e.g. ConfigurationManager) from working in some games that use IL2CPP.
+This is caused by imperfect IL2CPP support in BepInEx 6. It is not needed for games that use Mono (HoneySelect2, Koikatu, etc.).
 
 ## Removed plugins
 
