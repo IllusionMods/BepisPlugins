@@ -1,5 +1,4 @@
-﻿#if !Patcher
-using System.Linq;
+﻿using System.Linq;
 using UnityEngine;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -174,7 +173,11 @@ namespace Shared
         /// <inheritdoc cref="DrawLabelWithShadow"/>
         public static bool DrawButtonWithShadow(Rect r, GUIContent content, GUIStyle style, float shadowAlpha, Vector2 direction)
         {
+#if AL
+            GUIStyle letters = new GUIStyle(style.m_Ptr); //TODO does this actually work?
+#else
             GUIStyle letters = new GUIStyle(style);
+#endif
             letters.normal.background = null;
             letters.hover.background = null;
             letters.active.background = null;
@@ -351,4 +354,3 @@ namespace Shared
         public static GUILayoutOption[] EmptyLayoutOptions = new GUILayoutOption[0];
     }
 }
-#endif

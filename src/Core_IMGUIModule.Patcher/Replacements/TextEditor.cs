@@ -1467,18 +1467,22 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
         {
             if (selectIndex != cursorIndex && !isPasswordField)
             {
-                    string systemCopyBuffer = GetSelectedRenderedText(
-                    localPosition,
-                    m_Content,
-                    selectIndex,
-                    cursorIndex
-                );
+                string systemCopyBuffer = GetSelectedRenderedText(
+                localPosition,
+                m_Content,
+                selectIndex,
+                cursorIndex
+            );
                 GUIUtility.systemCopyBuffer = systemCopyBuffer;
             }
         }
 
         private string GetSelectedRenderedText(Rect localPosition, GUIContent content, int selectIndex, int cursorIndex)
         {
+#if !AL
+            // Not available in AmaLoca
+            return style.Internal_GetSelectedRenderedText(localPosition, content, selectIndex, cursorIndex);
+#else
             // Try reflection first
             var method = typeof(GUIStyle).GetMethod(
                 "Internal_GetSelectedRenderedText",
@@ -1510,12 +1514,17 @@ namespace IMGUIModule.Il2Cpp.CoreCLR
             }
 
             return text.Substring(start, end - start);
+#endif
         }
 
         internal Rect[] GetHyperlinksRect()
         {
-            //return style.Internal_GetHyperlinksRect(localPosition, m_Content);
+#if AL
             return Array.Empty<Rect>();
+#else
+            // Not available in AmaLoca
+            return style.Internal_GetHyperlinksRect(localPosition, m_Content);
+#endif
         }
 
         private static string ReplaceNewlinesWithSpaces(string value)
