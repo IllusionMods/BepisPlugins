@@ -243,6 +243,7 @@ namespace Screencap
         public static ConfigEntry<KeyboardShortcut> KeyCapture360 { get; private set; }
         public static ConfigEntry<int> Resolution360 { get; private set; }
         public static ConfigEntry<bool> is180 { get; private set; }
+        public static ConfigEntry<bool> UseLegacy360Capture { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCaptureAlphaIn3D { get; private set; }
         public static ConfigEntry<KeyboardShortcut> KeyCapture360in3D { get; private set; }
         public static ConfigEntry<float> EyeSeparation { get; private set; }
@@ -357,6 +358,11 @@ namespace Screencap
                 "360 Screenshots", "Use 180 mode instead of 360",
                 false,
                 new ConfigDescription("Enable this to generate 180° screenshots. The output images will have a 1:1 aspect ratio."));
+
+            UseLegacy360Capture = Config.Bind(
+                "360 Screenshots", "Use legacy 360 capture",
+                false,
+                new ConfigDescription("Capture 360/180 screenshots with the legacy Camera.RenderToCubemap instead of rendering each cubemap face."));
 
             KeyCaptureAlphaIn3D = Config.Bind(
                 "Keyboard shortcuts", "Take rendered 3D screenshot",

@@ -30,8 +30,6 @@ namespace Screencap
             var abd = ResourceUtils.GetEmbeddedResource("EquirectangularConverter.unity3d");
             var ab = AssetBundle.LoadFromMemory(abd);
             _equirectangularConverter = new Material(ab.LoadAsset<Shader>("assets/shaders/equirectangularconverter.shader"));
-            // Graphics.DrawTexture's default material is GUI's alpha-blended one, which multiplies colour by alpha and
-            // erases low-alpha/emissive pixels (glow, lit surfaces). Use a straight copy instead.
             _flipMaterial = new Material(Shader.Find("Hidden/BlitCopy"));
             _paddingX = Shader.PropertyToID("_PaddingX");
             cameraRotationMatrixID = Shader.PropertyToID("_CameraRotationMatrix");
@@ -109,7 +107,15 @@ namespace Screencap
 
                 equirectangularTexture.dimension = UnityEngine.Rendering.TextureDimension.Tex2D;
 
-                RenderCubemapFaces(renderCam, cubemap, cubemapSize);
+                if (ScreenshotManager.UseLegacy360Capture.Value)
+                {
+                    if (!renderCam.RenderToCubemap(cubemap))
+                        throw new Exception("Rendering to cubemap is not supported on the current camera");
+                }
+                else
+                {
+                    RenderCubemapFaces(renderCam, cubemap, cubemapSize);
+                }
 
                 _equirectangularConverter.SetFloat(_paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
                 
@@ -122,9 +128,9 @@ namespace Screencap
                 _equirectangularConverter.SetInt(is180ID, is180 ? 1 : 0);
                 Graphics.Blit(cubemap, equirectangularTexture, _equirectangularConverter);
 
-                // Camera.Render produces a broken alpha channel (the same defect AlphaShot2 works around) and the
-                // equirect conversion passes it straight through. Repair it the way the 2D capture path does, otherwise
-                // viewers honour the bad alpha and the image reads as very dark.
+                if (ScreenshotManager.UseLegacy360Capture.Value)
+                    return equirectangularTexture;
+
                 var opaqueTexture = RenderTexture.GetTemporary(equirectangularTexture.width, equirectangularTexture.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 Graphics.Blit(equirectangularTexture, opaqueTexture, BundleLoader.MatOpaque);
                 RenderTexture.ReleaseTemporary(equirectangularTexture);
@@ -145,16 +151,11 @@ namespace Screencap
         private static readonly Vector3[] FaceDirections = { Vector3.right, Vector3.left, Vector3.up, Vector3.down, Vector3.forward, Vector3.back };
         private static readonly Vector3[] FaceUpVectors = { Vector3.up, Vector3.up, Vector3.back, Vector3.forward, Vector3.up, Vector3.up };
 
-        /// <summary>
         /// Renders the cubemap one face at a time instead of using Camera.RenderToCubemap.
-        /// RenderToCubemap renders a single stream and drops transparent-queue objects, which loses placed items
-        /// (characters lose their clothing); a normal per-face camera pass draws them.
-        /// </summary>
+        /// RenderToCubemap renders a single stream and drops transparent-queue objects, which loses placed items.
         private static void RenderCubemapFaces(Camera renderCam, RenderTexture cubemap, int faceSize)
         {
             var faceTarget = RenderTexture.GetTemporary(faceSize, faceSize, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
-            // Must not share the cube's descriptor (square, no depth buffer), or the temporary pool will hand this
-            // back as the cubemap itself on a later capture and CopyTexture becomes a self-copy.
             var flipped = RenderTexture.GetTemporary(faceSize, faceSize, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             var flippedId = new RenderTargetIdentifier(flipped);
             var cubemapId = new RenderTargetIdentifier(cubemap);
@@ -166,8 +167,6 @@ namespace Screencap
             var stereoEye = renderCam.stereoTargetEye;
             try
             {
-                // While the stereo path is active Unity ignores fieldOfView/aspect/rect, which would render each
-                // face with the game's own projection instead of a square 90 degree face.
                 renderCam.stereoTargetEye = StereoTargetEyeMask.None;
                 renderCam.fieldOfView = 90f;
                 renderCam.aspect = 1f;
@@ -179,9 +178,6 @@ namespace Screencap
                     renderCam.Render();
                     renderCam.targetTexture = targetTexture;
 
-                    // Cubemap faces are stored flipped vertically relative to a camera render. Flip the image rather
-                    // than mirroring the camera, because a mirrored camera reverses winding and drops transparent
-                    // objects (the very items this replaced RenderToCubemap to keep).
                     Graphics.SetRenderTarget(flipped);
                     GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
                     GL.PushMatrix();
@@ -189,7 +185,6 @@ namespace Screencap
                     Graphics.DrawTexture(new Rect(0f, faceSize, faceSize, -faceSize), faceTarget, _flipMaterial);
                     GL.PopMatrix();
 
-                    // The face has to be bound before CopyTexture for the write to take effect.
                     var cmd = new CommandBuffer();
                     cmd.SetRenderTarget(cubemapId, 0, (CubemapFace)i);
                     cmd.CopyTexture(flippedId, 0, 0, cubemapId, i, 0);
