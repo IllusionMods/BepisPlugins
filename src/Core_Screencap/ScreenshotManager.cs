@@ -362,7 +362,7 @@ namespace Screencap
             UseLegacy360Capture = Config.Bind(
                 "360 Screenshots", "Use legacy 360 capture",
                 false,
-                new ConfigDescription("Capture 360/180 screenshots with the legacy Camera.RenderToCubemap instead of rendering each cubemap face."));
+                new ConfigDescription("Capture 360/180 screenshots with the legacy Camera.RenderToCubemap instead of rendering each cubemap face.", null, "Advanced"));
 
             KeyCaptureAlphaIn3D = Config.Bind(
                 "Keyboard shortcuts", "Take rendered 3D screenshot",
