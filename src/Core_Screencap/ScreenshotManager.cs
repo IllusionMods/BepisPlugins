@@ -799,6 +799,42 @@ namespace Screencap
 
                 GUILayout.Space(3);
 
+                GUILayout.Label("Capture samples", titleStyle);
+
+                GUILayout.BeginHorizontal();
+                {
+                    alphaShot.AlphaShot2.GridSize = Mathf.RoundToInt(GUILayout.HorizontalSlider(alphaShot.AlphaShot2.GridSize, 1, 50));
+
+                    GUILayout.Label($"{alphaShot.AlphaShot2.GridSize * alphaShot.AlphaShot2.GridSize} ({alphaShot.AlphaShot2.GridSize}x{alphaShot.AlphaShot2.GridSize})", slidebarTextStyle, GUILayout.ExpandWidth(false));
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(3);
+
+                GUILayout.Label("Sample separation (blur)", titleStyle);
+
+                GUILayout.BeginHorizontal();
+                {
+                    alphaShot.AlphaShot2.OffsetScale = GUILayout.HorizontalSlider(alphaShot.AlphaShot2.OffsetScale, 1, 10);
+
+                    GUILayout.Label($"{Mathf.RoundToInt(alphaShot.AlphaShot2.OffsetScale * 100)}%", slidebarTextStyle, GUILayout.ExpandWidth(false));
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(3);
+
+                GUILayout.Label("FOV jitter (bokeh)", titleStyle);
+
+                GUILayout.BeginHorizontal();
+                {
+                    alphaShot.AlphaShot2.FovJitter = GUILayout.HorizontalSlider(alphaShot.AlphaShot2.FovJitter, 0, 2);
+
+                    GUILayout.Label($"{alphaShot.AlphaShot2.FovJitter:0.00} deg", slidebarTextStyle, GUILayout.ExpandWidth(false));
+                }
+                GUILayout.EndHorizontal();
+
+                GUILayout.Space(3);
+
                 GUILayout.Label("Transparent background", titleStyle);
                 GUILayout.BeginHorizontal();
                 {

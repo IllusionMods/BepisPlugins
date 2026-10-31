@@ -10,6 +10,10 @@ namespace alphaShot
 {
     internal class AlphaShot2 : MonoBehaviour
     {
+        public static int GridSize = 10;
+        public static float OffsetScale = 1f;
+        public static float FovJitter = 0f;
+
         #region Materials
 
         private static Material _matScale;
@@ -108,7 +112,6 @@ namespace alphaShot
             Shader.SetGlobalInt("_alpha_a", 1);
             Shader.SetGlobalInt("_alpha_b", 1);
             Shader.SetGlobalInt("_LineWidthS", 1);
-            RenderTexture fullSizeCapture;
             int newWidth = resolutionX * downscalingRate;
             int newHeight = resolutionY * downscalingRate;
 
@@ -136,20 +139,52 @@ namespace alphaShot
                     mode = AlphaMode.None;
             }
 
-            switch (mode)
+            // TODO This sucks, needs to be turned into proper settings
+            int gridCount = Math.Max(1, GridSize);
+            float offsetScale = Math.Max(1f, OffsetScale);
+            float fovJitter = Mathf.Clamp01(FovJitter); //TODO rather than messing with fov track the camera center point and make sure to always point at it, this gives bokeh for free with increased sample separation (basically larger sensor size)
+            int sampleCount = gridCount * gridCount;
+            var main = Camera.main;
+            var orgFov = main.fieldOfView;
+            var sums = new int[resolutionX * resolutionY * 4];
+            var readback = new Texture2D(resolutionX, resolutionY, TextureFormat.ARGB32, false);
+
+            for (int gy = 0; gy < gridCount; gy++)
             {
-                case AlphaMode.None:
-                    fullSizeCapture = CaptureOpaque(newWidth, newHeight);
-                    break;
-                case AlphaMode.blackout:
-                    fullSizeCapture = CaptureAlpha(newWidth, newHeight);
-                    break;
-                case AlphaMode.rgAlpha:
-                    fullSizeCapture = CaptureRgAlpha(newWidth, newHeight);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+                for (int gx = 0; gx < gridCount; gx++)
+                {
+                    main.ResetProjectionMatrix();
+                    if (!main.orthographic)
+                    {
+                        main.fieldOfView = orgFov + UnityEngine.Random.Range(-1f, 1f) * fovJitter;
+                        main.ResetProjectionMatrix();
+                    }
+
+                    var matrix = main.projectionMatrix;
+                    float offsetX = ((gx + 0.5f) / gridCount - 0.5f) * downscalingRate * offsetScale;
+                    float offsetY = ((gy + 0.5f) / gridCount - 0.5f) * downscalingRate * offsetScale;
+                    if (main.orthographic)
+                    {
+                        matrix[0, 3] += 2f * offsetX / newWidth;
+                        matrix[1, 3] += 2f * offsetY / newHeight;
+                    }
+                    else
+                    {
+                        matrix[0, 2] += 2f * offsetX / newWidth;
+                        matrix[1, 2] += 2f * offsetY / newHeight;
+                    }
+                    main.projectionMatrix = matrix;
+
+                    var sample = CaptureSample(newWidth, newHeight, mode);
+                    if (downscalingRate > 1)
+                        sample = LanczosTex(sample, resolutionX, resolutionY);
+
+                    AccumulateSample(sample, readback, sums);
+                }
             }
+
+            main.fieldOfView = orgFov;
+            main.ResetProjectionMatrix();
 
             // Recover depth of field
             if (dof != null)
@@ -157,10 +192,56 @@ namespace alphaShot
                 dof.maxBlurSize = orgBlurSize;
             }
 
-            if (downscalingRate > 1)
-                return LanczosTex(fullSizeCapture, resolutionX, resolutionY);
+            // TODO this is awful, needs to be done with a shader later
+            var pixels = new Color32[resolutionX * resolutionY];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = new Color32(
+                    (byte)((sums[i * 4] + sampleCount / 2) / sampleCount),
+                    (byte)((sums[i * 4 + 1] + sampleCount / 2) / sampleCount),
+                    (byte)((sums[i * 4 + 2] + sampleCount / 2) / sampleCount),
+                    (byte)((sums[i * 4 + 3] + sampleCount / 2) / sampleCount));
+            }
+            readback.SetPixels32(pixels);
+            readback.Apply();
 
-            return fullSizeCapture;
+            var result = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            Graphics.Blit(readback, result);
+            Destroy(readback);
+            return result;
+        }
+
+        private RenderTexture CaptureSample(int newWidth, int newHeight, AlphaMode mode)
+        {
+            switch (mode)
+            {
+                case AlphaMode.None:
+                    return CaptureOpaque(newWidth, newHeight);
+                case AlphaMode.blackout:
+                    return CaptureAlpha(newWidth, newHeight);
+                case AlphaMode.rgAlpha:
+                    return CaptureRgAlpha(newWidth, newHeight);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+            }
+        }
+
+        private static void AccumulateSample(RenderTexture sample, Texture2D readback, int[] sums)
+        {
+            var prev = RenderTexture.active;
+            RenderTexture.active = sample;
+            readback.ReadPixels(new Rect(0, 0, sample.width, sample.height), 0, 0, false);
+            RenderTexture.active = prev;
+            RenderTexture.ReleaseTemporary(sample);
+
+            var pixels = readback.GetPixels32();
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                sums[i * 4] += pixels[i].r;
+                sums[i * 4 + 1] += pixels[i].g;
+                sums[i * 4 + 2] += pixels[i].b;
+                sums[i * 4 + 3] += pixels[i].a;
+            }
         }
 
         private RenderTexture CaptureOpaque(int resolutionX, int resolutionY)
