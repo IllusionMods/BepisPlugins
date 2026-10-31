@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using BepisPlugins;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Screencap
 {
@@ -16,6 +17,7 @@ namespace Screencap
     internal static class I360Render
     {
         private static Material _equirectangularConverter;
+        private static Material _flipMaterial;
         private static int _paddingX;        
         private static int cameraRotationMatrixID;
         private static int is180ID;
@@ -28,6 +30,7 @@ namespace Screencap
             var abd = ResourceUtils.GetEmbeddedResource("EquirectangularConverter.unity3d");
             var ab = AssetBundle.LoadFromMemory(abd);
             _equirectangularConverter = new Material(ab.LoadAsset<Shader>("assets/shaders/equirectangularconverter.shader"));
+            _flipMaterial = new Material(Shader.Find("Hidden/BlitCopy"));
             _paddingX = Shader.PropertyToID("_PaddingX");
             cameraRotationMatrixID = Shader.PropertyToID("_CameraRotationMatrix");
             is180ID=Shader.PropertyToID("_is180");
@@ -104,8 +107,15 @@ namespace Screencap
 
                 equirectangularTexture.dimension = UnityEngine.Rendering.TextureDimension.Tex2D;
 
-                if (!renderCam.RenderToCubemap(cubemap))
-                    throw new Exception("Rendering to cubemap is not supported on the current camera");
+                if (ScreenshotManager.UseLegacy360Capture.Value)
+                {
+                    if (!renderCam.RenderToCubemap(cubemap))
+                        throw new Exception("Rendering to cubemap is not supported on the current camera");
+                }
+                else
+                {
+                    RenderCubemapFaces(renderCam, cubemap, cubemapSize);
+                }
 
                 _equirectangularConverter.SetFloat(_paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
                 
@@ -118,7 +128,14 @@ namespace Screencap
                 _equirectangularConverter.SetInt(is180ID, is180 ? 1 : 0);
                 Graphics.Blit(cubemap, equirectangularTexture, _equirectangularConverter);
 
-                return equirectangularTexture;
+                if (ScreenshotManager.UseLegacy360Capture.Value)
+                    return equirectangularTexture;
+
+                var opaqueTexture = RenderTexture.GetTemporary(equirectangularTexture.width, equirectangularTexture.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+                Graphics.Blit(equirectangularTexture, opaqueTexture, BundleLoader.MatOpaque);
+                RenderTexture.ReleaseTemporary(equirectangularTexture);
+
+                return opaqueTexture;
             }
             finally
             {
@@ -128,6 +145,63 @@ namespace Screencap
                     RenderTexture.ReleaseTemporary(cubemap);
 
                 foreach (var comp in disabled) comp.enabled = true;
+            }
+        }
+
+        private static readonly Vector3[] FaceDirections = { Vector3.right, Vector3.left, Vector3.up, Vector3.down, Vector3.forward, Vector3.back };
+        private static readonly Vector3[] FaceUpVectors = { Vector3.up, Vector3.up, Vector3.back, Vector3.forward, Vector3.up, Vector3.up };
+
+        /// Renders the cubemap one face at a time instead of using Camera.RenderToCubemap.
+        /// RenderToCubemap renders a single stream and drops transparent-queue objects, which loses placed items.
+        private static void RenderCubemapFaces(Camera renderCam, RenderTexture cubemap, int faceSize)
+        {
+            var faceTarget = RenderTexture.GetTemporary(faceSize, faceSize, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            var flipped = RenderTexture.GetTemporary(faceSize, faceSize, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+            var flippedId = new RenderTargetIdentifier(flipped);
+            var cubemapId = new RenderTargetIdentifier(cubemap);
+            var rotation = renderCam.transform.rotation;
+            var fov = renderCam.fieldOfView;
+            var aspect = renderCam.aspect;
+            var rect = renderCam.rect;
+            var targetTexture = renderCam.targetTexture;
+            var stereoEye = renderCam.stereoTargetEye;
+            try
+            {
+                renderCam.stereoTargetEye = StereoTargetEyeMask.None;
+                renderCam.fieldOfView = 90f;
+                renderCam.aspect = 1f;
+                renderCam.rect = new Rect(0f, 0f, 1f, 1f);
+                for (int i = 0; i < 6; i++)
+                {
+                    renderCam.transform.rotation = Quaternion.LookRotation(FaceDirections[i], FaceUpVectors[i]);
+                    renderCam.targetTexture = faceTarget;
+                    renderCam.Render();
+                    renderCam.targetTexture = targetTexture;
+
+                    Graphics.SetRenderTarget(flipped);
+                    GL.Clear(true, true, new Color(0f, 0f, 0f, 0f));
+                    GL.PushMatrix();
+                    GL.LoadPixelMatrix(0f, faceSize, faceSize, 0f);
+                    Graphics.DrawTexture(new Rect(0f, faceSize, faceSize, -faceSize), faceTarget, _flipMaterial);
+                    GL.PopMatrix();
+
+                    var cmd = new CommandBuffer();
+                    cmd.SetRenderTarget(cubemapId, 0, (CubemapFace)i);
+                    cmd.CopyTexture(flippedId, 0, 0, cubemapId, i, 0);
+                    Graphics.ExecuteCommandBuffer(cmd);
+                    cmd.Release();
+                }
+            }
+            finally
+            {
+                renderCam.transform.rotation = rotation;
+                renderCam.fieldOfView = fov;
+                renderCam.aspect = aspect;
+                renderCam.rect = rect;
+                renderCam.targetTexture = targetTexture;
+                renderCam.stereoTargetEye = stereoEye;
+                RenderTexture.ReleaseTemporary(faceTarget);
+                RenderTexture.ReleaseTemporary(flipped);
             }
         }
 
