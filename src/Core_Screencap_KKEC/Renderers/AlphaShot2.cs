@@ -10,10 +10,6 @@ namespace alphaShot
 {
     internal class AlphaShot2 : MonoBehaviour
     {
-        public static int GridSize = 10;
-        public static float OffsetScale = 1f;
-        public static float FovJitter = 0f;
-
         #region Materials
 
         private static Material _matScale;
@@ -106,6 +102,8 @@ namespace alphaShot
             return rt;
         }
 
+        public static int GridSize = 10;
+        public static float OffsetScale = 1f;
         public RenderTexture CaptureTex(int resolutionX, int resolutionY, int downscalingRate, AlphaMode mode)
         {
             Shader.SetGlobalTexture("_AlphaMask", Texture2D.whiteTexture);
@@ -142,10 +140,8 @@ namespace alphaShot
             // TODO This sucks, needs to be turned into proper settings
             int gridCount = Math.Max(1, GridSize);
             float offsetScale = Math.Max(1f, OffsetScale);
-            float fovJitter = Mathf.Clamp01(FovJitter); //TODO rather than messing with fov track the camera center point and make sure to always point at it, this gives bokeh for free with increased sample separation (basically larger sensor size)
             int sampleCount = gridCount * gridCount;
             var main = Camera.main;
-            var orgFov = main.fieldOfView;
             var sums = new int[resolutionX * resolutionY * 4];
             var readback = new Texture2D(resolutionX, resolutionY, TextureFormat.ARGB32, false);
 
@@ -154,11 +150,6 @@ namespace alphaShot
                 for (int gx = 0; gx < gridCount; gx++)
                 {
                     main.ResetProjectionMatrix();
-                    if (!main.orthographic)
-                    {
-                        main.fieldOfView = orgFov + UnityEngine.Random.Range(-1f, 1f) * fovJitter;
-                        main.ResetProjectionMatrix();
-                    }
 
                     var matrix = main.projectionMatrix;
                     float offsetX = ((gx + 0.5f) / gridCount - 0.5f) * downscalingRate * offsetScale;
@@ -183,7 +174,6 @@ namespace alphaShot
                 }
             }
 
-            main.fieldOfView = orgFov;
             main.ResetProjectionMatrix();
 
             // Recover depth of field

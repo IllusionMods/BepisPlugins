@@ -797,6 +797,8 @@ namespace Screencap
                 }
                 GUILayout.EndHorizontal();
 
+                #if KK
+
                 GUILayout.Space(3);
 
                 GUILayout.Label("Capture samples", titleStyle);
@@ -821,17 +823,7 @@ namespace Screencap
                 }
                 GUILayout.EndHorizontal();
 
-                GUILayout.Space(3);
-
-                GUILayout.Label("FOV jitter (bokeh)", titleStyle);
-
-                GUILayout.BeginHorizontal();
-                {
-                    alphaShot.AlphaShot2.FovJitter = GUILayout.HorizontalSlider(alphaShot.AlphaShot2.FovJitter, 0, 2);
-
-                    GUILayout.Label($"{alphaShot.AlphaShot2.FovJitter:0.00} deg", slidebarTextStyle, GUILayout.ExpandWidth(false));
-                }
-                GUILayout.EndHorizontal();
+                #endif 
 
                 GUILayout.Space(3);
 
