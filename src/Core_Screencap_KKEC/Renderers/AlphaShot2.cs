@@ -1,7 +1,7 @@
-﻿using System;
-using System.Linq;
-using BepisPlugins;
+﻿using BepisPlugins;
 using Screencap;
+using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,32 +10,17 @@ namespace alphaShot
 {
     internal class AlphaShot2 : MonoBehaviour
     {
+        private static readonly int AlphaMaskNameID = Shader.PropertyToID("_AlphaMask");
+        private static readonly int AlphaANameID = Shader.PropertyToID("_alpha_a");
+        private static readonly int AlphaBNameID = Shader.PropertyToID("_alpha_b");
+        private static readonly int LineWidthSNameID = Shader.PropertyToID("_LineWidthS");
 
-        public static RenderTexture LanczosTex(Texture input, int resolutionX, int resolutionY)
+        public RenderTexture CaptureTex(int resolutionX, int resolutionY, int downscalingRate, int multisamplingGridSize, AlphaMode mode)
         {
-            BundleLoader.MatScale.SetVector("_KernelAndSize", new Vector4(5, 5, resolutionX, resolutionY));
-            var rt = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
-            var prev = RenderTexture.active;
-            RenderTexture.active = rt;
-            GL.Clear(false, true, new Color(0, 0, 0, 0));
-            Graphics.Blit(input, rt, BundleLoader.MatScale);
-            if (input is RenderTexture rtInput)
-                RenderTexture.ReleaseTemporary(rtInput);
-            else
-                Destroy(input);
-            RenderTexture.active = prev;
-            return rt;
-        }
-
-        public static int GridSize = 10;
-        private static readonly int SampleCountNameID = Shader.PropertyToID("_SampleCount");
-
-        public RenderTexture CaptureTex(int resolutionX, int resolutionY, int downscalingRate, AlphaMode mode)
-        {
-            Shader.SetGlobalTexture("_AlphaMask", Texture2D.whiteTexture);
-            Shader.SetGlobalInt("_alpha_a", 1);
-            Shader.SetGlobalInt("_alpha_b", 1);
-            Shader.SetGlobalInt("_LineWidthS", 1);
+            Shader.SetGlobalTexture(AlphaMaskNameID, Texture2D.whiteTexture);
+            Shader.SetGlobalInt(AlphaANameID, 1);
+            Shader.SetGlobalInt(AlphaBNameID, 1);
+            Shader.SetGlobalInt(LineWidthSNameID, 1);
             int newWidth = resolutionX * downscalingRate;
             int newHeight = resolutionY * downscalingRate;
 
@@ -63,46 +48,7 @@ namespace alphaShot
                     mode = AlphaMode.None;
             }
 
-            int gridCount = Math.Max(1, GridSize);
-            int sampleCount = gridCount * gridCount;
-            var main = Camera.main;
-            var accum = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Default, 1);
-            var prevActive = RenderTexture.active;
-            RenderTexture.active = accum;
-            GL.Clear(false, true, new Color(0, 0, 0, 0));
-            RenderTexture.active = prevActive;
-
-            for (int gy = 0; gy < gridCount; gy++)
-            {
-                for (int gx = 0; gx < gridCount; gx++)
-                {
-                    main.ResetProjectionMatrix();
-
-                    var matrix = main.projectionMatrix;
-                    float offsetX = ((gx + 0.5f) / gridCount - 0.5f) * downscalingRate;
-                    float offsetY = ((gy + 0.5f) / gridCount - 0.5f) * downscalingRate;
-                    if (main.orthographic)
-                    {
-                        matrix[0, 3] += 2f * offsetX / newWidth;
-                        matrix[1, 3] += 2f * offsetY / newHeight;
-                    }
-                    else
-                    {
-                        matrix[0, 2] += 2f * offsetX / newWidth;
-                        matrix[1, 2] += 2f * offsetY / newHeight;
-                    }
-                    main.projectionMatrix = matrix;
-
-                    var sample = CaptureSample(newWidth, newHeight, mode);
-                    if (downscalingRate > 1)
-                        sample = LanczosTex(sample, resolutionX, resolutionY);
-
-                    Graphics.Blit(sample, accum, BundleLoader.MatAccumulate);
-                    RenderTexture.ReleaseTemporary(sample);
-                }
-            }
-
-            main.ResetProjectionMatrix();
+            var result = BundleLoader.DoMultisampling(newWidth, newHeight, multisamplingGridSize, () => CaptureSample(newWidth, newHeight, mode));
 
             // Recover depth of field
             if (dof != null)
@@ -110,10 +56,8 @@ namespace alphaShot
                 dof.maxBlurSize = orgBlurSize;
             }
 
-            var result = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
-            BundleLoader.MatNormalize.SetFloat(SampleCountNameID, sampleCount);
-            Graphics.Blit(accum, result, BundleLoader.MatNormalize);
-            RenderTexture.ReleaseTemporary(accum);
+            if (downscalingRate > 1)
+                result = BundleLoader.ScaleTex(result, resolutionX, resolutionY);
             return result;
         }
 

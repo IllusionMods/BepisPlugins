@@ -141,7 +141,7 @@ namespace Screencap
             var colour = CaptureScreen(scaledWidth, scaledHeight, false);
 
             if (downscaling > 1)
-                colour = ScaleTex(colour, width, height, downscaling);
+                colour = BundleLoader.ScaleTex(colour, width, height);
 
             if (dof != null)
             {
@@ -208,7 +208,7 @@ namespace Screencap
             RenderTexture.ReleaseTemporary(colour);
 
             if (downscaling > 1)
-                alpha = ScaleTex(alpha, width, height, downscaling);
+                alpha = BundleLoader.ScaleTex(alpha, width, height);
 
             return alpha;
         }
@@ -226,25 +226,7 @@ namespace Screencap
                 return _matComposite;
             }
         }
-        /// <summary>
-        /// Scales a render texture to the target resolution using custom shader.
-        /// Used for downscaling high resolution captures to final output size.
-        /// </summary>
-        private static RenderTexture ScaleTex(Texture input, int resolutionX, int resolutionY, int downScaling)
-        {
-            BundleLoader.MatScale.SetVector("_KernelAndSize", new Vector4(5, 5, resolutionX, resolutionY));
-            var rt = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
-            var prev = RenderTexture.active;
-            RenderTexture.active = rt;
-            GL.Clear(false, true, new Color(0, 0, 0, 0));
-            Graphics.Blit(input, rt, BundleLoader.MatScale);
-            if (input is RenderTexture rtInput)
-                RenderTexture.ReleaseTemporary(rtInput);
-            else
-                Destroy(input);
-            RenderTexture.active = prev;
-            return rt;
-        }
+
         private static void LoadBundleComposite()
         {
             // HACK: The composite shader in the common bundle (built from included shader source) results in a washed out image

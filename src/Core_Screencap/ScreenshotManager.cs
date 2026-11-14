@@ -786,7 +786,7 @@ namespace Screencap
             // Upsampling settings section
             GUILayout.BeginVertical(GUI.skin.box);
             {
-                GUILayout.Label("Screen upsampling rate", titleStyle);
+                GUILayout.Label(new GUIContent("Supersampling AA rate", "Capture at higher resolution and downscale"), titleStyle);
 
                 GUILayout.BeginHorizontal();
                 {
@@ -797,17 +797,18 @@ namespace Screencap
                 }
                 GUILayout.EndHorizontal();
 
-                #if KK
+                #if KK //TODO Add multisampling to all types of screenshots in all games
 
                 GUILayout.Space(3);
 
-                GUILayout.Label("Capture samples", titleStyle);
+                GUILayout.Label(new GUIContent("Multisampling AA sample count", "Capture multiple times and merge, experimental"), titleStyle);
 
                 GUILayout.BeginHorizontal();
                 {
-                    alphaShot.AlphaShot2.GridSize = Mathf.RoundToInt(GUILayout.HorizontalSlider(alphaShot.AlphaShot2.GridSize, 1, 30));
+                    var multiGrid = MultisamplingGridSize.Value;
+                    MultisamplingGridSize.Value = Mathf.RoundToInt(GUILayout.HorizontalSlider(multiGrid, 1, 30));
 
-                    GUILayout.Label($"{alphaShot.AlphaShot2.GridSize * alphaShot.AlphaShot2.GridSize} ({alphaShot.AlphaShot2.GridSize}x{alphaShot.AlphaShot2.GridSize})", slidebarTextStyle, GUILayout.ExpandWidth(false));
+                    GUILayout.Label(multiGrid <= 1 ? "Off" : $"{multiGrid * multiGrid} ({multiGrid}x{multiGrid})", slidebarTextStyle, GUILayout.ExpandWidth(false));
                 }
                 GUILayout.EndHorizontal();
 
