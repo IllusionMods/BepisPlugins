@@ -104,6 +104,8 @@ namespace alphaShot
 
         public static int GridSize = 10;
         public static float OffsetScale = 1f;
+        private static readonly int SampleCount = Shader.PropertyToID("_SampleCount");
+
         public RenderTexture CaptureTex(int resolutionX, int resolutionY, int downscalingRate, AlphaMode mode)
         {
             Shader.SetGlobalTexture("_AlphaMask", Texture2D.whiteTexture);
@@ -142,8 +144,11 @@ namespace alphaShot
             float offsetScale = Math.Max(1f, OffsetScale);
             int sampleCount = gridCount * gridCount;
             var main = Camera.main;
-            var sums = new int[resolutionX * resolutionY * 4];
-            var readback = new Texture2D(resolutionX, resolutionY, TextureFormat.ARGB32, false);
+            var accum = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Default, 1);
+            var prevActive = RenderTexture.active;
+            RenderTexture.active = accum;
+            GL.Clear(false, true, new Color(0, 0, 0, 0));
+            RenderTexture.active = prevActive;
 
             for (int gy = 0; gy < gridCount; gy++)
             {
@@ -170,7 +175,8 @@ namespace alphaShot
                     if (downscalingRate > 1)
                         sample = LanczosTex(sample, resolutionX, resolutionY);
 
-                    AccumulateSample(sample, readback, sums);
+                    Graphics.Blit(sample, accum, BundleLoader.MatAccumulate);
+                    RenderTexture.ReleaseTemporary(sample);
                 }
             }
 
@@ -182,22 +188,10 @@ namespace alphaShot
                 dof.maxBlurSize = orgBlurSize;
             }
 
-            // TODO this is awful, needs to be done with a shader later
-            var pixels = new Color32[resolutionX * resolutionY];
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                pixels[i] = new Color32(
-                    (byte)((sums[i * 4] + sampleCount / 2) / sampleCount),
-                    (byte)((sums[i * 4 + 1] + sampleCount / 2) / sampleCount),
-                    (byte)((sums[i * 4 + 2] + sampleCount / 2) / sampleCount),
-                    (byte)((sums[i * 4 + 3] + sampleCount / 2) / sampleCount));
-            }
-            readback.SetPixels32(pixels);
-            readback.Apply();
-
             var result = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
-            Graphics.Blit(readback, result);
-            Destroy(readback);
+            BundleLoader.MatNormalize.SetFloat(SampleCount, sampleCount);
+            Graphics.Blit(accum, result, BundleLoader.MatNormalize);
+            RenderTexture.ReleaseTemporary(accum);
             return result;
         }
 
@@ -213,24 +207,6 @@ namespace alphaShot
                     return CaptureRgAlpha(newWidth, newHeight);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
-            }
-        }
-
-        private static void AccumulateSample(RenderTexture sample, Texture2D readback, int[] sums)
-        {
-            var prev = RenderTexture.active;
-            RenderTexture.active = sample;
-            readback.ReadPixels(new Rect(0, 0, sample.width, sample.height), 0, 0, false);
-            RenderTexture.active = prev;
-            RenderTexture.ReleaseTemporary(sample);
-
-            var pixels = readback.GetPixels32();
-            for (int i = 0; i < pixels.Length; i++)
-            {
-                sums[i * 4] += pixels[i].r;
-                sums[i * 4 + 1] += pixels[i].g;
-                sums[i * 4 + 2] += pixels[i].b;
-                sums[i * 4 + 3] += pixels[i].a;
             }
         }
 

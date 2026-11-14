@@ -65,7 +65,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScreenshotManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\EquirectangularConverter.unity3d" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\screencap.unity3d" />
   </ItemGroup>
   <ItemGroup>
@@ -74,10 +73,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)shader_source\3d_screencap.shader" />
+    <None Include="$(MSBuildThisFileDirectory)shader_source\accumulate.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\alphaMask.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\blackout.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\composite.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\EquirectangularConverter.shader" />
+    <None Include="$(MSBuildThisFileDirectory)shader_source\normalize.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\opaque_screencap.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\Resize.shader" />
     <None Include="$(MSBuildThisFileDirectory)shader_source\rgAlpha2.shader" />

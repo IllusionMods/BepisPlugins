@@ -5,34 +5,22 @@ namespace Screencap
 {
     internal static class BundleLoader
     {
-        private static Material _matOpaque;
-        private static Material _mat3d;
-
-        public static Material MatOpaque
+        static BundleLoader()
         {
-            get
-            {
-                if (!_matOpaque) LoadBundleScreencap();
-                return _matOpaque;
-            }
+            var ab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("screencap.unity3d"));
+            MatOpaque = new Material(ab.LoadAsset<Shader>("opaque_screencap.shader"));
+            Mat3d = new Material(ab.LoadAsset<Shader>("3d_screencap.shader"));
+            MatAccumulate = new Material(ab.LoadAsset<Shader>("accumulate.shader"));
+            MatNormalize = new Material(ab.LoadAsset<Shader>("normalize.shader"));
+            MatEquirectangularConverter = new Material(ab.LoadAsset<Shader>("EquirectangularConverter.shader"));
+            ab.Unload(false);
         }
 
-        public static Material Mat3d
-        {
-            get
-            {
-                if (!_mat3d) LoadBundleScreencap();
-                return _mat3d;
-            }
-        }
-
-        private static void LoadBundleScreencap()
-        {
-            var opaqAb = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("screencap.unity3d"));
-            _matOpaque = new Material(opaqAb.LoadAsset<Shader>("opaque_screencap.shader"));
-            _mat3d = new Material(opaqAb.LoadAsset<Shader>("3d_screencap.shader"));
-            opaqAb.Unload(false);
-        }
+        public static Material MatOpaque { get; }
+        public static Material Mat3d { get; }
+        public static Material MatAccumulate { get; }
+        public static Material MatNormalize { get; }
+        public static Material MatEquirectangularConverter { get; }
 
         public static RenderTexture StitchImages(RenderTexture capture, RenderTexture capture2, float overlapOffset)
         {
