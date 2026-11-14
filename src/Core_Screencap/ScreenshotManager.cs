@@ -799,7 +799,7 @@ namespace Screencap
                 }
                 GUILayout.EndHorizontal();
 
-#if KK //TODO Add multisampling to all types of screenshots in all games
+#if KK || KKS || EC //TODO Add multisampling to all types of screenshots in all games
 
                 GUILayout.Space(3);
 
