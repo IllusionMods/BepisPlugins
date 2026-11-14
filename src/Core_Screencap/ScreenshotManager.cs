@@ -141,7 +141,7 @@ namespace Screencap
         {
             try
             {
-                return I360Render.CaptureTex(resolution ?? Resolution360.Value, faceCameraDirection: faceCameraDirection,is180: is180.Value);
+                return I360Render.CaptureTex(resolution ?? Resolution360.Value, faceCameraDirection: faceCameraDirection, is180: is180.Value);
             }
             catch (Exception ex)
             {
@@ -352,7 +352,7 @@ namespace Screencap
                 "360 Screenshots", "360 screenshot resolution",
                 4096,
                 new ConfigDescription("Horizontal resolution (width) of 360 degree/panorama screenshots. Decrease if you have issues. WARNING: Memory usage can get VERY high - 4096 needs around 4GB of free RAM/VRAM to create, 8192 will need much more.", new AcceptableValueList<int>(1024, 2048, 4096, 8192)));
-            
+
             is180 = Config.Bind(
                 "360 Screenshots", "Use 180 mode instead of 360",
                 false,
@@ -783,10 +783,12 @@ namespace Screencap
                 normal = new GUIStyleState { textColor = Color.white }
             };
 
-            // Upsampling settings section
+            // Antialiasing settings section
             GUILayout.BeginVertical(GUI.skin.box);
             {
-                GUILayout.Label(new GUIContent("Supersampling AA rate", "Capture at higher resolution and downscale"), titleStyle);
+                GUILayout.Label(
+                    new GUIContent("Supersampling AA rate",
+                        "Capture at higher resolution and downscale, high VRAM usage"), titleStyle);
 
                 GUILayout.BeginHorizontal();
                 {
@@ -797,25 +799,31 @@ namespace Screencap
                 }
                 GUILayout.EndHorizontal();
 
-                #if KK //TODO Add multisampling to all types of screenshots in all games
+#if KK //TODO Add multisampling to all types of screenshots in all games
 
                 GUILayout.Space(3);
 
-                GUILayout.Label(new GUIContent("Multisampling AA sample count", "Capture multiple times and merge, experimental"), titleStyle);
+                GUILayout.Label(
+                    new GUIContent("Multisampling AA samples",
+                        "Capture multiple times and merge, low VRAM usage, experimental"), titleStyle);
 
                 GUILayout.BeginHorizontal();
                 {
                     var multiGrid = MultisamplingGridSize.Value;
-                    MultisamplingGridSize.Value = Mathf.RoundToInt(GUILayout.HorizontalSlider(multiGrid, 1, 30));
+                    MultisamplingGridSize.Value = Mathf.RoundToInt(GUILayout.HorizontalSlider(multiGrid, 1, 20));
 
-                    GUILayout.Label(multiGrid <= 1 ? "Off" : $"{multiGrid * multiGrid} ({multiGrid}x{multiGrid})", slidebarTextStyle, GUILayout.ExpandWidth(false));
+                    GUILayout.Label(multiGrid <= 1 ? "Off" : $"{multiGrid * multiGrid}", slidebarTextStyle,
+                        GUILayout.ExpandWidth(false));
                 }
                 GUILayout.EndHorizontal();
 
-                #endif 
+#endif
+            }
+            GUILayout.EndVertical();
 
-                GUILayout.Space(3);
-
+            // Transparency settings section
+            GUILayout.BeginVertical(GUI.skin.box);
+            {
                 GUILayout.Label("Transparent background", titleStyle);
                 GUILayout.BeginHorizontal();
                 {
