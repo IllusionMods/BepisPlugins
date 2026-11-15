@@ -15,6 +15,7 @@ namespace Screencap
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         public static ConfigEntry<int> CardDownscalingRate { get; private set; }
+        public static ConfigEntry<int> MultisamplingGridSize { get; private set; }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         private void InitializeGameSpecific()
@@ -26,6 +27,10 @@ namespace Screencap
                 "Render Settings", "Card image upsampling ratio",
                 3,
                 new ConfigDescription("Capture character card images in a higher resolution and then downscale them to desired size. Prevents aliasing, perserves small details and gives a smoother result, but takes longer to create.", new AcceptableValueRange<int>(1, 4)));
+            
+            MultisamplingGridSize = Config.Bind("Render Settings", "Multisampling Grid Size", 1,
+                new ConfigDescription(
+                    "Experimental. Control the amount of samples taken for multisampling anti-aliasing (total samples = size * size). If set to 1 multisampling is disabled. Multisampling greatly improves visibility of thin lines for the cost of longer capture time. Unlike downsampling (supersampling) this method does not require extra VRAM and therefore larger output sizes can be achieved. If downsampling is also enabled it will be done after supersampling and is not recommended - use either downsampling or multisampling.", new AcceptableValueRange<int>(1, 30)));
         }
 
         #endregion
@@ -46,7 +51,7 @@ namespace Screencap
                 Logger.LogWarning("Capture - No camera found");
                 return null;
             }
-            return _currentAlphaShot.CaptureTex(width, height, downscaling, transparencyMode);
+            return _currentAlphaShot.CaptureTex(width, height, downscaling, MultisamplingGridSize.Value, transparencyMode);
         }
 
         private IEnumerator TakeRenderScreenshot(bool in3D)

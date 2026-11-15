@@ -141,7 +141,7 @@ namespace Screencap
             var colour = CaptureScreen(scaledWidth, scaledHeight, false);
 
             if (downscaling > 1)
-                colour = ScaleTex(colour, width, height, downscaling);
+                colour = BundleLoader.ScaleTex(colour, width, height);
 
             if (dof != null)
             {
@@ -208,7 +208,7 @@ namespace Screencap
             RenderTexture.ReleaseTemporary(colour);
 
             if (downscaling > 1)
-                alpha = ScaleTex(alpha, width, height, downscaling);
+                alpha = BundleLoader.ScaleTex(alpha, width, height);
 
             return alpha;
         }
@@ -218,7 +218,6 @@ namespace Screencap
         #region Image Processing
 
         private static Material _matComposite;
-        private static Material _matScale;
         private static Material MatComposite
         {
             get
@@ -227,42 +226,14 @@ namespace Screencap
                 return _matComposite;
             }
         }
-        private static Material MatScale
-        {
-            get
-            {
-                if (!_matScale) LoadBundleComposite();
-                return _matScale;
-            }
-        }
-
-        /// <summary>
-        /// Scales a render texture to the target resolution using custom shader.
-        /// Used for downscaling high resolution captures to final output size.
-        /// </summary>
-        private static RenderTexture ScaleTex(Texture input, int width, int height, int downScaling)
-        {
-            var resized = RenderTexture.GetTemporary(width, height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
-            // Pack downscaling parameters into a Vector4:
-            // xy: downscaling factors for width and height
-            // zw: final target dimensions
-            // This format is required by the resize shader
-            MatScale.SetVector("_KernelAndSize", new Vector4(downScaling, downScaling, width, height));
-            Graphics.Blit(input, resized, MatScale);
-
-            if (input is RenderTexture rtInput)
-                RenderTexture.ReleaseTemporary(rtInput);
-            else
-                Destroy(input);
-
-            return resized;    // Give em the ol' switcheroo
-        }
 
         private static void LoadBundleComposite()
         {
+            // HACK: The composite shader in the common bundle (built from included shader source) results in a washed out image
+            //       therefore this different version is included that I don't have source for (or is it the same but build in newer unity?)
             var ab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
-            _matScale = new Material(ab.LoadAsset<Shader>("resize"));
+            _matComposite.hideFlags = HideFlags.HideAndDontSave;
             ab.Unload(false);
         }
 

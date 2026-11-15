@@ -13,9 +13,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScreenshotManager.KKEC.Hooks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Renderers\AlphaShot2.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\blackout.unity3d" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\composite.unity3d" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\rgalpha.unity3d" />
-  </ItemGroup>
 </Project>

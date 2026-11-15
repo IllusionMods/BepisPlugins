@@ -1,7 +1,7 @@
-﻿using System;
-using System.Linq;
-using BepisPlugins;
+﻿using BepisPlugins;
 using Screencap;
+using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,105 +10,17 @@ namespace alphaShot
 {
     internal class AlphaShot2 : MonoBehaviour
     {
-        #region Materials
+        private static readonly int AlphaMaskNameID = Shader.PropertyToID("_AlphaMask");
+        private static readonly int AlphaANameID = Shader.PropertyToID("_alpha_a");
+        private static readonly int AlphaBNameID = Shader.PropertyToID("_alpha_b");
+        private static readonly int LineWidthSNameID = Shader.PropertyToID("_LineWidthS");
 
-        private static Material _matScale;
-        private static Material _matBlackout;
-        private static Material _matMask;
-        private static Material MatScale
+        public RenderTexture CaptureTex(int resolutionX, int resolutionY, int downscalingRate, int multisamplingGridSize, AlphaMode mode)
         {
-            get
-            {
-                if (!_matScale) LoadBundleBlackout();
-                return _matScale;
-            }
-        }
-        private static Material MatBlackout
-        {
-            get
-            {
-                if (!_matBlackout) LoadBundleBlackout();
-                return _matBlackout;
-            }
-        }
-        private static Material MatMask
-        {
-            get
-            {
-                if (!_matMask) LoadBundleBlackout();
-                return _matMask;
-            }
-        }
-        private static void LoadBundleBlackout()
-        {
-            var abd = ResourceUtils.GetEmbeddedResource("blackout.unity3d");
-            var ab = AssetBundle.LoadFromMemory(abd);
-            _matBlackout = new Material(ab.LoadAsset<Shader>("blackout.shader"));
-            _matMask = new Material(ab.LoadAsset<Shader>("alphamask.shader"));
-            _matScale = new Material(ab.LoadAsset<Shader>("resize.shader"));
-            ab.Unload(false);
-        }
-#if !EC
-        private static Material _matComposite;
-        private static Material MatComposite
-        {
-            get
-            {
-                if (!_matComposite) LoadBundleComposite();
-                return _matComposite;
-            }
-        }
-        private static void LoadBundleComposite()
-        {
-            var compab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
-            _matComposite = new Material(compab.LoadAsset<Shader>("composite"));
-            compab.Unload(false);
-        }
-#endif
-        private static Material _matRgAlpha;
-
-        private static Material MatRgAlpha
-        {
-            get
-            {
-                if (!_matRgAlpha) LoadBundleRgalpha();
-                return _matRgAlpha;
-            }
-        }
-
-        private static void LoadBundleRgalpha()
-        {
-            var rgbd = ResourceUtils.GetEmbeddedResource("rgalpha.unity3d");
-            var rgab = AssetBundle.LoadFromMemory(rgbd);
-            _matRgAlpha = new Material(rgab.LoadAsset<Shader>("rgAlpha2"));
-            rgab.Unload(false);
-        }
-
-        #endregion
-
-        public static RenderTexture LanczosTex(Texture input, int resolutionX, int resolutionY)
-        {
-            MatScale.SetVector("_KernelAndSize", new Vector4(5, 5, resolutionX, resolutionY));
-            var rt = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
-            var prev = RenderTexture.active;
-            RenderTexture.active = rt;
-            GL.Clear(false, true, new Color(0, 0, 0, 0));
-            Graphics.Blit(input, rt, MatScale);
-            if (input is RenderTexture rtInput)
-                RenderTexture.ReleaseTemporary(rtInput);
-            else
-                Destroy(input);
-            RenderTexture.active = prev;
-            return rt;
-        }
-
-        public RenderTexture CaptureTex(int resolutionX, int resolutionY, int downscalingRate, AlphaMode mode)
-        {
-            Shader.SetGlobalTexture("_AlphaMask", Texture2D.whiteTexture);
-            Shader.SetGlobalInt("_alpha_a", 1);
-            Shader.SetGlobalInt("_alpha_b", 1);
-            Shader.SetGlobalInt("_LineWidthS", 1);
-            RenderTexture fullSizeCapture;
+            Shader.SetGlobalTexture(AlphaMaskNameID, Texture2D.whiteTexture);
+            Shader.SetGlobalInt(AlphaANameID, 1);
+            Shader.SetGlobalInt(AlphaBNameID, 1);
+            Shader.SetGlobalInt(LineWidthSNameID, 1);
             int newWidth = resolutionX * downscalingRate;
             int newHeight = resolutionY * downscalingRate;
 
@@ -136,20 +48,7 @@ namespace alphaShot
                     mode = AlphaMode.None;
             }
 
-            switch (mode)
-            {
-                case AlphaMode.None:
-                    fullSizeCapture = CaptureOpaque(newWidth, newHeight);
-                    break;
-                case AlphaMode.blackout:
-                    fullSizeCapture = CaptureAlpha(newWidth, newHeight);
-                    break;
-                case AlphaMode.rgAlpha:
-                    fullSizeCapture = CaptureRgAlpha(newWidth, newHeight);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
-            }
+            var result = BundleLoader.DoMultisampling(newWidth, newHeight, multisamplingGridSize, () => CaptureSample(newWidth, newHeight, mode));
 
             // Recover depth of field
             if (dof != null)
@@ -158,9 +57,23 @@ namespace alphaShot
             }
 
             if (downscalingRate > 1)
-                return LanczosTex(fullSizeCapture, resolutionX, resolutionY);
+                result = BundleLoader.ScaleTex(result, resolutionX, resolutionY);
+            return result;
+        }
 
-            return fullSizeCapture;
+        private RenderTexture CaptureSample(int newWidth, int newHeight, AlphaMode mode)
+        {
+            switch (mode)
+            {
+                case AlphaMode.None:
+                    return CaptureOpaque(newWidth, newHeight);
+                case AlphaMode.blackout:
+                    return CaptureAlpha(newWidth, newHeight);
+                case AlphaMode.rgAlpha:
+                    return CaptureRgAlpha(newWidth, newHeight);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(mode), mode, null);
+            }
         }
 
         private RenderTexture CaptureOpaque(int resolutionX, int resolutionY)
@@ -189,12 +102,12 @@ namespace alphaShot
                 Studio.Studio.Instance.frameCtrl.imageFrame.isActiveAndEnabled)
             {
                 var frame = Studio.Studio.Instance.frameCtrl.imageFrame.mainTexture;
-                MatComposite.SetTexture("_Overlay", frame);
+                BundleLoader.MatComposite.SetTexture("_Overlay", frame);
                 var prevrt = rt;
                 rt = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 RenderTexture.active = rt;
                 GL.Clear(false, true, Color.clear);
-                Graphics.Blit(prevrt, rt, MatComposite);
+                Graphics.Blit(prevrt, rt, BundleLoader.MatComposite);
                 RenderTexture.ReleaseTemporary(prevrt);
             }
 #endif
@@ -280,8 +193,8 @@ namespace alphaShot
             var rtAlpha = RenderTexture.GetTemporary(resolutionX, resolutionY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
             rtAlpha.ClearRenderTexture();
 
-            MatRgAlpha.SetTexture("_green", rtG);
-            Graphics.Blit(rtR, rtAlpha, MatRgAlpha);
+            BundleLoader.MatRgAlpha.SetTexture("_green", rtG);
+            Graphics.Blit(rtR, rtAlpha, BundleLoader.MatRgAlpha);
             //System.IO.File.WriteAllBytes("e:\\alphaRTex.png", GetT2D(alphaRTex).EncodeToPNG());
 
             RenderTexture.ReleaseTemporary(rtR);
@@ -299,8 +212,8 @@ namespace alphaShot
             RenderTexture.active = rtOutput;
             GL.Clear(false, true, new Color(0, 0, 0, 0));
 
-            MatMask.SetTexture("_Mask", rtAlpha);
-            Graphics.Blit(texColor, rtOutput, MatMask);
+            BundleLoader.MatMask.SetTexture("_Mask", rtAlpha);
+            Graphics.Blit(texColor, rtOutput, BundleLoader.MatMask);
 
             RenderTexture.ReleaseTemporary(texColor);
             RenderTexture.ReleaseTemporary(rtAlpha);
@@ -366,8 +279,8 @@ namespace alphaShot
             var prev = RenderTexture.active;
             RenderTexture.active = rt;
             GL.Clear(false, true, new Color(0, 0, 0, 0));
-            MatMask.SetTexture("_Mask", capture1);
-            Graphics.Blit(capture2, rt, MatMask);
+            BundleLoader.MatMask.SetTexture("_Mask", capture1);
+            Graphics.Blit(capture2, rt, BundleLoader.MatMask);
             RenderTexture.active = prev;
 
             RenderTexture.ReleaseTemporary(capture1);
@@ -397,7 +310,7 @@ namespace alphaShot
                 GL.Clear(true, true, Color.white);
                 renderCam.backgroundColor = Color.white;
                 renderCam.renderingPath = RenderingPath.VertexLit;
-                renderCam.RenderWithShader(MatBlackout.shader, null);
+                renderCam.RenderWithShader(BundleLoader.MatBlackout.shader, null);
                 Shader.SetGlobalColor(ChaShader._LineColorG, lc);
             }
             else
