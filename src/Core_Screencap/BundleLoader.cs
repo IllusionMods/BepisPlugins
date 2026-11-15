@@ -11,18 +11,28 @@ namespace Screencap
         {
             var ab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("screencap.unity3d"));
             MatOpaque = new Material(ab.LoadAsset<Shader>("opaque_screencap.shader"));
+            MatOpaque.hideFlags = HideFlags.HideAndDontSave;
             Mat3d = new Material(ab.LoadAsset<Shader>("3d_screencap.shader"));
+            Mat3d.hideFlags = HideFlags.HideAndDontSave;
 
             MatAccumulate = new Material(ab.LoadAsset<Shader>("accumulate.shader"));
+            MatAccumulate.hideFlags = HideFlags.HideAndDontSave;
             MatNormalize = new Material(ab.LoadAsset<Shader>("normalize.shader"));
+            MatNormalize.hideFlags = HideFlags.HideAndDontSave;
 
             MatScale = new Material(ab.LoadAsset<Shader>("resize.shader"));
+            MatScale.hideFlags = HideFlags.HideAndDontSave;
             MatEquirectangularConverter = new Material(ab.LoadAsset<Shader>("EquirectangularConverter.shader"));
+            MatEquirectangularConverter.hideFlags = HideFlags.HideAndDontSave;
 
             MatBlackout = new Material(ab.LoadAsset<Shader>("blackout.shader"));
+            MatBlackout.hideFlags = HideFlags.HideAndDontSave;
             MatMask = new Material(ab.LoadAsset<Shader>("alphamask.shader"));
+            MatMask.hideFlags = HideFlags.HideAndDontSave;
             MatComposite = new Material(ab.LoadAsset<Shader>("composite"));
+            MatComposite.hideFlags = HideFlags.HideAndDontSave;
             MatRgAlpha = new Material(ab.LoadAsset<Shader>("rgAlpha2"));
+            MatRgAlpha.hideFlags = HideFlags.HideAndDontSave;
 
             ab.Unload(false);
         }

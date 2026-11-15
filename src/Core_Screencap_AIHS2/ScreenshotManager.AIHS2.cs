@@ -233,6 +233,7 @@ namespace Screencap
             //       therefore this different version is included that I don't have source for (or is it the same but build in newer unity?)
             var ab = AssetBundle.LoadFromMemory(ResourceUtils.GetEmbeddedResource("composite.unity3d"));
             _matComposite = new Material(ab.LoadAsset<Shader>("composite"));
+            _matComposite.hideFlags = HideFlags.HideAndDontSave;
             ab.Unload(false);
         }
 

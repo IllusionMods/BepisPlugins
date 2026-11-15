@@ -27,6 +27,7 @@ namespace Screencap
             if (_flipMaterial != null) return;
 
             _flipMaterial = new Material(Shader.Find("Hidden/BlitCopy"));
+            _flipMaterial.hideFlags = HideFlags.HideAndDontSave;
             _paddingX = Shader.PropertyToID("_PaddingX");
             _cameraRotationMatrixID = Shader.PropertyToID("_CameraRotationMatrix");
             _is180ID = Shader.PropertyToID("_is180");
