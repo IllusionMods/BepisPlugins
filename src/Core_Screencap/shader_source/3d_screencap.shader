@@ -38,8 +38,9 @@ Shader "3d_screencap"
             
             fixed4 frag (VertexOutput i) : COLOR
             {
-                float4 mt = tex2D(_MainTex, i.uv0 * float2(2 - _OverlapOffset * 2, 1));
-                float4 t2 = tex2D(_TextureTwo, i.uv0 * float2(2 - _OverlapOffset * 2, 1) - float2(-_OverlapOffset * 2, 0));
+                float s = i.uv0.x * (2 - _OverlapOffset * 2);
+                float4 mt = tex2D(_MainTex, float2(saturate(s), i.uv0.y));
+                float4 t2 = tex2D(_TextureTwo, float2(saturate(s - 1 + _OverlapOffset * 2), i.uv0.y));
                 return lerp(mt, t2, floor(i.uv0.x + 0.5));
             }
             ENDCG

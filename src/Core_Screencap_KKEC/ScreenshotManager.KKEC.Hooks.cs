@@ -41,7 +41,7 @@ namespace Screencap
             var nh = t2d.height / CardRenderRate;
 
             //Downsample texture
-            var result = alphaShot.AlphaShot2.LanczosTex(t2d, nw, nh);
+            var result = BundleLoader.ScaleTex(t2d, nw, nh);
             var result2D = result.CopyToTexture2D();
             RenderTexture.ReleaseTemporary(result);
             encoded = result2D.EncodeToPNG();

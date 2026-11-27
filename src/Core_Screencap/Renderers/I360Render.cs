@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using BepisPlugins;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -16,25 +15,22 @@ namespace Screencap
     /// </summary>
     internal static class I360Render
     {
-        private static Material _equirectangularConverter;
         private static Material _flipMaterial;
-        private static int _paddingX;        
-        private static int cameraRotationMatrixID;
-        private static int is180ID;
+
+        private static int _paddingX;
+        private static int _cameraRotationMatrixID;
+        private static int _is180ID;
         private static Harmony _hi;
 
         private static void Init()
         {
-            if (_equirectangularConverter != null) return;
+            if (_flipMaterial != null) return;
 
-            var abd = ResourceUtils.GetEmbeddedResource("EquirectangularConverter.unity3d");
-            var ab = AssetBundle.LoadFromMemory(abd);
-            _equirectangularConverter = new Material(ab.LoadAsset<Shader>("assets/shaders/equirectangularconverter.shader"));
             _flipMaterial = new Material(Shader.Find("Hidden/BlitCopy"));
+            _flipMaterial.hideFlags = HideFlags.HideAndDontSave;
             _paddingX = Shader.PropertyToID("_PaddingX");
-            cameraRotationMatrixID = Shader.PropertyToID("_CameraRotationMatrix");
-            is180ID=Shader.PropertyToID("_is180");
-            ab.Unload(false);
+            _cameraRotationMatrixID = Shader.PropertyToID("_CameraRotationMatrix");
+            _is180ID = Shader.PropertyToID("_is180");
 
             if (_hi == null)
                 _hi = Harmony.CreateAndPatchAll(typeof(I360Render), nameof(I360Render));
@@ -69,7 +65,7 @@ namespace Screencap
             }
         }
 
-        public static RenderTexture CaptureTex(int width = 1024, Camera renderCam = null, bool faceCameraDirection = true,bool is180=false)
+        public static RenderTexture CaptureTex(int width = 1024, Camera renderCam = null, bool faceCameraDirection = true, bool is180 = false)
         {
             Init();
 
@@ -91,18 +87,21 @@ namespace Screencap
             RenderTexture camTarget = renderCam.targetTexture;
 
             int cubemapSize = Mathf.Min(Mathf.NextPowerOfTwo(width), 16384);
-            RenderTexture cubemap = null, equirectangularTexture;
+            RenderTexture cubemap = null, equirectangularTexture = null;
             try
             {
-                cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+                cubemap = RenderTexture.GetTemporary(cubemapSize, cubemapSize, 0, RenderTextureFormat.ARGB32,
+                    RenderTextureReadWrite.Default, 1);
                 cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
                 if (is180)
                 {
-                    equirectangularTexture = RenderTexture.GetTemporary(cubemapSize / 2, cubemapSize / 2, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+                    equirectangularTexture = RenderTexture.GetTemporary(cubemapSize / 2, cubemapSize / 2, 0,
+                        RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 }
                 else
                 {
-                    equirectangularTexture = RenderTexture.GetTemporary(cubemapSize, cubemapSize / 2, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
+                    equirectangularTexture = RenderTexture.GetTemporary(cubemapSize, cubemapSize / 2, 0,
+                        RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 1);
                 }
 
                 equirectangularTexture.dimension = UnityEngine.Rendering.TextureDimension.Tex2D;
@@ -117,16 +116,19 @@ namespace Screencap
                     RenderCubemapFaces(renderCam, cubemap, cubemapSize);
                 }
 
-                _equirectangularConverter.SetFloat(_paddingX, faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
-                
+                BundleLoader.MatEquirectangularConverter.SetFloat(_paddingX,
+                    faceCameraDirection ? (renderCam.transform.eulerAngles.y / 360f) : 0f);
+
                 if (faceCameraDirection && is180)
                 {
                     // Apply camera rotation so the 180° screenshot follows the camera direction.
                     // Could also apply to 360° mode.
-                    _equirectangularConverter.SetMatrix(cameraRotationMatrixID, renderCam.transform.localToWorldMatrix);                 
+                    BundleLoader.MatEquirectangularConverter.SetMatrix(_cameraRotationMatrixID,
+                        renderCam.transform.localToWorldMatrix);
                 }
-                _equirectangularConverter.SetInt(is180ID, is180 ? 1 : 0);
-                Graphics.Blit(cubemap, equirectangularTexture, _equirectangularConverter);
+
+                BundleLoader.MatEquirectangularConverter.SetInt(_is180ID, is180 ? 1 : 0);
+                Graphics.Blit(cubemap, equirectangularTexture, BundleLoader.MatEquirectangularConverter);
 
                 if (ScreenshotManager.UseLegacy360Capture.Value)
                     return equirectangularTexture;
@@ -136,6 +138,12 @@ namespace Screencap
                 RenderTexture.ReleaseTemporary(equirectangularTexture);
 
                 return opaqueTexture;
+            }
+            catch
+            {
+                if (equirectangularTexture != null)
+                    RenderTexture.ReleaseTemporary(equirectangularTexture);
+                throw;
             }
             finally
             {
@@ -274,28 +282,25 @@ namespace Screencap
 
                 if (bytes[startIndex] == 0xFF)
                 {
-                    byte secondByte = bytes[startIndex + 1];
+                    var secondByte = bytes[startIndex + 1];
                     if (secondByte == 0xDA)
                     {
                         startIndex = -1;
                         return false;
                     }
-                    else if (secondByte == 0x01 || (secondByte >= 0xD0 && secondByte <= 0xD9))
+
+                    if (secondByte == 0x01 || (secondByte >= 0xD0 && secondByte <= 0xD9))
                     {
                         startIndex += 2;
                         return false;
                     }
-                    else
-                    {
-                        chunkSize = bytes[startIndex + 2] * 256 + bytes[startIndex + 3];
 
-                        if (secondByte == 0xE1 && chunkSize >= 31 && CheckBytesForXMPNamespace_JPEG(bytes, startIndex + 4))
-                        {
-                            return true;
-                        }
+                    chunkSize = bytes[startIndex + 2] * 256 + bytes[startIndex + 3];
 
-                        startIndex = startIndex + 2 + chunkSize;
-                    }
+                    if (secondByte == 0xE1 && chunkSize >= 31 && CheckBytesForXMPNamespace_JPEG(bytes, startIndex + 4))
+                        return true;
+
+                    startIndex = startIndex + 2 + chunkSize;
                 }
             }
 
